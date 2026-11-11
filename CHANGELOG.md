@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.6.4] - 2026-11-11
+
+- **Works again after updating.** Updating to the last version could leave the addon switched off in the game's AddOns list with "ForeverCore: missing", because the update did not bring Forever Core with it. Forever Core now comes inside this addon's download again, from CurseForge, Wago or GitHub alike, so updating is all it takes (cjber/shortest-path-forever#731).
+
 ## [1.6.3] - 2026-11-11
 
 - **A guide stop is no longer weighed by a mob level its mobs do not have.** QuestieDB's Forever data spells an NPC level it does not know as 9999, and the guide read that as a real level, so a stop whose mobs have no known level was planned as if they were far above yours. Anything at or past that sentinel now counts as no level, which is what it means.
@@ -163,7 +167,6 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **The guide's quest data is a release fresher.** The bundled quest catalogue moves to QuestieDB v1.0.12, so quests and givers it had missed are known again: three more chains now read as a numbered story, and the Crossroads offers a sixth pickup in the Barrens opening. A few hub coordinates moved by a yard, so a route through them can order its steps slightly differently.
 
-
 ## [1.1.14] - 2026-11-07
 
 - **The map's tabs touch the frame.** The Quests tab and the Adventure Guide tab on the right of the world map now sit flush against the map frame, with no dark strip between them.
@@ -288,7 +291,6 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **Hover a step marker to see the step.** The numbered markers on the minimap now show a tooltip naming the step: its number, what to do there as the tracker words it ("Talk to Iverron", "Turn in Iverron's Antidote"), done lines greyed, and the quest. World map markers for a RestedXP guide step show the same lines instead of the bare step title. Clicking the minimap still pings it as before.
 
-
 ## [1.0.12] - 2026-11-05
 
 - **The settings page opens without an error.** Its title asked the game for a font Forever does not have, which logged a Lua error each time the page was built; it now uses the font the game's own settings pages title with.
@@ -317,7 +319,6 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [1.0.7] - 2026-11-04
 
 - **Quest rewards that beat what you wear are marked.** The quest giver's detail and reward window draw the game's own green upgrade arrow on a reward the game shows usable, that fits your class's armour type, that carries no primary stat your class never uses, and that has a higher item level than the weaker item it would replace. Weapons follow the game tutorial's own upgrade rules. Setting *Mark reward upgrades* (Interface, on by default); with Pawn loaded nothing is marked, and the README says so.
-
 
 - **Quest rewards that beat your gear are marked.** When a quest giver offers rewards to choose from, the game's green upgrade arrow marks each one you can use that beats what you wear in that slot: your class's armour type, a main stat your class uses and a higher item level. Nothing is chosen for you, and with Pawn installed Pawn marks them instead.
 
@@ -356,7 +357,6 @@ optional `### For addon authors` subsection after a version's player bullets.
 - **RestedXP's arrow goes when its windows do.** Choosing the guide used to leave RestedXP's own direction arrow on
   screen while its windows, item window and map lines were hidden, so two arrows pointed at the same step. The arrow
   now hides and comes back with the rest of them.
-
 
 ## [1.0.1] - 2026-11-03
 

@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parent.parent
 # tests/forever_core.lua reads ForeverCore's TOC with the shared reader under tools/forever_sim, which the package
 # never ships, so the smoke spec needs that one folder beside tests/.
 POLICY = package.Policy(
-    addons=("AdventureGuideForever",),
+    addons=("AdventureGuideForever", "ForeverCore"),
     specs=("tests/smoke_spec.lua",),
     support=("tests", "tools/forever_sim"),
 )
