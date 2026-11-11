@@ -1362,7 +1362,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(Live(), 0, label .. ": disabling map marks releases the pins")
 
-	-- Design §2.8's menu for a town holding a log quest; Stop only once Go runs, Show quest never in combat.
+	-- Design §2.8's menu for a town holding a log quest: no journey action before one is chosen, End journey once it
+	-- is, Show quest never in combat.
 	local head = ns.Route().steps[1]
 	h.OpenTrackerMenu(h.tracker)
 	local menu = {
@@ -1373,11 +1374,12 @@ for _, spf in ipairs({ false, "v1" }) do
 		"button: Choose another journey",
 	}
 	same(h.MenuLines(), WithNotThisQuest(ns, h.G.ForeverCore.Family, head, menu), label .. ": tracker menu")
+	ns.Prefs().journey = ns.Route().journey
 	ns.Guidance.Navigate(head)
 	h.SetCombat(true)
 	h.OpenTrackerMenu(h.tracker)
 	h.SetCombat(false)
-	menu[3] = "button: Stop"
+	menu[3] = "button: " .. ns.L.END_JOURNEY
 	same(
 		h.MenuLines(),
 		WithNotThisQuest(ns, h.G.ForeverCore.Family, head, menu, true),
@@ -1978,9 +1980,13 @@ do
 	equal(StopButton(reloaded):IsShown(), true, "stop: still offered after a /reload")
 	reloaded.Click(StopButton(reloaded))
 	equal(reloaded.counts.ClearUserWaypoint, 1, "stop: and still clears the waypoint")
+	-- The choice cleared, the next rebuild shows the overview, so choosing again gives the guide its rows.
+	reloaded.flush()
 	clean(reloaded, "stop: reload")
+	reloaded.ns.Choose(reloaded.ns.Route().journey)
+	reloaded.flush()
 
-	-- Go and Stop from a step row's menu move the footer's Stop too, with no route change to redraw it.
+	-- Go and End journey from a step row's menu move the footer's Stop too, with no route change to redraw it.
 	local function Choose(text)
 		for _, entry in ipairs(reloaded.menu.entries) do
 			if entry.text == text then
@@ -1996,9 +2002,9 @@ do
 	Choose(ns.L.GO)
 	equal(StopButton(reloaded):IsShown(), true, "stop: shown after the menu's Go")
 	reloaded.Click(row, "RightButton")
-	Choose(ns.L.STOP)
-	equal(StopButton(reloaded):IsShown(), false, "stop: hidden after the menu's Stop")
-	equal(reloaded.ns.Prefs().journey, nil, "stop: the menu's Stop clears the choice too")
+	Choose(ns.L.END_JOURNEY)
+	equal(StopButton(reloaded):IsShown(), false, "stop: hidden after the menu's End journey")
+	equal(reloaded.ns.Prefs().journey, nil, "stop: the menu's End journey clears the choice too")
 end
 do
 	local h = Load("v1")
@@ -2072,7 +2078,7 @@ do
 		WithNotThisQuest(ns, h.G.ForeverCore.Family, first, {
 			"title: " .. first.title,
 			"button: Go",
-			"button: Stop",
+			"button: " .. ns.L.END_JOURNEY,
 			"button: Show quest",
 			"button: Skip for now",
 			"button: Choose another journey",
@@ -2082,7 +2088,7 @@ do
 			"button: " .. ns.L.ORDER_SOONER,
 			"button: " .. ns.L.ORDER_LATER,
 		}),
-		"step menu: a town with a hand-in shows it; choosing started the route, which Stop ends"
+		"step menu: a town with a hand-in shows it; choosing started the route, which End journey ends"
 	)
 	local skipped = h.Find(function(frame)
 		return frame.text ~= nil and frame.text:match("^Skipped")
@@ -2118,7 +2124,7 @@ do
 		WithNotThisQuest(ns, h.G.ForeverCore.Family, ns.Route().steps[1], {
 			"title: " .. ns.Route().steps[1].title,
 			"button: Go",
-			"button: Stop",
+			"button: " .. ns.L.END_JOURNEY,
 			"button: Skip for now",
 			"button: Skipped (2)",
 			submenu[1],

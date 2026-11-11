@@ -129,7 +129,11 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 		return
 	end
 	if mouseButton == "RightButton" then
-		-- ForeverCore's column owns the header's right-click switches and asks AddHeaderMenuEntries for our own.
+		-- A step's title opens the same step menu as its row in the guide (#641).
+		local step = BlockStep(block)
+		ForeverCore.ContextMenu(block.HeaderButton or block, function(_, root)
+			ns.Menu.Step(root, step)
+		end)
 		return
 	end
 	local step = BlockStep(block)

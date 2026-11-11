@@ -76,6 +76,7 @@ L["DUNGEON_LOOT_UNKNOWN"] = "У AtlasLoot пока нет добычи босс�
 L["DUNGEON_PICKUP"] = "Взять"
 L["DUNGEON_QUESTS"] = "Заданий для этого подземелья: %d"
 L["DUNGEON_QUESTS_ONE"] = "1 задание для этого подземелья"
+L["END_JOURNEY"] = "Завершить путешествие"
 L["ENTRANCE_UNKNOWN"] = "Расположение входа неизвестно."
 L["FROM_SKILLUP"] = "из SkillUp Forever"
 L["GO"] = "Вперед"
@@ -397,6 +398,8 @@ L["SHORTEST_PATH"] = "Shortest Path"
 L["SHOW_AGAIN"] = "Показать снова: %s"
 L["SHOW_ON_MAP"] = "Показать на карте"
 L["SHOW_QUEST"] = "Показать задание"
+L["SIDEBAR_COLLAPSED"] =
+	"Разверните журнал заданий, чтобы открыть путеводитель."
 L["SKILLUP_FAMILY"] =
 	"SkillUp Forever прокладывает самый дешевый путь к следующему рангу профессии."
 L["SKILLUP_FAMILY_MENU"] = "Самый дешевый путь к следующему рангу: SkillUp Forever"

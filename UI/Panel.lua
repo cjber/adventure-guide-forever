@@ -1296,8 +1296,9 @@ local function Attach()
 	function ns.OpenPanel()
 		ForeverCore.OpenMap()
 		-- A collapsed quest sidebar or a maximized map hides QuestMapFrame and so the panel inside it. Bringing the
-		-- sidebar back from addon code taints the map, so opening the guide leaves the sidebar state alone.
+		-- sidebar back from addon code taints the map, so the guide says what to do instead of opening nothing (#641).
 		if not QuestMapFrame:IsShown() then
+			ns.Print(L.SIDEBAR_COLLAPSED)
 			return
 		end
 		-- A tab already selected is not reported visible again, so an open guide still re-reads the route.
