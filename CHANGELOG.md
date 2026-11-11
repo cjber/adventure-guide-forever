@@ -13,6 +13,17 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **The players who helped are on the Thanks page.** Settings, Forever addons, Thanks lists everyone whose report or idea shipped in Adventure Guide Forever, ranked by how much they gave. (#667)
+
+## [1.7.1] - 2026-11-11
+
+<!-- forever-core-sync -->
+
+- Ships with the same shared code as your other Forever addons, so they keep working together.
+
+## [1.7.0] - 2026-11-11
+
+<!-- discord-image: docs/screenshots/tracker.png -->
+
 - **The tracker shows only your journey's quests, and gives the rest back.** While a journey leads, the quests it works on are tracked and every other quest leaves the objective tracker; the quests you had tracked are kept on the character and come back when the journey stops leading, you choose another, or you turn the new setting off. A small grey count beside the tracker section's title says how many are hidden, its tooltip explains why, and **Show all quests** in the title's right-click menu turns the setting off. A quest you track or untrack by hand while the journey leads stays as you left it. A leading RestedXP guide keeps working as it did (#682).
 - Ships with the same shared code as your other Forever addons, so they keep working together.
 

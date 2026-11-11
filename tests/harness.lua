@@ -3941,6 +3941,8 @@ local function EnsureCore()
 		"UI/Report.lua",
 		"UI/Credits.lua",
 		"UI/MapCanvas.lua",
+		"Data/Credits.lua",
+		"UI/Credits.lua",
 		"Expose.lua",
 	})
 	coreLoaded = true
