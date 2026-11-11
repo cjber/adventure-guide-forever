@@ -453,7 +453,7 @@ L["TWEAKS_OUTDATED"] = "Actualiza Tweaks Forever para encontrar entradas de mazm
 L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
-L["WHATS_NEW"] = "Vuelve a funcionar tras actualizar." -- mt
+L["WHATS_NEW"] = "La guía te lleva a Encroaching Gnolls antes de Show of Force." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
