@@ -16,6 +16,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **The guide's API is listed with every other Forever addon's.** `AdventureGuideForever.API` now hands itself to `ForeverCore.APIKit.Publish`, so another addon finds it through `ForeverCore.APIKit.Addons()` on ForeverCore 1.3.2 or later, with the same `version` and `minor`. Nothing a caller reads changed, and an older core loads as before.
 
+## [1.6.2] - 2026-11-11
+
+- **Forever Core now installs alongside it.** Forever Core is on CurseForge, so the CurseForge app installs and updates it with this addon instead of the addon carrying its own copy. On Wago, install Forever Core from its own page.
+
 ## [1.6.1] - 2026-11-11
 
 <!-- discord-image: docs/screenshots/menu.png -->
