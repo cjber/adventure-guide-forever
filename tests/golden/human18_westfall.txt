@@ -10,9 +10,9 @@ card (chosen) | zone:1436 | Westfall story | Chapter 1 of 7 | A chain begins wit
   step 8 | area:9:0 | Complete objectives · The Killing Fields | 1436 0.3810,0.5080 | after you pick it up | 99 yd | 9/0
   step 9 | area:153:4 | Complete objectives · Red Leather Bandanas | 1436 0.4390,0.6840 | after you pick it up | 98 yd | 153/4
   step 10 | town:1436:921 | Pick up: Of Mice and Milk | 1436 0.3251,0.7178 | near your level
-card | zone:1433 | Head to Redridge Mountains | 9 quests near your level | - | map 1433
+card | zone:1433 | Head to Redridge Mountains | 8 quests near your level | - | map 1433
   step 1 | town:1433:1002 | Pick up: Encroaching Gnolls | 1433 0.1037,0.7126 | near your level
-  step 2 | town:1433:69 | Visit Lakeshire: Pick up 8 | 1433 0.1759,0.4384 | 8 to pick up
+  step 2 | town:1433:69 | Visit Lakeshire: Pick up 7 | 1433 0.1759,0.4384 | 7 to pick up
 card | zone:1413 | Head to The Barrens | 9 quests near your level | Ratchet needs hands | map 1413
   step 1 | town:1413:392 | Visit Ratchet: Pick up 7 | 1413 0.6237,0.3762 | 7 to pick up
   step 2 | town:1413:387 | Pick up: Deviate Hides | 1413 0.4599,0.3566 | near your level

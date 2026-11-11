@@ -12,6 +12,11 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The guide takes you to Encroaching Gnolls before Show of Force.** In Redridge Mountains it sent the player to
+  Deputy Feldon for Show of Force while Encroaching Gnolls, the quest that sends you to him, was still open, and he
+  did not offer it until that quest was turned in. The guide now holds Show of Force until Encroaching Gnolls is
+  done (Discord, jixxor., #642).
+
 ## [1.6.4] - 2026-11-11
 
 - **Works again after updating.** Updating to the last version could leave the addon switched off in the game's AddOns list with "ForeverCore: missing", because the update did not bring Forever Core with it. Forever Core now comes inside this addon's download again, from CurseForge, Wago or GitHub alike, so updating is all it takes (cjber/shortest-path-forever#731).
