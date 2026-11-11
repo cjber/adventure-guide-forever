@@ -33,6 +33,7 @@ Locales\zhTW.lua
 Data\Geometry.lua
 Data\Forever.lua
 Data\ZoneArt.lua
+Data\Credits.lua
 Core\Secret.lua
 UI\StepStyle.lua
 Core\Core.lua

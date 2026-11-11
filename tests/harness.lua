@@ -3939,6 +3939,7 @@ local function EnsureCore()
 		"Core/Log.lua",
 		"Core/Text.lua",
 		"UI/Report.lua",
+		"UI/Credits.lua",
 		"UI/MapCanvas.lua",
 		"Expose.lua",
 	})

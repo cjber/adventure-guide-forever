@@ -77,4 +77,10 @@ Installed together, Shortest Path Forever plans the way to every stop. SkillUp F
 
 Source code and issues: [github.com/cjber/adventure-guide-forever](https://github.com/cjber/adventure-guide-forever). Licence: GPL-3.0-or-later.
 
+<!-- forever-credits:start -->
+
+Thanks to starkovsky, InfamousMunky, sampconrad, VinzNL, fuguer-ai, rhednak, jechten, Gnatz_0815, CodeHoax, eliasbusato, wfournier, methabolic, kragmars, Naburiel, vladsnz, jixxor and everyone who reported a bug or asked for a feature.
+
+<!-- forever-credits:end -->
+
 Built with AI assistance.
