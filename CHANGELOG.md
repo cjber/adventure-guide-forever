@@ -25,6 +25,12 @@ optional `### For addon authors` subsection after a version's player bullets.
   skipped for any quest Questie still judged available, so it could offer Goldshire to a hunter already on another
   race's chain. A corrected link now decides availability, as intended when the correction was added (#491, #629).
 
+## [1.6.5] - 2026-11-11
+
+<!-- forever-core-sync -->
+
+- Ships with the same shared code as your other Forever addons, so they keep working together.
+
 ## [1.6.4] - 2026-11-11
 
 - **Works again after updating.** Updating to the last version could leave the addon switched off in the game's AddOns list with "ForeverCore: missing", because the update did not bring Forever Core with it. Forever Core now comes inside this addon's download again, from CurseForge, Wago or GitHub alike, so updating is all it takes (cjber/shortest-path-forever#731).
