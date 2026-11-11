@@ -464,7 +464,7 @@ L["TWEAKS_OUTDATED"] = "Mettez à jour Tweaks Forever pour trouver les entrées 
 L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
-L["WHATS_NEW"] = "Les joueurs qui ont aidé figurent sur la page Remerciements." -- mt
+L["WHATS_NEW"] = "L’onglet et l’en-tête du guide affichent à nouveau la boussole." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"

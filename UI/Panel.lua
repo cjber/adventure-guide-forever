@@ -296,7 +296,7 @@ local function BuildHeader(parent)
 		end
 	end)
 	portrait = header:CreateTexture(nil, "ARTWORK")
-	Art.Icon(portrait, ns.Icon, 30)
+	Art.Fit(portrait, "islands-queue-prop-compass", 30, 30)
 	portrait:SetPoint("LEFT", 2, 0)
 	headerTitle = header:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	headerTitle:SetText(ns.TITLE)
@@ -1261,7 +1261,7 @@ local function Attach()
 	})
 	---@cast guideTab -?
 	---@cast guideTab ForeverQuestLogTab
-	Art.Icon(guideTab.Icon, ns.Icon, 30)
+	Art.Fit(guideTab.Icon, "islands-queue-prop-compass", 30, 30)
 	tabPip = guideTab:CreateTexture(nil, "OVERLAY")
 	Art.Fit(tabPip, TAB_PIP, 20, 20)
 	tabPip:SetPoint("CENTER", guideTab, "TOPRIGHT", -8, -8)
