@@ -89,16 +89,22 @@ local function BlockStep(block)
 end
 
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate, ForeverTrackerModule
+---@field headerText? string the header the section shows now
 ---@field rxpActionsReserved? number the height the RestedXP action rows already added to contentsHeight
 ---@field npcHighlightReserved? number the height the next-NPC target button already added to contentsHeight
 ---@field AddHeaderMenuEntries? fun(self: AGFTrackerModule, root: ForeverMenuDescription)
 local ModuleMixin = {
-	headerText = L.TITLE,
 	blockTemplate = "ObjectiveTrackerAnimBlockTemplate",
-	-- Blizzard pairs its fanfare block with this line (Blizzard_ObjectiveTrackerAnimTemplates.xml:3): every used
-	-- line's FadeInAnim is restarted when the block plays its add animation, so the plain line would raise a nil.
-	lineTemplate = "ObjectiveTrackerAnimLineTemplate",
 }
+
+-- The quest areas note explains itself on hover; every other block header's tooltip is the Go warning below.
+---@param block AGFTrackerBlock
+---@return ForeverTrackerHeaderTooltip?
+local function BlockTooltip(block)
+	if block.id == QUEST_AREAS then
+		return { title = L.QUEST_AREAS_OFF, lines = { L.QUEST_AREAS_TOOLTIP } }
+	end
+end
 
 ---@param block AGFTrackerBlock the header's own block: the aside's goes to its place, the journey's end opens the guide
 ---and the story's does nothing; for the step's, ns.Guidance.CurrentStep() is used since it's always current
@@ -151,16 +157,9 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 end
 
 -- The title's click starts the route when the setting says so, as an aside's with a place does, so each warns as Go
--- does.
+-- does. An instruction line is not one of TrackerLine.SetHeaderTooltip's normal lines, so this one stays here.
 ---@param block AGFTrackerBlock
 function ModuleMixin:OnBlockHeaderEnter(block)
-	if block.id == QUEST_AREAS then
-		GameTooltip:SetOwner(block, "ANCHOR_RIGHT")
-		GameTooltip_SetTitle(GameTooltip, L.QUEST_AREAS_OFF)
-		GameTooltip_AddNormalLine(GameTooltip, L.QUEST_AREAS_TOOLTIP)
-		GameTooltip:Show()
-		return
-	end
 	if not ns.Integrations.ReplacesJourney() then
 		return
 	end
@@ -172,10 +171,6 @@ function ModuleMixin:OnBlockHeaderEnter(block)
 		ns.Menu.GoWarning(GameTooltip, title)
 		GameTooltip:Show()
 	end
-end
-
-function ModuleMixin:OnBlockHeaderLeave()
-	GameTooltip:Hide()
 end
 
 -- The aside's line, when there is one.
@@ -240,16 +235,6 @@ local function Preview(block, step, line)
 			return
 		end
 	end
-end
-
--- The room a block laid out next still has in the section (Blizzard_ObjectiveTrackerModule.lua CanFitBlock), less
--- what the block already holds.
----@param module AGFTrackerModule
----@param block AGFTrackerBlock
----@return number
-local function Room(module, block)
-	local _, offsetY = module:GetNextBlockAnchoring()
-	return module.availableHeight - module.contentsHeight + offsetY - block.height
 end
 
 -- Room kept for one more line, and the marks' size in a line.
@@ -396,7 +381,7 @@ local function GuideSection(module, block, step)
 	local extra = module:GetBlock(ONGOING)
 	extra:SetHeader(L.RXP_ONGOING)
 	for index, text in ipairs(lines) do
-		if Room(module, extra) < LINE_ROOM * (index < #lines and 2 or 1) then
+		if ForeverCore.TrackerSection.Room(module, extra) < LINE_ROOM * (index < #lines and 2 or 1) then
 			local more = #lines - index + 1
 			extra:AddObjective(index, more == 1 and L.RXP_MORE_STEP or L.RXP_MORE_STEPS:format(more))
 			break
@@ -591,9 +576,6 @@ function ModuleMixin:LayoutContentsBase()
 	self:LayoutBlock(block)
 end
 
----@type AGFTrackerModule?
-local module
-
 -- RestedXP's secure item and target buttons sit inside this section (#334). Their height is added after the section's
 -- own blocks lay out, so the column reserves room for them and no section below overlaps.
 local Contents = ModuleMixin.LayoutContentsBase
@@ -607,39 +589,43 @@ function ModuleMixin:LayoutContents()
 	end
 end
 
-local function WarnIfUnattached()
-	if module and not ForeverCore.TrackerHost.IsAttached(module) then
-		ns.Print(L.TRACKER_UNATTACHED)
-	end
-end
-
 -- The column's scale, Lock and position were the addon's before ForeverCore kept them; the host copies this table
--- once, so the player keeps the layout they chose. Saved variables load with the addon, so attach happens after them.
-local function Attach()
+-- once, so the player keeps the layout they chose. Saved variables load with the addon, so the section joins the
+-- column after them.
+local section = ForeverCore.TrackerSection.Create("AdventureGuideForeverObjectiveTracker", ModuleMixin, {
+	order = UI_ORDER,
+	-- Blizzard pairs its fanfare block with this line (Blizzard_ObjectiveTrackerAnimTemplates.xml:3): every used
+	-- line's FadeInAnim is restarted when the block plays its add animation, so the plain line would raise a nil.
+	lineTemplate = "ObjectiveTrackerAnimLineTemplate",
+	header = L.TITLE,
+	show = {
+		get = function()
+			return ns.Setting("showTracker")
+		end,
+		set = function(shown)
+			ns.SetSetting("showTracker", shown)
+		end,
+		where = L.TRACKER_SHOW_WHERE,
+		safeCall = ns.core.SafeCall,
+	},
+	legacy = function()
+		return AdventureGuideForeverDB
+	end,
+	legacyKey = "trackerHost",
+	safeCall = ns.core.SafeCall,
+	onUnattached = function()
+		ns.Print(L.TRACKER_UNATTACHED)
+	end,
+})
+---@cast section AGFTrackerModule?
+---@type AGFTrackerModule?
+local module = section
+if module then
 	---@cast module AGFTrackerModule
-	module.legacySettings = AdventureGuideForeverDB and AdventureGuideForeverDB.trackerHost or nil
-	module.safeCall = ns.core.SafeCall
 	module.AddHeaderMenuEntries = function(_, root)
 		ns.Menu.Step(root, ns.Guidance.CurrentStep())
 	end
-	ForeverCore.TrackerHost.Attach(module)
-	if AdventureGuideForeverDB then
-		AdventureGuideForeverDB.trackerHost = nil
-	end
-end
-
-local function Register()
-	local frame =
-		CreateFrame("Frame", "AdventureGuideForeverObjectiveTracker", UIParent, "ObjectiveTrackerModuleTemplate")
-	---@cast frame AGFTrackerModule
-	module = frame
-	Mixin(module, ModuleMixin)
-	module:SetHeader(ModuleMixin.headerText)
-	module.uiOrder = UI_ORDER
-	EventUtil.ContinueAfterAllEvents(function()
-		C_Timer.After(0, Attach)
-		C_Timer.After(5, WarnIfUnattached)
-	end, "PLAYER_ENTERING_WORLD", "VARIABLES_LOADED")
+	ForeverCore.TrackerLine.SetHeaderTooltip(module, BlockTooltip)
 end
 
 local function Refresh()
@@ -708,7 +694,6 @@ local function OnRouteChange()
 	Refresh()
 end
 
-Register()
 -- Where the RestedXP secure action buttons attach (#334).
 function ns.TrackerModule()
 	return module

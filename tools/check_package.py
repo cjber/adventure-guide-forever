@@ -17,7 +17,13 @@ except ModuleNotFoundError:
     from forever_tools import package
 
 ROOT = Path(__file__).resolve().parent.parent
-POLICY = package.Policy(addons=("AdventureGuideForever",), specs=("tests/smoke_spec.lua",))
+# tests/forever_core.lua reads ForeverCore's TOC with the shared reader under tools/forever_sim, which the package
+# never ships, so the smoke spec needs that one folder beside tests/.
+POLICY = package.Policy(
+    addons=("AdventureGuideForever",),
+    specs=("tests/smoke_spec.lua",),
+    support=("tests", "tools/forever_sim"),
+)
 
 if __name__ == "__main__":
     sys.exit(package.main(ROOT, POLICY))

@@ -426,6 +426,7 @@ L["TRACKER_DRAG_TOOLTIP"] = "끌어서 이동"
 L["TRACKER_LOADING"] = "퀘스트 데이터 불러오는 중..."
 L["TRACKER_LOCKED_TOOLTIP"] = "추적기가 잠겨 있습니다. 추적기 잠금을 끄면 이동할 수 있습니다."
 L["TRACKER_PAUSED"] = "경로가 일시 중지되었습니다. 제목을 클릭하면 재개합니다." -- mt
+L["TRACKER_SHOW_WHERE"] = "설정 > 애드온 > Adventure Guide의 목표 추적기에서 다시 켤 수 있습니다." -- mt
 L["TRACKER_UNATTACHED"] =
 	"목표 추적기에 영역을 추가하지 못했습니다. /agf audit로 보고해 주십시오."
 L["TRAINER"] = "직업 상급자 방문"

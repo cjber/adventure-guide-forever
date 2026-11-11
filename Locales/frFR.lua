@@ -424,6 +424,7 @@ L["TRACKER_DRAG_TOOLTIP"] = "Glisser pour déplacer"
 L["TRACKER_LOADING"] = "Chargement des données de quêtes..."
 L["TRACKER_LOCKED_TOOLTIP"] = "Le suivi est verrouillé. Désactivez Verrouiller le suivi pour le déplacer."
 L["TRACKER_PAUSED"] = "Itinéraire en pause. Cliquez sur le titre pour reprendre." -- mt
+L["TRACKER_SHOW_WHERE"] = "Réactivez-le dans Options > AddOns > Adventure Guide, sous Suivi des objectifs." -- mt
 L["TRACKER_UNATTACHED"] =
 	"impossible d’ajouter une section au suivi des objectifs ; merci de le signaler avec /agf audit."
 L["TRAINER"] = "Rendez visite à votre maître de classe"

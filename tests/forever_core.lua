@@ -1,7 +1,12 @@
 -- ForeverCore, the addon every Forever addon requires, loaded the way the client loads it: the files its TOC lists,
 -- in order, from the checkout the FOREVER_CORE environment variable names. Local runs default to the sibling checkout
 -- ../forever-core; CI checks the ref in tools/forever-core.txt out into forever-core/.
+--
+-- The TOC reader is ForeverCore's own (tools/forever_sim/toc.lua, vendored byte for byte): it expands the TOC the way
+-- the client does, each XML in its place and the virtual templates that XML declares.
 local ForeverCore = {}
+
+local Toc = dofile("tools/forever_sim/toc.lua")
 
 local DEFAULT_DIRECTORY = "../forever-core"
 
@@ -44,19 +49,12 @@ function ForeverCore.directory()
 	)
 end
 
--- The Lua files ForeverCore.toc lists, in its order, with forward slashes for loadfile. The client reads the XML
--- the TOC also lists itself, so there is nothing here to hand LuaJIT.
+-- The TOC's entries, in its order, under `directory`: `{ path, kind }`, where `kind` is "lua" or "xml". The reader
+-- joins `directory` to each TOC line, so a path is what the client would load, not the line as written.
 ---@param directory string
----@return string[]
+---@return { path: string, kind: "lua"|"xml" }[]
 function ForeverCore.files(directory)
-	local files = {}
-	for line in io.lines(directory .. "/ForeverCore.toc") do
-		line = line:gsub("\r$", "")
-		if not (line:match("^%s*$") or line:match("^%s*#")) and line:match("%.lua%s*$") then
-			files[#files + 1] = (line:gsub("\\", "/"))
-		end
-	end
-	return files
+	return Toc.files(directory, "ForeverCore.toc")
 end
 
 -- Every file, or only `names` plus enUS (the phrases every core module reads).
@@ -74,19 +72,30 @@ local function Wanted(names)
 end
 
 -- Load ForeverCore into `env`, each file with its own namespace, and return that namespace. `names` narrows the load to
--- those files (a spec that only exercises one module); with no list every file the TOC names loads.
+-- those files (a spec that only exercises one module); with no list every file the TOC names loads. `templates` is
+-- where the environment keeps the virtual templates a frame is built from by name: each XML entry hands it what it
+-- declares (`{ name, type, inherits }`), so ForeverTrackerInteractiveLineTemplate resolves to the stock line it
+-- inherits. An environment that draws no frames passes none, and its XML entries then declare nothing anyone builds.
 ---@param env table
 ---@param names? string[]
+---@param templates? fun(template: {name: string, type: string, inherits: string?})
 ---@return table
-function ForeverCore.load(env, names)
+function ForeverCore.load(env, names, templates)
 	local directory = ForeverCore.directory()
 	local wanted = Wanted(names)
 	local ns = {}
-	for _, path in ipairs(ForeverCore.files(directory)) do
-		if wanted == nil or wanted[path] then
-			local chunk = assert(loadfile(directory .. "/" .. path), path)
-			setfenv(chunk, env)
-			chunk("ForeverCore", ns)
+	for _, entry in ipairs(ForeverCore.files(directory)) do
+		-- The reader joins `directory` to each TOC line, so this is the name the TOC wrote.
+		if wanted == nil or wanted[entry.path:sub(#directory + 2)] then
+			if entry.kind == "lua" then
+				local chunk = assert(loadfile(entry.path), entry.path)
+				setfenv(chunk, env)
+				chunk("ForeverCore", ns)
+			elseif templates then
+				for _, template in ipairs(Toc.templates(entry.path)) do
+					templates(template)
+				end
+			end
 		end
 	end
 	return ns

@@ -413,6 +413,7 @@ L["TRACKER_DRAG_TOOLTIP"] = "拖曳以移動"
 L["TRACKER_LOADING"] = "正在載入任務資料..."
 L["TRACKER_LOCKED_TOOLTIP"] = "追蹤器已鎖定。關閉「鎖定追蹤器」即可移動它。"
 L["TRACKER_PAUSED"] = "路線已暫停。點擊標題以繼續。" -- mt
+L["TRACKER_SHOW_WHERE"] = "可在 設定 > 附加元件 > Adventure Guide 的 目標追蹤器 中重新開啟。" -- mt
 L["TRACKER_UNATTACHED"] = "無法在目標追蹤器中加入區塊；請使用/agf audit回報。"
 L["TRAINER"] = "拜訪你的職業訓練師"
 L["TRAINER_IN"] = "拜訪%s的職業訓練師"
