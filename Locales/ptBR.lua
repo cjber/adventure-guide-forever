@@ -372,7 +372,10 @@ L["SHORTEST_PATH"] = "Shortest Path"
 L["SHOW_AGAIN"] = "Mostrar de novo: %s"
 L["SHOW_ON_MAP"] = "Ver no mapa"
 L["SHOW_QUEST"] = "Mostrar missão"
-L["SIDEBAR_COLLAPSED"] = "Expanda o registro de missões para abrir o guia."
+L["SIDEBAR_COLLAPSED"] =
+	"O guia abre no registro de missões ao lado do mapa do mundo. Clique na seta no canto inferior direito do mapa para mostrar o registro de missões."
+L["SIDEBAR_MAXIMIZED"] =
+	"O guia abre no registro de missões ao lado do mapa do mundo. Clique no botão ao lado do X de fechar do mapa para reduzi-lo e mostrar o registro de missões."
 L["SKILLUP_FAMILY"] = "O SkillUp Forever planeja o caminho mais barato até o seu próximo grau de profissão."
 L["SKILLUP_FAMILY_MENU"] = "Caminho mais barato até o próximo grau: SkillUp Forever"
 L["SKILLUP_NONE"] = "Nenhuma profissão de produção para evoluir. Aprenda uma com um instrutor e ela aparece aqui."

@@ -50,6 +50,8 @@ do
 	local h = harness.load({ player = { level = 17 } })
 	local before = #h.frames
 	h.ns.OpenPanel()
+	-- The client shows the world map, and with it the guide, a frame after the ask (#664).
+	h.flush()
 	check(h.ns.PanelShown(), "first open: the guide opens on the map")
 	local nonEmpty = NonEmptyGroups(h)
 	check(nonEmpty < #h.ns.Overview.GROUPS, "first open: the fixture has a group with no journey")

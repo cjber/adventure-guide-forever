@@ -373,7 +373,10 @@ L["SHORTEST_PATH"] = "Shortest Path"
 L["SHOW_AGAIN"] = "Volver a mostrar: %s"
 L["SHOW_ON_MAP"] = "Ver en el mapa"
 L["SHOW_QUEST"] = "Mostrar misión"
-L["SIDEBAR_COLLAPSED"] = "Despliega el registro de misiones para abrir la guía."
+L["SIDEBAR_COLLAPSED"] =
+	"La guía se abre en el registro de misiones junto al mapa del mundo. Haz clic en la flecha de la esquina inferior derecha del mapa para mostrar el registro de misiones."
+L["SIDEBAR_MAXIMIZED"] =
+	"La guía se abre en el registro de misiones junto al mapa del mundo. Haz clic en el botón junto a la cruz de cerrar del mapa para reducirlo y mostrar el registro de misiones."
 L["SKILLUP_FAMILY"] = "SkillUp Forever planea la ruta más barata hasta tu siguiente rango de profesión."
 L["SKILLUP_FAMILY_MENU"] = "La ruta más barata a tu siguiente rango: SkillUp Forever"
 L["SKILLUP_NONE"] = "No tienes profesiones de fabricación que subir. Aprende una con un instructor y aparecerá aquí."

@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The minimap button and Alt-G open the guide whenever the quest log is there.** Pressing one with the world map closed opened nothing and printed a line asking you to expand the quest sidebar, which was about to appear anyway: the guide read the map before the game had shown it, and the map shows a frame later. It now waits for the game to show the map and opens on the sidebar you actually have, and reopening the map after closing it refreshes the guide instead of leaving the last page up. The line about the sidebar now appears only when you really collapsed it or maximized the map, and says which button brings the quest log back. Reported on CurseForge by user_dy05dlq98afee0w0 (#664).
+
 ### For addon authors
 
 - **The guide's API is listed with every other Forever addon's.** `AdventureGuideForever.API` now hands itself to `ForeverCore.APIKit.Publish`, so another addon finds it through `ForeverCore.APIKit.Addons()` on ForeverCore 1.3.2 or later, with the same `version` and `minor`. Nothing a caller reads changed, and an older core loads as before.

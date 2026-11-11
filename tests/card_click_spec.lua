@@ -43,7 +43,10 @@ end
 -- ForeverCore.OpenMap cannot turn it.
 do
 	local h = Load()
-	h.G.WorldMapFrame:Show()
+	-- The client's own open, so the map shows with the quest sidebar the guide lives in (#664).
+	h.G.C_Map.OpenWorldMap()
+	h.flush()
+	equal(h.G.WorldMapFrame:IsShown(), true, "nil delegate: the map is already up")
 	h.G.CreateSecureDelegate = nil
 	h.ns.OpenPanel()
 	h.flush()
