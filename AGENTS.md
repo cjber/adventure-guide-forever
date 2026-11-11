@@ -31,7 +31,7 @@ python3 tools/check_api_docs.py # every function Core/API.lua publishes, and its
 
 CI's `package` job builds the zip with the release's packager without uploading (`-d -z`) and runs
 `python3 tools/check_package.py` on its output: every loaded file ships, no development folder does, a licence file and
-THIRD_PARTY.md ship with README's `## Credits` and THIRD_PARTY's `## Ideas and contributors` (WFA-10, WFA-31), and the
+THIRD_PARTY.md ship with README's `## Credits` and THIRD_PARTY's `## Players` (WFA-10, WFA-31), and the
 smoke spec passes on the packaged files.
 
 Every version needs a `CHANGELOG.md` entry (prose, bold-lead bullets) before its `v*` tag: the release publishes
