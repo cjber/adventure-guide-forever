@@ -199,13 +199,22 @@
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
 ---@field guided? string the key of the chosen journey whose route AGF started, while that guidance should run
 ---@field focus? integer the quest AGF selected on walking into its area (Focus.lua), while that selection is still AGF's
----@field guideWatch? AGFGuideWatchState the tracked quests a leading RestedXP guide took over (RestedXPWatch.lua)
+---@field guideWatch? AGFGuideWatchState the tracked quests a leading RestedXP guide or AGF journey took over (QuestWatch.lua)
 
--- What RestedXPWatch.lua keeps on the character while a RestedXP guide leads the tracked quests.
+-- What QuestWatch.lua keeps on the character while a RestedXP guide or an AGF journey leads the tracked quests.
 ---@class AGFGuideWatchState
----@field saved integer[] the player's tracked quests when the guide took over, given back when it stops
----@field added table<integer, true> what this file or the client's auto quest watch tracked for the guide
----@field named table<integer, true> the quests the guide named at the last look
+---@field saved integer[] the player's tracked quests when the leader took over, given back when it stops
+---@field added table<integer, true> what QuestWatch or the client's auto quest watch tracked for the leader
+---@field named table<integer, true> the quests the leader named at the last look
+---@field hidden table<integer, true> the player's own quests the leader is withholding from the tracker
+
+-- The one owner of the tracked quests while a RestedXP guide or an AGF journey leads (Core/QuestWatch.lua).
+---@class AGFQuestWatch
+---@field Sync fun() settle the watches on the leader as it is now; never in combat
+---@field Refresh fun() the hidden count may have moved with a watch the player changed
+---@field Hidden fun(): integer the player's own quests hidden from the tracker while an AGF journey leads
+---@field Source fun(): "rxp"|"journey"|nil which leader is settling the watches
+---@field OnChange fun(fn: fun()) called when the hidden count changes
 
 -- What Focus.Next keeps between looks: the area step 1 was, and the quest AGF selected.
 ---@class AGFFocusState
@@ -763,8 +772,12 @@
 ---@field SETTING_TRACK_ROUTE_TOOLTIP string
 ---@field SETTING_GUIDE_TRACKS string
 ---@field SETTING_GUIDE_TRACKS_TOOLTIP string
----@field SETTING_UNTRACK_OTHERS string
----@field SETTING_UNTRACK_OTHERS_TOOLTIP string
+---@field SETTING_JOURNEY_WATCH string
+---@field SETTING_JOURNEY_WATCH_TOOLTIP string
+---@field TRACKER_HIDDEN_COUNT string
+---@field TRACKER_HIDDEN_TOOLTIP string
+---@field TRACKER_HIDDEN_SHOW_ALL string
+---@field TRACKER_SHOW_ALL string
 ---@field PREVIOUS_PAGE string
 ---@field NEXT_PAGE string
 ---@field JOURNEY_PAGE string
@@ -869,7 +882,7 @@
 ---@field Integrations AGFIntegrations
 ---@field Guidance AGFGuidance
 ---@field Focus AGFFocus
----@field GuideWatch AGFGuideWatch
+---@field QuestWatch AGFQuestWatch
 ---@field Print fun(msg: string)
 ---@field NextCamp fun(step: AGFStep) "Next spot": pass over the spot the area step points at (the one the player is at, inside the area) for this session; the last one starts the round again
 ---@field Readable fun(value: any): any `value`, or nil when the client keeps it secret (Core/Secret.lua)
@@ -898,6 +911,8 @@
 ---@field Skipped fun(): AGFSkipped[] this session's skipped steps in skip order, then the journeys not wanted, by title
 ---@field Resume fun(step: AGFStep): string? the reason saved last session, while the resume line stands for this step
 ---@field InLog fun(step: AGFStep): boolean the step is a quest in the player's log (a turn-in or its objectives)
+---@field LogQuests fun(step: AGFStep): integer[] the step's quests in the log: a town's hand-ins, a turn-in's or area's quests
+---@field RouteQuests fun(route?: AGFRoute): table<integer, true>, integer[] the route's log quests, and their order
 ---@field Menu AGFMenuModule
 ---@field ShowQuest fun(step: AGFStep): boolean open the map on a log step's quest and select it; false for other steps or in combat
 ---@field OpenMapStitch AGFOpenMapModule OpenMap's stitched canvas: where a stop of a neighbouring zone sits on the shown map (Integrations/OpenMap.lua)
@@ -905,7 +920,7 @@
 ---@field TurnedIn fun(questID: integer) QUEST_TURNED_IN: latched so a chosen journey that ends there is complete, then OnTurnIn
 ---@field OnJourneyComplete? fun(next?: string) a turn-in ended the chosen journey, optionally moving on to a next zone; set by Tracker.lua
 ---@field OnTurnIn? fun(questID: integer) QUEST_TURNED_IN: the chapter-end fanfare when the quest ends a proven chain; set by Tracker.lua
----@field TrackRouteQuests fun() track the route's log quests; with untrackOthers, stop tracking the rest
+---@field TrackRouteQuests fun() track the route's log quests
 ---@field DumpLayout fun(root: Frame, describe?: fun(region: Region, entry: AGFDumpEntry)): AGFDumpEntry[]
 ---@field Dump fun() /agf dump: save the layout, route and frames in AdventureGuideForeverDB.dump
 

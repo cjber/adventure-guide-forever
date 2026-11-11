@@ -309,6 +309,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_GUIDE_TRACKS"] = "Nur die Quests des RestedXP-Guides verfolgen" -- mt
 L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
 	"Während Ihr einem RestedXP-Guide folgt, zeigt die Zielverfolgung nur die Quests, die seine aktuellen und laufenden Schritte nennen. Die Quests, die Ihr selbst verfolgt habt, kehren zurück, wenn Ihr ihm nicht mehr folgt." -- mt
+L["SETTING_JOURNEY_WATCH"] = "Nur die Quests der Reise verfolgen" -- mt
+L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
+	"Während eine Reise führt, zeigt die Zielverfolgung nur die Quests, an denen sie arbeitet, und jede andere Quest verlässt sie. Eure eigenen verfolgten Quests bleiben am Charakter und kehren zurück, wenn die Reise nicht mehr führt, Ihr eine andere wählt oder dies ausschaltet." -- mt
 L["SETTING_LOCK_TRACKER"] = "Verfolgung sperren"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] =
 	"Hält die gemeinsame Forever-Verfolgung dort, wo Ihr sie hingelegt habt. Der Griff oben zieht sie nicht mehr."
@@ -350,9 +353,6 @@ L["SETTING_TRACK_ROUTE_TOOLTIP"] =
 L["SETTING_TRAINING_REMINDERS"] = "An Klassenzauber erinnern"
 L["SETTING_TRAINING_REMINDERS_TOOLTIP"] =
 	"Schlägt Besuche beim Klassenlehrer vor und fügt Reisen das Erlernen von Zaubern hinzu. Ihr könnt wählen, welche Zauber Ihr lernt; jeden Zauber zu kaufen ist freiwillig."
-L["SETTING_UNTRACK_OTHERS"] = "Andere Quests nicht mehr verfolgen"
-L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
-	"Derselbe Klick beendet die Verfolgung jeder Quest, die nicht auf der Route liegt. Braucht auch die verfolgten Quests der Route."
 L["SETTING_UPGRADES"] = "Belohnungs-Verbesserungen markieren" -- mt
 L["SETTING_UPGRADES_TOOLTIP"] =
 	"Bietet eine Quest Belohnungen zur Auswahl, markiert ein grüner Pfeil jede, die besser ist als das, was Ihr in diesem Platz tragt: Euer Rüstungstyp, ein Hauptattribut Eurer Klasse und eine höhere Gegenstandsstufe. Es wird nichts für Euch gewählt. Ist Pawn installiert, markiert Pawn sie stattdessen." -- mt
@@ -423,8 +423,12 @@ L["TOWN_PICKUPS"] = "%d annehmen"
 L["TOWN_SKIP_GIVER"] = "Diesen Questgeber überspringen"
 L["TRACKER_DRAG_TITLE"] = "Forever-Verfolgung"
 L["TRACKER_DRAG_TOOLTIP"] = "Ziehen zum Verschieben"
+L["TRACKER_HIDDEN_COUNT"] = "%d verborgen" -- mt
+L["TRACKER_HIDDEN_TOOLTIP"] = "%d Quests sind in der Zielverfolgung verborgen, solange diese Reise führt." -- mt
+L["TRACKER_HIDDEN_SHOW_ALL"] = "Rechtsklick: Alle Quests zeigen." -- mt
 L["TRACKER_LOADING"] = "Questdaten werden geladen..."
 L["TRACKER_LOCKED_TOOLTIP"] = "Die Verfolgung ist gesperrt. Schaltet Verfolgung sperren aus, um sie zu verschieben."
+L["TRACKER_SHOW_ALL"] = "Alle Quests zeigen" -- mt
 L["TRACKER_PAUSED"] = "Route pausiert. Klickt auf den Titel, um fortzufahren." -- mt
 L["TRACKER_SHOW_WHERE"] = "Zum Wiedereinschalten unter Einstellungen > AddOns > Adventure Guide, Questzielverfolgung." -- mt
 L["TRACKER_UNATTACHED"] = "Konnte der Questzielverfolgung keinen Abschnitt hinzufügen; bitte meldet es mit /agf audit."

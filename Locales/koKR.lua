@@ -311,6 +311,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_GUIDE_TRACKS"] = "RestedXP 가이드의 퀘스트만 추적" -- mt
 L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
 	"RestedXP 가이드를 따라가는 동안 목표 추적기에는 현재 단계와 진행 중인 단계가 지정한 퀘스트만 표시됩니다. 직접 추적하던 퀘스트는 가이드를 그만 따라가면 돌아옵니다." -- mt
+L["SETTING_JOURNEY_WATCH"] = "여정의 퀘스트만 추적" -- mt
+L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
+	"여정이 이끄는 동안 목표 추적기는 그 여정이 다루는 퀘스트만 표시하고 나머지 퀘스트는 빠집니다. 직접 추적한 퀘스트는 캐릭터에 남아 있으며 여정이 더 이상 이끌지 않거나 다른 여정을 고르거나 이 설정을 끄면 돌아옵니다." -- mt
 L["SETTING_LOCK_TRACKER"] = "추적기 잠금"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] =
 	"공유 Forever 추적기를 놓은 자리에 유지합니다. 위쪽 손잡이로 더 이상 끌 수 없습니다."
@@ -352,9 +355,6 @@ L["SETTING_TRACK_ROUTE_TOOLTIP"] =
 L["SETTING_TRAINING_REMINDERS"] = "직업 주문 수련 알림"
 L["SETTING_TRAINING_REMINDERS_TOOLTIP"] =
 	"직업 상급자 방문을 제안하고 여정에 주문 수련을 추가합니다. 배울 주문은 직접 고를 수 있으며, 모든 주문을 살 필요는 없습니다."
-L["SETTING_UNTRACK_OTHERS"] = "다른 퀘스트 추적 해제"
-L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
-	"같은 클릭으로 경로에 없는 모든 퀘스트의 추적을 해제합니다. 경로의 퀘스트 추적도 켜야 합니다."
 L["SETTING_UPGRADES"] = "보상 향상 표시" -- mt
 L["SETTING_UPGRADES_TOOLTIP"] =
 	"퀘스트에서 보상을 선택할 수 있으면, 해당 부위에 착용 중인 아이템보다 나은 보상마다 초록색 화살표를 표시합니다: 내 방어구 종류, 직업이 사용하는 주 능력치, 더 높은 아이템 레벨. 대신 선택하지는 않습니다. Pawn이 설치되어 있으면 Pawn이 대신 표시합니다." -- mt
@@ -426,8 +426,13 @@ L["TOWN_PICKUPS"] = "수락 %d"
 L["TOWN_SKIP_GIVER"] = "이 NPC 건너뛰기"
 L["TRACKER_DRAG_TITLE"] = "Forever 추적기"
 L["TRACKER_DRAG_TOOLTIP"] = "끌어서 이동"
+L["TRACKER_HIDDEN_COUNT"] = "%d개 숨김" -- mt
+L["TRACKER_HIDDEN_TOOLTIP"] =
+	"이 여정이 이끄는 동안 %d개의 퀘스트가 추적기에서 숨겨져 있습니다." -- mt
+L["TRACKER_HIDDEN_SHOW_ALL"] = "오른쪽 클릭: 모든 퀘스트 표시." -- mt
 L["TRACKER_LOADING"] = "퀘스트 데이터 불러오는 중..."
 L["TRACKER_LOCKED_TOOLTIP"] = "추적기가 잠겨 있습니다. 추적기 잠금을 끄면 이동할 수 있습니다."
+L["TRACKER_SHOW_ALL"] = "모든 퀘스트 표시" -- mt
 L["TRACKER_PAUSED"] = "경로가 일시 중지되었습니다. 제목을 클릭하면 재개합니다." -- mt
 L["TRACKER_SHOW_WHERE"] = "설정 > 애드온 > Adventure Guide의 목표 추적기에서 다시 켤 수 있습니다." -- mt
 L["TRACKER_UNATTACHED"] =

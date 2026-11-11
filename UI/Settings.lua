@@ -178,17 +178,12 @@ function ns.RegisterSettings()
 					ns.L.SETTING_TRACK_ROUTE,
 					ns.L.SETTING_TRACK_ROUTE_TOOLTIP
 				)
-				local untrack = Checkbox(
+				local journey = Checkbox(
 					subcategory,
-					"untrackOthers",
-					ns.L.SETTING_UNTRACK_OTHERS,
-					ns.L.SETTING_UNTRACK_OTHERS_TOOLTIP
+					"journeyWatch",
+					ns.L.SETTING_JOURNEY_WATCH,
+					ns.L.SETTING_JOURNEY_WATCH_TOOLTIP
 				)
-				untrack:Indent()
-				untrack:AddEvaluateStateCVar("AdventureGuideForever_trackRouteQuests")
-				untrack:AddModifyPredicate(function()
-					return ns.Setting("trackRouteQuests")
-				end)
 				Settings.RegisterInitializer(subcategory, show)
 				if ns.QuestieOptions.Available() then
 					local questie = Checkbox(
@@ -205,7 +200,7 @@ function ns.RegisterSettings()
 					Settings.RegisterInitializer(subcategory, questie)
 				end
 				Settings.RegisterInitializer(subcategory, track)
-				Settings.RegisterInitializer(subcategory, untrack)
+				Settings.RegisterInitializer(subcategory, journey)
 				Settings.RegisterInitializer(
 					subcategory,
 					Checkbox(

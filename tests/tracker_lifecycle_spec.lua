@@ -74,6 +74,12 @@ for _, readyAtLoad in ipairs({ false, true }) do
 		Asides = { OnChange = noop },
 		Moments = { OnChange = noop },
 		OnRouteChange = noop,
+		QuestWatch = {
+			Hidden = function()
+				return 0
+			end,
+			OnChange = noop,
+		},
 	}
 	env.ForeverCore = {
 		TrackerHost = {

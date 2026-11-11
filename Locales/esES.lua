@@ -309,6 +309,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_GUIDE_TRACKS"] = "Seguir solo las misiones de la guía de RestedXP" -- mt
 L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
 	"Mientras sigues una guía de RestedXP, el rastreador de objetivos muestra solo las misiones que nombran sus pasos actuales y en curso. Las misiones que seguías tú vuelven cuando dejas de seguirla." -- mt
+L["SETTING_JOURNEY_WATCH"] = "Seguir solo las misiones del viaje" -- mt
+L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
+	"Mientras un viaje guía, el rastreador de objetivos muestra solo las misiones en las que trabaja y las demás lo abandonan. Tus misiones seguidas se quedan en el personaje y vuelven cuando el viaje deja de guiar, eliges otro o desactivas esto." -- mt
 L["SETTING_LOCK_TRACKER"] = "Bloquear el rastreador"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] =
 	"Mantiene el rastreador compartido Forever donde lo pones. El tirador de arriba ya no lo arrastra."
@@ -350,9 +353,6 @@ L["SETTING_TRACK_ROUTE_TOOLTIP"] =
 L["SETTING_TRAINING_REMINDERS"] = "Recordarme aprender hechizos de clase"
 L["SETTING_TRAINING_REMINDERS_TOOLTIP"] =
 	"Sugiere visitas al instructor de clase y añade el aprendizaje de hechizos a los viajes. Puedes elegir qué hechizos aprender; comprarlos todos es opcional."
-L["SETTING_UNTRACK_OTHERS"] = "Dejar de seguir otras misiones"
-L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
-	"El mismo clic deja de seguir cada misión que no está en la ruta. Necesita también que se sigan las misiones de la ruta."
 L["SETTING_UPGRADES"] = "Marcar mejoras de recompensa" -- mt
 L["SETTING_UPGRADES_TOOLTIP"] =
 	"Cuando una misión ofrece recompensas a elegir, una flecha verde marca cada una que supera lo que llevas en esa ranura: tu tipo de armadura, un atributo principal que usa tu clase y un nivel de objeto mayor. No se elige nada por ti. Con Pawn instalado, Pawn las marca en su lugar." -- mt
@@ -422,8 +422,12 @@ L["TOWN_PICKUPS"] = "Aceptar %d"
 L["TOWN_SKIP_GIVER"] = "Saltar este asignador"
 L["TRACKER_DRAG_TITLE"] = "Rastreador Forever"
 L["TRACKER_DRAG_TOOLTIP"] = "Arrastra para mover"
+L["TRACKER_HIDDEN_COUNT"] = "%d ocultas" -- mt
+L["TRACKER_HIDDEN_TOOLTIP"] = "%d misiones están ocultas del rastreador mientras este viaje guía." -- mt
+L["TRACKER_HIDDEN_SHOW_ALL"] = "Clic derecho: Mostrar todas las misiones." -- mt
 L["TRACKER_LOADING"] = "Cargando datos de misiones..."
 L["TRACKER_LOCKED_TOOLTIP"] = "El rastreador está bloqueado. Desactiva Bloquear el rastreador para moverlo."
+L["TRACKER_SHOW_ALL"] = "Mostrar todas las misiones" -- mt
 L["TRACKER_PAUSED"] = "Ruta en pausa. Haz clic en el título para reanudarla." -- mt
 L["TRACKER_SHOW_WHERE"] = "Vuelve a activarlo en Opciones > AddOns > Adventure Guide, en Rastreador de objetivos." -- mt
 L["TRACKER_UNATTACHED"] = "no se pudo añadir una sección al rastreador de objetivos; infórmalo con /agf audit."

@@ -39,12 +39,13 @@ local DEFAULTS = {
 	autoNextZone = true,
 	-- Highlight the NPC a talk step names, with nameplate arrows and a target button (#401).
 	npcHighlight = true,
-	-- Opt-in: the route never takes over the player's tracked quests unasked. A saved true stays true.
+	-- Opt-in: a title click adds the route's own quests to the tracker. A saved true stays true.
 	trackRouteQuests = false,
-	-- Opt-in: it throws away the player's own choice of tracked quests.
-	untrackOthers = false,
+	-- While a journey leads, the tracker lists only its quests; the player's own list comes back when it stops
+	-- (QuestWatch.lua).
+	journeyWatch = true,
 	-- While a RestedXP guide leads, the tracker lists only the quests its steps name; the player's own list comes back
-	-- when it stops (RestedXPWatch.lua).
+	-- when it stops (also QuestWatch.lua).
 	guideTracksQuests = true,
 	-- Hint strength, Guide (false) or Wanderer (true), which gates every waypoint, route and map mark.
 	wanderer = false,
@@ -144,6 +145,14 @@ local function LoadDB()
 		loaded.minimapButtonHidden = true
 	end
 	loaded.microButton, loaded.microButtonPlacement, loaded.replaceMicroButton = nil, nil, nil
+	-- "Stop tracking other quests" became "Track only the journey's quests", on unless the player turns it off. A
+	-- saved true carries over; a saved false leaves the new default on.
+	if loaded.untrackOthers ~= nil then
+		if loaded.untrackOthers == true and loaded.journeyWatch == nil then
+			loaded.journeyWatch = true
+		end
+		loaded.untrackOthers = nil
+	end
 	for key, value in pairs(DEFAULTS) do
 		if type(loaded[key]) ~= type(value) then
 			loaded[key] = value
@@ -352,8 +361,8 @@ function ns.SetSetting(key, value)
 		ns.GuideSetup.Hide()
 		ns.RestedXP.Refresh()
 	end
-	if key == "guideTracksQuests" then
-		ns.GuideWatch.Sync()
+	if key == "guideTracksQuests" or key == "journeyWatch" then
+		ns.QuestWatch.Sync()
 	end
 	if key == "polestarAside" then
 		ns.Polestar.Check()
@@ -543,7 +552,7 @@ end
 -- "dungeon" step); a town's pickups never are.
 ---@param step AGFStep
 ---@return integer[]
-local function LogQuests(step)
+function ns.LogQuests(step)
 	local quests = (step.kind == "town" and step.handins)
 		or ((step.kind == "turnin" or step.kind == "area" or step.kind == "dungeon") and step.quests)
 		or {}
@@ -558,10 +567,28 @@ local function LogQuests(step)
 	return carried
 end
 
+-- The route's quests in the log, deduplicated in route order: what a title click tracks and what QuestWatch keeps
+-- tracked while the journey leads.
+---@param route? AGFRoute defaults to ns.Route()
+---@return table<integer, true> onRoute
+---@return integer[] order
+function ns.RouteQuests(route)
+	local onRoute, order = {}, {}
+	for _, step in ipairs((route or ns.Route()).steps) do
+		for _, questID in ipairs(ns.LogQuests(step)) do
+			if not onRoute[questID] then
+				onRoute[questID] = true
+				order[#order + 1] = questID
+			end
+		end
+	end
+	return onRoute, order
+end
+
 ---@param step AGFStep
 ---@return boolean
 function ns.InLog(step)
-	return #LogQuests(step) > 0
+	return #ns.LogQuests(step) > 0
 end
 
 -- A quest in the log opens the world map on the quest's zone and becomes the selected quest (docs/design.md §2.5);
@@ -574,37 +601,22 @@ function ns.ShowQuest(step)
 	if not ns.InLog(step) or InCombatLockdown() then
 		return false
 	end
-	local questID = LogQuests(step)[1]
+	local questID = ns.LogQuests(step)[1]
 	C_QuestLog.SetSelectedQuest(questID)
 	ForeverCore.OpenMap(GetQuestUiMapID(questID))
 	return true
 end
 
 -- The route's quests in the log join the objective tracker; the client refuses any past its watch limit, and sorts
--- the watches itself (by distance, on each zone change), so no order is kept. With untrackOthers, every other
--- tracked quest leaves first, which also makes room.
+-- the watches itself (by distance, on each zone change), so no order is kept. QuestWatch keeps the player's others
+-- apart while a journey leads.
 function ns.TrackRouteQuests()
-	-- A RestedXP guide that leads already tracks its own quests (RestedXPWatch.lua).
-	if ns.Prefs().guideWatch then
+	-- A leading RestedXP guide already tracks exactly the quests its steps name (QuestWatch.lua); adding every quest
+	-- on its route would include previews the guide has not reached.
+	if ns.QuestWatch.Source() == "rxp" then
 		return
 	end
-	local onRoute, order = {}, {}
-	for _, step in ipairs(ns.Route().steps) do
-		for _, questID in ipairs(LogQuests(step)) do
-			if not onRoute[questID] then
-				onRoute[questID] = true
-				order[#order + 1] = questID
-			end
-		end
-	end
-	if ns.Setting("untrackOthers") then
-		for index = C_QuestLog.GetNumQuestWatches(), 1, -1 do
-			local questID = C_QuestLog.GetQuestIDForQuestWatchIndex(index)
-			if questID and not onRoute[questID] then
-				C_QuestLog.RemoveQuestWatch(questID)
-			end
-		end
-	end
+	local _, order = ns.RouteQuests()
 	for _, questID in ipairs(order) do
 		C_QuestLog.AddQuestWatch(questID)
 	end
