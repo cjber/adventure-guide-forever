@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The guide tab and header show the compass again.** The map scroll with a red cross no longer replaces it.
+
 ## [1.7.2] - 2026-11-11
 
 <!-- forever-core-sync -->
