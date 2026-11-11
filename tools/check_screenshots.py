@@ -54,7 +54,7 @@ IMAGES = {
     "guide_setup.png": ("guide_setup",),
     "map.png": ("map", "panel.map"),
     "tooltip.png": ("tooltip", "panel.map"),
-    "tracker.png": ("tracker",),
+    "tracker.png": ("tracker_watch",),
     "menu.png": ("menu", "tracker"),
     "loot.png": ("loot_menu",),
     "story_complete.png": ("story_complete",),
