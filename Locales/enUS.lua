@@ -206,6 +206,7 @@ ns.L = {
 	GO = "Go",
 	REPLACES_JOURNEY = "Replaces your current journey.",
 	STOP = "Stop",
+	END_JOURNEY = "End journey",
 	SHOW_QUEST = "Show quest",
 	SKIP = "Skip for now",
 	SKIPPED = "Skipped (%d)",
@@ -214,6 +215,8 @@ ns.L = {
 	NOT_INTERESTED = "Not interested",
 	RIGHT_CLICK_NOT_INTERESTED = "Right-click if you're not interested",
 	CHOOSE_JOURNEY = "Choose another journey",
+	-- The map's quest sidebar is collapsed or the map is maximized, so the guide cannot be shown.
+	SIDEBAR_COLLAPSED = "Expand the quest sidebar to open the guide.",
 	-- A step's quest ruled out on this character (docs/design.md §2.18): it stays in the log, off every route.
 	NOT_THIS_QUEST = "Not this quest",
 	-- A quest the route leaves out joins it with a shift-click, in the search or on the map, and leaves the same way.

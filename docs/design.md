@@ -60,7 +60,10 @@ abandons quests.
   the player is at (the nearest edge, since an area's spots are close and often overlap). Model.Here doesn't count
   standing at a spot passed over as standing in the area (with a switching margin), so the arrow leads on, and at a
   spot not passed over it is theirs; walking between spots rebuilds when that changes. Passing over the last spot
-  starts the round again from it.
+  starts the round again from it. A step's menu in the tracker opens from its title's right-click as from its row in
+  the guide, and offers End journey whenever a journey is chosen, paused or not: it clears the choice and the route
+  AGF started for it. Choose another journey opens the guide, and when the map's quest sidebar is collapsed says to
+  expand it rather than doing nothing.
 - **2.9 Tooltips.** Explain visits and quest difficulty. Town checklists tick completed givers;
   repeated visits share a map ring.
 - **2.10 Lifecycle.** Keep the chosen journey through rebuilds, travel and reloads. Resume paused

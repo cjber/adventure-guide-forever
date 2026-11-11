@@ -115,8 +115,10 @@ function Menu.Step(root, step)
 			end)
 		end
 	end
-	if ns.Guidance.Owns() then
-		root:CreateButton(L.STOP, ns.Stop)
+	-- One clear exit while a journey is chosen, paused or not: ns.Stop drops the choice and whatever route AGF started
+	-- for it, so a journey left paused by a cleared, replaced or refused route can be ended from here too (#641).
+	if ns.Prefs().journey then
+		root:CreateButton(L.END_JOURNEY, ns.Stop)
 	end
 	-- The quest's map only opens out of combat, so in combat the entry is left out rather than doing nothing.
 	-- MenuUtil runs a responder inside its securecall, where the restricted C_Map.OpenWorldMap is refused (#411); the
