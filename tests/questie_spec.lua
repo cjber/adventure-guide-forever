@@ -378,6 +378,30 @@ equal(linked.ns.Data.quests[900012].pre[1], 900001, "a preQuestGroup stays the a
 equal(linked.ns.Data.quests[900012].preAny, nil, "a preQuestGroup alone leaves no any-of set")
 equal(linked.ns.Data.quests[900013].pre[1], 900002, "both fields: the group is the all-of set")
 equal(linked.ns.Data.quests[900013].preAny[1], 900001, "both fields: the single is the any-of set")
+-- A correction to the exclusive or breadcrumb links alone also moves a record off Questie's live policy over the
+-- uncorrected record, so the model judges the corrected link instead of Questie judging the record it does not have.
+local corrected = Fake()
+corrected.quests[469] = {
+	name = "Daily Delivery",
+	questLevel = 21,
+	requiredLevel = 18,
+	startedBy = { { 197 } },
+	finishedBy = { { 197 } },
+	zoneOrSort = 12,
+}
+corrected.quests[94792] = {
+	name = "Taming the Beast",
+	questLevel = 10,
+	requiredLevel = 10,
+	startedBy = { { 197 } },
+	zoneOrSort = 12,
+}
+local fixed = harness.load({ questiedb = corrected, setup = Policy })
+equal(fixed.ns.QuestieStatus.state, "questie", "corrected links: build ready")
+equal(fixed.ns.Data.quests[469].provider, false, "a breadcrumb correction leaves Questie's policy")
+equal(fixed.ns.Data.quests[469].breadcrumb, 484, "the corrected breadcrumb is the target quest")
+equal(fixed.ns.Data.quests[94792].provider, false, "an exclusive correction leaves Questie's policy")
+equal(fixed.ns.Data.quests[900001].provider, true, "an uncorrected record stays on Questie's policy")
 local unsupported = Fake()
 unsupported.quests[900001].objectives = { nil, nil, nil, { { 72, 3000 } } }
 local unknown =

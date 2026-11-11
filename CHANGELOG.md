@@ -15,6 +15,18 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [1.6.5] - 2026-11-11
 
 - **Tells you which addon to update.** If another Forever addon you have installed is older than this one and stops it starting, the message now names that addon, so you know exactly what to update.
+- **The guide takes you to Encroaching Gnolls before Show of Force.** In Redridge Mountains it sent the player to
+  Deputy Feldon for Show of Force while Encroaching Gnolls, the quest that sends you to him, was still open, and he
+  did not offer it until that quest was turned in. The guide now holds Show of Force until Encroaching Gnolls is
+  done (Discord, jixxor., #642).
+- **The guide stops offering Daily Delivery once Young Crocolisk Skins is under way.** Einar Stonegrip's errand in
+  the Wetlands leads to James Halloran, and the game stops offering it as soon as his Young Crocolisk Skins is taken
+  or done. QuestieDB carried no link between them, and the guide now follows the one it supplies itself, so it no
+  longer sends you to Einar for a quest he has already handed on (#629).
+- **The hunter starting chains close each other as they should.** The Goldshire Taming the Beast chain and the Dwarf,
+  Night Elf and Skyborne first quests carry no exclusive links in QuestieDB, and the guide's own correction was being
+  skipped for any quest Questie still judged available, so it could offer Goldshire to a hunter already on another
+  race's chain. A corrected link now decides availability, as intended when the correction was added (#491, #629).
 
 ## [1.6.4] - 2026-11-11
 

@@ -12,9 +12,9 @@ card | zone:1436 | Westfall story | Chapter 1 of 3 | 5 quests will soon turn gre
   step 10 | area:151:4 | Complete objectives · Poor Old Blanchy | 1436 0.5740,0.1730 | after you pick it up | 95 yd | 151/4
 card | carry | Clean up my log | 1 ready to hand in, 3 in progress | - | map 1433
   step 1 | turnin:65 | Turn in: The Defias Brotherhood | 1433 0.2139,0.4535 | ready to hand in
-card | zone:1433 | Head to Redridge Mountains | 9 quests near your level | - | map 1433
+card | zone:1433 | Head to Redridge Mountains | 8 quests near your level | - | map 1433
   step 1 | town:1433:1002 | Pick up: Encroaching Gnolls | 1433 0.1037,0.7126 | near your level
-  step 2 | town:1433:69 | Visit Lakeshire: Pick up 8 | 1433 0.1759,0.4384 | 8 to pick up
+  step 2 | town:1433:69 | Visit Lakeshire: Pick up 7 | 1433 0.1759,0.4384 | 7 to pick up
 card | zone:1432 | Head to Loch Modan | 15 quests near your level | 2 quests will soon turn grey | map 1432
   step 1 | town:1432:923 | Pick up: Banner of the Fallen | 1432 0.3178,0.8632 | near your level
   step 2 | town:1432:924 | Visit Valley of Kings: Pick up 2 | 1432 0.2207,0.7313 | 2 to pick up
