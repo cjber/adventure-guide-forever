@@ -1291,7 +1291,9 @@ end)
 
 -- After an update, one chat line says what changed. Never on a first install (no version seen yet, which is also
 -- every login on a client that doesn't load saved variables), nor in a dev checkout, whose TOC version the packager
--- hasn't filled in. `lastVersion` is a record, not a setting, so it has no default.
+-- hasn't filled in. A maintenance release (a core sync) has no headline in CHANGELOG.md, so its version is not
+-- ns.WHATS_NEW_VERSION: it says nothing new but still remembers the version. `lastVersion` is a record, not a
+-- setting, so it has no default.
 function ns.WhatsNew()
 	local version = C_AddOns.GetAddOnMetadata(addonName, "Version")
 	if not db or type(version) ~= "string" or version == "" or version:sub(1, 1) == "@" then
@@ -1299,7 +1301,7 @@ function ns.WhatsNew()
 	end
 	local seen = db.lastVersion
 	db.lastVersion = version
-	if type(seen) == "string" and seen ~= version and ns.Setting("whatsNew") then
+	if type(seen) == "string" and seen ~= version and ns.Setting("whatsNew") and version == ns.WHATS_NEW_VERSION then
 		ns.Print(L.UPDATED_TO:format(version, L.WHATS_NEW))
 	end
 end

@@ -4,6 +4,9 @@ if GetLocale() ~= "zhTW" then
 	return
 end
 local L = ns.L
+L["%s could not start. Reinstall %s to fix this."] = "%s 無法啟動。請重新安裝 %s 以解決此問題。" -- mt
+L["%s: %s are out of date. Update them to fix this."] = "%s：%s 已過期。請更新它們以解決此問題。" -- mt
+L["%s: %s is out of date. Update it to fix this."] = "%s：%s 已過期。請更新它以解決此問題。" -- mt
 L["AFTER_PICK_UP"] = "接受任務後"
 L["ALL_SUGGESTIONS"] = "所有建議"
 L["AUDIT_BUILD"] = "資料版本%s，用戶端版本%s.%s"
@@ -443,7 +446,7 @@ L["TWEAKS_MISSING"] = "安裝Tweaks Forever以尋找地城入口。"
 L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以尋找地城入口。"
 L["UNLISTED"] = "這片土地有指南尚不知道的故事；請留意任務給予者頭上的「!」。"
 L["UPDATED_TO"] = "已更新到%s。%s"
-L["WHATS_NEW"] = "更新後可以正常使用了。" -- mt
+L["WHATS_NEW"] = "告訴你該更新哪個插件。" -- mt
 L["WHY_ALLIANCE"] = "僅限聯盟"
 L["WHY_BREADCRUMB"] = "僅在你接受%s之前"
 L["WHY_CHOSE"] = "你改選了%s"

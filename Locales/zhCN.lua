@@ -4,6 +4,9 @@ if GetLocale() ~= "zhCN" then
 	return
 end
 local L = ns.L
+L["%s could not start. Reinstall %s to fix this."] = "%s 无法启动。请重新安装 %s 以解决此问题。" -- mt
+L["%s: %s are out of date. Update them to fix this."] = "%s：%s 已过期。请更新它们以解决此问题。" -- mt
+L["%s: %s is out of date. Update it to fix this."] = "%s：%s 已过期。请更新它以解决此问题。" -- mt
 L["AFTER_PICK_UP"] = "接受任务后"
 L["ALL_SUGGESTIONS"] = "所有建议"
 L["AUDIT_BUILD"] = "数据版本%s，客户端版本%s.%s"
@@ -443,7 +446,7 @@ L["TWEAKS_MISSING"] = "安装Tweaks Forever以寻找地下城入口。"
 L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以寻找地下城入口。"
 L["UNLISTED"] = "这片土地有指南尚不知道的故事；请留意任务NPC头上的“!”。"
 L["UPDATED_TO"] = "已更新到%s。%s"
-L["WHATS_NEW"] = "更新后可以正常使用了。" -- mt
+L["WHATS_NEW"] = "告诉你该更新哪个插件。" -- mt
 L["WHY_ALLIANCE"] = "仅限联盟"
 L["WHY_BREADCRUMB"] = "仅在你接受%s之前"
 L["WHY_CHOSE"] = "你改选了%s"

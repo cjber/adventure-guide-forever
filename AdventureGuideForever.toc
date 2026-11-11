@@ -1,5 +1,6 @@
 ## Interface: 16001
 ## Dependencies: ForeverCore
+## X-Forever-Core: v1.5.0
 ## Title: Adventure Guide Forever - story levelling and quest routes
 ## Notes: Zone stories as chapters, journeys you pick on the map, and a route walked to each hand-in.
 ## Author: cjber
@@ -17,6 +18,7 @@
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
 ## OptionalDeps: AtlasLootClassic, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever, RXPGuides, Polestar
 
+Core\ForeverRequire.lua
 Core\Require.lua
 Locales\enUS.lua
 Locales\deDE.lua

@@ -13,7 +13,7 @@ from pathlib import Path
 
 from gen_quests import lua
 from lint_copy import ns_l_entries, split, unquote
-from lint_multivalue import tokenize
+from lint_multivalue import Token, tokenize
 
 ROOT = Path(__file__).resolve().parent.parent
 STRINGS = ROOT / "Locales" / "enUS.lua"
@@ -32,13 +32,31 @@ local L = ns.L
 KEYWORD = "@" + "localization"
 
 
-def phrases(source: str) -> dict[str, str]:
-    """KEY -> English line for each ns.L entry made only of string literals ("a" .. "b" joined)."""
+def assigned(tokens: list[Token]) -> dict[str, str]:
+    """KEY -> English line for each `ns.L["key"] = "line"` after the table, where a shared file reads ns.L by phrase."""
     found = {}
-    for key, tokens in ns_l_entries(tokenize(source)[0]):
-        value = split(tokens, "..")
-        if all(len(part) == 1 and part[0].kind == "string" for part in value):
-            found[key.text] = "".join(unquote(part[0].text) for part in value)
+    texts = [token.text for token in tokens]
+    for index in range(len(tokens) - 7):
+        if (
+            texts[index : index + 4] == ["ns", ".", "L", "["]
+            and tokens[index + 4].kind == "string"
+            and texts[index + 5 : index + 7] == ["]", "="]
+            and tokens[index + 7].kind == "string"
+        ):
+            found[unquote(tokens[index + 4].text)] = unquote(tokens[index + 7].text)
+    return found
+
+
+def phrases(source: str) -> dict[str, str]:
+    """KEY -> English line for each ns.L entry made only of string literals ("a" .. "b" joined), plus each phrase
+    assigned after the table, which a shared file reads by the phrase itself."""
+    tokens = tokenize(source)[0]
+    found = {}
+    for key, value in ns_l_entries(tokens):
+        parts = split(value, "..")
+        if all(len(part) == 1 and part[0].kind == "string" for part in parts):
+            found[key.text] = "".join(unquote(part[0].text) for part in parts)
+    found.update(assigned(tokens))
     return found
 
 

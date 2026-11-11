@@ -17,7 +17,7 @@ local function Read(path)
 	return text
 end
 
-local function Load(chunks, locale)
+local function LoadAll(chunks, locale)
 	local ns = {}
 	for _, chunk in ipairs(chunks) do
 		local run = type(chunk) == "string" and assert(loadstring(chunk)) or chunk
@@ -31,7 +31,11 @@ local function Load(chunks, locale)
 		)
 		run("AdventureGuideForever", ns)
 	end
-	return ns.L
+	return ns
+end
+
+local function Load(chunks, locale)
+	return LoadAll(chunks, locale).L
 end
 
 local enUS = assert(loadfile("Locales/enUS.lua"))
@@ -46,7 +50,8 @@ equal(Load({ enUS, french }, "deDE").GO, "Go", "another locale ignores the file"
 equal(Load({ enUS, french }, "enUS").GO, "Go", "English ignores it too")
 
 -- The template holds every English line as it is, bar the GlobalStrings the client translates itself.
-local english = Load({ enUS }, "enUS")
+local englishNS = LoadAll({ enUS }, "enUS")
+local english = englishNS.L
 local ns = { L = {} }
 setfenv(assert(loadstring(template)), {
 	GetLocale = function()
@@ -153,24 +158,52 @@ for line in io.lines("AdventureGuideForever.toc") do
 end
 equal(translated > 0, true, "the TOC loads the translations")
 
--- WHATS_NEW is the newest release's news: the first headline of CHANGELOG.md's top versioned entry, so a release that
--- forgets to rewrite it fails here instead of announcing the last release's features. Comment lines (the discord-image
--- marker) may sit between the heading and its first bullet, and an entry with no bullet fails rather than matching an
--- older one (#570).
-local newest
-local inNewest = false
-for line in Read("CHANGELOG.md"):gmatch("[^\n]+") do
-	if line:match("^## %[?%d+%.%d+%.%d+%]? %- ") then
-		if inNewest then
-			break
+-- WHATS_NEW is the newest release's news: the first headline of the newest versioned entry that has a bold lead, so a
+-- maintenance entry (a core sync) above it does not change it and a release that forgets to rewrite it fails here
+-- instead of announcing an older release's features. A maintenance release itself ships WHATS_NEW empty: the game
+-- prints nothing new but still remembers the version. Comment lines (the discord-image marker) may sit between the
+-- heading and its first bullet, and an entry with no bullet fails rather than matching an older one (#570).
+local function News(text)
+	local newest, newestVersion, topHasHeadline, releases = nil, nil, false, 0
+	local version, inside = nil, false
+	for line in text:gmatch("[^\n]+") do
+		local heading = line:match("^## %[?(%d+%.%d+%.%d+)%]? %- ")
+		if heading then
+			version, inside, releases = heading, true, releases + 1
+		elseif line:match("^## ") then
+			inside = false
+		elseif inside and line:find("^%- %*%*") then
+			if newest == nil then
+				newest, newestVersion = line:match("^%- %*%*(.-)%.?%*%*"), version
+			end
+			if releases == 1 then
+				topHasHeadline = true
+			end
 		end
-		inNewest = true
-	elseif inNewest and line:find("^%- %*%*") then
-		newest = line:match("^%- %*%*(.-)%.?%*%*")
-		break
 	end
+	return newest, newestVersion, topHasHeadline
 end
-assert(newest, "CHANGELOG.md's newest versioned entry has no bullet")
+
+local newest, newestVersion = News(Read("CHANGELOG.md"))
+assert(newest, "CHANGELOG.md has no versioned entry with a bold lead")
 equal(english.WHATS_NEW:sub(1, #newest), newest, "WHATS_NEW opens with the newest release's headline")
+equal(englishNS.WHATS_NEW_VERSION, newestVersion, "WHATS_NEW_VERSION is that headline's release")
+
+-- A core sync's maintenance entry has no bold lead, so the headline above it is still the one a player sees.
+local maintenance = table.concat({
+	"## [9.9.9] - 2026-11-12",
+	"",
+	"<!-- forever-core-sync -->",
+	"",
+	"- Ships with the same shared code as your other Forever addons, so they keep working together.",
+	"",
+	"## [9.9.8] - 2026-11-11",
+	"",
+	"- **A real headline.** What it says.",
+}, "\n")
+local maintenanceHeadline, maintenanceVersion, maintenanceTop = News(maintenance)
+equal(maintenanceHeadline, "A real headline", "a maintenance entry on top is skipped for the headline")
+equal(maintenanceVersion, "9.9.8", "a maintenance entry on top is skipped for the version")
+equal(maintenanceTop, false, "the maintenance entry has no headline of its own")
 
 print(("locales_spec: %d checks passed"):format(checks))

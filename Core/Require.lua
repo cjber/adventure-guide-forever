@@ -5,18 +5,18 @@ local addonName, ns = ...
 ns.Icon = C_AddOns.GetAddOnMetadata(addonName, "X-Forever-Icon")
 
 -- The game refuses to load this addon when ForeverCore is absent (## Dependencies), but an older ForeverCore still
--- loads. Its API version, the shared API kit and the tracker section API say whether it has everything this addon
--- calls, so an out-of-date one stops the addon's own files here with one line on screen, never a chat message.
-if
-	ForeverCore == nil
-	or (ForeverCore.API or 0) < 1
-	or ForeverCore.APIKit == nil
-	or ForeverCore.TrackerSection == nil
-	or ForeverCore.TrackerLine == nil
-then
-	ns.broken = true
-	local errors = rawget(_G, "UIErrorsFrame")
-	if errors then
-		errors:AddMessage("Adventure Guide Forever needs ForeverCore, which is missing or too old.", 1, 0.1, 0.1)
-	end
-end
+-- loads. API 1 has the tracker host, the family suggestions, the map, settings and context menu openers, the
+-- leaderboards, peer stats and the report window, all of which this addon calls. The shared API kit and the tracker
+-- section and line plumbing arrived after it, so a core missing any of those members is older than this addon and the
+-- shared warning (Core/ForeverRequire.lua) names the addon whose bundled core to update. Never a version comparison.
+local ready = ForeverCore ~= nil
+	and type(ForeverCore.APIKit) == "table"
+	and type(ForeverCore.APIKit.Hub) == "function"
+	and type(ForeverCore.APIKit.NotReady) == "function"
+	and type(ForeverCore.TrackerSection) == "table"
+	and type(ForeverCore.TrackerSection.Create) == "function"
+	and type(ForeverCore.TrackerSection.Room) == "function"
+	and type(ForeverCore.TrackerLine) == "table"
+	and type(ForeverCore.TrackerLine.SetHeaderTooltip) == "function"
+
+ns.ForeverRequire(ready)
