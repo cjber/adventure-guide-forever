@@ -374,7 +374,10 @@ L["SHORTEST_PATH"] = "Shortest Path"
 L["SHOW_AGAIN"] = "Wieder zeigen: %s"
 L["SHOW_ON_MAP"] = "Auf Karte zeigen"
 L["SHOW_QUEST"] = "Quest anzeigen"
-L["SIDEBAR_COLLAPSED"] = "Questlog einblenden, um den Führer zu öffnen."
+L["SIDEBAR_COLLAPSED"] =
+	"Der Führer öffnet sich im Questlog neben der Weltkarte. Klickt auf den Pfeil unten rechts auf der Karte, um den Questlog einzublenden."
+L["SIDEBAR_MAXIMIZED"] =
+	"Der Führer öffnet sich im Questlog neben der Weltkarte. Klickt auf die Schaltfläche neben dem Schließen-Kreuz der Karte, um sie zu verkleinern und den Questlog einzublenden."
 L["SKILLUP_FAMILY"] = "SkillUp Forever plant den günstigsten Weg zu Eurem nächsten Berufsrang."
 L["SKILLUP_FAMILY_MENU"] = "Günstigster Weg zum nächsten Rang: SkillUp Forever"
 L["SKILLUP_NONE"] = "Keine Herstellungsberufe zu verbessern. Erlernt einen bei einem Lehrer, dann erscheint er hier."

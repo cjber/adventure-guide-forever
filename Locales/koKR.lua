@@ -376,7 +376,10 @@ L["SHORTEST_PATH"] = "Shortest Path"
 L["SHOW_AGAIN"] = "다시 표시: %s"
 L["SHOW_ON_MAP"] = "지도에 표시"
 L["SHOW_QUEST"] = "퀘스트 보기"
-L["SIDEBAR_COLLAPSED"] = "퀘스트 로그를 펼치면 안내서를 열 수 있습니다."
+L["SIDEBAR_COLLAPSED"] =
+	"안내서는 세계 지도 옆의 퀘스트 로그에서 열립니다. 지도 오른쪽 아래의 화살표를 눌러 퀘스트 로그를 표시하세요."
+L["SIDEBAR_MAXIMIZED"] =
+	"안내서는 세계 지도 옆의 퀘스트 로그에서 열립니다. 지도 닫기 표시 옆의 버튼을 눌러 지도를 줄이고 퀘스트 로그를 표시하세요."
 L["SKILLUP_FAMILY"] = "SkillUp Forever는 다음 전문 기술 등급까지 가장 저렴한 경로를 계획합니다."
 L["SKILLUP_FAMILY_MENU"] = "다음 등급까지 가장 저렴한 경로: SkillUp Forever"
 L["SKILLUP_NONE"] =

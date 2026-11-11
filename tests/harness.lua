@@ -1922,7 +1922,7 @@ function harness.load(options)
 	end
 	-- The client's console variables (h.cvars, from options.cvars); SetCVar fires CVAR_UPDATE as the client does.
 	-- Forever's ActionButtonUseKeyDown is 1 by default, as on the client the guide runs against.
-	h.cvars = { questPOI = "1", ActionButtonUseKeyDown = "1" }
+	h.cvars = { questPOI = "1", ActionButtonUseKeyDown = "1", questLogOpen = "1", miniWorldMap = "1" }
 	for key, value in pairs(options.cvars or {}) do
 		h.cvars[key] = value
 	end
@@ -2736,6 +2736,10 @@ function harness.load(options)
 		end,
 	}
 	G.GetCVarBool = function(name)
+		local value = h.cvars[name]
+		if value ~= nil then
+			return value == "1" or value == 1 or value == true
+		end
 		return name == "nameplateShowFriends" and h.nameplateShowFriends == true
 	end
 	function G.GameTooltip:GetUnit()
@@ -3054,6 +3058,14 @@ function harness.load(options)
 	function map:GetMapID()
 		return self.mapID
 	end
+	-- WorldMapMixin:IsMaximized (Blizzard_WorldMap.lua:138): the maximized map has no quest sidebar and no toggle.
+	map.maximized = not G.GetCVarBool("miniWorldMap")
+	function map:IsMaximized()
+		return self.maximized == true
+	end
+	function map:IsMinimized()
+		return self.maximized ~= true
+	end
 	function map:GetCanvas()
 		return self.ScrollContainer
 	end
@@ -3145,11 +3157,35 @@ function harness.load(options)
 	end
 	-- The client's own opener: WORLD_MAP_OPEN, which Blizzard_WorldMap.lua:198 turns into its own OpenWorldMap(mapID)
 	-- from Blizzard's code, so the map fields stay secure.
-	G.C_Map.OpenWorldMap = function(mapID)
+	-- WorldMapMixin:OnShow (Blizzard_WorldMap.lua:377): the first show takes the map's display state from the
+	-- client's cvars, so the quest sidebar follows questLogOpen and the window follows miniWorldMap; a later show
+	-- keeps the sidebar the player left it with, as the client does. The client fires WorldMapOnShow at the end.
+	local mapStateSet = false
+	local function ClientShowsMap(mapID)
+		if map:IsShown() then
+			-- A map already on screen is only turned: ShowUIPanel returns early and OnShow never runs.
+			if mapID then
+				map:SetMapID(mapID)
+			end
+			return
+		end
+		map.maximized = not G.GetCVarBool("miniWorldMap")
 		map:Show()
 		if mapID then
 			map:SetMapID(mapID)
 		end
+		if not mapStateSet then
+			mapStateSet = true
+			map:SetQuestLogPanelShown(map:IsMinimized() and G.GetCVarBool("questLogOpen"))
+		end
+		G.EventRegistry:TriggerEvent("WorldMapOnShow")
+	end
+	-- C_Map.OpenWorldMap posts the client's WORLD_MAP_OPEN, so the map and the quest sidebar inside it show on a
+	-- later frame, never before the call returns (#664). A spec advances with h.flush().
+	G.C_Map.OpenWorldMap = function(mapID)
+		G.C_Timer.After(0, function()
+			ClientShowsMap(mapID)
+		end)
 	end
 
 	-- The quest log: every write to displayMode is counted and raises, since AGF must never write it.
@@ -3179,6 +3215,9 @@ function harness.load(options)
 	function map:SetQuestLogPanelShown(shown)
 		self.QuestLog:SetShown(shown)
 	end
+	-- WorldMapMixin:AttachQuestLog (Blizzard_WorldMap.lua:1287): the quest log is hidden until the map's display
+	-- state shows it, so a sidebar nobody has shown yet is not up when the guide first reads it.
+	questMap:Hide()
 	-- Blizzard_UIPanels_Game/Camelot/QuestMapFrameOverrides.lua.
 	G.QuestMapFrameOverrides = {
 		questTabHidden = true,
