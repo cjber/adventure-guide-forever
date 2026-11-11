@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.6.3] - 2026-11-11
+
 - **The minimap button and Alt-G open the guide whenever the quest log is there.** Pressing one with the world map closed opened nothing and printed a line asking you to expand the quest sidebar, which was about to appear anyway: the guide read the map before the game had shown it, and the map shows a frame later. It now waits for the game to show the map and opens on the sidebar you actually have, and reopening the map after closing it refreshes the guide instead of leaving the last page up. The line about the sidebar now appears only when you really collapsed it or maximized the map, and says which button brings the quest log back. Reported on CurseForge by user_dy05dlq98afee0w0 (#664).
 
 ### For addon authors
