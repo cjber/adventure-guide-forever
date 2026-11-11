@@ -105,8 +105,9 @@ local function Tooltip(h)
 	return lines
 end
 
--- The guide's tracker section: its header, then each block's header and its lines (a dash unless the line hides it,
--- OBJECTIVE_DASH_STYLE_HIDE and _HIDE_AND_COLLAPSE). Shortest Path's own section is drawn from its planner.
+-- The guide's tracker section: its header, the grey count of quests a journey hides when it shows one, then each
+-- block's header and its lines (a dash unless the line hides it, OBJECTIVE_DASH_STYLE_HIDE and _HIDE_AND_COLLAPSE).
+-- Shortest Path's own section is drawn from its planner.
 local function Tracker(h)
 	local module = h.tracker
 	local blocks = {}
@@ -118,7 +119,9 @@ local function Tracker(h)
 		end
 		blocks[index] = { header = block.header, lines = lines }
 	end
-	return { header = module.Header.Text:GetText(), blocks = blocks }
+	local notice = module.hiddenText
+	local hidden = notice and notice:IsShown() and notice:GetText() or nil
+	return { header = module.Header.Text:GetText(), hidden = hidden, blocks = blocks }
 end
 
 local out = {}
@@ -251,6 +254,19 @@ out.steps = {
 	zone = guided.zone,
 	player = { map = h.player.map, x = h.player.x, y = h.player.y },
 }
+
+-- The tracker on a journey that hides two of the player's own tracked quests: the grey count beside the header.
+-- Only tracker.png draws this one; the menu and the minimap button keep the tracker scene above. The two quests are
+-- not in the catalogue, so they change nothing else the tracker shows.
+h = Load("v1", true, false, STORY, {
+	{ id = 900010, title = "Player's first quest", level = 12, complete = false },
+	{ id = 900011, title = "Player's second quest", level = 12, complete = false },
+}, {
+	setup = function(each)
+		each.watched = { 900010, 900011 }
+	end,
+})
+out.tracker_watch = Tracker(h)
 
 h = Load("v1", false, true)
 h.flush()

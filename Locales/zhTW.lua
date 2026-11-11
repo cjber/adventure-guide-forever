@@ -304,6 +304,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_GUIDE_TRACKS"] = "只追蹤RestedXP指南的任務" -- mt
 L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
 	"跟隨RestedXP指南時，目標追蹤器只顯示其目前和進行中步驟提到的任務。停止跟隨後，你自己追蹤的任務會恢復。" -- mt
+L["SETTING_JOURNEY_WATCH"] = "只追蹤旅程的任務" -- mt
+L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
+	"旅程引導時，目標追蹤器只顯示它正在處理的任務，其他任務會離開追蹤器。你自己追蹤的任務會留在角色上，並在旅程不再引導、你選擇其他旅程或關閉此設定時回來。" -- mt
 L["SETTING_LOCK_TRACKER"] = "鎖定追蹤器"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] =
 	"將共用的 Forever 追蹤器保持在您放置的位置。頂部的拖曳握把不再移動它。"
@@ -345,9 +348,6 @@ L["SETTING_TRACK_ROUTE_TOOLTIP"] =
 L["SETTING_TRAINING_REMINDERS"] = "提醒我訓練職業法術"
 L["SETTING_TRAINING_REMINDERS_TOOLTIP"] =
 	"建議拜訪職業訓練師，並在旅程中加入法術訓練。你可以選擇學習哪些法術；不必購買每個法術。"
-L["SETTING_UNTRACK_OTHERS"] = "停止追蹤其他任務"
-L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
-	"同一次點擊會停止追蹤所有不在路線上的任務。還需要追蹤路線上的任務。"
 L["SETTING_UPGRADES"] = "標記獎勵提升" -- mt
 L["SETTING_UPGRADES_TOOLTIP"] =
 	"當任務提供可選獎勵時，綠色箭頭會標出每件優於你該部位目前裝備的獎勵：符合你的護甲類型、帶有你的職業使用的主屬性，且物品等級更高。不會替你做出選擇。安裝了Pawn時，改由Pawn標記。" -- mt
@@ -416,8 +416,12 @@ L["TOWN_PICKUPS"] = "接受%d個"
 L["TOWN_SKIP_GIVER"] = "跳過此任務給予者"
 L["TRACKER_DRAG_TITLE"] = "Forever追蹤器"
 L["TRACKER_DRAG_TOOLTIP"] = "拖曳以移動"
+L["TRACKER_HIDDEN_COUNT"] = "已隱藏 %d 個" -- mt
+L["TRACKER_HIDDEN_TOOLTIP"] = "此旅程引導期間，有 %d 個任務在追蹤器中隱藏。" -- mt
+L["TRACKER_HIDDEN_SHOW_ALL"] = "右鍵：顯示所有任務。" -- mt
 L["TRACKER_LOADING"] = "正在載入任務資料..."
 L["TRACKER_LOCKED_TOOLTIP"] = "追蹤器已鎖定。關閉「鎖定追蹤器」即可移動它。"
+L["TRACKER_SHOW_ALL"] = "顯示所有任務" -- mt
 L["TRACKER_PAUSED"] = "路線已暫停。點擊標題以繼續。" -- mt
 L["TRACKER_SHOW_WHERE"] = "可在 設定 > 附加元件 > Adventure Guide 的 目標追蹤器 中重新開啟。" -- mt
 L["TRACKER_UNATTACHED"] = "無法在目標追蹤器中加入區塊；請使用/agf audit回報。"

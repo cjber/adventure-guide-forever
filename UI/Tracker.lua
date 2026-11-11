@@ -92,6 +92,7 @@ end
 ---@field headerText? string the header the section shows now
 ---@field rxpActionsReserved? number the height the RestedXP action rows already added to contentsHeight
 ---@field npcHighlightReserved? number the height the next-NPC target button already added to contentsHeight
+---@field hiddenText? FontString the grey "%d hidden" count beside the header
 ---@field AddHeaderMenuEntries? fun(self: AGFTrackerModule, root: ForeverMenuDescription)
 local ModuleMixin = {
 	blockTemplate = "ObjectiveTrackerAnimBlockTemplate",
@@ -624,15 +625,131 @@ if module then
 	---@cast module AGFTrackerModule
 	module.AddHeaderMenuEntries = function(_, root)
 		ns.Menu.Step(root, ns.Guidance.CurrentStep())
+		if ns.QuestWatch.Hidden() > 0 then
+			root:CreateButton(L.TRACKER_SHOW_ALL, function()
+				ns.SetSetting("journeyWatch", false)
+			end)
+		end
 	end
 	ForeverCore.TrackerLine.SetHeaderTooltip(module, BlockTooltip)
+	local header = module.Header
+	if header then
+		-- One line, so the client shortens a title too long for the room the hidden count leaves with its own ellipsis.
+		local title = header.Text
+		if title then
+			title:SetWordWrap(false)
+			title:SetMaxLines(1)
+		end
+		-- The section title explains the hidden count when there is one; nothing is said otherwise.
+		header:HookScript("OnEnter", function(self)
+			if not ns.Usable(self) then
+				return
+			end
+			local count = ns.QuestWatch.Hidden()
+			if count <= 0 or not GameTooltip then
+				return
+			end
+			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+			GameTooltip_SetTitle(GameTooltip, module.headerText or L.TITLE)
+			GameTooltip_AddNormalLine(GameTooltip, L.TRACKER_HIDDEN_TOOLTIP:format(count))
+			GameTooltip_AddNormalLine(GameTooltip, L.TRACKER_HIDDEN_SHOW_ALL)
+			GameTooltip:Show()
+		end)
+		header:HookScript("OnLeave", function()
+			if GameTooltip and GameTooltip.Hide then
+				GameTooltip:Hide()
+			end
+		end)
+	end
+end
+
+-- The section's own header text starts 200 wide (ObjectiveTrackerModuleHeader.xml:33); the hidden count sits left of
+-- the collapse button, so a long title is shortened to leave it room instead of running under it.
+local HEADER_TEXT_WIDTH = 200
+local HIDDEN_GAP = 6
+---@type FontString?
+local hiddenText
+
+---@return FontString?
+local function HeaderText()
+	return module and module.Header and module.Header.Text or nil
+end
+
+---@return FontString?
+local function HiddenString()
+	if hiddenText then
+		return hiddenText
+	end
+	local header = module and module.Header
+	if not header then
+		return nil
+	end
+	hiddenText = header:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	hiddenText:SetJustifyH("RIGHT")
+	local collapse = header.MinimizeButton
+	if collapse then
+		hiddenText:SetPoint("RIGHT", collapse, "LEFT", -HIDDEN_GAP, 0)
+	else
+		hiddenText:SetPoint("RIGHT", header, "RIGHT", -22, 0)
+	end
+	hiddenText:Hide()
+	if module then
+		module.hiddenText = hiddenText
+	end
+	return hiddenText
+end
+
+-- The room the title has before the hidden count and the collapse button.
+---@param notice FontString
+---@return number
+local function HeaderRoom(notice)
+	local header = module and module.Header
+	if not header then
+		return HEADER_TEXT_WIDTH
+	end
+	local width = header:GetWidth()
+	if not width or width <= 0 then
+		width = 260
+	end
+	local collapse = header.MinimizeButton
+	local button = collapse and collapse:GetWidth() or 0
+	local fromRight = collapse and 1 or 22
+	local room = width - 7 - fromRight - button - notice:GetStringWidth() - HIDDEN_GAP * 2
+	return math.min(HEADER_TEXT_WIDTH, math.max(24, room))
+end
+
+-- Draws the small grey count while the journey hides any of the player's quests, and narrows the title around it.
+local function UpdateHidden()
+	if not module then
+		return
+	end
+	local text, notice = HeaderText(), HiddenString()
+	if not (text and notice) then
+		return
+	end
+	text:SetText(module.headerText or text:GetText() or "")
+	local count = ns.QuestWatch.Hidden()
+	if count <= 0 then
+		notice:Hide()
+		text:SetWidth(HEADER_TEXT_WIDTH)
+		return
+	end
+	notice:SetText(L.TRACKER_HIDDEN_COUNT:format(count))
+	notice:Show()
+	local room = HeaderRoom(notice)
+	text:SetWidth(room)
 end
 
 local function Refresh()
 	if module then
 		local journey = ns.Route().chosen and not ns.Polestar.Active() and ns.CurrentJourney()
 		module.headerText = journey and journey.title or L.TITLE
+		local text = HeaderText()
+		if text then
+			text:SetWidth(HEADER_TEXT_WIDTH)
+		end
 		module:SetHeader(module.headerText)
+		UpdateHidden()
 		module:MarkDirty()
 	end
 end
@@ -707,6 +824,7 @@ cvars:SetScript("OnEvent", function(_, _, name)
 	end
 end)
 ns.OnRouteChange(OnRouteChange)
+ns.QuestWatch.OnChange(Refresh)
 ns.Integrations.OnTravelChange(Refresh)
 ns.Guidance.OnChange(Refresh)
 ns.Asides.OnChange(Refresh)

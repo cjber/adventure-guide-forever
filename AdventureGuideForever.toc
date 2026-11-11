@@ -51,6 +51,7 @@ Planning\Order.lua
 Planning\Shown.lua
 UI\Sound.lua
 Core\State.lua
+Core\QuestWatch.lua
 Core\Activity.lua
 Core\Stats.lua
 Core\Party.lua
@@ -58,7 +59,6 @@ Planning\Geometry.lua
 Planning\Focus.lua
 Integrations\Integrations.lua
 Integrations\RestedXP.lua
-Integrations\RestedXPWatch.lua
 Integrations\Polestar.lua
 Integrations\Tweaks.lua
 Integrations\SkillUp.lua

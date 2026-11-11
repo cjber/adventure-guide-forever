@@ -324,8 +324,14 @@ InputUtil = nil
 -- The stock ObjectiveTrackerProgressBarTemplate under the line added last.
 ---@field AddProgressBar fun(self: AGFTrackerBlock, id: string): {SetPercent: fun(self: table, percent: number)}?
 
+-- Blizzard_ObjectiveTrackerModule.xml: the module's own header, with its title and collapse button.
+---@class AGFTrackerHeader : Frame
+---@field Text FontString
+---@field MinimizeButton? Button
+
 ---@class ObjectiveTrackerModuleTemplate : Frame
 ---@field uiOrder number
+---@field Header AGFTrackerHeader
 ---@field SetHeader fun(self: ObjectiveTrackerModuleTemplate, text: string)
 ---@field GetBlock fun(self: ObjectiveTrackerModuleTemplate, id: string): AGFTrackerBlock
 ---@field GetContextMenuParent fun(self: ObjectiveTrackerModuleTemplate): Frame

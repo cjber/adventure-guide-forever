@@ -309,12 +309,13 @@ do
 	equal(h.ns.Prefs().guided, "carry", "none chosen: recorded as the chosen journey's route")
 	clean(h, "title click chooses")
 
-	h = Load("v1", { trackRouteQuests = true, untrackOthers = true })
+	h = Load("v1", { trackRouteQuests = true })
 	h.watched[1] = 99
 	ClickTitle(h)
-	equal(table.concat(h.watched, " "), RouteQuests(h), "untrackOthers leaves only the route's quests")
+	equal(h.watched[1], 99, "the player's own tracked quest stays")
+	equal(table.concat(h.watched, " ", 2), RouteQuests(h), "and the route's quests join it")
 
-	h = Load("v1", { titleStartsRoute = false, trackRouteQuests = false, untrackOthers = true })
+	h = Load("v1", { titleStartsRoute = false, trackRouteQuests = false })
 	h.watched[1] = 99
 	ClickTitle(h)
 	equal(h.spf.NavigateRoute, 0, "the route setting off: no route")
@@ -347,7 +348,7 @@ do
 	equal(table.concat(pages[L.SETTINGS_GROUP_MAP] or {}, " "), "showMapPins showQuestGivers", "Map holds its rows")
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_TRACKER] or {}, " "),
-		"attachTracker lockTracker showTracker trackRouteQuests untrackOthers guideTracksQuests",
+		"attachTracker lockTracker showTracker trackRouteQuests journeyWatch guideTracksQuests",
 		"the objective tracker rows sit together, the parent first"
 	)
 	equal(
@@ -400,9 +401,8 @@ do
 	h.ns.OpenSettings()
 	equal(h.openedSettings, familyPage.parent.GetID(), "More settings opens the addon's own page")
 	equal(h.openedSettingsRestricted, 0, "More settings calls the shared opener, not Blizzard's wrapper")
-	equal(byKey.untrackOthers.indented, true, "untrackOthers is indented under tracking")
-	equal(byKey.untrackOthers.evaluateCVar, "AdventureGuideForever_trackRouteQuests", "parent changes reevaluate child")
-	equal(byKey.untrackOthers.enabled(), false, "and is greyed while it is off")
+	equal(byKey.journeyWatch.indented, nil, "journey watching is its own row, not under the title click")
+	equal(byKey.journeyWatch.tooltip, L.SETTING_JOURNEY_WATCH_TOOLTIP, "and says what happens to the player's quests")
 	local attachSetting
 	for _, setting in ipairs(h.addonSettings) do
 		if setting.key == "attachTracker" then

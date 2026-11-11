@@ -313,6 +313,9 @@ L["SETTING_GIVERS_TOOLTIP"] =
 L["SETTING_GUIDE_TRACKS"] = "Suivre uniquement les quêtes du guide RestedXP" -- mt
 L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
 	"Pendant que vous suivez un guide RestedXP, le suivi des objectifs n'affiche que les quêtes nommées par ses étapes actuelles et en cours. Les quêtes que vous suiviez vous-même reviennent quand vous arrêtez de le suivre." -- mt
+L["SETTING_JOURNEY_WATCH"] = "Suivre uniquement les quêtes du voyage" -- mt
+L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
+	"Pendant qu’un voyage vous guide, le suivi des objectifs n’affiche que les quêtes sur lesquelles il travaille et toutes les autres le quittent. Les quêtes que vous suiviez restent sur le personnage et reviennent quand le voyage ne vous guide plus, que vous en choisissez un autre ou que vous désactivez ceci." -- mt
 L["SETTING_LOCK_TRACKER"] = "Verrouiller le suivi"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] =
 	"Garde le suivi Forever partagé là où vous l'avez placé. La poignée en haut ne le déplace plus."
@@ -354,9 +357,6 @@ L["SETTING_TRACK_ROUTE_TOOLTIP"] =
 L["SETTING_TRAINING_REMINDERS"] = "Me rappeler d’apprendre les sorts de classe"
 L["SETTING_TRAINING_REMINDERS_TOOLTIP"] =
 	"Suggère des visites au maître de classe et ajoute l’apprentissage de sorts aux voyages. Vous choisissez les sorts à apprendre ; acheter chaque sort est facultatif."
-L["SETTING_UNTRACK_OTHERS"] = "Arrêter le suivi des autres quêtes"
-L["SETTING_UNTRACK_OTHERS_TOOLTIP"] =
-	"Le même clic arrête le suivi de chaque quête qui n’est pas sur l’itinéraire. Demande aussi que les quêtes de l’itinéraire soient suivies."
 L["SETTING_UPGRADES"] = "Signaler les récompenses meilleures" -- mt
 L["SETTING_UPGRADES_TOOLTIP"] =
 	"Quand une quête propose des récompenses au choix, une flèche verte signale chacune qui surpasse ce que vous portez à cet emplacement : votre type d’armure, une caractéristique principale utile à votre classe et un niveau d’objet supérieur. Rien n’est choisi à votre place. Si Pawn est installé, c’est Pawn qui les signale." -- mt
@@ -428,8 +428,12 @@ L["TOWN_PICKUPS"] = "Prendre %d"
 L["TOWN_SKIP_GIVER"] = "Passer ce donneur de quêtes"
 L["TRACKER_DRAG_TITLE"] = "Suivi Forever"
 L["TRACKER_DRAG_TOOLTIP"] = "Glisser pour déplacer"
+L["TRACKER_HIDDEN_COUNT"] = "%d masquées" -- mt
+L["TRACKER_HIDDEN_TOOLTIP"] = "%d quêtes sont masquées du suivi pendant que ce voyage vous guide." -- mt
+L["TRACKER_HIDDEN_SHOW_ALL"] = "Clic droit : Afficher toutes les quêtes." -- mt
 L["TRACKER_LOADING"] = "Chargement des données de quêtes..."
 L["TRACKER_LOCKED_TOOLTIP"] = "Le suivi est verrouillé. Désactivez Verrouiller le suivi pour le déplacer."
+L["TRACKER_SHOW_ALL"] = "Afficher toutes les quêtes" -- mt
 L["TRACKER_PAUSED"] = "Itinéraire en pause. Cliquez sur le titre pour reprendre." -- mt
 L["TRACKER_SHOW_WHERE"] = "Réactivez-le dans Options > AddOns > Adventure Guide, sous Suivi des objectifs." -- mt
 L["TRACKER_UNATTACHED"] =

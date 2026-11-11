@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The tracker shows only your journey's quests, and gives the rest back.** While a journey leads, the quests it works on are tracked and every other quest leaves the objective tracker; the quests you had tracked are kept on the character and come back when the journey stops leading, you choose another, or you turn the new setting off. A small grey count beside the tracker section's title says how many are hidden, its tooltip explains why, and **Show all quests** in the title's right-click menu turns the setting off. A quest you track or untrack by hand while the journey leads stays as you left it. A leading RestedXP guide keeps working as it did (#682).
+
 ## [1.6.5] - 2026-11-11
 
 - **Tells you which addon to update.** If another Forever addon you have installed is older than this one and stops it starting, the message now names that addon, so you know exactly what to update.
