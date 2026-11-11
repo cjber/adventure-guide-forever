@@ -4,6 +4,12 @@ if GetLocale() ~= "koKR" then
 	return
 end
 local L = ns.L
+L["%s could not start. Reinstall %s to fix this."] =
+	"%s을(를) 시작할 수 없습니다. 이 문제를 해결하려면 %s을(를) 다시 설치하세요." -- mt
+L["%s: %s are out of date. Update them to fix this."] =
+	"%s: %s이(가) 오래되었습니다. 이 문제를 해결하려면 모두 업데이트하세요." -- mt
+L["%s: %s is out of date. Update it to fix this."] =
+	"%s: %s이(가) 오래되었습니다. 이 문제를 해결하려면 업데이트하세요." -- mt
 L["AFTER_PICK_UP"] = "수락한 후"
 L["ALL_SUGGESTIONS"] = "모든 제안"
 L["AUDIT_BUILD"] = "데이터 빌드 %s, 클라이언트 빌드 %s.%s"
@@ -458,7 +464,7 @@ L["TWEAKS_OUTDATED"] = "던전 입구를 찾으려면 Tweaks Forever를 업데�
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
-L["WHATS_NEW"] = "업데이트 후 다시 작동합니다." -- mt
+L["WHATS_NEW"] = "어떤 애드온을 업데이트해야 하는지 알려 줍니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"

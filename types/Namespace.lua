@@ -863,6 +863,7 @@
 ---@field Geometry AGFGeometry the native-geometry adapter (Geometry.lua)
 ---@field TITLE string
 ---@field L AGFStrings
+---@field WHATS_NEW_VERSION string the release whose headline WHATS_NEW is; a maintenance release is newer
 ---@field Data AGFData
 ---@field Model AGFModel
 ---@field State AGFState
@@ -1551,7 +1552,7 @@
 ---@field STEP_TOWN string
 ---@field STEP_BATTLEMASTER string
 ---@field UPDATED_TO string format: the version, then WHATS_NEW
----@field WHATS_NEW string this version's headline, printed once after an update
+---@field WHATS_NEW string the newest release's headline, printed once after an update
 ---@field SETTING_WHATS_NEW string
 ---@field SETTING_WHATS_NEW_TOOLTIP string
 ---@field SPF_FAMILY_MENU string a step's menu entry without Shortest Path Forever installed

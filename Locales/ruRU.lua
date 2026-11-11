@@ -4,6 +4,12 @@ if GetLocale() ~= "ruRU" then
 	return
 end
 local L = ns.L
+L["%s could not start. Reinstall %s to fix this."] =
+	"%s не удалось запустить. Переустановите %s, чтобы исправить это." -- mt
+L["%s: %s are out of date. Update them to fix this."] =
+	"%s: %s устарели. Обновите их, чтобы исправить это." -- mt
+L["%s: %s is out of date. Update it to fix this."] =
+	"%s: %s устарел. Обновите его, чтобы исправить это." -- mt
 L["AFTER_PICK_UP"] = "после того как вы его возьмете"
 L["ALL_SUGGESTIONS"] = "Все предложения"
 L["AUDIT_BUILD"] = "данные сборки %s, сборка клиента %s.%s"
@@ -489,7 +495,7 @@ L["TWEAKS_OUTDATED"] =
 L["UNLISTED"] =
 	"В этих землях есть истории, которых путеводитель пока не знает; ищите «!» над теми, кто дает задания."
 L["UPDATED_TO"] = "обновлено до %s. %s"
-L["WHATS_NEW"] = "Снова работает после обновления." -- mt
+L["WHATS_NEW"] = "Сообщает, какой аддон обновить." -- mt
 L["WHY_ALLIANCE"] = "Только для Альянса"
 L["WHY_BREADCRUMB"] = "Только пока вы не возьмете: %s"
 L["WHY_CHOSE"] = "Вместо этого вы выбрали: %s"

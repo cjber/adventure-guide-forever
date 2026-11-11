@@ -21,6 +21,19 @@ L["D"] = "WTF\\Account"
 """
         self.assertEqual(render(phrases(source)), HEADER + expected)
 
+    def test_a_phrase_assigned_after_the_table(self):
+        # A shared file reads ns.L by the English phrase itself, so enUS assigns those keys after its table.
+        source = r"""
+            ns.L = { A = "a" }
+            ns.L["%s: %s is out of date. Update it to fix this."] = "%s: %s is out of date. Update it to fix this."
+        """
+        found = phrases(source)
+        self.assertEqual(found["A"], "a")
+        self.assertEqual(
+            found["%s: %s is out of date. Update it to fix this."],
+            "%s: %s is out of date. Update it to fix this.",
+        )
+
     def test_unreadable(self):
         # The same walker as the copy lint (lint_copy.ns_l_entries): a missing table fails loudly.
         for source in ('local L = { A = "a" }', 'ns.L = { ["A"] "a" }'):
