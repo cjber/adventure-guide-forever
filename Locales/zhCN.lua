@@ -440,7 +440,8 @@ L["TWEAKS_MISSING"] = "安装Tweaks Forever以寻找地下城入口。"
 L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以寻找地下城入口。"
 L["UNLISTED"] = "这片土地有指南尚不知道的故事；请留意任务NPC头上的“!”。"
 L["UPDATED_TO"] = "已更新到%s。%s"
-L["WHATS_NEW"] = "Forever Core 现在会随插件一起安装。" -- mt
+L["WHATS_NEW"] =
+	"指南站点不再按怪物并不拥有的怪物等级来衡量。QuestieDB 将未知等级写为 9999,而指南将其当作真实等级。现在它算作没有等级。" -- mt
 L["WHY_ALLIANCE"] = "仅限联盟"
 L["WHY_BREADCRUMB"] = "仅在你接受%s之前"
 L["WHY_CHOSE"] = "你改选了%s"

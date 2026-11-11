@@ -455,7 +455,8 @@ L["TWEAKS_OUTDATED"] = "던전 입구를 찾으려면 Tweaks Forever를 업데�
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
-L["WHATS_NEW"] = "이제 Forever Core가 함께 설치됩니다." -- mt
+L["WHATS_NEW"] =
+	"가이드 지점은 이제 몹이 실제로 갖지 않은 몹 레벨로 평가되지 않습니다. QuestieDB는 알 수 없는 레벨을 9999로 표기하며, 가이드는 이를 실제 레벨로 읽었습니다. 이제는 레벨 없음으로 처리됩니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"

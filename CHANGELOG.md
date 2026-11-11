@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.6.3] - 2026-11-11
+
+- **A guide stop is no longer weighed by a mob level its mobs do not have.** QuestieDB's Forever data spells an NPC level it does not know as 9999, and the guide read that as a real level, so a stop whose mobs have no known level was planned as if they were far above yours. Anything at or past that sentinel now counts as no level, which is what it means.
+
 ### For addon authors
 
 - **The guide's API is listed with every other Forever addon's.** `AdventureGuideForever.API` now hands itself to `ForeverCore.APIKit.Publish`, so another addon finds it through `ForeverCore.APIKit.Addons()` on ForeverCore 1.3.2 or later, with the same `version` and `minor`. Nothing a caller reads changed, and an older core loads as before.

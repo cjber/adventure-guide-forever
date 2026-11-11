@@ -453,7 +453,8 @@ L["TWEAKS_OUTDATED"] = "Mettez à jour Tweaks Forever pour trouver les entrées 
 L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
-L["WHATS_NEW"] = "Forever Core s'installe désormais avec l'addon." -- mt
+L["WHATS_NEW"] =
+	"Une étape du guide n'est plus pondérée par un niveau de mob que ses mobs n'ont pas. QuestieDB écrit un niveau inconnu comme 9999, et le guide le lisait comme réel. Il compte désormais comme aucun niveau." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
