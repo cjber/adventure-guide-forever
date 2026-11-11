@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-11-11
+
+<!-- discord-image: docs/screenshots/menu.png -->
+
 - **The tracker's menu can end a journey, and Choose another journey always does something.** There was no way to cancel a paused journey from the tracker, and Choose another journey opened nothing when the map's quest sidebar was collapsed. The menu now offers End journey whenever a journey is chosen, paused or not, instead of Stop only while it guides, and says to expand the quest sidebar when the guide cannot open. Right-clicking a step's title in the tracker opens the same menu (#641).
 
 ## [1.6.0] - 2026-11-10
