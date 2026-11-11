@@ -13,6 +13,7 @@ checks:
   - { name: specs, run: "for s in tests/*_spec.lua; do luajit \"$s\" || exit 1; done", tests: true }
   - { name: tools, run: "ruff format --check tools && ruff check tools" }
   - { name: changelog, run: "python3 tools/changelog.py --check" }
+  - { name: credits, run: "python3 tools/forever_tools/credits.py --check" }
   - { name: rules, run: "python3 tools/repo_rules.py" }
 focus: [Core/**, Planning/**, UI/**, Integrations/**]
 ignore: [Data/**, Locales/**, Libs/**, types/**, tools/forever_tools/**]

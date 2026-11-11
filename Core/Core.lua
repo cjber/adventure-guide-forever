@@ -16,6 +16,12 @@ ns.core = ForeverCore.Register(addonName, {
 	end,
 })
 
+-- Hands the generated player credits to the shared Thanks page (WFA-31). An older core has no Credits module, and the
+-- addon loads as before.
+if type(ForeverCore.Credits) == "table" then
+	ns.core.SafeCall("credits", ForeverCore.Credits.Register, "Adventure Guide Forever", ns.Credits)
+end
+
 -- Account-wide settings (Settings.lua), one key per row on the AddOns page. A missing key
 -- always reads as its default here, so an old save file and a new option agree (WFA-14).
 ---@type table<string, boolean|number|string>

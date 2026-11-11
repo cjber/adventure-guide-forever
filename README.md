@@ -140,7 +140,13 @@ The addon is free and stays GPL-3.0. If it saves you time, you can [sponsor me o
 
 ## Credits
 
-Data comes from [wago.tools](https://wago.tools), [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0) and [Warcraft Wiki](https://warcraft.wiki.gg/wiki/Zones_by_level_(original)). Some features were inspired by [Polestar](https://github.com/fitzforge/polestar) by Fitz; no code was copied. Fitz is welcome to use our code. Thanks to rhednak, deathmvp1, berserkerlxl and everyone in [THIRD_PARTY.md](THIRD_PARTY.md).
+Data comes from [wago.tools](https://wago.tools), [CMaNGOS classic-db](https://github.com/cmangos/classic-db) (GPL-3.0) and [Warcraft Wiki](https://warcraft.wiki.gg/wiki/Zones_by_level_(original)). Some features were inspired by [Polestar](https://github.com/fitzforge/polestar) by Fitz; no code was copied. Fitz is welcome to use our code.
+
+<!-- forever-credits:start -->
+
+Thanks to starkovsky, InfamousMunky, sampconrad, VinzNL, fuguer-ai, rhednak, jechten, Gnatz_0815, CodeHoax, eliasbusato, wfournier, methabolic, kragmars, Naburiel, vladsnz, jixxor and everyone who reported a bug or asked for a feature.
+
+<!-- forever-credits:end -->
 
 ## Licence
 

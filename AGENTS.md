@@ -21,6 +21,7 @@ for s in tests/*_spec.lua; do luajit "$s" || exit 1; done
 luajit -joff tests/plan_bench.lua
 AGF_QUESTIEDB=tools/.cache/questiedb-<QUESTIEDB_TAG>/QuestieDB luajit -joff tools/login_bench.lua # login cost on the real QuestieDB
 python3 tools/check_generated.py --offline # omit --offline to fetch missing pinned inputs
+python3 tools/forever_tools/credits.py --check # Data/Credits.lua and both thanks blocks are current (WFA-31)
 python3 tools/changelog.py --check
 python3 tools/check_screenshots.py   # an image older than its scene; tools/screenshots.py re-records it
 python3 tools/check_menu_scroll.py # menus built from a list scroll (WFA-36); CI runs it in core-shared
@@ -30,7 +31,7 @@ python3 tools/check_api_docs.py # every function Core/API.lua publishes, and its
 
 CI's `package` job builds the zip with the release's packager without uploading (`-d -z`) and runs
 `python3 tools/check_package.py` on its output: every loaded file ships, no development folder does, a licence file and
-THIRD_PARTY.md ship with README's `## Credits` and THIRD_PARTY's `## Ideas and contributors` (WFA-10, WFA-31), and the
+THIRD_PARTY.md ship with README's `## Credits` and THIRD_PARTY's `## Players` (WFA-10, WFA-31), and the
 smoke spec passes on the packaged files.
 
 Every version needs a `CHANGELOG.md` entry (prose, bold-lead bullets) before its `v*` tag: the release publishes

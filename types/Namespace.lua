@@ -861,6 +861,7 @@
 ---@field Debug fun(): string /agf travel's line
 
 ---@class AGFNamespace
+---@field Credits ForeverCreditsData the player credits Data/Credits.lua generates for the shared Thanks page
 ---@field broken? boolean set when an installed ForeverCore is too old, so the addon's files stop
 ---@field Icon string the one client icon this addon shows for itself in game, from ## X-Forever-Icon
 ---@field core ForeverCoreAddon the addon's own ForeverCore services: journal, log, report and map canvas

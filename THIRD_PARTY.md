@@ -45,21 +45,40 @@ No embedded libraries ship. `media/` is this addon's own: the icon is drawn in `
 
 CI tools (StyLua, ruff, luacheck, lua-language-server, actionlint, zizmor, gitleaks, the BigWigs packager) are pinned in `.github/workflows/` and `tools/typecheck.sh`, except luajit and luacheck, which come from the runner's apt; they build and check the addon and are never part of it.
 
-## Ideas and contributors
+## Players
 
-Credit for the ideas and reports behind the addon.
+Credit for the reports and requests behind the addon.
 
 | Who | What | Notes |
 |---|---|---|
-| [cjber](https://github.com/cjber) | Requested the compatibility audit that identified unfocused waypoint ownership and shared error-report deduplication (#304), and the shared peer leaderboard work (cjber/forever-core#49), and asked for quest reward upgrades to be marked (#321) | |
-| [Polestar](https://github.com/fitzforge/polestar) by Fitz | The ideas for guarding NPC tooltips against secret values (#145), matching objectives by name (#146), learning what a giver really offers (#147), waypoint hysteresis (#148), the level-up payload (#149), ranked search (#150), the "next camp" and "another NPC" actions (#151), weighting drop areas (#152), Shift-click to start a locked chain (#153), skipping a full replan for a count change (#154), favouring quests the party shares, hurrying a quest whose item runs out, and sending objectives to the main camp of normal mobs rather than elites or lone spawns. Ideas Adventure Guide took for every Forever addon: `/agf report` with its copy box and caught errors (#156), the issue forms (#157), the zip check (#158), the `Subscribe` API (#159), `tools/doctor.py` (#160), the stale-screenshot check (#161), this file (#162), the "For addon authors" changelog subsection (#163), `tests/README.md` (#164) and `.editorconfig` (#165). | GPL-3.0. Inspired only; no code was copied. Fitz is welcome to use our code. |
-| [Pawn](https://www.curseforge.com/wow/addons/pawn) by Vger | The idea of marking a quest reward that beats your gear (#321); Adventure Guide does a narrower version and steps aside when Pawn is loaded | Inspired only; no code was copied. |
-| VinzNL | Asked for battlegrounds to be left out of suggestions (#62) | |
-| fuguer-ai | Asked for a read-only API for the current stop (#79) | |
-| rhednak, on CurseForge | Found the integer overflow error that broke the guide for Skyborne characters, with the full error text (0.8.0) | |
-| jechten, on CurseForge | Reported slow loading, which later releases sped up (#166) | |
-| deathmvp1 and berserkerlxl, on CurseForge | Found Questie's quest list covering the Forever tracker sections, which now move clear of it (cjber/shortest-path-forever#214) | |
-| Gnatz_0815, on CurseForge | Asked to keep RestedXP’s quest-item and target controls while following its guides here (#237) | |
-| CodeHoax | Reported the RestedXP guide's overview card failing the route rebuild, with the full error text (#233) | |
+| VinzNL | Battlegrounds left out of suggestions | GitHub; #62 |
+| fuguer-ai | Read-only API for the current stop | GitHub; #79 |
+| rhednak | Fixed the overflow that broke Skyborne guides | CurseForge; 0.8.0 |
+| jechten | Faster login | CurseForge; #166 |
+| Gnatz_0815 | RestedXP's item and target windows kept | CurseForge; #237 |
+| CodeHoax | Fixed the RestedXP overview-header error | GitHub; #233 |
+| starkovsky | Near-level quests lead the route | GitHub; #474 |
+| starkovsky | Ira's Dagger starts from its item | GitHub; #591 |
+| starkovsky | Journey cards clickable with the map open | GitHub; #592 |
+| eliasbusato | RestedXP target buttons respond to clicks | GitHub; #550 |
+| wfournier | Journey cards select the guide again | GitHub; #590 |
+| InfamousMunky | Journey cards select the guide again | GitHub; #599 |
+| sampconrad | Next step handed to Waypoint UI | CurseForge; #482 |
+| sampconrad | Arrival keeps a pin with the objective | CurseForge; #565 |
+| methabolic | Next step stays after a town trip | CurseForge; #554 |
+| kragmars | Map quest tabs no longer fight Queston Forever | Discord; #542 |
+| Naburiel | Faster login | GitHub; #166 |
+| vladsnz | Marker no longer taken from another guide | CurseForge; cjber/shortest-path-forever#531 |
+| jixxor | Show of Force held until Encroaching Gnolls is done | Discord; #642 |
+| InfamousMunky | Daily Delivery no longer offered once handed on | GitHub; #629 |
+
+## Inspired by
+
+Credit for the addons and projects an idea came from.
+
+| Who | What | Notes |
+|---|---|---|
+| [Polestar](https://github.com/fitzforge/polestar) by Fitz | Ideas for many features | Tracker tooltips, objective matching, ranked search, waypoint hysteresis, step actions and camp weighting; the shared report window, issue forms and addon tooling. GPL-3.0. Inspired only; no code was copied. Fitz is welcome to use our code. |
+| [Pawn](https://www.curseforge.com/wow/addons/pawn) by Vger | Marking a quest reward that beats your gear | Inspired only; no code was copied. A narrower version that steps aside when Pawn is loaded. |
 
 Thanks also to everyone else who reported a bug or asked for a feature, here or on CurseForge.
