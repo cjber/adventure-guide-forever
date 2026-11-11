@@ -131,12 +131,17 @@ end
 ---@type string[]?
 local npcSpawnLevel, npcSpawnLevelRank
 
+-- QuestieDB's Forever data spells an NPC level it does not know 9999 (and the same for its highest), far above any
+-- real one: no level, not a mob level. Anything at or past it is the same sentinel, rather than a level the planner
+-- should weigh.
+local UNKNOWN_LEVEL = 9999
+
 -- An NPC's lowest level as QuestieDB gives it (`minLevel`), or false when it gives none.
 ---@param value any
 ---@return integer|false
 function ns.QuestieLevel(value)
 	local level = tonumber(value)
-	return level and level > 0 and floor(level) or false
+	return level and level > 0 and level < UNKNOWN_LEVEL and floor(level) or false
 end
 
 -- Whether QuestieDB's NPC rank (`rank`, CMaNGOS creature_template) is an elite's: 1 elite, 2 rare elite, 3 boss. A
