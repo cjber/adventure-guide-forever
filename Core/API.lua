@@ -348,3 +348,9 @@ ns.OnRouteChange(hub.Queue)
 ns.Guidance.OnChange(hub.Queue)
 
 AdventureGuideForever = { API = API }
+
+-- Lists this API in ForeverCore.APIKit.Addons() for other addons (ForeverCore 1.3.2 or later); an older core has no
+-- Publish, and the addon loads as before.
+if (ForeverCore.APIKit.minor or 1) >= 2 then
+	ForeverCore.APIKit.Publish("AdventureGuideForever", API)
+end

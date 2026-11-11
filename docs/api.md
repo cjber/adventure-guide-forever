@@ -3,7 +3,9 @@
 Addons can read where the guide is sending the player through `AdventureGuideForever.API` (`version = 1`). Additions
 keep `version` at 1 and raise `minor`, so check that a function exists before calling it. The stop and suggestion
 queries are read-only; `ResumeRestedXP()`, `StartSuggestion(id)`, `Pause()` and `Resume()` are explicit navigation
-requests. Places use uiMapIDs and normalized 0-1 coordinates, as Shortest Path's API does.
+requests. Places use uiMapIDs and normalized 0-1 coordinates, as Shortest Path's API does. On ForeverCore 1.3.2 or
+later the same table is listed by `ForeverCore.APIKit.Addons()`, so another addon can find it without the
+`AdventureGuideForever` global.
 
 The minor history, from the git history:
 
