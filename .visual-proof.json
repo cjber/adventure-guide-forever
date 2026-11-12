@@ -1,51 +1,30 @@
 {
-  "input_digest": "ca633155d31d6fc94b4bc615d19cf5465b12de01a5df1a4722b052673067dfaf",
-  "runtime_sha256": "ca633155d31d6fc94b4bc615d19cf5465b12de01a5df1a4722b052673067dfaf",
-  "candidate": "f826a5e5e1dda1b3c9ca48937aaacac9b80f32fc8811768812a495dfffd0c1dd",
+  "input_digest": "c699ac7b993f16119d9d34dbff04916dfe976ec4485ba1b6bbf23186844646d5",
+  "runtime_sha256": "c699ac7b993f16119d9d34dbff04916dfe976ec4485ba1b6bbf23186844646d5",
+  "candidate": "ee616cfea14b19ebff7df02aa6eaa452bf1bbf7ade75c11438fd42a8345129be",
   "client_build": "1.60.1.70888 (Interface 16001)",
-  "source_commit": "9f1de2f513fd65dd362012793de93f4dcf3a8ed6",
-  "notes": "In-game flows and captures were recorded from installed source-tree candidate 9f1de2f. Core #497 tooling includes auto-loaded Bindings.xml and packaging policy in the measured identity. The tested source and current release source have identical .pkgmeta bytes. Every source-owned shipped runtime file matches both the tested source-tree artifact and actual BigWigs output after documented line-ending and TOC version normalization; the tested artifact additionally carries the ignored store icon media/icon-400.png. Later commits change tooling/tests only. This package equivalence check does not claim a new gameplay session from the packaged ZIP.",
+  "source_commit": "342bdff66fc7bc3aca72d7385a8a210721443e4f",
+  "notes": "Recorded in the player's live client from an installed source-tree build of main 342bdff6 (git archive, version stamped v1.7.5-dev+342bdff6). visual_proof --compare against that install reported no differing runtime files; it additionally carries the ignored store icon media/icon-400.png.",
   "flows": [
     {
-      "name": "Redridge multi-quest stop story tooltip",
+      "name": "Quest pins at journey stops stay hidden through quest events",
       "steps": [
-        "Reload the installed candidate with /rl",
-        "Open the Redridge world map and hover a multi-quest stop",
-        "Inspect chapter and successor text for The Everstill Bridge and A Baying of Gnolls; Then describes successors without an instruction or fabricated unlock level"
-      ],
-      "result": "pass"
-    },
-    {
-      "name": "Chosen journey card and guide tab",
-      "steps": [
-        "Open the native quest sidebar and select Adventure Guide",
-        "Inspect Redridge Mountains story card, compass tab, route rows and footer with no overlapping controls or misleading progress ring"
-      ],
-      "result": "pass"
-    },
-    {
-      "name": "Outgrown journey setting and grey quests",
-      "steps": [
-        "Open cog, More settings, Route",
-        "Enable Show outgrown zones and dungeons",
-        "Return to journey choices, expand quest destinations, select Dun Morogh at character level 20",
-        "Inspect grey Dwarven Outfitters level 1, A New Threat level 2, The Boar Hunter level 3 steps without accepting or completing quests"
+        "Install the candidate and /reload",
+        "Open the world map on Redridge Mountains, where the active journey has stops",
+        "Untrack and retrack a watched quest every 2 s six times, which fires QUEST_WATCH_LIST_CHANGED and QUEST_LOG_UPDATE, while capturing the map about every 0.6 s",
+        "Blizzard quest pins at the guide's stops stay hidden in every frame; off-route quest pins stay in place"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/7a05ce137c0697a29b6d69411b0fd30b/raw/d9d9126c930ca5717efc142f2b17aa729b72ae45/story.png",
-      "sha256": "3d888701988d6968381e3ffdf2c9e5106ce819497d4ad8ccfe938b7c428cf2ca"
+      "url": "https://gist.githubusercontent.com/cjber/7173e9f82bae701829edf5165bf9bc85/raw/b4b7749ec51c65e6b1fc1c30afd9dda901d1c379/map-open.png",
+      "sha256": "94fcec886370f4b44cef6b666f60f4379601e6df56cc3d4d0ed609eca98de28b"
     },
     {
-      "url": "https://gist.githubusercontent.com/cjber/7a05ce137c0697a29b6d69411b0fd30b/raw/d9d9126c930ca5717efc142f2b17aa729b72ae45/settings.png",
-      "sha256": "988ed6ba4ca87b1502d8a962f7ad64c1c97a818e2d050d11f9be10d92e5c1273"
-    },
-    {
-      "url": "https://gist.githubusercontent.com/cjber/7a05ce137c0697a29b6d69411b0fd30b/raw/d9d9126c930ca5717efc142f2b17aa729b72ae45/grey.png",
-      "sha256": "f4a3050cf454c4f7f94f75558be4a5e2c03847ce31c8674741389ea42dc7bd88"
+      "url": "https://gist.githubusercontent.com/cjber/7173e9f82bae701829edf5165bf9bc85/raw/b4b7749ec51c65e6b1fc1c30afd9dda901d1c379/quest-events.png",
+      "sha256": "cd70908beffd8bec49b639a736317f87f1036110b5b99fb4edb56cf521c638b8"
     }
   ],
   "tested_artifact": "source-tree"
