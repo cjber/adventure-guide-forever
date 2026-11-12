@@ -508,5 +508,15 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 L["NPC_HIGHLIGHT_HINT"] =
 	"Las placas de nombre amistosas están desactivadas: actívalas en las opciones de interfaz para ver adónde ir."
 
+L["SYNC_WITH"] = "Sincronizar con" -- mt
+L["SYNC_MEMBERS"] = "Miembros del grupo con la guía" -- mt
+L["SYNC_NONE"] = "Nadie de tu grupo usa la guía" -- mt
+L["SYNC_SUBTITLE"] = "Sincronizado con %s" -- mt
+L["SYNC_EVERYONE"] = "Todos" -- mt
+L["SYNC_FOR_YOU"] = "Para ti" -- mt
+L["SYNC_FOR"] = "Para %s" -- mt
+L["SYNC_FOR_YOU_AND"] = "Para ti y %s" -- mt
+L["SYNC_AND"] = "y" -- mt
+
 L.LEADERBOARD_METRIC = "Misiones entregadas" -- mt
 L.LEADERBOARD_TOTAL = "total" -- mt

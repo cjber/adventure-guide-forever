@@ -498,5 +498,15 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 	"当步骤需要与发放或交付任务的 NPC 交谈时，一个小箭头会在其姓名板上方跳动，追踪器下方会出现目标按钮。关闭后可隐藏两者。指南从不会更改你的姓名板设置。"
 L["NPC_HIGHLIGHT_HINT"] = "友方姓名板已关闭：请在界面选项中开启，以查看该往哪走。"
 
+L["SYNC_WITH"] = "同步" -- mt
+L["SYNC_MEMBERS"] = "使用指南的队伍成员" -- mt
+L["SYNC_NONE"] = "你的队伍中没有人使用指南" -- mt
+L["SYNC_SUBTITLE"] = "已与%s同步" -- mt
+L["SYNC_EVERYONE"] = "所有人" -- mt
+L["SYNC_FOR_YOU"] = "为你" -- mt
+L["SYNC_FOR"] = "为%s" -- mt
+L["SYNC_FOR_YOU_AND"] = "为你和%s" -- mt
+L["SYNC_AND"] = "和" -- mt
+
 L.LEADERBOARD_METRIC = "已交付任务" -- mt
 L.LEADERBOARD_TOTAL = "总计" -- mt

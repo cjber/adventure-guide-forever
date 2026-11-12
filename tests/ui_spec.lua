@@ -4319,6 +4319,13 @@ do
 	equal(current == stored, true, "golden: layout.json matches (AGF_UPDATE_GOLDEN=1 rewrites it)")
 	equal(json.encode(json.decode(stored)), stored, "golden: json round trip")
 	equal(stored:lower():find("unreachable", 1, true), nil, "golden: no line ever says unreachable")
+	-- The header's lines share the span between the guide icon and the panel's right inset, clear of the back arrow.
+	local headerProblems = diff.HeaderLines(json.decode(stored).layout, h.ns.L.TITLE)
+	equal(
+		#headerProblems,
+		0,
+		"golden: the header's lines keep the title's span\n" .. table.concat(headerProblems, "\n")
+	)
 
 	-- The in-game diff, fed a dump taken the way /agf dump takes it.
 	local golden, game = json.decode(stored).layout, h.ns.DumpLayout(panel)
@@ -4349,6 +4356,15 @@ do
 	laid.size = { 628.12, 64 }
 	differences = diff.Compare({ scaled }, { laid })
 	equal(#differences, 1, "dump_diff: its native height is")
+	-- The overview's line under the title is checked in the same span as the chosen view's title.
+	h.ns.Choose(nil)
+	h.flush()
+	headerProblems = diff.HeaderLines(h.ns.DumpLayout(panel, h.Describe), h.ns.L.TITLE)
+	equal(
+		#headerProblems,
+		0,
+		"golden: the overview's line keeps the title's span\n" .. table.concat(headerProblems, "\n")
+	)
 	clean(h, "golden")
 end
 

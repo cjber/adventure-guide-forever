@@ -101,6 +101,8 @@ local PREFS_DEFAULTS = {
 	notOffered = {},
 	-- RestedXP guide steps skipped while RestedXP had not reached them, by guide key: step index -> true (RestedXP.lua).
 	guideSkips = {},
+	-- Party members ticked under Sync with (Party.lua), by "Name-Realm"; a member who leaves is unticked.
+	sync = {},
 }
 
 ---@type table<string, any>?
@@ -271,6 +273,15 @@ local function LoadCharDB()
 	for key, text in pairs(type(loaded.asides) == "table" and loaded.asides or {}) do
 		if type(key) ~= "string" or type(text) ~= "string" then
 			loaded.asides[key] = nil
+		end
+	end
+	-- Members ticked under Sync with: a key ("Name-Realm") set to true, nothing else (Party.lua).
+	if type(loaded.sync) ~= "table" then
+		loaded.sync = {}
+	end
+	for key, value in pairs(loaded.sync) do
+		if type(key) ~= "string" or value ~= true then
+			loaded.sync[key] = nil
 		end
 	end
 	-- The zone picked in the old "Where next?" cards: nothing offers that choice any more, so none is kept.

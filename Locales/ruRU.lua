@@ -554,5 +554,15 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 L["NPC_HIGHLIGHT_HINT"] =
 	"Дружественные таблички имени отключены: включите их в настройках интерфейса, чтобы видеть, куда идти."
 
+L["SYNC_WITH"] = "Синхронизация с" -- mt
+L["SYNC_MEMBERS"] = "Члены группы с руководством" -- mt
+L["SYNC_NONE"] = "Никто в вашей группе не использует руководство" -- mt
+L["SYNC_SUBTITLE"] = "Синхронизировано с %s" -- mt
+L["SYNC_EVERYONE"] = "Все" -- mt
+L["SYNC_FOR_YOU"] = "Для вас" -- mt
+L["SYNC_FOR"] = "Для %s" -- mt
+L["SYNC_FOR_YOU_AND"] = "Для вас и %s" -- mt
+L["SYNC_AND"] = "и" -- mt
+
 L.LEADERBOARD_METRIC = "Сданные задания" -- mt
 L.LEADERBOARD_TOTAL = "всего" -- mt

@@ -487,6 +487,11 @@ function ModuleMixin:LayoutContentsBase()
 	local block = self:GetBlock(step.key)
 	block:SetHeader(ns.StepStyle.StepTitle(step, ns.Overview.VerbMarkup(step, 14) .. step.title))
 	local line = 0
+	-- Who the stop is for while synced (#617), right under its title.
+	if step.sync then
+		line = line + 1
+		block:AddObjective(line, step.sync)
+	end
 	if step.rxpIndex then
 		GuideSection(self, block, step)
 		return

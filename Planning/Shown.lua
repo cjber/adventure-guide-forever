@@ -105,6 +105,13 @@ end
 ---@return AGFRoute full the same route: the next build's `last`
 function Shown.Build(input)
 	local Model = ns.Model
+	local synced = input.player.synced
+	-- Sync Together (docs/design.md §4.5): the journey plans the quests anybody ticked still needs, so a quest the
+	-- player finished but a member has not is planned for them. The player's own completed set still labels the stops.
+	local completed = input.completed
+	if synced then
+		completed = Model.GroupCompleted(completed, synced)
+	end
 	---@type AGFPlanInputs
 	local inputs = {
 		skippedQuests = ns.Order.SkippedQuests(),
@@ -117,7 +124,7 @@ function Shown.Build(input)
 		full = Model.Refresh(
 			input.data,
 			input.player,
-			input.completed,
+			completed,
 			input.log,
 			input.prefs,
 			input.last,
@@ -129,7 +136,7 @@ function Shown.Build(input)
 		full = Model.Plan(
 			input.data,
 			input.player,
-			input.completed,
+			completed,
 			input.log,
 			input.prefs,
 			input.mapName,
@@ -147,6 +154,16 @@ function Shown.Build(input)
 		Hold(full, input)
 	end
 	Reorder(full, input)
+	if synced then
+		for _, card in ipairs(full.journeys) do
+			for _, step in ipairs(card.steps) do
+				-- A RestedXP guide orders its own steps, which Sync Together does not plan.
+				if step.kind ~= "guide" then
+					step.sync = Model.SyncLabel(input.completed, synced, step.quests)
+				end
+			end
+		end
+	end
 	if input.observe then
 		input.observe(full)
 	end

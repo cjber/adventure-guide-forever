@@ -509,5 +509,15 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 L["NPC_HIGHLIGHT_HINT"] =
 	"Freundliche Namensschilder sind aus: Schaltet sie in den Interface-Optionen ein, um zu sehen, wohin Ihr gehen müsst."
 
+L["SYNC_WITH"] = "Synchronisieren mit" -- mt
+L["SYNC_MEMBERS"] = "Gruppenmitglieder mit dem Guide" -- mt
+L["SYNC_NONE"] = "Niemand in Eurer Gruppe nutzt den Guide" -- mt
+L["SYNC_SUBTITLE"] = "Synchronisiert mit %s" -- mt
+L["SYNC_EVERYONE"] = "Alle" -- mt
+L["SYNC_FOR_YOU"] = "Für Euch" -- mt
+L["SYNC_FOR"] = "Für %s" -- mt
+L["SYNC_FOR_YOU_AND"] = "Für Euch und %s" -- mt
+L["SYNC_AND"] = "und" -- mt
+
 L.LEADERBOARD_METRIC = "Abgegebene Quests" -- mt
 L.LEADERBOARD_TOTAL = "gesamt" -- mt

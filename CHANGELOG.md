@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Party members running the guide can share one journey.** Tick one or more of them under **Sync with** in the guide's cog menu, and the route plans the quests anyone you are synced with still needs, so you can do them together instead of catching up alone. Every stop says who it is for, "Everyone", "For you", or the names of the members who need it, on its own line so a long list is never cut, and the line under the guide's title names who you are synced with. A ticked member who leaves the party is unticked, and the party message now carries each player's completed quests too. Sync needs only Adventure Guide Forever (#617).
+
 ## [1.7.7] - 2026-11-12
 
 - **The guide's target button keeps its own row under the step.** The tracker lays its section out again whenever the guide or a quest changes, and the second layout dropped the room reserved for the step's small target button, so the button sat a row lower and covered the Journey line of the addon below the guide's section. It now keeps its place. Reported on Discord by lanprite (cjber/shortest-path-forever#787).

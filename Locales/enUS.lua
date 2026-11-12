@@ -373,6 +373,16 @@ ns.L = {
 	MENU_MAP_PINS = "Show map pins",
 	MENU_GIVERS = "Show quest givers",
 	MENU_TRACKER = "Show in objective tracker",
+	-- Sync Together (#617): the cog menu's checklist of party members running the guide, and the stops it labels.
+	SYNC_WITH = "Sync with",
+	SYNC_MEMBERS = "Party members with the guide",
+	SYNC_NONE = "No one in your party is running the guide",
+	SYNC_SUBTITLE = "Synced with %s",
+	SYNC_EVERYONE = "Everyone",
+	SYNC_FOR_YOU = "For you",
+	SYNC_FOR = "For %s",
+	SYNC_FOR_YOU_AND = "For you and %s",
+	SYNC_AND = "and",
 	MENU_MORE_SETTINGS = "More settings",
 	-- The settings page's index groups, and the index button that opens each one.
 	SETTINGS_GROUP_ROUTE = "Route",

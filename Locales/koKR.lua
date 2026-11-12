@@ -516,5 +516,15 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 L["NPC_HIGHLIGHT_HINT"] =
 	"우호적 이름표가 꺼져 있습니다. 인터페이스 설정에서 켜면 어디로 가야 하는지 볼 수 있습니다."
 
+L["SYNC_WITH"] = "동기화" -- mt
+L["SYNC_MEMBERS"] = "가이드를 사용하는 파티원" -- mt
+L["SYNC_NONE"] = "파티원 중 가이드를 사용하는 사람이 없습니다" -- mt
+L["SYNC_SUBTITLE"] = "%s와(과) 동기화됨" -- mt
+L["SYNC_EVERYONE"] = "모두" -- mt
+L["SYNC_FOR_YOU"] = "당신을 위해" -- mt
+L["SYNC_FOR"] = "%s을(를) 위해" -- mt
+L["SYNC_FOR_YOU_AND"] = "당신과 %s을(를) 위해" -- mt
+L["SYNC_AND"] = "및" -- mt
+
 L.LEADERBOARD_METRIC = "완료한 퀘스트" -- mt
 L.LEADERBOARD_TOTAL = "총" -- mt
