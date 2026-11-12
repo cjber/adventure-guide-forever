@@ -274,4 +274,14 @@ do
 	end
 end
 
+for _, quest in pairs(data.quests) do
+	quest.level = 1
+end
+local outgrown = Model.Plan(data, player, {}, {}, prefs({ showOutgrown = true }))
+local sawOutgrown
+for _, journey in ipairs(outgrown.journeys) do
+	sawOutgrown = sawOutgrown or journey.key == "dungeon:36"
+end
+equal(sawOutgrown, true, "the opt-in keeps an outgrown dungeon journey")
+
 print(("planner_offers_spec: %d checks passed"):format(checks))

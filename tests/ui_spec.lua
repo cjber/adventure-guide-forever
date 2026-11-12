@@ -337,11 +337,11 @@ do
 	-- Every row goes in through the secure delegate; none from addon code, which taints the search. The rows are
 	-- grouped into subcategories with a short index page, so no page grows tall.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 31, "26 settings rows and 5 index buttons, all through Settings.RegisterInitializer")
+	equal(#h.settings, 32, "27 settings rows and 5 index buttons, all through Settings.RegisterInitializer")
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
-		"maxQuestLevelOffset restedxpGuide wanderer followQuest partyQuests optimisedRoute includeDungeonsDefault "
+		"maxQuestLevelOffset restedxpGuide wanderer followQuest partyQuests optimisedRoute showOutgrown includeDungeonsDefault "
 			.. "titleStartsRoute autoStart autoNextZone npcHighlight polestarAside warnClosing stepSound trainingReminders",
 		"Route holds its rows in order"
 	)
