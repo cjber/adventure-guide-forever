@@ -3285,8 +3285,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(longCard.Reason.maxLines, 1, label .. ": details have one line")
 	longCard.journey.title = title
 	h.ns.OpenPanel()
-	-- The zone icons: the zone's art cut round by the circle mask in a clipping frame, the ring over it and the kind
-	-- as a badge; built once, not on every refresh; the plain ring where the data has no art.
+	-- The zone icons: the zone's art is cut round by the circle mask in a clipping frame, with the kind as a badge;
+	-- there is no decorative ring that could be mistaken for a progress meter.
 	local icon = storyCard.Icon
 	equal(icon.Clip:IsShown(), true, label .. ": the story's zone art")
 	equal(icon.Clip.clipsChildren, true, label .. ": clipped")
@@ -3301,7 +3301,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		end
 	end
 	equal(tiles > 1 and #icon.Art.overlays > 0, true, label .. ": base tiles and overlays")
-	equal(icon.Ring:GetAtlas(), "adventureguide-ring", label .. ": in the ring")
+	equal(icon.Ring, nil, label .. ": no static progress-looking ring")
 	equal(icon.Kind:GetAtlas(), "questlog-questtypeicon-story", label .. ": the kind as a badge")
 	local sets = 0
 	for _, texture in ipairs(icon.Art.base) do

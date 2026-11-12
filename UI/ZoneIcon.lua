@@ -23,7 +23,6 @@ local EDGE = 20
 ---@field Clip Frame
 ---@field Art AGFZoneIconArt
 ---@field Border Frame
----@field Ring Texture
 ---@field Kind Texture
 ---@field size number
 ---@field width number the art's width across, as the size is
@@ -166,7 +165,6 @@ function ZoneIcon.Create(parent, size, badge)
 	icon.Border = CreateFrame("Frame", nil, icon)
 	icon.Border:SetAllPoints()
 	icon.Border:SetFrameLevel(icon:GetFrameLevel() + 3)
-	icon.Ring = ns.Art.Ring(icon.Border, size)
 	icon.Kind = icon.Border:CreateTexture(nil, "OVERLAY", nil, 1)
 	return icon
 end
