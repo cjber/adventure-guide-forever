@@ -237,6 +237,7 @@ function harness.load(options)
 			SetMapID = 0,
 			OpenQuestLog = 0,
 			OpenWorldMap = 0,
+			QuestPinWalks = 0,
 			secureCalls = 0,
 		},
 		modelCalls = {},
@@ -3105,18 +3106,20 @@ function harness.load(options)
 		h.mapPins[#h.mapPins + 1] = pin
 		return pin
 	end
+	-- The client's own iterator skips the pins of other templates. It hands back one iterator each call but allocates
+	-- nothing per pin; this one keeps that shape while allocating nothing at all, so a spec can measure what the
+	-- addon's walk costs (WFA-13).
+	local pinCursor, pinTemplate
+	local function NextPin()
+		repeat
+			pinCursor = pinCursor + 1
+		until h.mapPins[pinCursor] == nil or h.mapPins[pinCursor].template == pinTemplate
+		return h.mapPins[pinCursor]
+	end
 	function map:EnumeratePinsByTemplate(template)
-		local pins = {}
-		for _, pin in ipairs(h.mapPins) do
-			if pin.template == template then
-				pins[#pins + 1] = pin
-			end
-		end
-		local index = 0
-		return function()
-			index = index + 1
-			return pins[index]
-		end
+		h.counts.QuestPinWalks = h.counts.QuestPinWalks + 1
+		pinCursor, pinTemplate = 0, template
+		return NextPin
 	end
 	for _, name in ipairs({ "AddDataProvider", "AcquirePin", "RemoveAllPinsByTemplate" }) do
 		map[name] = function()
