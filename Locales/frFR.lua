@@ -105,6 +105,7 @@ L["HAND_IN_WHEN"] = "À rendre quand vous serez à %s"
 L["HAND_IN_WHEN_DONE"] = "une fois terminée"
 L["BEFORE_IT_RUNS_OUT"] = "avant que %s n'expire"
 L["BEFORE_ITEM_RUNS_OUT"] = "avant qu'un objet de quête n'expire"
+L["BEFORE_TIMER_RUNS_OUT"] = "avant la fin du temps imparti pour la quête"
 L["HELP_AUDIT"] = "/agf audit - comparer les données de quêtes avec le jeu"
 L["HELP_DUMP"] = "/agf dump - enregistrer la disposition du guide pour un rapport de bug"
 L["HELP_LEADERBOARD"] = "/agf leaderboard - ouvre Forever Leaderboards sur l'onglet de cet addon (aussi /agf stats)" -- mt

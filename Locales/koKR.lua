@@ -108,6 +108,7 @@ L["HAND_IN_WHEN"] = "%s에 있을 때 제출"
 L["HAND_IN_WHEN_DONE"] = "완료하면"
 L["BEFORE_IT_RUNS_OUT"] = "%s(이)가 사라지기 전에"
 L["BEFORE_ITEM_RUNS_OUT"] = "퀘스트 아이템이 사라지기 전에"
+L["BEFORE_TIMER_RUNS_OUT"] = "퀘스트 제한 시간이 끝나기 전에"
 L["HELP_AUDIT"] = "/agf audit - 퀘스트 데이터를 게임과 대조합니다"
 L["HELP_DUMP"] = "/agf dump - 오류 보고용으로 안내서 배치를 저장합니다"
 L["HELP_LEADERBOARD"] =

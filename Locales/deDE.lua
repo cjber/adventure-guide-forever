@@ -105,6 +105,7 @@ L["HAND_IN_WHEN"] = "Abgeben, wenn Ihr in %s seid"
 L["HAND_IN_WHEN_DONE"] = "sobald sie erledigt ist"
 L["BEFORE_IT_RUNS_OUT"] = "bevor %s abläuft"
 L["BEFORE_ITEM_RUNS_OUT"] = "bevor ein Questgegenstand abläuft"
+L["BEFORE_TIMER_RUNS_OUT"] = "bevor die Questzeit abläuft"
 L["HELP_AUDIT"] = "/agf audit - die Questdaten mit dem Spiel abgleichen"
 L["HELP_DUMP"] = "/agf dump - das Layout des Führers für einen Fehlerbericht speichern"
 L["HELP_LEADERBOARD"] =

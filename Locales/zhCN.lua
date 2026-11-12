@@ -100,6 +100,7 @@ L["HAND_IN_WHEN"] = "到达%s时交还"
 L["HAND_IN_WHEN_DONE"] = "完成后"
 L["BEFORE_IT_RUNS_OUT"] = "在%s消失之前"
 L["BEFORE_ITEM_RUNS_OUT"] = "在任务物品消失之前"
+L["BEFORE_TIMER_RUNS_OUT"] = "在任务计时结束之前"
 L["HELP_AUDIT"] = "/agf audit - 将任务数据与游戏核对"
 L["HELP_DUMP"] = "/agf dump - 保存指南布局以提交错误报告"
 L["HELP_LEADERBOARD"] = "/agf leaderboard - 在此插件的标签页打开 Forever 排行榜（也支持 /agf stats）" -- mt

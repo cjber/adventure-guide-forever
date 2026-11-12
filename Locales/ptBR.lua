@@ -103,6 +103,7 @@ L["HAND_IN_WHEN"] = "Entregue quando estiver em %s"
 L["HAND_IN_WHEN_DONE"] = "quando estiver concluída"
 L["BEFORE_IT_RUNS_OUT"] = "antes que %s expire"
 L["BEFORE_ITEM_RUNS_OUT"] = "antes que um item de missão expire"
+L["BEFORE_TIMER_RUNS_OUT"] = "antes que o tempo da missão acabe"
 L["HELP_AUDIT"] = "/agf audit - conferir os dados de missões com o jogo"
 L["HELP_DUMP"] = "/agf dump - salvar o layout do guia para um relatório de erro"
 L["HELP_LEADERBOARD"] = "/agf leaderboard - abre o Forever Leaderboards na aba deste addon (também /agf stats)" -- mt

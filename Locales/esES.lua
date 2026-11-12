@@ -105,6 +105,7 @@ L["HAND_IN_WHEN"] = "Entrégala cuando estés en %s"
 L["HAND_IN_WHEN_DONE"] = "cuando esté hecha"
 L["BEFORE_IT_RUNS_OUT"] = "antes de que caduque %s"
 L["BEFORE_ITEM_RUNS_OUT"] = "antes de que caduque un objeto de misión"
+L["BEFORE_TIMER_RUNS_OUT"] = "antes de que se agote el tiempo de la misión"
 L["HELP_AUDIT"] = "/agf audit - comprobar los datos de misiones con el juego"
 L["HELP_DUMP"] = "/agf dump - guardar el diseño de la guía para un informe de error"
 L["HELP_LEADERBOARD"] =
