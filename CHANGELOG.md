@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Navigation:** Keep routes working with Shortest Path Forever when its shared leaderboard features are removed.
+
 ## [1.7.4] - 2026-11-12
 
 <!-- forever-core-sync -->

@@ -12,14 +12,15 @@ ns.Integrations = Integrations
 -- Passed to Shortest Path so it can tell our journeys apart from the player's own.
 local OWNER = "AdventureGuideForever"
 
--- The v1 members; types/Namespace.lua AGFSPFAPI is the contract, and tests/contract_spec.lua holds this list to
+-- The navigation members shared by v1 and v2; types/Namespace.lua AGFSPFAPI is the contract.
+-- tests/contract_spec.lua holds this list to
 -- exactly its non-optional functions. A Shortest Path missing any of them is treated as absent.
 local REQUIRED = { "Estimate", "Navigate", "NavigateRoute", "CurrentStop", "Cancel" }
 
 ---@return AGFSPFAPI?
 local function SPF()
 	local api = ShortestPathForever and ShortestPathForever.API
-	if type(api) ~= "table" or api.version ~= 1 then
+	if type(api) ~= "table" or (api.version ~= 1 and api.version ~= 2) then
 		return nil
 	end
 	for _, name in ipairs(REQUIRED) do

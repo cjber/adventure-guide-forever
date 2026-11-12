@@ -3294,7 +3294,7 @@ function harness.load(options)
 	-- "cleared"), h.spfOther (another addon's journey) or h.spfHeld (its "Guide me" off:
 	-- the journey stays, Active is false).
 	if options.spf then
-		local api, ended = { version = 1 }, {}
+		local api, ended = { version = options.spfAPIVersion or 1 }, {}
 		h.spf, h.spfSeconds = {}, 360
 		local function Counted(name, fn)
 			h.spf[name] = 0

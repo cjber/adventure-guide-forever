@@ -503,7 +503,7 @@
 ---@field legs AGFSPFLeg[] -- fresh copies on every call
 
 ---@class AGFSPFAPI
----@field version integer -- AGF accepts exactly 1
+---@field version integer -- AGF accepts 1 and 2 for the shared navigation contract
 ---@field minor? integer -- 1 from Subscribe; absent before
 ---@field Estimate fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): number?, AGFSPFNoRoute? -- travel seconds; nil comes with the reason
 ---@field Navigate fun(owner: string, map: integer, x: number, y: number, title?: string, kind?: AGFSPFStopKind): boolean -- starts or replaces guidance
