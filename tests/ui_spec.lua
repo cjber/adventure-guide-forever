@@ -1261,8 +1261,9 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(ring.levelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
 	h.Hover(ring)
 	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
-	-- Zhevra opens its next chapter, handed in before the town's pickups.
-	local expected = { "title: 1. Visit The Crossroads: Pick up 5, turn in 1" }
+	-- Zhevra opens its next chapter, handed in before the town's pickups. QuestieDB v1.1.0 links Lost in Battle to
+	-- Her Name Is Olgra, so the town offers one pick-up less.
+	local expected = { "title: 1. Visit The Crossroads: Pick up 4, turn in 1" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
 	expected[#expected + 1] = "highlight: Opens the next chapter here"
 	expected[#expected + 1] = "normal: |cff009919Sergra Darkthorn|r"
@@ -2415,7 +2416,9 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	local expected = { "1 to hand in, 5 to pick up", "Opens the next chapter here" }
+	-- QuestieDB v1.1.0 links Lost in Battle to Her Name Is Olgra: the Barrens story's first visit offers one pick-up
+	-- less, 4 with the one hand-in.
+	local expected = { "1 to hand in, 4 to pick up", "Opens the next chapter here" }
 	for _, giver in ipairs(steps[1].checklist) do
 		expected[#expected + 1] = h.ns.StepStyle.Checklist(steps[1], giver)
 	end
@@ -2491,7 +2494,9 @@ end
 do
 	local h = Load(false, PINS_ON)
 	local ns = h.ns
-	-- Egg Hunt at 20, two over the player: yellow, so offered (at 22 it is orange and never is), a tenth to count.
+	-- Egg Hunt at 20, two over the player: yellow, so offered (at 22 it is orange and never is), one over the eight
+	-- shown to count. QuestieDB v1.1.0 links Lost in Battle to Her Name Is Olgra, which takes one pick-up off the
+	-- Crossroads: nine quests, not ten.
 	ns.Data.quests[868].level = 20
 	-- Their work a step from town and alike in XP, so the lap keeps all of them (one worth less per yard waits).
 	for _, quest in pairs(ns.Data.quests) do
@@ -2508,13 +2513,13 @@ do
 	ns.OpenPanel()
 	h.flush()
 	local step = ns.Route().steps[1]
-	equal(#step.quests, 10, "hub tooltip: Crossroads has 10 quests")
+	equal(#step.quests, 9, "hub tooltip: Crossroads has 9 quests")
 	local rows = Shown(h, function(frame)
 		return frame.SkipButton ~= nil
 	end)
 	h.Hover(rows[1])
 	local lines, colors = h.tooltip, h.tooltipColors
-	equal(lines[1], "title: 1. Visit The Crossroads: Pick up 9, turn in 1", "hub tooltip: the numbered town")
+	equal(lines[1], "title: 1. Visit The Crossroads: Pick up 8, turn in 1", "hub tooltip: the numbered town")
 	equal(lines[2], "highlight: " .. step.reason, "hub tooltip: the reason")
 	equal(lines[3], "normal: |cff009919Sergra Darkthorn|r", "hub tooltip: the hand-in's NPC first")
 	equal(lines[4], "colored: |A:questturnin:14:14|a [13] The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
@@ -2535,7 +2540,7 @@ do
 	end
 	equal(quests, 8, "hub tooltip: 8 quest lines")
 	equal(npcs, 7, "hub tooltip: one line per NPC shown")
-	equal(lines[#lines - 2], "highlight: And 2 more", "hub tooltip: the rest counted")
+	equal(lines[#lines - 2], "highlight: And 1 more", "hub tooltip: the rest counted")
 	equal(lines[#lines - 1], "instruction: " .. ns.L.ORDER_DRAG, "hub tooltip: then how to reorder")
 	local over
 	for index, line in ipairs(lines) do
@@ -2558,7 +2563,7 @@ do
 		end
 	end
 	equal(visits >= 1, true, "hub tooltip: the ring's visits")
-	equal(h.tooltip[last - visits - 1], "highlight: And 2 more", "hub tooltip: the ring's quests")
+	equal(h.tooltip[last - visits - 1], "highlight: And 1 more", "hub tooltip: the ring's quests")
 	equal(h.tooltip[last], "instruction: Click to set a waypoint", "hub tooltip: the click line last")
 
 	-- A group quest carries the quest log's group tag.
@@ -2584,8 +2589,8 @@ do
 	h.flush()
 	local steps = ns.Route().steps
 	local step = steps[1]
-	equal(step.title, "Visit The Crossroads: Pick up 5, turn in 1", "tracker, town: town and actions")
-	equal(step.detail, "1 to hand in, 5 to pick up", "tracker, town: the hand-in joins the pickups")
+	equal(step.title, "Visit The Crossroads: Pick up 4, turn in 1", "tracker, town: town and actions")
+	equal(step.detail, "1 to hand in, 4 to pick up", "tracker, town: the hand-in joins the pickups")
 	local expected = { step.detail, "Opens the next chapter here" }
 	for _, giver in ipairs(step.checklist) do
 		expected[#expected + 1] = ns.StepStyle.Checklist(step, giver)
@@ -2827,10 +2832,11 @@ do
 	clean(h, "card")
 end
 
--- The guide (F2): seven cards in this fixture. Tirisfal Glades left it when QuestieDB v1.0.11 gave The Argent
--- Emissary its level 12, grey at this fixture's level 18. The chosen one is lit, never moved, 288x86 with a 46x46 ring
--- and followed by its steps; the others sit above it as one-line 288x26 header rows with a 16x16 icon and no ring, in
--- the dumped layout the client's own dump is compared with.
+-- The guide (F2): nine cards in this fixture. Tirisfal Glades left it when QuestieDB v1.0.11 gave The Argent
+-- Emissary its level 12, grey at this fixture's level 18; QuestieDB v1.1.0 adds Stranglethorn Vale's A Special Gift
+-- and Tanaris's Field of Honor: Week 1, so both zones are offered here too. The chosen one is lit, never moved,
+-- 288x86 with a 46x46 ring and followed by its steps; the others sit above it as one-line 288x26 header rows with a
+-- 16x16 icon and no ring, in the dumped layout the client's own dump is compared with.
 do
 	local h = Load(false, nil, nil, true)
 	h.ns.OpenPanel()
@@ -2851,7 +2857,7 @@ do
 		end
 	end
 	equal(full + compact, #route.journeys, "guide: a card per journey")
-	equal(#route.journeys, 7, "guide: all seven eligible journeys survive")
+	equal(#route.journeys, 9, "guide: all nine eligible journeys survive")
 	equal(full, 1, "guide: only the chosen card is whole")
 	equal(lit, 1, "guide: and only it stays lit, so it reads as chosen in game")
 	local rows = Shown(h, function(frame)
@@ -3353,7 +3359,8 @@ for _, spf in ipairs({ false, "v1" }) do
 			expected[#expected + 1] = "highlight: " .. card.detail
 		end
 		local warning = h.ns.Overview.VisitWarning(journey)
-		if warning then
+		-- card.detail is the visit warning when there is one (UI/Panel.lua), and CardTooltip draws it once.
+		if warning and warning ~= card.detail then
 			expected[#expected + 1] = "highlight: " .. warning
 		end
 		local travel = h.ns.Integrations.CardTravel(journey)
@@ -3408,7 +3415,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#Overview(), 0, label .. ": the overview gives way")
 	equal(Previews(), "", label .. ": with its steps")
 	equal(Says(L.OVERVIEW_WHERE:format("The Barrens", h.player.level)), 0, label .. ": and the line by the title")
-	equal(Heights(), "86 26 26 26 26 26 26", label .. ": the chosen route precedes alternatives")
+	equal(Heights(), "86 26 26 26 26 26 26 26 26", label .. ": the chosen route precedes alternatives")
 	equal(Cards()[1].journey.key, story.key, label .. ": the chosen card first, over its steps")
 	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
 	local chosenCard = Cards()[1]
@@ -3470,7 +3477,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.ns.Route().journey, key, label .. ": a row chooses its card")
 	equal(Starts(), 2, label .. ": and starts its route in place of the first")
-	equal(Heights(), "86 26 26 26 26 26 26", label .. ": still one whole card")
+	equal(Heights(), "86 26 26 26 26 26 26 26 26", label .. ": still one whole card")
 	equal(Cards()[1].journey.key, key, label .. ": the new choice over the steps")
 
 	-- The chosen card again: nothing changes but the map, which turns to it.
@@ -3505,7 +3512,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(Overview()[2])
 	h.flush()
 	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a row chooses it")
-	equal(Heights(), "86 26 26 26 26 26 26", label .. ": alternatives fold below it")
+	equal(Heights(), "86 26 26 26 26 26 26 26 26", label .. ": alternatives fold below it")
 	equal(Cards()[1].journey.key, second.key, label .. ": lit over its steps")
 	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
 	h.Click(Back())
@@ -3559,7 +3566,7 @@ do
 	equal(header.CollapseButton:IsShown(), true, label .. ": more choices can expand")
 	h.Click(header)
 	h.flush()
-	equal(#Cards("zones"), 5, label .. ": expansion shows every zone")
+	equal(#Cards("zones"), 7, label .. ": expansion shows every zone")
 	equal(h.ns.Prefs().previewGroups.zones, false, label .. ": expansion is saved")
 	local card = Cards("zones")[1]
 	local zone = h.ns.Data.zones[card.journey.zone]

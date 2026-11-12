@@ -12,6 +12,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Quest data refresh:** QuestieDB 1.1.0 adds its quests, givers and chains, and some routes change with it. New quests at Booty Bay, Gadgetzan, Azshara and the Plaguelands now appear; Lost in Battle leads to Her Name Is Olgra, Blackrock Blockade to Tharil'zun, and the Great Cat Spirit trip to Moonglade waits for its breadcrumb; a rogue-only lockpicking quest is no longer offered to other classes. The guide also knows 11 more quests that belong to a dungeon, from Blackfathom Deeps to The Hall of Thanes.
+- **A smaller saved catalogue:** A quest you hand in where you picked it up is stored once, so the copy the guide reads at login is smaller. The first login after this update rebuilds it once.
+
 ## [1.7.8] - 2026-11-12
 
 <!-- forever-core-sync -->

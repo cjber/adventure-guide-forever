@@ -27,7 +27,7 @@ card | zone:1432 | Head to Loch Modan | 6 quests near your level | - | map 1432
 card | zone:1438 | Head to Teldrassil | 13 quests near your level | 3 quests will soon turn grey | map 1438
   step 1 | town:1438:259 | Visit Lake Al'Ameth: Pick up 2 | 1438 0.6090,0.6849 | 2 to pick up
   step 2 | town:1438:186 | Visit Dolanaar: Pick up 5 | 1438 0.5551,0.5715 | 5 to pick up
-  step 3 | town:1438:736 | Visit Ban'ethil Hollow: Pick up 3 | 1438 0.4467,0.5891 | 3 to pick up
+  step 3 | town:1438:736 | Visit Ban'ethil Hollow: Pick up 3 | 1438 0.4466,0.5892 | 3 to pick up
   step 4 | town:1438:264 | Visit The Oracle Glade: Pick up 3 | 1438 0.3832,0.3436 | 3 to pick up
 card | zone:1439 | Head to Darkshore | 10 quests near your level | Auberdine needs hands | map 1439
   step 1 | town:1439:442 | Visit Auberdine: Pick up 9 | 1439 0.3740,0.4013 | 9 to pick up
@@ -36,5 +36,9 @@ card | zone:1411 | Head to Durotar | 1 quest near your level | - | map 1411
   step 1 | town:1411:369 | Pick up: Winds in the Desert | 1411 0.4637,0.2294 | near your level
 card | zone:1413 | Head to The Barrens | 2 quests near your level | - | map 1413
   step 1 | town:1413:392 | Visit Ratchet: Pick up 2 | 1413 0.6268,0.3623 | 2 to pick up
-card | calling | Your calling | Chapter 1 | A task for your class: Bartleby the Drunk | map 1453
-  step 1 | town:1453:0 | Pick up: Bartleby the Drunk | 1453 0.7713,0.5326 | Begins a new story
+card | zone:1434 | Head to Stranglethorn Vale | 2 quests near your level | - | map 1434
+  step 1 | town:1434:35 | Visit Booty Bay: Pick up 2 | 1434 0.2851,0.7580 | 2 to pick up
+card | zone:1446 | Head to Tanaris | 1 quest near your level | - | map 1446
+  step 1 | town:1446:976 | Pick up: Field of Honor: Week 1 | 1446 0.5185,0.2716 | near your level
+card | calling | Your calling | Chapter 2 | A task for your class: Bartleby the Drunk | map 1453
+  step 1 | town:1453:0 | Pick up: Bartleby the Drunk | 1453 0.7713,0.5326 | Continues a story you started

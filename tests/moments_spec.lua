@@ -21,8 +21,8 @@ local function clean(h, label)
 end
 
 -- ui_spec's level-18 orc shaman in The Barrens, nothing chosen: its cards are The Barrens' story and Stonetalon
--- Mountains and Ashenvale; Hillsbrad becomes useful at level 19, and Moonglade at 20 (the Great Cat Spirit quests,
--- QuestieDB v1.0.5).
+-- Mountains and Ashenvale; Hillsbrad becomes useful at level 19, and the shaman's level-20 Call of Water brings
+-- Durotar and Mulgore.
 local function Load(charDB)
 	charDB = charDB or {}
 	charDB.previewGroups = { continue = false, zones = false }
@@ -85,7 +85,10 @@ equal(h.G.AdventureGuideForeverPanel:IsShown(), false, "new zone: nothing opens"
 equal(select(1, Pips(h)), true, "new zone: the tab's pip")
 equal(select(2, Pips(h)), true, "new zone: the compartment's pip")
 equal(seen["zone:1424"], true, "new zone: now seen")
-equal(seen["zone:1450"], true, "new zone: the quest-visit alternative is also seen")
+-- QuestieDB v1.1.0 gates the level-20 Great Cat Spirit quests behind their breadcrumbs, so Moonglade is no longer
+-- offered here; the shaman's level-20 Call of Water is, on Durotar and Mulgore.
+equal(seen["zone:1411"], true, "new zone: the class quest's Durotar card is also seen")
+equal(seen["zone:1412"], true, "new zone: and its Mulgore one")
 equal(seen["zone:1442"], true, "new zone: the zone it replaced stays seen")
 h.tracker:MarkDirty()
 same(h.fanfares, { "moment" }, "new zone: glows once, not on every layout")
@@ -176,22 +179,24 @@ h.flush()
 same(h.fanfares, { "moment" }, "after combat: the line glows")
 clean(h, "combat")
 
--- A new quest visit in a higher-level zone keeps the same range warning as its card. Tirisfal Glades is marked seen
--- too: with QuestieDB v1.0.11 it is no longer offered at level 18 (The Argent Emissary is grey there), so at 22 it is
--- a new zone of its own and would take the moment line.
+-- A new quest visit in a higher-level zone keeps the same range warning as its card. Every other zone level 23
+-- brings is marked seen, so the line names Thousand Needles: its card visits a quest there, and the zone's 25-35
+-- range is above the character.
 h = Load()
 h.ns.Prefs().seen["zone:1424"] = true
 h.ns.Prefs().seen["zone:1411"] = true
 h.ns.Prefs().seen["zone:1412"] = true
 h.ns.Prefs().seen["zone:1420"] = true
-LevelUp(h, 22)
+h.ns.Prefs().seen["zone:1431"] = true
+h.ns.Prefs().seen["zone:1438"] = true
+LevelUp(h, 23)
 local visit
 for _, journey in ipairs(h.ns.Route().journeys) do
-	if journey.key == "zone:1450" then
+	if journey.key == "zone:1441" then
 		visit = journey
 	end
 end
-equal(visit ~= nil, true, "quest visit: Moonglade is offered")
+equal(visit ~= nil, true, "quest visit: Thousand Needles is offered")
 local warning = h.ns.Overview.VisitWarning(visit)
 equal(warning ~= nil, true, "quest visit: the zone is above the character's level")
 equal(Tracker(h), warning, "quest visit: alert keeps the range warning")

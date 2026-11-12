@@ -3,7 +3,7 @@
 -- wago.tools UiMap, UiMapAssignment, QuestV2, TaxiPathNode, TaxiNodes, AreaTable, Map,
 -- FactionTemplate, SpellEffect, SkillLine, Faction, UiMapXMapArt, WorldMapOverlay, ItemSparse,
 -- GroupFinderActivity, GroupFinderActivityGrp, LFGDungeons, MapDifficulty:
--- https://wago.tools/db2/QuestV2/csv?build=1.60.1.70862
+-- https://wago.tools/db2/QuestV2/csv?build=1.60.1.70888
 -- Pinned client WDT/ADT terrain area IDs disambiguate unhinted outdoor giver maps.
 -- wago.tools WorldMapArea at 7.3.5.26972, the last build with it (quest_poi's mapAreaId).
 -- Published zone ranges (tweaks-forever/tools/gen_zonelevels.py): https://warcraft.wiki.gg/wiki/Zones_by_level_(original)
@@ -31,8 +31,8 @@ local _, ns = ...
 -- stylua: ignore
 ---@diagnostic disable-next-line: missing-fields
 ns.Data = {
-	build = "1.60.1.70862",
-	source = "CMaNGOS classic-db 22b51464f1625f6ef6275771de1f5466c6f5d19e; wago.tools 1.60.1.70862",
+	build = "1.60.1.70888",
+	source = "CMaNGOS classic-db 22b51464f1625f6ef6275771de1f5466c6f5d19e; wago.tools 1.60.1.70888",
 	zones = {
 		[1411] = { name = "Durotar", min = 1, max = 10 },
 		[1412] = { name = "Mulgore", min = 1, max = 10 },
