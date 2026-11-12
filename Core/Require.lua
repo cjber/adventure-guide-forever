@@ -6,7 +6,7 @@ ns.Icon = C_AddOns.GetAddOnMetadata(addonName, "X-Forever-Icon")
 
 -- The game refuses to load this addon when ForeverCore is absent (## Dependencies), but an older ForeverCore still
 -- loads. API 1 has the tracker host, the family suggestions, the map, settings and context menu openers, the
--- leaderboards, peer stats and the report window, all of which this addon calls. The shared API kit and the tracker
+-- the report window, which this addon calls. The shared API kit and the tracker
 -- section and line plumbing arrived after it, so a core missing any of those members is older than this addon and the
 -- shared warning (Core/ForeverRequire.lua) names the addon whose bundled core to update. Never a version comparison.
 local ready = ForeverCore ~= nil

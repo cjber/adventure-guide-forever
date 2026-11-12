@@ -11,7 +11,7 @@ local APIKit = assert(ForeverCore.APIKit)
 
 ---@class AGFAPI
 -- `minor` rises with each addition within version 1 (1: Subscribe, 2: Suggestions and StartSuggestion, 3: Stats,
--- 4: Leaderboard, 5: Status, Pause, Resume and each stop's quest IDs, 6: each read's not-ready reason and the shared
+-- 4: Status, Pause, Resume and each stop's quest IDs, 5: each read's not-ready reason and the shared
 -- subscription hub, 7: the `suggestions` change and `nil, "invalid"` for a bad limit); a caller checks a member before
 -- using it.
 local API = { version = 1, minor = 7 }
@@ -28,11 +28,6 @@ end
 -- Cumulative quest turn-ins ranked among this character and the guild and group members who reported theirs. Copies;
 -- nil for a limit that is not a whole number of zero or more.
 ---@param limit? integer how many top rows, ten unless given, 25 at most; this character's row is always included
----@return AGFLeaderboard?
-function API.Leaderboard(limit)
-	return ns.Stats.Leaderboard(limit)
-end
-
 -- What the stop is, in the words docs/api.md lists: a town or lone pickup step reads as that visit, an area as its
 -- objective work, and a companion guide's step as "guide".
 ---@type table<string, AGFAPIStopKind>
