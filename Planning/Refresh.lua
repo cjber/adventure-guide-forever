@@ -82,8 +82,8 @@ local function Urgency(log, step)
 		copy.reason, copy.detail = reason, reason
 	else
 		copy.hurry = nil
-		copy.reason = copy.hurryKept and copy.hurryKept.reason or nil
-		copy.detail = copy.hurryKept and copy.hurryKept.detail or nil
+		copy.reason = copy.hurryKept and copy.hurryKept.reason or ""
+		copy.detail = copy.hurryKept and copy.hurryKept.detail or ""
 		copy.hurryKept = nil
 	end
 	return copy

@@ -630,6 +630,7 @@
 ---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
 ---@field BEFORE_IT_RUNS_OUT string format: expiring quest item name; the reason a route step is hurried
 ---@field BEFORE_ITEM_RUNS_OUT string the fallback reason when the client has not loaded the item name
+---@field BEFORE_TIMER_RUNS_OUT string the reason for prioritizing a quest with an active client timer
 ---@field NO_WAYPOINT string the error Go shows when nothing can guide the player on the step's map
 ---@field GO string the step menu's entry that starts guidance
 ---@field REPLACES_JOURNEY string Go's tooltip line while someone else's Shortest Path journey runs
@@ -1873,6 +1874,8 @@
 ---@class AGFPlannerLaps
 ---@field Laps fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, candidates: AGFStep[], plan: AGFPlanAreas, prefs: AGFPrefs, mapName: AGFMapName?, leadID: integer?, join: (fun(selected: AGFStep[]))?, card: string): AGFStep[]?
 ---@field Pickable fun(quest: AGFQuest): boolean
+---@field Urgent fun(log: table<integer, AGFLogQuest>, step: AGFStep): AGFLogQuest?
+---@field LeadUrgent fun(steps: AGFStep[], log: table<integer, AGFLogQuest>, valid: fun(steps: AGFStep[]): boolean): AGFStep[]
 
 ---@class AGFPlannerJourneys
 ---@field Added fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, elsewhere: (fun(quest: AGFQuest): boolean)): integer[]
