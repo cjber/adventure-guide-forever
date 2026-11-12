@@ -782,6 +782,7 @@
 ---@field JOURNEY_PAGE string
 ---@field JOURNEY_CARRY string
 ---@field CARRY_EXPLANATION string
+---@field PROVIDER_CARD_HINT string
 ---@field JOURNEY_STORY string format: zone name
 ---@field JOURNEY_NEXT_ZONE string format: zone name
 ---@field GROUP_CONTINUE string the overview's quest log header over the story, the log and your calling

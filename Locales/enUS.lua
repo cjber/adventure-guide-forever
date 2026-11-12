@@ -92,7 +92,8 @@ ns.L = {
 	JOURNEY_NEXT_ZONE = "Head to %s",
 	-- A guide card fed by an installed guide addon (#713): the player sees where its steps come from, beside the
 	-- guide's own Clean up my log and zone stories.
-	PROVIDER_CARD_HINT = "Steps from your installed %s guides. Zone stories and Clean up my log are Adventure Guide's own.",
+	PROVIDER_CARD_HINT = "Steps from your installed %s guides. "
+		.. "Zone stories and Clean up my log are Adventure Guide's own.",
 	-- The overview's quest log headers (docs/design.md §2.2): one per kind of card, in this order. A collapsed one
 	-- shows how many cards it holds.
 	GROUP_CONTINUE = "Continue",
