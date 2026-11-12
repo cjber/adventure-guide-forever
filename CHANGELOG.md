@@ -14,7 +14,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [1.7.5] - 2026-11-12
 
-- **Quest chains:** Story tooltips label successor quests with `Then` and show each quest's own difficulty colour, without inventing an acceptance level.
+- **Quest chains:** Story tooltips now show successor quests with a `Then` label and each quest's own difficulty colour.
 - **Journey cards:** The misleading progress ring is gone, and the optional setting for showing outgrown zones and dungeons keeps older candidates available when wanted.
 - **Local activity:** Shared leaderboard and sharing controls are no longer registered, while local activity statistics remain available.
 
