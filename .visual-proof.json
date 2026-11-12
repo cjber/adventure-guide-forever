@@ -1,9 +1,9 @@
 {
-  "input_digest": "a3360d834c6725912d89b58894a84994c13013d3ae878ddaa107db5a643d2fe0",
-  "runtime_sha256": "a3360d834c6725912d89b58894a84994c13013d3ae878ddaa107db5a643d2fe0",
-  "candidate": "226a15d38075a74e69808c8fec1ee9c6163034ad17175f758f7186a763c8d589",
+  "input_digest": "d95581dac852eab3427e87976b50ed9b8ebf883ca6474bd964acdf2d040561f5",
+  "runtime_sha256": "d95581dac852eab3427e87976b50ed9b8ebf883ca6474bd964acdf2d040561f5",
+  "candidate": "18f0d55af5bea8671860c3e10e4fce4db70a9735023fa9b3c46f03fa175bf040",
   "client_build": "1.60.1.70888 (Interface 16001)",
-  "source_commit": "6a5afec688d136eb6d55083ae9289569952fb55a",
+  "source_commit": "8faf1c2a8f4fcd6970df0fccbb0beceeec0c04bf",
   "flows": [
     {
       "name": "Redridge multi-quest stop story tooltip",
@@ -21,16 +21,34 @@
         "Inspect Redridge Mountains story card, compass tab, route rows and footer with no overlapping controls or misleading progress ring"
       ],
       "result": "pass"
+    },
+    {
+      "name": "Outgrown journey setting and grey quests",
+      "steps": [
+        "Open cog, More settings, Route",
+        "Enable Show outgrown zones and dungeons",
+        "Return to journey choices, expand quest destinations, select Dun Morogh at character level 20",
+        "Inspect grey Dwarven Outfitters level 1, A New Threat level 2, The Boar Hunter level 3 steps without accepting or completing quests"
+      ],
+      "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/b72318bca8da82e0affb2f8a0558d944/raw/8ff3fcd2ad0e474967f9b7681bc96bcd8ac6b5da/agf697-6a5afec-in-game.png",
-      "sha256": "c5d4b246d1167122a3ef40d7c646c732b7e488b284b8cc9613f9a130e647dd86"
+      "url": "https://gist.githubusercontent.com/cjber/b72318bca8da82e0affb2f8a0558d944/raw/719521a5b70a17b009a2536353000d363e52941f/agf697-8faf1c2-in-game.png",
+      "sha256": "d6d7179beae603dd43253d1ae145ddd3c765938d2e8a321f24184a4657f6544d"
     },
     {
-      "url": "https://gist.githubusercontent.com/cjber/b72318bca8da82e0affb2f8a0558d944/raw/8ff3fcd2ad0e474967f9b7681bc96bcd8ac6b5da/agf553-6a5afec-in-game.png",
-      "sha256": "4fe35250206f078019e1fc8fba0b174e249e56150fd68ff146a5269602c2dfba"
+      "url": "https://gist.githubusercontent.com/cjber/b72318bca8da82e0affb2f8a0558d944/raw/719521a5b70a17b009a2536353000d363e52941f/agf553-8faf1c2-in-game.png",
+      "sha256": "82e2ba39763fd64afc96d74111ec47c96da80f060c8da0732a15b129b0a90c2d"
+    },
+    {
+      "url": "https://gist.githubusercontent.com/cjber/b72318bca8da82e0affb2f8a0558d944/raw/719521a5b70a17b009a2536353000d363e52941f/agf588-enabled-8faf1c2.png",
+      "sha256": "e534ff80039c3da8e61ffc7eb26820fd73c138bb4ab622fece208db7b770756c"
+    },
+    {
+      "url": "https://gist.githubusercontent.com/cjber/b72318bca8da82e0affb2f8a0558d944/raw/719521a5b70a17b009a2536353000d363e52941f/agf588-grey-dunmorogh-8faf1c2.png",
+      "sha256": "68afff66d211c1c69ce6588e045d565b568f4fb0023d2afcc653ab2f313cddee"
     }
   ]
 }
