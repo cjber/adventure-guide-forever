@@ -155,6 +155,7 @@
 ---@field complete boolean ready to hand in
 ---@field level integer
 ---@field groupSize? integer the group size the quest log suggests, when it is 2 or more (C_QuestLog.GetInfo suggestedGroup)
+---@field timed? number seconds remaining from C_QuestLog.GetQuestTimers; only while the timer is active
 ---@field map? integer where to go next, from C_QuestLog.GetNextWaypoint: the live client gives one only once finished
 ---@field x? number
 ---@field y? number

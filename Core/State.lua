@@ -456,6 +456,14 @@ end
 ---@return table<integer, AGFLogQuest>
 function State.Log()
 	local log = {}
+	local timers = {}
+	if C_QuestLog.GetQuestTimers then
+		for _, timer in ipairs(C_QuestLog.GetQuestTimers() or {}) do
+			if timer.questID and timer.questTimer and timer.questTimer > 0 then
+				timers[timer.questID] = timer.questTimer
+			end
+		end
+	end
 	for index = 1, C_QuestLog.GetNumQuestLogEntries() do
 		local info = C_QuestLog.GetInfo(index)
 		if info and not info.isHeader then
@@ -481,6 +489,7 @@ function State.Log()
 				x = x,
 				y = y,
 				objectives = objectives,
+				timed = timers[info.questID],
 			}
 		end
 	end

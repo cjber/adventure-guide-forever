@@ -113,4 +113,40 @@ do
 	equal(opted.ns.Prefs().optimisedRoute, true, "setting: the planner reads planned")
 end
 
+-- An active native timer fronts its open objective even when an unrelated objective is nearer.
+local timedData = {
+	quests = {},
+	zones = data.zones,
+	maps = data.maps,
+	continents = data.continents,
+	hubs = data.hubs,
+}
+timedData.quests[12] = quest(0.9, 6)
+timedData.quests[13] = quest(0.52, 6)
+local timed = Model.Plan(timedData, player, {}, {
+	[12] = {
+		id = 12,
+		title = "Timed quest",
+		level = 18,
+		complete = false,
+		timed = 900,
+		objectives = { { type = "monster", done = false, have = 0, need = 5 } },
+	},
+	[13] = {
+		id = 13,
+		title = "Unrelated nearby quest",
+		level = 18,
+		complete = false,
+		objectives = { { type = "monster", done = false, have = 0, need = 5 } },
+	},
+}, { quests = true, dungeons = false, skipped = {}, journey = "zone:1", optimisedRoute = false })
+local function firstArea(card)
+	for _, step in ipairs(card.steps) do
+		if step.key:find("^area:", 1) then
+			return step.key
+		end
+	end
+end
+equal(firstArea(timed), "area:12:0", "timed: active quest objective leads")
+
 print(("route_order_spec: %d checks passed"):format(checks))
