@@ -227,6 +227,11 @@ follow the shared family voice.
   A quest whose item runs out in the bags (one the client lets last a day or less, ItemSparse DurationInInventory,
   that the quest hands over, needs or collects) goes first while the player carries one, ahead even of the area they
   stand in and of a held step: its hand-in once it is done, else its objectives, with the reason "before <item> runs out".
+  An accepted quest with a live client timer (`C_QuestLog.GetTimeAllowed`, the total and elapsed the objective
+  tracker's bar uses) goes first the same way, ordered by its exact cached deadline and then quest ID: its open
+  objectives, or its ready hand-in once they are done, with the reason "before the quest timer runs out". A failed,
+  expired or missing timer adds no urgency, and the player's saved order (§4.3) and the pickup, objective and hand-in
+  dependencies still win.
   Group town visits and cross
   the sea at most once. This nearest order is the default; the opt-in `optimisedRoute` beta instead keeps the
   older heuristics (the story's chapter lead, a town's-own look-ahead and the committed order), which the
@@ -256,8 +261,9 @@ follow the shared family voice.
   its in-progress quest is selected, its travel line and numbered pin go, and the route stays on it until its
   objectives are done (a merged visit takes only the objectives the player can work on now).
 - **4.3 Committed order.** Preserve the chosen sequence and visit identities across rebuilds.
-- **4.4 Count ticks.** A burst of quest-log events that leaves the log's shape alone (the same quests, complete flags
-  and objective done flags; `Model.LogShape`) only moved counts: the last route is repainted with the live counts
+- **4.4 Count ticks.** A burst of quest-log events that leaves the log's shape alone (the same quests, complete and
+  failed flags, live-timer deadlines and objective done flags; `Model.LogShape`) only moved counts: the last route is
+  repainted with the live counts
   (`Model.Repaint`), every journey, order, `here` hold and choice kept, without a plan. Anything else plans in full.
   An objective whose count reaches its need is done, and a quest whose objectives are all done is complete, even
   while the client's finished and complete flags lag the count (a looted quest item reports it a tick later;

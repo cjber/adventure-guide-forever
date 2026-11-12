@@ -702,40 +702,118 @@ local function Front(lap, route, leads)
 	return Holds(lap, moved) and moved or route
 end
 
--- The log quest whose item runs out (docs/design.md §4.1, AGFLogQuest.expiring) that `step` finishes, or nil: a
--- complete one it hands in, else an unfinished one whose objectives it works.
+-- The log quest that makes `step` urgent, or nil (AGF709): a live quest timer (`entry.deadline`) outranks a bag item
+-- that runs out (`entry.expiring`). A complete one it hands in, else an unfinished one whose objectives it works. The
+-- soonest deadline wins; ties keep the earlier reading, so the choice never depends on pairs() order.
 ---@param log table<integer, AGFLogQuest>
 ---@param step AGFStep
 ---@return AGFLogQuest?
-local function Expiring(log, step)
+local function Urgent(log, step)
+	local best
+	local function Weigh(entry)
+		if entry.deadline then
+			if
+				not (best and best.deadline)
+				or entry.deadline < best.deadline
+				or (entry.deadline == best.deadline and entry.id < best.id)
+			then
+				best = entry
+			end
+		elseif entry.expiring and not (best and best.deadline) then
+			best = best or entry
+		end
+	end
 	for _, id in ipairs(Model.Handins(step)) do
 		local entry = log[id]
-		if entry and entry.expiring and entry.complete then
-			return entry
+		if entry and entry.complete then
+			Weigh(entry)
 		end
 	end
 	for _, objective in ipairs(step.objectives or NONE) do
 		local entry = log[objective.id]
-		if entry and entry.expiring and not entry.complete then
-			return entry
+		if entry and not entry.complete then
+			Weigh(entry)
 		end
 	end
-	return nil
+	return best
 end
 
--- A quest carrying an item that runs out goes first, ahead even of the area the player stands in: the item won't
--- wait. Front keeps the route when the order check refuses the move.
+-- Move `steps`' urgent leads to the front: timed leads take the soonest exact deadline, then quest ID, then their
+-- route order; bag-item leads follow. One lead `valid` refuses never cancels the others: the whole set is tried first,
+-- then each lead alone, farthest deadline first, so the soonest still ends at the head when it can. The order checks
+-- themselves stay the caller's (Holds for a lap, Order.Valid for a cheap refresh).
+---@param steps AGFStep[]
+---@param log table<integer, AGFLogQuest>
+---@param valid fun(steps: AGFStep[]): boolean
+---@return AGFStep[]
+local function LeadUrgent(steps, log, valid)
+	local leads = {}
+	for index, step in ipairs(steps) do
+		local entry = Urgent(log, step)
+		if entry then
+			leads[#leads + 1] = {
+				step = step,
+				index = index,
+				deadline = entry.deadline,
+				id = entry.id,
+			}
+		end
+	end
+	if #leads == 0 then
+		return steps
+	end
+	table.sort(leads, function(a, b)
+		if (a.deadline ~= nil) ~= (b.deadline ~= nil) then
+			return a.deadline ~= nil
+		end
+		if a.deadline ~= nil then
+			if a.deadline ~= b.deadline then
+				return a.deadline < b.deadline
+			end
+			if a.id ~= b.id then
+				return a.id < b.id
+			end
+		end
+		return a.index < b.index
+	end)
+	local moved, leading = {}, {}
+	for _, lead in ipairs(leads) do
+		leading[lead.step] = true
+		moved[#moved + 1] = lead.step
+	end
+	for _, step in ipairs(steps) do
+		if not leading[step] then
+			moved[#moved + 1] = step
+		end
+	end
+	if valid(moved) then
+		return moved
+	end
+	local current = steps
+	for index = #leads, 1, -1 do
+		local step = leads[index].step
+		local candidate = { step }
+		for _, other in ipairs(current) do
+			if other ~= step then
+				candidate[#candidate + 1] = other
+			end
+		end
+		if valid(candidate) then
+			current = candidate
+		end
+	end
+	return current
+end
+
+-- A quest with a live timer or a bag item that runs out goes first, ahead even of the area the player stands in:
+-- neither will wait.
 ---@param lap AGFLapState
 ---@param route AGFStep[]
 ---@return AGFStep[]
 local function Hurry(lap, route)
-	local leads, any = {}, false
-	for _, step in ipairs(route) do
-		if Expiring(lap.log, step) then
-			leads[step], any = true, true
-		end
-	end
-	return any and Front(lap, route, leads) or route
+	return LeadUrgent(route, lap.log, function(steps)
+		return Holds(lap, steps)
+	end)
 end
 
 ---@param lap AGFLapState
@@ -966,11 +1044,16 @@ local function DescribeLap(lap)
 				step.detail = step.reason
 			end
 		end
-		local hurry = Expiring(log, step)
-		if hurry then
+		local urgent = Urgent(log, step)
+		if urgent then
+			step.hurryKept = { reason = step.reason, detail = step.detail }
 			step.hurry = true
-			step.reason = hurry.expiringName and ns.L.BEFORE_IT_RUNS_OUT:format(hurry.expiringName)
-				or ns.L.BEFORE_ITEM_RUNS_OUT
+			if urgent.deadline then
+				step.reason = ns.L.BEFORE_TIMER_RUNS_OUT
+			else
+				step.reason = urgent.expiringName and ns.L.BEFORE_IT_RUNS_OUT:format(urgent.expiringName)
+					or ns.L.BEFORE_ITEM_RUNS_OUT
+			end
 			step.detail = step.reason
 		end
 		Locate(data, step, mapName)
@@ -1108,5 +1191,7 @@ end
 
 ns.Planner.Laps = {
 	Laps = Laps,
+	LeadUrgent = LeadUrgent,
 	Pickable = Pickable,
+	Urgent = Urgent,
 }

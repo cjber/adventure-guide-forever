@@ -231,6 +231,7 @@ function harness.load(options)
 		tooltip = {},
 		counts = {
 			CreateFrame = 0,
+			After = 0,
 			displayModeWrites = 0,
 			tickers = 0,
 			SetMouseClickEnabled = 0,
@@ -1724,6 +1725,7 @@ function harness.load(options)
 	local timers = {}
 	G.C_Timer = {
 		After = function(_, fn)
+			h.counts.After = h.counts.After + 1
 			timers[#timers + 1] = fn
 		end,
 		NewTicker = function(_, fn)
@@ -2349,6 +2351,23 @@ function harness.load(options)
 				end
 			end
 			return false
+		end,
+		IsFailed = function(questID)
+			for _, entry in ipairs(log) do
+				if entry.id == questID then
+					return entry.failed == true
+				end
+			end
+			return false
+		end,
+		-- An entry's `timer` {total, elapsed} is the live quest timer C_QuestLog.GetTimeAllowed answers; no timer
+		-- answers nothing, as the client's MayReturnNothing does.
+		GetTimeAllowed = function(questID)
+			for _, entry in ipairs(log) do
+				if entry.id == questID and entry.timer then
+					return entry.timer.total, entry.timer.elapsed
+				end
+			end
 		end,
 		-- As the live client: a waypoint only once the quest is finished (its turn-in).
 		GetNextWaypoint = function(questID)

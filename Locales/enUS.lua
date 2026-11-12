@@ -329,6 +329,7 @@ ns.L = {
 	-- A step moved up the route because a quest item in the bags (named) vanishes after a while.
 	BEFORE_IT_RUNS_OUT = "before %s runs out",
 	BEFORE_ITEM_RUNS_OUT = "before a quest item runs out",
+	BEFORE_TIMER_RUNS_OUT = "before the quest timer runs out",
 	AFTER_PICK_UP = "after you pick it up",
 	OPENS_CHAPTER_HERE = "Opens the next chapter here",
 	QUESTS_IN_PROGRESS = "quests in progress",

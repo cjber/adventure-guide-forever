@@ -73,6 +73,7 @@ Credit for the reports and requests behind the addon.
 | InfamousMunky | Daily Delivery no longer offered once handed on | GitHub; #629 |
 | lanprite | RestedXP guide cards marked as RestedXP's | CurseForge; #713 |
 | cotijelucie | Information mode and showing a stop's quests on the map | Discord; #715 |
+| InfamousMunky | Timed quests lead the automatic journey order | GitHub; #709 |
 
 ## Inspired by
 

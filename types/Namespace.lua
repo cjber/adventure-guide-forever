@@ -153,6 +153,9 @@
 ---@field id integer
 ---@field title string
 ---@field complete boolean ready to hand in
+---@field failed? boolean the client marks it failed (C_QuestLog.IsFailed); never ready to hand in and never urgent
+---@field deadline? number absolute GetTime() when its live quest timer runs out (C_QuestLog.GetTimeAllowed), cached
+--- per timer; nil when it has none, is expired, failed or was handed in
 ---@field level integer
 ---@field groupSize? integer the group size the quest log suggests, when it is 2 or more (C_QuestLog.GetInfo suggestedGroup)
 ---@field map? integer where to go next, from C_QuestLog.GetNextWaypoint: the live client gives one only once finished
@@ -287,7 +290,8 @@
 ---@field r? number an area's radius in yards, wide enough for all its objectives; 0 for a point
 ---@field planned? table<integer, true> the quests on it the route picks up first, not in the log yet (Laps.lua)
 ---@field returns? table<integer, true> a town's hand-ins the route comes back for once their objectives are done
----@field hurry? boolean it leads because a bag item it needs runs out (Laps Hurry); a held step yields to it
+---@field hurry? boolean it leads because a bag item it needs runs out or its quest timer is live (Laps Urgent); a held step yields to it
+---@field hurryKept? {reason: string?, detail: string?} the step's own reason the urgency line replaced, restored when it ends
 ---@field chapter? string the story card's chapter line, or a dungeon chain's label, on the step that holds its quests
 ---@field shapes? AGFNode[] an area's objective nodes, each its own ring, merged into it
 ---@field here? true step 1 is the area the player stands in, objectives open: nothing guides to it, only on past it

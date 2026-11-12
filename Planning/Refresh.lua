@@ -20,11 +20,71 @@ local Ready = ns.Planner.Steps.Ready
 local Route = ns.Planner.Plan.Route
 local Summarise = ns.Planner.Journeys.Summarise
 local Tell = ns.Planner.Steps.Tell
+local LeadUrgent = ns.Planner.Laps.LeadUrgent
+local Urgent = ns.Planner.Laps.Urgent
 
 local function Copy(source)
 	local copy = {}
 	for key, value in pairs(source) do
 		copy[key] = value
+	end
+	return copy
+end
+
+-- Laps clears the "here" hold when a hurry displaces the area the player stands in; the combat reorder must too.
+-- Carry steps are fresh (clear in place); retained steps belong to the last route, so they get a copy instead.
+---@param steps AGFStep[]
+---@param was AGFStep? the head before the reorder
+---@param copy boolean retained steps are shared with the last route
+---@return AGFStep[]
+local function ClearHere(steps, was, copy)
+	local head = steps[1]
+	if not was or was == head or not was.here then
+		return steps
+	end
+	if not copy then
+		was.here = nil
+		return steps
+	end
+	local moved = Copy(was) --[[@as AGFStep]]
+	moved.here = nil
+	for index, step in ipairs(steps) do
+		if step == was then
+			steps[index] = moved
+		end
+	end
+	return steps
+end
+
+-- The step with its urgency line read again from the live log (AGF709), so a cheap in-combat refresh neither keeps a
+-- stale hurry for a quest that failed, expired or was handed in, nor loses an active timer the carry journey picked
+-- up. A copy is returned only when the answer moved; an unchanged step stays the same table.
+---@param log table<integer, AGFLogQuest>
+---@param step AGFStep
+---@return AGFStep
+local function Urgency(log, step)
+	local entry = Urgent(log, step)
+	local reason
+	if entry then
+		reason = entry.deadline and ns.L.BEFORE_TIMER_RUNS_OUT
+			or (entry.expiringName and ns.L.BEFORE_IT_RUNS_OUT:format(entry.expiringName))
+			or ns.L.BEFORE_ITEM_RUNS_OUT
+	end
+	local wanted = entry ~= nil
+	if (step.hurry == true) == wanted and (not wanted or step.reason == reason) then
+		return step
+	end
+	local copy = Copy(step) --[[@as AGFStep]]
+	if wanted then
+		-- Keep the step's own story/chapter reason under the urgency line, so ending the timer restores it.
+		copy.hurryKept = copy.hurryKept or { reason = step.reason, detail = step.detail }
+		copy.hurry = true
+		copy.reason, copy.detail = reason, reason
+	else
+		copy.hurry = nil
+		copy.reason = copy.hurryKept and copy.hurryKept.reason or nil
+		copy.detail = copy.hurryKept and copy.hurryKept.detail or nil
+		copy.hurryKept = nil
 	end
 	return copy
 end
@@ -78,8 +138,10 @@ end
 -- choice), or handed in, leaves its town, which goes only once it is empty or skipped; the full build after combat
 -- brings back anything else. The same table when nothing went.
 ---@param prune fun(step: AGFStep): AGFStep? the step, a copy less the quests gone, or nil when none is left
+---@param log table<integer, AGFLogQuest>
+---@param cap? integer the quests the log may hold
 ---@return AGFJourney?
-local function Retained(journey, prune)
+local function Retained(journey, prune, log, cap)
 	local steps, changed, chapterGone = {}, false, false
 	local chapterID = journey.story and journey.story.members[journey.story.chapter]
 	for _, step in ipairs(journey.steps) do
@@ -95,10 +157,28 @@ local function Retained(journey, prune)
 				kept.chapter = nil -- a copy: its chapter's quest went
 			end
 		elseif kept and kept ~= step and step.chapter then
-			-- The chapter stays: its town keeps the story's reason, as the full build gives it.
-			kept.reason, kept.detail = step.reason, #kept.quests == 1 and step.reason or kept.detail
+			-- The chapter stays: its town keeps the story's reason, as the full build gives it. A hurry line is not that
+			-- reason, so the kept copy restores what the urgency line replaced.
+			local own = step.hurryKept and step.hurryKept.reason or step.reason
+			kept.reason, kept.detail = own, #kept.quests == 1 and own or kept.detail
+		end
+		if kept then
+			local urgent = Urgency(log, kept)
+			changed = changed or urgent ~= kept
+			kept = urgent
 		end
 		steps[#steps + 1] = kept
+	end
+	-- A story step whose quest timer is active leads within its journey too, not only the carry one; the cheap order
+	-- check keeps its pickups and hand-ins in place. A displaced "here" head is cleared like Laps does after Hurry.
+	if #steps > 0 then
+		local was = steps[1]
+		local ordered = LeadUrgent(steps, log, function(route)
+			return ns.Order.Valid(route, cap, log)
+		end)
+		ordered = ClearHere(ordered, was, true)
+		changed = changed or ordered ~= steps
+		steps = ordered
 	end
 	if not changed or #steps == 0 then
 		return #steps > 0 and journey or nil
@@ -182,6 +262,8 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 				end
 				Tell(copy)
 			end
+			-- The urgency line belonged to the pre-prune step; Urgency works from the fresh reason Tell just wrote.
+			copy.hurry, copy.hurryKept = nil, nil
 			return copy
 		end
 		-- A lap's return hands in what it picks up or carries once done: kept while carried, or while still open.
@@ -210,12 +292,17 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 			copy.z = spot.z
 			Locate(data, copy, mapName)
 		end
+		-- The urgency line belonged to the pre-prune step; Urgency works from the fresh reason Describe just wrote.
+		copy.hurry, copy.hurryKept = nil, nil
 		return copy
 	end
 	-- Accepted quests remain available as one choice during combat too.
 	local journeys, dismissed, zone = {}, prefs.notInterested or {}, nil
 	for _, journey in ipairs(last.journeys) do
-		local kept = journey.kind ~= "carry" and not dismissed[journey.key] and Retained(journey, Prune) or nil
+		local kept = journey.kind ~= "carry"
+				and not dismissed[journey.key]
+				and Retained(journey, Prune, log, player.logMax)
+			or nil
 		if kept and kept.kind == "story" then
 			zone = kept.zone
 		end
@@ -227,6 +314,16 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 	end)
 	local carry = Carry(data, player, completed, log, Ready(data, log), prefs, mapName, added)
 	if carry then
+		-- A timer that started (or a bag item picked up) leads in a fight too: the cheap order check is Order.Valid,
+		-- and the urgency line is read again from the live log rather than copied from the last full build.
+		local was = carry.steps[1]
+		carry.steps = LeadUrgent(carry.steps, log, function(steps)
+			return ns.Order.Valid(steps, player.logMax, log)
+		end)
+		carry.steps = ClearHere(carry.steps, was, false)
+		for index, step in ipairs(carry.steps) do
+			carry.steps[index] = Urgency(log, step)
+		end
 		table.insert(journeys, (journeys[1] and journeys[1].kind == "story") and 2 or 1, carry)
 	end
 	local route = Route(journeys, prefs)
