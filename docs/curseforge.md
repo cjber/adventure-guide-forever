@@ -44,7 +44,6 @@ Forever's new quests are only considered once they are in your log, and a missin
 ## Usage
 
 `/agf`, `/adventureguide`, the minimap button or the addon compartment opens the guide on the world map. Options are in the guide's cog and Settings > AddOns > Adventure Guide, whose Forever addons page lists all five Forever addons.
-`/agf leaderboard` opens Forever Leaderboards on the Adventure Guide tab, ranking your quest turn-ins against the totals your guild and group members running the addon report; their numbers are player-reported, not verified. Sharing is on unless you turn it off with `/agf share off`, the window's Share my progress box, or the checkbox under Settings > AddOns > Adventure Guide.
 
 For a bug report, paste `/agf report`. For a wrong stop, `/agf where`; for a missing quest, add `/agf audit`. `/agf issue` opens a ready-made GitHub issue link.
 

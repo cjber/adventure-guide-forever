@@ -272,6 +272,8 @@ ns.L = {
 	TRAVEL_PASSAGE = "Go through to %s",
 	-- The tracker (docs/design.md §2.5).
 	NEXT = "Next: %s",
+	THEN = "Then: %s",
+	CONTINUES_AT_LEVEL = "Continues at level %d: %s",
 	RESUME = "Where you left off: %s",
 	STORY_COMPLETE = "Story complete",
 	JOURNEY_COMPLETE = "Journey complete",
@@ -463,6 +465,8 @@ ns.L = {
 		.. "nearer, so you tend to do them together. Party members with Adventure Guide tell each other which quests "
 		.. "they have, as hidden addon messages.",
 	SETTING_ROUTE_ORDER = "Optimised route (beta)",
+	SETTING_OUTGROWN = "Show outgrown zones and dungeons",
+	SETTING_OUTGROWN_TOOLTIP = "Keep zones and dungeons whose quests are grey in the journey choices.",
 	SETTING_ROUTE_ORDER_TOOLTIP = "Off: the route is the nearest thing to do next, step by step, so it is simple "
 		.. "and predictable. On: an experimental order that leads with the story's chapter, groups a town's work and "
 		.. "keeps its earlier suggestions steady.",

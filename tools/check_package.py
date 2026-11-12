@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 # never ships, so the smoke spec needs that one folder beside tests/.
 POLICY = package.Policy(
     addons=("AdventureGuideForever", "ForeverCore"),
-    specs=("tests/smoke_spec.lua",),
+    specs=("tests/smoke_spec.lua", "tests/sim/exercise_scenario.lua"),
     support=("tests", "tools/forever_sim"),
 )
 

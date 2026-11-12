@@ -58,6 +58,16 @@ do
 	equal(#h.errors, 1, "spf: and passed to the error handler")
 end
 
+-- API v2 removes leaderboards while retaining the navigation contract.
+do
+	local h = harness.load({ spf = "subscribe", spfAPIVersion = 2 })
+	h.flush()
+	equal(h.spf.Subscribe, 1, "SPF v2: navigation subscriptions remain available")
+	local future = harness.load({ spf = "subscribe", spfAPIVersion = 3 })
+	future.flush()
+	equal(future.spf.Subscribe, 0, "unknown SPF versions remain unsupported")
+end
+
 -- An older Shortest Path (no Subscribe): the super-tracking event still notices.
 do
 	local h = Load("ended")

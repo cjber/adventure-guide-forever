@@ -69,6 +69,7 @@ function ns.RegisterSettings()
 					Checkbox(subcategory, "followQuest", ns.L.SETTING_FOLLOW_QUEST, ns.L.SETTING_FOLLOW_QUEST_TOOLTIP),
 					Checkbox(subcategory, "partyQuests", ns.L.SETTING_PARTY_QUESTS, ns.L.SETTING_PARTY_QUESTS_TOOLTIP),
 					Checkbox(subcategory, "optimisedRoute", ns.L.SETTING_ROUTE_ORDER, ns.L.SETTING_ROUTE_ORDER_TOOLTIP),
+					Checkbox(subcategory, "showOutgrown", ns.L.SETTING_OUTGROWN, ns.L.SETTING_OUTGROWN_TOOLTIP),
 					Checkbox(
 						subcategory,
 						"includeDungeonsDefault",
@@ -215,10 +216,6 @@ function ns.RegisterSettings()
 		{
 			"SETTINGS_GROUP_INTERFACE",
 			function(subcategory)
-				Settings.RegisterInitializer(
-					subcategory,
-					Checkbox(subcategory, "statsShare", ns.L.SETTING_STATS_SHARE, ns.L.SETTING_STATS_SHARE_TOOLTIP)
-				)
 				Settings.RegisterInitializer(
 					subcategory,
 					Checkbox(subcategory, "whatsNew", ns.L.SETTING_WHATS_NEW, ns.L.SETTING_WHATS_NEW_TOOLTIP)

@@ -922,15 +922,15 @@ end
 -- to the player now, as Choices judges its own.
 ---@param eligible integer[]
 ---@return integer[]
-local function WithInstances(data, player, completed, log, index, eligible)
+local function WithInstances(data, player, completed, log, index, eligible, prefs)
 	local pool = {}
 	local eligibleIndex, dungeonIndex = 1, 1
-	local dungeons = index.dungeonsByLevel[player.level]
+	local dungeons = prefs.showOutgrown and nil or index.dungeonsByLevel[player.level]
 	if not dungeons then
 		dungeons = {}
 		for _, id in ipairs(index.dungeons) do
 			local quest = data.quests[id]
-			if quest.min <= player.level and not Model.IsGray(quest.level, player.level) then
+			if quest.min <= player.level and (prefs.showOutgrown or not Model.IsGray(quest.level, player.level)) then
 				dungeons[#dungeons + 1] = id
 			end
 		end
@@ -1474,7 +1474,8 @@ function Model.Journeys(
 	-- then whatever the Dungeons toggle says, and a chain that leads into an instance shows as a story, so the guide
 	-- never ends on "nothing fits".
 	local stranded = player.level >= player.maxLevel or not (headed or told)
-	local pool = (stranded and not prefs.dungeons) and WithInstances(data, player, completed, log, index, eligible)
+	local pool = (stranded and not prefs.dungeons)
+			and WithInstances(data, player, completed, log, index, eligible, prefs)
 		or eligible
 	do
 		local dungeonInstances, dungeonOpened

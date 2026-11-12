@@ -189,6 +189,7 @@
 ---@field dungeons boolean
 ---@field catalogue? AGFCatalogue the composed catalogue the last login built, reused when every input matches
 ---@field optimisedRoute? boolean the account-wide planned (beta) route order; nil/false is the nearest-action order
+---@field showOutgrown? boolean keep zones and dungeons whose quests are grey in the journey choices
 ---@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, the first card drawn
 ---@field previewGroups table<string, boolean> the overview headers this character collapsed, by group key; a group with no entry uses its default
 ---@field skipped table<string, boolean> step keys skipped this session
@@ -502,7 +503,7 @@
 ---@field legs AGFSPFLeg[] -- fresh copies on every call
 
 ---@class AGFSPFAPI
----@field version integer -- AGF accepts exactly 1
+---@field version integer -- AGF accepts 1 and 2 for the shared navigation contract
 ---@field minor? integer -- 1 from Subscribe; absent before
 ---@field Estimate fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): number?, AGFSPFNoRoute? -- travel seconds; nil comes with the reason
 ---@field Navigate fun(owner: string, map: integer, x: number, y: number, title?: string, kind?: AGFSPFStopKind): boolean -- starts or replaces guidance
@@ -612,16 +613,12 @@
 ---@field NEXT_CAMP string a step menu's entry: move an area step on to its next objective spot
 ---@field HELP_AUDIT string
 ---@field HELP_DUMP string
----@field HELP_LEADERBOARD string
----@field HELP_SHARE string
----@field LEADERBOARD_SHARING_ON string
----@field LEADERBOARD_SHARING_OFF string
----@field LEADERBOARD_METRIC string the heading above the leaderboard list
----@field LEADERBOARD_TOTAL string the grey word after a weekly row's cumulative total
 ---@field HELP_TRACKER string
 ---@field HELP_REPORT string
 ---@field HELP_ISSUE string
 ---@field HELP_WHERE string
+---@field HELP_LEADERBOARD string
+---@field HELP_SHARE string
 ---@field REPORT_TITLE string the report window's title
 ---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
 ---@field BEFORE_IT_RUNS_OUT string format: expiring quest item name; the reason a route step is hurried
@@ -1366,6 +1363,10 @@
 ---@field SETTING_PARTY_QUESTS_TOOLTIP string
 ---@field SETTING_ROUTE_ORDER string beta: the planned route order (chapter lead, town look-ahead, committed order)
 ---@field SETTING_ROUTE_ORDER_TOOLTIP string
+---@field SETTING_OUTGROWN string
+---@field SETTING_OUTGROWN_TOOLTIP string
+---@field CONTINUES_AT_LEVEL string
+---@field THEN string
 
 ---@class AGFStepStyle
 ---@field Color fun(role?: string, id?: integer): ColorMixin?
@@ -1945,9 +1946,8 @@
 ---@field RestedXPIntegrated fun(): boolean
 ---@field RestedXPNativeUI fun(): boolean
 ---@field version integer
----@field minor integer 1 from Subscribe, 2 from Suggestions and StartSuggestion, 3 from Stats, 4 from Leaderboard, 5 from Status, Pause, Resume and each stop's quest IDs, 6 from each read's not-ready reason and the shared subscription hub, 7 from the suggestions change and nil and "invalid" for a bad limit
+---@field minor integer 1 from Subscribe, 2 from Suggestions and StartSuggestion, 3 from Stats, 4 from Status, Pause, Resume and each stop's quest IDs, 5 from each read's not-ready reason and the shared subscription hub, 6 from the suggestions change and nil and "invalid" for a bad limit
 ---@field Stats fun(): AGFActivityRecord[] read-only per-character rows (minor 3)
----@field Leaderboard fun(limit?: integer): AGFLeaderboard? quest turn-ins among this character and reporting peers (minor 4)
 ---@field Suggestions fun(limit?: integer): AGFAPISuggestion[]?, AGFAPIReadError? the panel's cards, at most five; nil and "loading" while the route is being worked out, or "invalid" for a bad limit
 ---@field StartSuggestion fun(id: string): boolean starts a card as the guide's own Start does
 ---@field Subscribe fun(callback: fun(changes: AGFAPIChanges)): fun() calls back the frame after the current stop, the cards, the journey or the status changes, at most once per burst; returns the unsubscribe
@@ -1979,28 +1979,10 @@ AdventureGuideForever = nil
 
 ---@class AGFNamespace
 ---@field ActivityStats fun(): AGFActivityRecord[]
----@field Stats AGFStats Adventure Guide's adapter and leaderboard over it (Core/Stats.lua)
-
----@class AGFLeaderboardRow
----@field rank integer 1-based; ties fall to the lowercase name
----@field name string
----@field value integer cumulative quest turn-ins as reported; player-reported, not verified
----@field eventUnix? integer
----@field self? true this character
-
----@class AGFLeaderboard
----@field metric "quest_turn_ins"
----@field scope "guild_group" addon reports from the guild and the current group, never the realm
----@field sharing boolean false hides every other player and stops sending
----@field total integer rows ranked, including those cut by the limit
----@field rows AGFLeaderboardRow[] the top rows, plus this character's row when it ranks below them
+---@field Stats AGFStats Adventure Guide's local activity stats (Core/Stats.lua)
 
 ---@class AGFStats
----@field Sync fun() offer this character's total to the guild and group channels
----@field Shared fun(): table<string, table<string, table<string, {value: integer, eventUnix: integer}>>> rows heard from other users by sender, metric and subject; empty while sharing is off
----@field SetEnabled fun(enabled: boolean) the saved sharing switch changed: cancel what waited, or offer the total again
----@field Leaderboard fun(limit?: integer): AGFLeaderboard?
----@field Open fun() /agf leaderboard, on this addon's tab in Forever Leaderboards
+---@field Local fun(): integer, integer? this character's local activity total and latest event
 
 ---@class AGFStoryCompletion
 ---@field Record fun(questID: integer): boolean true only for a new proven final turn-in

@@ -19,6 +19,19 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  visual-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify client visual proof
+        env:
+          VISUAL_BASE: ${{ github.event.pull_request.base.sha || (github.ref == 'refs/heads/main' && github.event.before) || 'origin/main' }}
+        run: python3 -m tools.forever_tools.visual_proof --base "$VISUAL_BASE"
+
   deadcode:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -258,7 +271,7 @@ jobs:
           fi
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends --allow-downgrades \
-            "luajit=$LUAJIT" "libluajit-5.1-2=$LUAJIT" "libluajit-5.1-common=$LUAJIT"
+            "luajit=$LUAJIT" "libluajit-5.1-2=$LUAJIT" "libluajit-5.1-common=$LUAJIT" "lua5.1=5.1.5-9build2"
       # The smoke spec runs on the packaged files with tests/ laid over them, the built corpus with it.
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
@@ -279,4 +292,9 @@ jobs:
       - uses: BigWigsMods/packager@01e8631a69c69d7654c788d152630d5fed9e3812 # v2.7.0
         with:
           args: -d -z
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: tools/.cache/forever_sim
+          key: forever-sim-${{ hashFiles('tools/forever_sim/fetch.py') }}
+      - run: python3 tools/forever_sim/fetch.py
       - run: python3 tools/check_package.py

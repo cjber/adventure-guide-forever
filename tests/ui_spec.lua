@@ -341,7 +341,8 @@ do
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
-		"maxQuestLevelOffset restedxpGuide wanderer followQuest partyQuests optimisedRoute includeDungeonsDefault "
+		"maxQuestLevelOffset restedxpGuide wanderer followQuest partyQuests optimisedRoute "
+			.. "showOutgrown includeDungeonsDefault "
 			.. "titleStartsRoute autoStart autoNextZone npcHighlight polestarAside warnClosing stepSound trainingReminders",
 		"Route holds its rows in order"
 	)
@@ -353,8 +354,8 @@ do
 	)
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_INTERFACE] or {}, " "),
-		"statsShare whatsNew markUpgrades minimapButton",
-		"Interface holds the activity sharing and update rows; the suggestions setting is on the Forever addons page"
+		"whatsNew markUpgrades minimapButton",
+		"Interface holds the update rows; the suggestions setting is on the Forever addons page"
 	)
 	-- The index page's buttons are on the addon's own category, one per group, in index order, and open its subpage.
 	local buttons = {}
@@ -1817,7 +1818,7 @@ do
 	clean(h, "combat")
 end
 
--- The contract (types/Namespace.lua AGFSPFAPI): version 1 with every required function, or no Shortest Path at all.
+-- Navigation supports SPF API 1 and 2 with every required member; future versions fall back safely.
 do
 	local h = Load("v1")
 	local api = h.G.ShortestPathForever.API
@@ -1826,7 +1827,9 @@ do
 	api.Cancel = nil
 	equal(h.ns.Integrations.Provider(), nil, "contract: a missing required function reads as absent")
 	api.Cancel, api.version = cancel, 2
-	equal(h.ns.Integrations.Provider(), nil, "contract: another version reads as absent")
+	equal(h.ns.Integrations.Provider(), "Shortest Path", "contract: v2 navigation remains compatible")
+	api.version = 3
+	equal(h.ns.Integrations.Provider(), nil, "contract: a future version reads as absent")
 	h.ns.Guidance.Navigate(h.ns.Route().steps[1])
 	equal(h.counts.SetUserWaypoint, 1, "contract: absent falls back to the native waypoint")
 	clean(h, "contract")
@@ -3285,8 +3288,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(longCard.Reason.maxLines, 1, label .. ": details have one line")
 	longCard.journey.title = title
 	h.ns.OpenPanel()
-	-- The zone icons: the zone's art cut round by the circle mask in a clipping frame, the ring over it and the kind
-	-- as a badge; built once, not on every refresh; the plain ring where the data has no art.
+	-- The zone icons: the zone's art is cut round by the circle mask in a clipping frame, with the kind as a badge;
+	-- there is no decorative ring that could be mistaken for a progress meter.
 	local icon = storyCard.Icon
 	equal(icon.Clip:IsShown(), true, label .. ": the story's zone art")
 	equal(icon.Clip.clipsChildren, true, label .. ": clipped")
@@ -3301,7 +3304,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		end
 	end
 	equal(tiles > 1 and #icon.Art.overlays > 0, true, label .. ": base tiles and overlays")
-	equal(icon.Ring:GetAtlas(), "adventureguide-ring", label .. ": in the ring")
+	equal(icon.Ring, nil, label .. ": no static progress-looking ring")
 	equal(icon.Kind:GetAtlas(), "questlog-questtypeicon-story", label .. ": the kind as a badge")
 	local sets = 0
 	for _, texture in ipairs(icon.Art.base) do
@@ -4599,23 +4602,34 @@ do
 	ns.Data = {
 		quests = {
 			[900001] = { title = "First chain", level = 2, next = 900002 },
-			[900002] = { title = "Harder successor", level = 20, pre = { 900001 } },
+			[900002] = { title = "Harder successor", level = 20, min = 19, pre = { 900001 } },
 			[900003] = { title = "Second chain", level = 3, next = 900004 },
-			[900004] = { title = "Second successor", level = 4, pre = { 900003 } },
+			[900004] = { title = "Second successor", level = 40, min = 1, pre = { 900003 } },
 			[900005] = { title = "Unknown level", level = 0 },
 		},
 	}
 	local details = ns.Pins.StopTooltip({ quests = { 900001, 900003, 900005 } })
 	equal(details:find("[2] First chain", 1, true) ~= nil, true, "stop context: first known level")
 	equal(details:find("[20] Harder successor", 1, true) ~= nil, true, "stop context: successor has own level")
-	equal(details:find("Next: |cff", 1, true) ~= nil, true, "stop context: successor difficulty color")
+	equal(
+		details:find("Continues at level 19: |cff", 1, true) ~= nil,
+		true,
+		"stop context: unlock uses minimum level rather than difficulty"
+	)
+	equal(details:find("Next:", 1, true), nil, "stop context: successor is not an instruction")
+	equal(details:find("Continues at level 20:", 1, true), nil, "difficulty is not an unlock requirement")
 	equal(details:find("Second successor", 1, true) ~= nil, true, "stop context: every quest carries chain context")
+	equal(details:find("Then: |cff", 1, true) ~= nil, true, "stop context: in-range successor is descriptive")
 	local _, chapters = details:gsub("Chapter 1 of 2", "")
 	equal(chapters, 2, "stop context: both proven chapters")
 	equal(details:find("[0]", 1, true), nil, "stop context: unknown level omitted")
 	local final = ns.Pins.StopTooltip({ quests = { 900002 } })
 	equal(final:find("Chapter 2 of 2", 1, true) ~= nil, true, "stop context: final chapter")
 	equal(final:find("Next:", 1, true), nil, "stop context: final chapter has no successor")
+	ns.Data.quests[900002].min = nil
+	local unknownMinimum = ns.Pins.StopTooltip({ quests = { 900001 } })
+	equal(unknownMinimum:find("Continues at level", 1, true), nil, "an unknown minimum does not invent an unlock level")
+	equal(unknownMinimum:find("Then:", 1, true) ~= nil, true, "an unknown minimum still describes the next chapter")
 	ns.Data = {
 		quests = {
 			[900001] = { title = "Unproven chain", level = 2, next = 900002 },

@@ -13,7 +13,6 @@ The minor history, from the git history:
   `RestedXPIntegrated`, `RestedXPNativeUI` and `ResumeRestedXP`, which shipped before minors were counted.
 - `minor` 2: `Suggestions` and `StartSuggestion`.
 - `minor` 3: `Stats`.
-- `minor` 4: `Leaderboard`.
 - `minor` 5: `Status`, `Pause`, `Resume` and each stop's quest IDs.
 - `minor` 6: each read's not-ready reason (`nil, reason`) and `Subscribe` built on `ForeverCore.APIKit.Hub`, with the
   same change names and the same frame-after behaviour.
@@ -27,8 +26,6 @@ The minor history, from the git history:
   a whole number of zero or more is `nil, "invalid"`.
 - `Stats()` returns fresh read-only activity rows: an aggregate `quest_turn_ins` row and one `quest_turn_in` row per
   quest ID.
-- `Leaderboard(limit)` returns cumulative quest turn-ins ranked among this character and the guild and group members
-  who report theirs.
 - `Status()` returns where the chosen journey's guidance stands, or `nil, reason`.
 - `Pause()` stops the chosen journey's route without dropping the choice.
 - `Resume()` starts the chosen journey's route again as its card does.

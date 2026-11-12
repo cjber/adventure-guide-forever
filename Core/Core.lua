@@ -32,6 +32,7 @@ local DEFAULTS = {
 	stepSound = true,
 	trainingReminders = false,
 	maxQuestLevelOffset = 2,
+	showOutgrown = false,
 	-- Opt-in: with the Adventure tab closed the map shows no Adventure Guide mark unless the player asks for them.
 	showMapPins = false,
 	showQuestGivers = false,
@@ -60,7 +61,6 @@ local DEFAULTS = {
 	-- One chat line after an update (WhatsNew).
 	whatsNew = true,
 	-- Share small cumulative activity rows over guild/group addon channels; opt-out, so only an explicit off stops it.
-	statsShare = true,
 	-- Beta: the planned route order (chapter lead, town look-ahead, committed order); false is the simple
 	-- nearest-action order, the default (docs/design.md §4.1).
 	optimisedRoute = false,
@@ -386,9 +386,6 @@ function ns.SetSetting(key, value)
 	if key == "markUpgrades" then
 		ns.Upgrades.Update()
 	end
-	if key == "statsShare" and ns.Stats then
-		ns.Stats.SetEnabled(value == true)
-	end
 	if key == "minimapButtonHidden" then
 		ForeverCore.MinimapButton.Refresh()
 	end
@@ -413,6 +410,7 @@ function ns.Prefs()
 	charDB.camps = sessionCamps
 	-- The account-wide route-order setting, folded into the prefs the planner reads (Model.Laps, Model.Build).
 	charDB.optimisedRoute = ns.Setting("optimisedRoute") == true
+	charDB.showOutgrown = ns.Setting("showOutgrown") == true
 	return charDB
 end
 
@@ -1218,14 +1216,6 @@ local function Slash(msg)
 		)
 	elseif command == "audit" then
 		Audit()
-	elseif command == "leaderboard" or command == "stats" then
-		ns.Stats.Open()
-	elseif command == "share" or command == "share on" or command == "share off" then
-		if command ~= "share" then
-			ns.SetSetting("statsShare", command == "share on")
-		end
-		local sharing = ns.Setting("statsShare") ~= false
-		ns.Print(sharing and L.LEADERBOARD_SHARING_ON or L.LEADERBOARD_SHARING_OFF)
 	elseif command == "dump" then
 		ns.Dump()
 	elseif command == "tracker" then
