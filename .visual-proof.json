@@ -3,13 +3,13 @@
   "runtime_sha256": "b95da2f8a3402e5654c0709153729b979a07f76c1deaac2bda30f2b45dca27df",
   "candidate": "7014df723bb7a2d31b5f17608264cd006b7eff500f81026c2ce1006359d053f1",
   "client_build": "1.60.1.70888 (Interface 16001)",
-  "source_commit": "d0cbd696a0d8a4a1fd6d6dc63c1d20ced8a6dc5b",
+  "source_commit": "d0cbd6963e2cd3bfc4f92a2948c65a149d0a19ac",
   "flows": [
     {
       "name": "Redridge multi-quest stop story tooltip",
       "steps": [
         "Reload the installed candidate with /rl",
-        "Open the Redridge world map and hover stop 5 of 10",
+        "Open the Redridge world map and hover a multi-quest stop",
         "Inspect chapter and successor text for The Everstill Bridge and A Baying of Gnolls; Then describes successors without an instruction or fabricated unlock level"
       ],
       "result": "pass"
@@ -45,10 +45,6 @@
     {
       "url": "https://gist.githubusercontent.com/cjber/d1654272215bd840c89dfe56638db904/raw/01aca04c1a5592e155fd5c168e1c298f98ed6a5e/agf711-final-grey.png",
       "sha256": "54aedafbbee8507a92ce452725aeaaffc1995f032e6e7ccad78ac4bb09654e5e"
-    },
-    {
-      "url": "https://gist.githubusercontent.com/cjber/d1654272215bd840c89dfe56638db904/raw/01aca04c1a5592e155fd5c168e1c298f98ed6a5e/agf711-final-story.png",
-      "sha256": "848b4cdf0e529847c4af7c773e08069c182e2b31912166d17d533ba228aa5ae4"
     }
   ]
 }
