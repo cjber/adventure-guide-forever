@@ -1,10 +1,10 @@
 {
-  "input_digest": "4bae67bc60c686bf5326450cf3c7dc392ed6458c9afdb71242cf6c9c9adb9443",
-  "runtime_sha256": "4bae67bc60c686bf5326450cf3c7dc392ed6458c9afdb71242cf6c9c9adb9443",
-  "candidate": "da082dc673683817d76585a5e77340a8619c4d282b5cb5ebfa6592a7ca43d89e",
+  "input_digest": "ccabaa32e0c245e86d53bc001134b788d41758be8a3d4a61fa105b0e21ec940f",
+  "runtime_sha256": "ccabaa32e0c245e86d53bc001134b788d41758be8a3d4a61fa105b0e21ec940f",
+  "candidate": "817e32b08c1161c815086f153d8662fe2dadb3320eea910f28df9a21eebaaa6d",
   "client_build": "1.60.1.70888 (Interface 16001)",
-  "source_commit": "056e19e11c3f4c65669d4a877bf22a301634e52f",
-  "notes": "Recorded in the player's live client from an installed source-tree build of this commit (git archive, version stamped v1.7.6-dev+056e19e1); visual_proof --compare reported no differing runtime files, the install additionally carries the ignored store icon media/icon-400.png. The character's current step is a collect step, so the guide's NPC target button (#725) was not on screen: this session shows the guide section and its Shortest Path route rows keeping their layout through repeated tracker re-layouts. The target button's row under an NPC step stays a player /reload check; tests/npc_highlight_spec.lua and tests/restedxp_actions_spec.lua cover the second-layout height.",
+  "source_commit": "2e028a6895753ebfa360c60aa093b84ec3290b29",
+  "notes": "Recorded in the player's live client from an installed source-tree build of this commit (git archive, merged with main for the ForeverCore v1.8.1 pin, running against ForeverCore v1.8.1); visual_proof --compare reported no differing runtime files, the install additionally carries the ignored store icon media/icon-400.png. The character's current step is a collect step, so the guide's NPC target button (#725) was not on screen: this session shows the guide section and its Shortest Path route rows keeping their layout through repeated tracker re-layouts. The target button's row under an NPC step stays a player /reload check; tests/npc_highlight_spec.lua and tests/restedxp_actions_spec.lua cover the second-layout height.",
   "flows": [
     {
       "name": "Guide tracker section through re-layouts",
@@ -19,12 +19,12 @@
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/0b0da8f0f279b410ce5279367957ccb5/raw/232764c85d327779d65af50aef8a95768faca3cb/tracker.png",
-      "sha256": "7ec789025d36f60a8e8657984c02b24179ba22d273d329734347444ea60dd609"
+      "url": "https://gist.githubusercontent.com/cjber/a7f365aeacc1a4f07eb2e61c5c603fb9/raw/48792b8d9a38bf0a3ddb69e77dc2b1d652b3dca1/tracker.png",
+      "sha256": "4d85f3180333e406d4b9fa85372c5b6f629562c6da4a0ebef49ee23f753271a8"
     },
     {
-      "url": "https://gist.githubusercontent.com/cjber/0b0da8f0f279b410ce5279367957ccb5/raw/232764c85d327779d65af50aef8a95768faca3cb/relayout.png",
-      "sha256": "891eece0f5a4b79996ed8c0af6acf75228b7588662bb85f89d11fd6a54eff410"
+      "url": "https://gist.githubusercontent.com/cjber/a7f365aeacc1a4f07eb2e61c5c603fb9/raw/48792b8d9a38bf0a3ddb69e77dc2b1d652b3dca1/relayout.png",
+      "sha256": "4a8053c6f6b24b1175f35634d1b193035c48634a871da348190258de599afaa5"
     }
   ],
   "tested_artifact": "source-tree"
