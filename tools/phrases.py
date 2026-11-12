@@ -69,10 +69,11 @@ def keyword_files() -> list[str]:
     tracked = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, check=True).stdout
     names = [name for name in tracked.decode().split("\0") if name]
     manifest = pkgmeta.read(ROOT)
+    project_tocs = set(pkgmeta.localization_toc_files(ROOT))
     return [
         name
         for name in names
-        if Path(name).suffix in {".lua", ".md", ".toc", ".txt", ".xml"}
+        if (Path(name).suffix == ".lua" or (ROOT / name).resolve() in project_tocs)
         and (manifest is None or (manifest.keeps(name) and not manifest.kept_bytes(name)))
         and (ROOT / name).is_file()
         and KEYWORD.encode() in (ROOT / name).read_bytes()

@@ -14,13 +14,25 @@ class PhrasesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "tools").mkdir()
-            (root / ".pkgmeta").write_text("ignore:\n  - tools\nplain-copy:\n  - Raw.lua\n")
-            for name in ("Runtime.lua", "Raw.lua", "tools/check.lua", "checker.py"):
-                (root / name).write_text(KEYWORD + " export\n")
+            (root / ".pkgmeta").write_text("package-as: Example\nignore:\n  - tools\nplain-copy:\n  - Raw.lua\n")
+            for name in (
+                "Runtime.lua",
+                "Raw.lua",
+                "tools/check.lua",
+                "checker.py",
+                "README.md",
+                "notes.txt",
+                "Panel.xml",
+                "Other.toc",
+                "Example.toc",
+            ):
+                (root / name).write_text(
+                    ("## Interface: 16001\n" if name == "Example.toc" else "") + KEYWORD + " export\n"
+                )
             subprocess.run(["git", "init", "-q", str(root)], check=True)
             subprocess.run(["git", "-C", str(root), "add", "."], check=True)
             with patch("phrases.ROOT", root):
-                self.assertEqual(keyword_files(), ["Runtime.lua"])
+                self.assertEqual(keyword_files(), ["Example.toc", "Runtime.lua"])
 
     def test_lines(self):
         source = r"""
