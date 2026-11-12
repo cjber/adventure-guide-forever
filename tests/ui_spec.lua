@@ -4608,8 +4608,14 @@ do
 	local details = ns.Pins.StopTooltip({ quests = { 900001, 900003, 900005 } })
 	equal(details:find("[2] First chain", 1, true) ~= nil, true, "stop context: first known level")
 	equal(details:find("[20] Harder successor", 1, true) ~= nil, true, "stop context: successor has own level")
-	equal(details:find("Next: |cff", 1, true) ~= nil, true, "stop context: successor difficulty color")
+	equal(
+		details:find("Continues at level 20: |cff", 1, true) ~= nil,
+		true,
+		"stop context: successor level is descriptive"
+	)
+	equal(details:find("Next:", 1, true), nil, "stop context: successor is not an instruction")
 	equal(details:find("Second successor", 1, true) ~= nil, true, "stop context: every quest carries chain context")
+	equal(details:find("Then: |cff", 1, true) ~= nil, true, "stop context: in-range successor is descriptive")
 	local _, chapters = details:gsub("Chapter 1 of 2", "")
 	equal(chapters, 2, "stop context: both proven chapters")
 	equal(details:find("[0]", 1, true), nil, "stop context: unknown level omitted")

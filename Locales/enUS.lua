@@ -272,6 +272,8 @@ ns.L = {
 	TRAVEL_PASSAGE = "Go through to %s",
 	-- The tracker (docs/design.md §2.5).
 	NEXT = "Next: %s",
+	THEN = "Then: %s",
+	CONTINUES_AT_LEVEL = "Continues at level %d: %s",
 	RESUME = "Where you left off: %s",
 	STORY_COMPLETE = "Story complete",
 	JOURNEY_COMPLETE = "Journey complete",

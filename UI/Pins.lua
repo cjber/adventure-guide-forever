@@ -339,7 +339,13 @@ function Pins.StopTooltip(step)
 				local nextID = story.members[story.chapter + 1]
 				if nextID then
 					local nextTitle, nextColor = Pins.QuestLineText(nextID)
-					lines[#lines + 1] = ns.L.NEXT:format(ColorTitle(nextTitle, nextColor))
+					local nextQuest = ns.Data.quests[nextID]
+					local nextLevel = nextQuest and nextQuest.level
+					if nextLevel and nextLevel > 0 and nextLevel > ns.State.Level() then
+						lines[#lines + 1] = ns.L.CONTINUES_AT_LEVEL:format(nextLevel, ColorTitle(nextTitle, nextColor))
+					else
+						lines[#lines + 1] = ns.L.THEN:format(ColorTitle(nextTitle, nextColor))
+					end
 				end
 			end
 		end
