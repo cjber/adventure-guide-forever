@@ -232,6 +232,16 @@ local function Profile(profile, level, questiedb, full)
 	end
 	h.ns.OpenPanel()
 	h.flush()
+	-- Warm the panel against the fully settled route before recording its frame baseline. Core 1.8 can notify the
+	-- route again when a sliced data source finishes, and those notifications may legitimately add journey cards.
+	h.ns.Route()
+	while h.ns.Settling() do
+		h.tick()
+	end
+	h.ns.Invalidate()
+	while h.ns.Settling() do
+		h.tick()
+	end
 	-- Earlier profiles are discarded clients, including their full databases. Reclaim those before timing this
 	-- character; ordinary incremental GC stays enabled throughout the measured frames.
 	collectgarbage("collect")
