@@ -12,6 +12,12 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.7.9] - 2026-11-12
+
+<!-- forever-core-sync -->
+
+- Ships with the same shared code as your other Forever addons, so they keep working together.
+
 ## [1.7.8] - 2026-11-12
 
 <!-- forever-core-sync -->
