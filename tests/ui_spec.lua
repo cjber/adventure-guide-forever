@@ -1818,7 +1818,7 @@ do
 	clean(h, "combat")
 end
 
--- The contract (types/Namespace.lua AGFSPFAPI): version 1 with every required function, or no Shortest Path at all.
+-- Navigation supports SPF API 1 and 2 with every required member; future versions fall back safely.
 do
 	local h = Load("v1")
 	local api = h.G.ShortestPathForever.API
@@ -1827,7 +1827,9 @@ do
 	api.Cancel = nil
 	equal(h.ns.Integrations.Provider(), nil, "contract: a missing required function reads as absent")
 	api.Cancel, api.version = cancel, 2
-	equal(h.ns.Integrations.Provider(), nil, "contract: another version reads as absent")
+	equal(h.ns.Integrations.Provider(), "Shortest Path", "contract: v2 navigation remains compatible")
+	api.version = 3
+	equal(h.ns.Integrations.Provider(), nil, "contract: a future version reads as absent")
 	h.ns.Guidance.Navigate(h.ns.Route().steps[1])
 	equal(h.counts.SetUserWaypoint, 1, "contract: absent falls back to the native waypoint")
 	clean(h, "contract")
@@ -4600,9 +4602,9 @@ do
 	ns.Data = {
 		quests = {
 			[900001] = { title = "First chain", level = 2, next = 900002 },
-			[900002] = { title = "Harder successor", level = 20, pre = { 900001 } },
+			[900002] = { title = "Harder successor", level = 20, min = 19, pre = { 900001 } },
 			[900003] = { title = "Second chain", level = 3, next = 900004 },
-			[900004] = { title = "Second successor", level = 4, pre = { 900003 } },
+			[900004] = { title = "Second successor", level = 40, min = 1, pre = { 900003 } },
 			[900005] = { title = "Unknown level", level = 0 },
 		},
 	}
@@ -4610,11 +4612,12 @@ do
 	equal(details:find("[2] First chain", 1, true) ~= nil, true, "stop context: first known level")
 	equal(details:find("[20] Harder successor", 1, true) ~= nil, true, "stop context: successor has own level")
 	equal(
-		details:find("Continues at level 20: |cff", 1, true) ~= nil,
+		details:find("Continues at level 19: |cff", 1, true) ~= nil,
 		true,
-		"stop context: successor level is descriptive"
+		"stop context: unlock uses minimum level rather than difficulty"
 	)
 	equal(details:find("Next:", 1, true), nil, "stop context: successor is not an instruction")
+	equal(details:find("Continues at level 20:", 1, true), nil, "difficulty is not an unlock requirement")
 	equal(details:find("Second successor", 1, true) ~= nil, true, "stop context: every quest carries chain context")
 	equal(details:find("Then: |cff", 1, true) ~= nil, true, "stop context: in-range successor is descriptive")
 	local _, chapters = details:gsub("Chapter 1 of 2", "")
@@ -4623,6 +4626,10 @@ do
 	local final = ns.Pins.StopTooltip({ quests = { 900002 } })
 	equal(final:find("Chapter 2 of 2", 1, true) ~= nil, true, "stop context: final chapter")
 	equal(final:find("Next:", 1, true), nil, "stop context: final chapter has no successor")
+	ns.Data.quests[900002].min = nil
+	local unknownMinimum = ns.Pins.StopTooltip({ quests = { 900001 } })
+	equal(unknownMinimum:find("Continues at level", 1, true), nil, "an unknown minimum does not invent an unlock level")
+	equal(unknownMinimum:find("Then:", 1, true) ~= nil, true, "an unknown minimum still describes the next chapter")
 	ns.Data = {
 		quests = {
 			[900001] = { title = "Unproven chain", level = 2, next = 900002 },
