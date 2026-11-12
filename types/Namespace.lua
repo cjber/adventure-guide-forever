@@ -189,6 +189,7 @@
 ---@field dungeons boolean
 ---@field catalogue? AGFCatalogue the composed catalogue the last login built, reused when every input matches
 ---@field optimisedRoute? boolean the account-wide planned (beta) route order; nil/false is the nearest-action order
+---@field showOutgrown? boolean keep zones and dungeons whose quests are grey in the journey choices
 ---@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, the first card drawn
 ---@field previewGroups table<string, boolean> the overview headers this character collapsed, by group key; a group with no entry uses its default
 ---@field skipped table<string, boolean> step keys skipped this session
@@ -616,6 +617,8 @@
 ---@field HELP_REPORT string
 ---@field HELP_ISSUE string
 ---@field HELP_WHERE string
+---@field HELP_LEADERBOARD string
+---@field HELP_SHARE string
 ---@field REPORT_TITLE string the report window's title
 ---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
 ---@field BEFORE_IT_RUNS_OUT string format: expiring quest item name; the reason a route step is hurried
@@ -1360,6 +1363,10 @@
 ---@field SETTING_PARTY_QUESTS_TOOLTIP string
 ---@field SETTING_ROUTE_ORDER string beta: the planned route order (chapter lead, town look-ahead, committed order)
 ---@field SETTING_ROUTE_ORDER_TOOLTIP string
+---@field SETTING_OUTGROWN string
+---@field SETTING_OUTGROWN_TOOLTIP string
+---@field CONTINUES_AT_LEVEL string
+---@field THEN string
 
 ---@class AGFStepStyle
 ---@field Color fun(role?: string, id?: integer): ColorMixin?

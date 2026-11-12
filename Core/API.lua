@@ -25,9 +25,7 @@ function API.Stats()
 	return ns.ActivityStats and ns.ActivityStats() or {}
 end
 
--- Cumulative quest turn-ins ranked among this character and the guild and group members who reported theirs. Copies;
--- nil for a limit that is not a whole number of zero or more.
----@param limit? integer how many top rows, ten unless given, 25 at most; this character's row is always included
+-- Cumulative quest turn-ins ranked among this character and the guild and group members who reported theirs. Copies.
 -- What the stop is, in the words docs/api.md lists: a town or lone pickup step reads as that visit, an area as its
 -- objective work, and a companion guide's step as "guide".
 ---@type table<string, AGFAPIStopKind>
