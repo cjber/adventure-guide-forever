@@ -1,15 +1,16 @@
 {
-  "input_digest": "d95581dac852eab3427e87976b50ed9b8ebf883ca6474bd964acdf2d040561f5",
-  "runtime_sha256": "d95581dac852eab3427e87976b50ed9b8ebf883ca6474bd964acdf2d040561f5",
-  "candidate": "18f0d55af5bea8671860c3e10e4fce4db70a9735023fa9b3c46f03fa175bf040",
+  "input_digest": "ca633155d31d6fc94b4bc615d19cf5465b12de01a5df1a4722b052673067dfaf",
+  "runtime_sha256": "ca633155d31d6fc94b4bc615d19cf5465b12de01a5df1a4722b052673067dfaf",
+  "candidate": "f826a5e5e1dda1b3c9ca48937aaacac9b80f32fc8811768812a495dfffd0c1dd",
   "client_build": "1.60.1.70888 (Interface 16001)",
-  "source_commit": "8faf1c2a8f4fcd6970df0fccbb0beceeec0c04bf",
+  "source_commit": "9f1de2f513fd65dd362012793de93f4dcf3a8ed6",
+  "notes": "In-game flows and captures were recorded from installed source-tree candidate 9f1de2f. Core #497 tooling includes auto-loaded Bindings.xml and packaging policy in the measured identity. The tested source and current release source have identical .pkgmeta bytes. Every source-owned shipped runtime file matches both the tested source-tree artifact and actual BigWigs output after documented line-ending and TOC version normalization; the tested artifact additionally carries the ignored store icon media/icon-400.png. Later commits change tooling/tests only. This package equivalence check does not claim a new gameplay session from the packaged ZIP.",
   "flows": [
     {
       "name": "Redridge multi-quest stop story tooltip",
       "steps": [
         "Reload the installed candidate with /rl",
-        "Open the Redridge world map and hover stop 1 of 10",
+        "Open the Redridge world map and hover a multi-quest stop",
         "Inspect chapter and successor text for The Everstill Bridge and A Baying of Gnolls; Then describes successors without an instruction or fabricated unlock level"
       ],
       "result": "pass"
@@ -35,20 +36,17 @@
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/b72318bca8da82e0affb2f8a0558d944/raw/719521a5b70a17b009a2536353000d363e52941f/agf697-8faf1c2-in-game.png",
-      "sha256": "d6d7179beae603dd43253d1ae145ddd3c765938d2e8a321f24184a4657f6544d"
+      "url": "https://gist.githubusercontent.com/cjber/7a05ce137c0697a29b6d69411b0fd30b/raw/d9d9126c930ca5717efc142f2b17aa729b72ae45/story.png",
+      "sha256": "3d888701988d6968381e3ffdf2c9e5106ce819497d4ad8ccfe938b7c428cf2ca"
     },
     {
-      "url": "https://gist.githubusercontent.com/cjber/b72318bca8da82e0affb2f8a0558d944/raw/719521a5b70a17b009a2536353000d363e52941f/agf553-8faf1c2-in-game.png",
-      "sha256": "82e2ba39763fd64afc96d74111ec47c96da80f060c8da0732a15b129b0a90c2d"
+      "url": "https://gist.githubusercontent.com/cjber/7a05ce137c0697a29b6d69411b0fd30b/raw/d9d9126c930ca5717efc142f2b17aa729b72ae45/settings.png",
+      "sha256": "988ed6ba4ca87b1502d8a962f7ad64c1c97a818e2d050d11f9be10d92e5c1273"
     },
     {
-      "url": "https://gist.githubusercontent.com/cjber/b72318bca8da82e0affb2f8a0558d944/raw/719521a5b70a17b009a2536353000d363e52941f/agf588-enabled-8faf1c2.png",
-      "sha256": "e534ff80039c3da8e61ffc7eb26820fd73c138bb4ab622fece208db7b770756c"
-    },
-    {
-      "url": "https://gist.githubusercontent.com/cjber/b72318bca8da82e0affb2f8a0558d944/raw/719521a5b70a17b009a2536353000d363e52941f/agf588-grey-dunmorogh-8faf1c2.png",
-      "sha256": "68afff66d211c1c69ce6588e045d565b568f4fb0023d2afcc653ab2f313cddee"
+      "url": "https://gist.githubusercontent.com/cjber/7a05ce137c0697a29b6d69411b0fd30b/raw/d9d9126c930ca5717efc142f2b17aa729b72ae45/grey.png",
+      "sha256": "f4a3050cf454c4f7f94f75558be4a5e2c03847ce31c8674741389ea42dc7bd88"
     }
-  ]
+  ],
+  "tested_artifact": "source-tree"
 }

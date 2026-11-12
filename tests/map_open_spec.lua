@@ -1,6 +1,6 @@
 -- Run from the repository root: luajit tests/map_open_spec.lua
 -- Every map AGF opens goes through ForeverCore.OpenMap, which asks C_Map.OpenWorldMap through
--- CreateSecureDelegate: the client's own code opens or turns the map, so WorldMapFrame.mapID is never written as the
+-- securecallfunction: the client's own C opener turns the map, so WorldMapFrame.mapID is never written as the
 -- addon (#534). Blizzard's Lua OpenWorldMap
 -- (Blizzard_WorldMap.lua:1329) runs as its caller instead, and the client then blocks the quest pins that read the
 -- map id (QuestDataProvider.lua:117, Blizzard_MapCanvas.lua:331). A MenuUtil callback refuses C_Map.OpenWorldMap
@@ -73,9 +73,8 @@ h.G.C_Map.OpenWorldMap = function(...)
 	restricted = restricted + 1
 	return cMapOpen(...)
 end
--- Every open also runs through the shared opener's secure delegate (Core/OpenMap.lua), the only way the client
--- permits the restricted client function (cjber/forever-core#333). A caller that ran it itself would lift
--- `restricted` alone, so the two counts stay level.
+-- Every open also runs through the shared opener's securecallfunction (Core/OpenMap.lua). A caller that ran the
+-- native itself would lift `restricted` alone, so the two counts stay level.
 local function SecureCalls()
 	return h.counts.secureCalls
 end
@@ -83,18 +82,18 @@ local function Opened()
 	return h.counts.OpenWorldMap
 end
 
--- #592: CreateSecureDelegate is absent on some Forever builds. Without it there is no secure way to open the map, so
--- the open is skipped and reported false, and the caller still carries on. Run before the first open, while the
--- delegate the addon keeps is still unbuilt.
-local delegate = h.G.CreateSecureDelegate
+-- #592: current Forever builds remove CreateSecureDelegate. Core 1.8 uses securecallfunction instead;
+-- when that current dependency is absent it refuses the open without touching either map opener.
 h.G.CreateSecureDelegate = nil
+local securecall = h.G.securecallfunction
+h.G.securecallfunction = nil
 local nilOpened, nilRestricted = Opened(), restricted
 local nilOk, nilResult = pcall(h.G.ForeverCore.OpenMap, 1413)
-equal(nilOk, true, "#592: a build without CreateSecureDelegate does not error: " .. tostring(nilResult))
-equal(nilResult, false, "#592: the open is reported as not done")
-equal(restricted, nilRestricted, "#592: the client opener is not called")
-equal(Opened(), nilOpened, "#592: Blizzard's Lua opener is never run")
-h.G.CreateSecureDelegate = delegate
+equal(nilOk, true, "a build without securecallfunction does not error: " .. tostring(nilResult))
+equal(nilResult, false, "the open is reported as not done without securecallfunction")
+equal(restricted, nilRestricted, "the client opener is not called without securecallfunction")
+equal(Opened(), nilOpened, "Blizzard's Lua opener is never run without securecallfunction")
+h.G.securecallfunction = securecall
 
 -- A closed map opens through the client, which leaves the map's fields secure.
 h.G.WorldMapFrame:Hide()
@@ -102,7 +101,7 @@ local opened, maps = Opened(), h.counts.SetMapID
 equal(h.G.ForeverCore.OpenMap(0), true, "closed: the map opens on the player's own map")
 equal(Opened(), opened, "closed: Blizzard's Lua opener is never run")
 equal(restricted, 1, "closed: through C_Map.OpenWorldMap")
-equal(SecureCalls(), restricted, "closed: through the shared opener's secure delegate")
+equal(SecureCalls(), restricted, "closed: through the shared opener's securecallfunction")
 equal(h.counts.SetMapID, maps, "closed: no map id keeps the current map")
 -- The client shows the map a frame after the ask (#664).
 h.flush()
@@ -222,8 +221,8 @@ equal(h.G.WorldMapFrame:IsShown(), shown, "combat: the map is left as it was")
 
 equal(h.counts.OpenQuestLog, 0, "the quest log's sidebar is never opened")
 
--- No path opened the client function itself: every open ran through the shared opener's delegate.
-equal(SecureCalls(), restricted, "every map open ran through the shared opener's secure delegate")
+-- No path opened the client function itself: every open ran through the shared opener's securecallfunction.
+equal(SecureCalls(), restricted, "every map open ran through the shared opener's securecallfunction")
 
 equal(#h.errors, 0, "errors\n" .. table.concat(h.errors, "\n"))
 

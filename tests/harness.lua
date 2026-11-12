@@ -1892,6 +1892,13 @@ function harness.load(options)
 		end
 	end
 	G.CreateSecureDelegate = G.CreateSecureDelegate or CountedDelegate
+	-- Core 1.8 dispatches restricted client APIs through securecallfunction. The harness does not model the
+	-- client's taint boundary, so preserve the call contract with a direct invocation and count it like the
+	-- historical delegate path.
+	G.securecallfunction = function(fn, ...)
+		h.counts.secureCalls = h.counts.secureCalls + 1
+		return fn(...) -- multi-value: the wrapped client function's results pass through
+	end
 	G.hooksecurefunc = function(target, name, hook)
 		if type(target) == "string" then
 			target, name, hook = G, target, name

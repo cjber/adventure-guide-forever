@@ -14,9 +14,11 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **RestedXP guide cards now carry RestedXP's mark.** The guides you can choose, and the one you follow, show the RestedXP logo at the card's top right, and their tooltips say the steps come from your installed guides rather than from Adventure Guide's own zone stories or Clean up my log, so the two kinds are easy to tell apart. Thanks to lanprite for the report (#713).
 
-- **Quest chains:** Story tooltips show the minimum level needed to accept the next quest, alongside its own difficulty level.
+## [1.7.5] - 2026-11-12
 
-- **Navigation:** Keep routes working with Shortest Path Forever when its shared leaderboard features are removed.
+- **Quest tooltips:** Story tooltips now show successor quests with a `Then` label and each quest's own difficulty colour.
+- **Journey cards:** The misleading progress ring is gone, and the optional setting for showing outgrown zones and dungeons keeps older candidates available when wanted.
+- **Local activity:** Shared leaderboard and sharing controls are no longer registered, while local activity statistics remain available.
 
 ## [1.7.4] - 2026-11-12
 
