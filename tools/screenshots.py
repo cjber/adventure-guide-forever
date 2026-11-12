@@ -39,7 +39,7 @@ from pathlib import Path
 
 import screenshots_art as drawing
 from gen_quests import BUILD as DATA_BUILD
-from screenshots_art import draw_font_string, draw_texture, fit_text, font, load_wowmock
+from screenshots_art import RXP_ASSETS, RXP_SHA, draw_font_string, draw_texture, fit_text, font, load_wowmock
 from screenshots_resolver import effective_scales, lua_rects, map_point, parent_path, resolve, scroll_child_anchors
 from screenshots_spf import (
     SPF_SHA,
@@ -416,6 +416,44 @@ def quest_log(ui, content_ui, data, rects, scene, pins=()):
     return canvas, frame
 
 
+def panel_shot(ui, content_ui, data, rects, scene, source=None, pins=()):
+    """The guide's panel alone from a quest-log scene, cropped to its frame: a close look at the card states."""
+    source = source or scene
+    canvas, _ = quest_log(ui, content_ui, data, rects, source, pins)
+    x, y, width, height = rects[source]["AdventureGuideForeverPanel"]
+    return drawing.wm.scene(ui, [(crop(canvas, x - 6, y - 6, width + 12, height + 12), 0, 0)])
+
+
+def provider_tooltip(ui, content_ui, data, rects, source):
+    """The guide panel with the chosen RestedXP card's tooltip beside it, drawn from the hovered card's own lines."""
+    canvas, _ = quest_log(ui, content_ui, data, rects, source)
+    x, y, width, height = rects[source]["AdventureGuideForeverPanel"]
+    panel = crop(canvas, x - 6, y - 6, width + 12, height + 12)
+    layout = data[source]["layout"]
+    provider = next(
+        entry for entry in layout if entry["path"].endswith(".Provider") and tuple(entry.get("size") or ()) == (18, 18)
+    )
+    _, card_y, _, card_height = rects[source][parent_path(provider["path"])]
+    colours = {
+        "title": drawing.wm.WHITE,
+        "highlight": drawing.wm.WHITE,
+        "normal": drawing.wm.NORMAL,
+        "instruction": GREEN,
+    }
+    tip = drawing.wm.tooltip(
+        ui,
+        [
+            drawing.wm.TooltipLine(line["text"], tuple(line["color"]) if line.get("color") else colours[line["kind"]])
+            for line in data["rxp_tooltip"]["lines"]
+        ],
+    )
+    top = max(8, min(panel.height - tip.height - 8, card_y - (y - 6) + card_height / 2 - tip.height / 2))
+    shot = ui.canvas(panel.width + 12 + tip.width, max(panel.height, top + tip.height + 8))
+    shot.paste(panel, 0, 0)
+    shot.paste(tip, panel.width + 12, top)
+    return drawing.wm.scene(ui, [(shot, 0, 0)])
+
+
 MINIMAP_SIZE = 198  # the minimap face's UI units, as SPF's own minimap scene draws it
 MINIMAP_RADIUS = 233 + 1 / 3  # world yards it shows
 MINIMAP_CENTRE = (150, 155)  # the face's centre in the 300x285 cluster
@@ -579,6 +617,8 @@ def manifest(paths):
     lines = [
         f"data build {DATA_BUILD}, art build {UI_ART_BUILD}",
         f"shortest-path-forever {SPF_SHA}",
+        f"rxpguides {RXP_SHA}",
+        *(f"rxpguides/{file} {digest}" for file, digest in RXP_ASSETS.values()),
         f"tests/golden/layout.json {sha256(GOLDEN)}",
     ]
     lines += [f"{path.relative_to(ROOT)} {sha256(path)}" for path in sorted(paths)]
@@ -653,6 +693,11 @@ def render():
             "search",
             "story_complete",
             "restedxp",
+            "rxp_compact",
+            "rxp_overview",
+            "rxp_information",
+            "rxp_information_chosen",
+            "rxp_legacy",
             "guide_setup",
             "map_panel",
             "information_only",
@@ -667,6 +712,16 @@ def render():
     images["guide_setup"] = drawing.wm.scene(ui, [(setup_canvas, 0, 0)])
     canvas, _ = quest_log(ui, content_ui, data, rects, "restedxp", data["restedxp"]["pins"])
     images["restedxp"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
+
+    # The provider's mark close up in each state (#713): chosen at 18px, a compact row at 14px (with the "new" badge
+    # beside it), the map overview's card at 14px, and the same overview in information mode.
+    images["rxp_chosen"] = panel_shot(ui, content_ui, data, rects, "rxp_chosen", "restedxp", data["restedxp"]["pins"])
+    images["rxp_compact"] = panel_shot(ui, content_ui, data, rects, "rxp_compact")
+    images["rxp_overview"] = panel_shot(ui, content_ui, data, rects, "rxp_overview")
+    images["rxp_information"] = panel_shot(ui, content_ui, data, rects, "rxp_information")
+    images["rxp_information_chosen"] = panel_shot(ui, content_ui, data, rects, "rxp_information_chosen")
+    images["rxp_legacy"] = panel_shot(ui, content_ui, data, rects, "rxp_legacy")
+    images["rxp_tooltip"] = provider_tooltip(ui, content_ui, data, rects, "restedxp")
 
     # The lead images: the guide driving Shortest Path. The route on the map is the one it handed over, walked by
     # Shortest Path's own planner; the tracker beside the minimap is the step it heads for.

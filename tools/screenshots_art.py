@@ -1,14 +1,34 @@
 """Load wowmock and draw textures and font strings from dumped regions."""
 
 import dataclasses
+import hashlib
 import os
 import sys
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 FOREVER_CORE = Path(os.environ.get("FOREVER_CORE", Path(__file__).resolve().parents[2] / "forever-core")).expanduser()
 WOWMOCK = FOREVER_CORE / "tools" / "wowmock"
 ROOT = Path(__file__).resolve().parent.parent
 ADDON_MEDIA = "interface/addons/adventureguideforever/"
+
+# RestedXP's own mark, read from the installed addon or the exact pinned upstream file: never copied into this addon,
+# never guessed at (docs/screenshots/manifest.txt records the pin). v4.11.36, the release whose v2 theme names it.
+RXP_SHA = "8cff2f62751651f3d34311f1c00efd235e1c7e65"
+# Normalised path under RXPGuides -> (the file's exact case, sha256 of the installed v4.11.36 asset).
+RXP_ASSETS = {
+    "textures/v2/rxp-icon-logo": (
+        "Textures/v2/rxp-icon-logo.blp",
+        "a1b118be54154ea5a9511d25162d84f1b7b228e07a3bb3b1e7f2fdfbbc42ed2b",
+    ),
+    "textures/rxp_logo-64": (
+        "Textures/rxp_logo-64.blp",
+        "c3640667641c5a01ab3671b9851686e1d79593d1ac4554317549ee924954a019",
+    ),
+}
+RXP_CACHE = ROOT / "tools/.cache" / f"rxp-{RXP_SHA}"
+RXP_RAW = f"https://raw.githubusercontent.com/RestedXP/RXPGuides/{RXP_SHA}/"
 
 wm = None  # Imported by load_wowmock so headless tests need no Pillow.
 
@@ -54,12 +74,64 @@ def font(name):
     return wm.FONTS[name]
 
 
+def companion_asset(relative):
+    """The bytes of a pinned companion addon texture, from a local Interface/AddOns root (AGF_ADDONS_ROOT) when it
+    has the file, else the cached upstream file, fetched on first use. A missing, unpinned or changed file stops the
+    render: no substitute art is ever drawn."""
+    key = relative.lower().removesuffix(".blp")
+    pinned = RXP_ASSETS.get(key)
+    if pinned is None:
+        sys.exit(
+            f"Interface/AddOns/RXPGuides/{relative}: no pinned asset; add its sha256 to RXP_ASSETS in "
+            "tools/screenshots_art.py, from RXPGuides " + RXP_SHA
+        )
+    file, expected = pinned
+    cache = RXP_CACHE / "RXPGuides" / file
+    candidates = []
+    root = os.environ.get("AGF_ADDONS_ROOT")
+    if root:
+        candidates.append(Path(root).expanduser() / "RXPGuides" / file)
+    candidates.append(cache)
+    data, where = None, None
+    for candidate in candidates:
+        if candidate.is_file():
+            data, where = candidate.read_bytes(), candidate
+            break
+    if data is None:
+        where = cache
+        try:
+            with urllib.request.urlopen(RXP_RAW + file, timeout=120) as response:
+                data = response.read()
+        except (OSError, urllib.error.URLError) as error:
+            sys.exit(f"{where}: cannot read the pinned RXPGuides asset: {error}")
+        digest = hashlib.sha256(data).hexdigest()
+        if digest != expected:
+            sys.exit(
+                f"{RXP_RAW + file}: the downloaded file is {digest}, not the pinned {expected}; "
+                "update the pin only with a verified RXPGuides release"
+            )
+        where.parent.mkdir(parents=True, exist_ok=True)
+        where.write_bytes(data)
+    digest = hashlib.sha256(data).hexdigest()
+    if digest != expected:
+        sys.exit(
+            f"{where}: RXPGuides {file} is {digest}, not the pinned {expected}; update the pin only with a "
+            "verified RXPGuides release"
+        )
+    return data
+
+
 def texture(ui, ref):
     if isinstance(ref, str):
         path = ref.replace("\\", "/")
         # The addon's own art ships in this repository, not the client's listfile.
-        if path.lower().startswith(ADDON_MEDIA):
+        lower = path.lower()
+        if lower.startswith(ADDON_MEDIA):
             return wm.Image.open(ROOT / path[len(ADDON_MEDIA) :]).convert("RGBA")
+        # A companion addon's own art (RXPGuides' provider mark) is installed beside this one, never in the client's
+        # listfile and never copied here.
+        if lower.startswith("interface/addons/rxpguides/"):
+            return wm.decode_texture(companion_asset(path[len("Interface/AddOns/RXPGuides/") :]))
         return ui.texture(path.lower() + ".blp")
     return ui.texture(int(ref) if isinstance(ref, (int, float)) else ref)
 

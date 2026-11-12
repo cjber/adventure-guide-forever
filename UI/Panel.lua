@@ -30,7 +30,7 @@ local COMPACT_HEIGHT, COMPACT_ICON = 26, 16
 -- chosen card larger than a compact row or the map overview's card. The mark shortens the title's run so the two never
 -- overlap.
 local PROVIDER_MARK, PROVIDER_MARK_COMPACT, PROVIDER_MARK_OVERVIEW = 18, 14, 14
-local PROVIDER_INSET = 8
+local PROVIDER_INSET = 10
 local PROVIDER_GAP = 6
 local ROW_ART = "_options_listexpand_middle"
 local ROW_CAPS = { { "options_listexpand_left", 12, "LEFT" }, { "options_listexpand_right", 28, "RIGHT" } }
@@ -641,9 +641,16 @@ local function RefreshCard(card, journey, state)
 	end
 	card.New:SetShown(ns.Moments.IsNew(journey.key))
 	card.New:ClearAllPoints()
+	local provider, mark = journey.providerIcon, compact and PROVIDER_MARK_COMPACT or PROVIDER_MARK
+	local fresh = card.New:IsShown()
 	if compact then
 		Art.Fit(card.New, NEW_MARK, NEW_COMPACT, NEW_COMPACT)
-		card.New:SetPoint("RIGHT", -ROW_CAPS[2][2], 0)
+		-- The provider's mark sits by the row's right cap; a "new" badge beside it moves left so the two never meet.
+		local badge = ROW_CAPS[2][2]
+		if provider and fresh then
+			badge = badge + 4 + PROVIDER_MARK_COMPACT + 4
+		end
+		card.New:SetPoint("RIGHT", -badge, 0)
 	else
 		Art.Fit(card.New, NEW_MARK, NEW_SIZE, NEW_SIZE)
 		card.New:SetPoint("CENTER", card.IconFrame, "TOPRIGHT", -4, -4)
@@ -651,7 +658,6 @@ local function RefreshCard(card, journey, state)
 	local icon = compact and COMPACT_ICON or CARD_ICON
 	Art.Fit(card.IconFrame.Icon, KIND_ICONS[journey.kind], icon, icon)
 	-- An imported guide's own mark at the card's top right, clear of its title and the row's right cap.
-	local provider, mark = journey.providerIcon, compact and PROVIDER_MARK_COMPACT or PROVIDER_MARK
 	card.Provider:SetShown(provider ~= nil)
 	if provider then
 		Art.Icon(card.Provider, provider, mark)
@@ -659,10 +665,15 @@ local function RefreshCard(card, journey, state)
 		if compact then
 			card.Provider:SetPoint("RIGHT", -(ROW_CAPS[2][2] + 4), 0)
 		else
-			card.Provider:SetPoint("TOPRIGHT", -PROVIDER_INSET, -4)
+			card.Provider:SetPoint("TOPRIGHT", -PROVIDER_INSET, -8)
 		end
 	end
-	card.Title:SetWidth(CARD_TEXT - (provider and (mark + 2 * PROVIDER_GAP) or 0))
+	-- Both badges take their room from the title's run, so neither is ever drawn over it.
+	local reserved = provider and (mark + 2 * PROVIDER_GAP) or 0
+	if compact and provider and fresh then
+		reserved = reserved + NEW_COMPACT + PROVIDER_GAP
+	end
+	card.Title:SetWidth(CARD_TEXT - reserved)
 	card.Title:SetText(journey.title)
 	card.Title:ClearAllPoints()
 	if compact then
