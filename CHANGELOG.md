@@ -12,6 +12,12 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.7.8] - 2026-11-12
+
+<!-- forever-core-sync -->
+
+- Ships with the same shared code as your other Forever addons, so they keep working together.
+
 ## [1.7.7] - 2026-11-12
 
 - **The guide's target button keeps its own row under the step.** The tracker lays its section out again whenever the guide or a quest changes, and the second layout dropped the room reserved for the step's small target button, so the button sat a row lower and covered the Journey line of the addon below the guide's section. It now keeps its place. Reported on Discord by lanprite (cjber/shortest-path-forever#787).
