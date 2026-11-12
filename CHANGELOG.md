@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **World map quest pins no longer blink at journey stops.** A quest the game draws on the map while the guide already marks its stop stays hidden through quest log updates instead of showing for a frame each time.
+
 ## [1.7.5] - 2026-11-12
 
 - **Quest tooltips:** Story tooltips now show successor quests with a `Then` label and each quest's own difficulty colour.
