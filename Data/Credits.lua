@@ -24,6 +24,7 @@ ns.Credits = {
 		{ name = "vladsnz", what = "Marker no longer taken from another guide" },
 		{ name = "jixxor", what = "Show of Force held until Encroaching Gnolls is done" },
 		{ name = "InfamousMunky", what = "Daily Delivery no longer offered once handed on" },
+		{ name = "lanprite", what = "RestedXP guide cards marked as RestedXP's" },
 	},
 	inspired = {
 		{ name = "Polestar by Fitz", what = "Ideas for many features" },

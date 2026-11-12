@@ -17,6 +17,10 @@ local autoSelected
 ---@type table<Frame, {alpha: number, mouse: boolean}>
 local mapLines = {}
 local PREVIEW_STEPS = 10
+-- The mark a guide card carries (UI/Panel.lua): RestedXP's guide window names the logo it draws, so the card reads the
+-- exact installed path, custom themes included, and never guesses at its folder. Without that path the card keeps its
+-- kind icon and only the tooltip names the provider (#713).
+local PROVIDER = "RestedXP"
 
 ---@type AGFRXPEngine?
 local registered
@@ -43,6 +47,43 @@ local function Engine()
 		and engine.RXPFrame
 	then
 		return engine
+	end
+end
+
+-- The companion addon behind a guide card, and the mark it draws: the card names both, so Adventure Guide's own cards
+-- stay told apart from an imported guide's (#713).
+---@return string
+function Guide.Provider()
+	return PROVIDER
+end
+
+-- The mark RestedXP draws in its own guide window, so a guide card uses the provider's own installed art. The current
+-- v2 interface names a 256-square logo in its theme; the legacy guide window asks its theme for the 64-square logo it
+-- draws, which a legacy theme must carry. The file is read, never copied, and a client that can name neither keeps the
+-- card's kind icon (#713).
+---@return string?
+function Guide.ProviderIcon()
+	local engine = Engine()
+	if not engine then
+		return nil
+	end
+	local v2 = engine.v2
+	if v2 then
+		local theme = v2.activeTheme
+		if not theme and type(v2.GetTheme) == "function" then
+			theme = v2:GetTheme()
+		end
+		local logo = theme and theme.guideWindow and theme.guideWindow.logo
+		if type(logo) == "string" and logo ~= "" then
+			return logo
+		end
+	end
+	if type(engine.GetV1Texture) == "function" then
+		-- The legacy guide window itself requests the 64-square logo, so that is the one a legacy theme must carry.
+		local icon = engine.GetV1Texture("rxp_logo-64")
+		if type(icon) == "string" and icon ~= "" then
+			return icon
+		end
 	end
 end
 
@@ -699,6 +740,7 @@ function Guide.Cards(current)
 	current = current or Guide.Journey()
 	local result = current and { current } or {}
 	local seen = current and { [current.key] = true } or {}
+	local providerIcon = Guide.ProviderIcon()
 	-- RestedXP ships one zone's guide in more than one group (the speedrun and dungeon routes both have "06-11
 	-- Teldrassil"): the running guide's card stands for every guide of its name, so it is never offered twice (#364).
 	local running = current and snapshot.name ~= "" and snapshot.name or nil
@@ -717,6 +759,8 @@ function Guide.Cards(current)
 					key = key,
 					title = entry.name,
 					subline = entry.group,
+					provider = Guide.Provider(),
+					providerIcon = providerIcon,
 					map = 0,
 					steps = {},
 					rxpGroup = entry.group,
@@ -943,6 +987,8 @@ function Guide.Journey()
 		key = guideKey,
 		title = name,
 		subline = subline,
+		provider = Guide.Provider(),
+		providerIcon = Guide.ProviderIcon(),
 		map = firstMap,
 		steps = steps,
 		guideStep = snapshot.total > 0 and snapshot.index or nil,

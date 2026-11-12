@@ -26,6 +26,12 @@ local CARD_GAP = 4
 -- saying the row opens, at its own 26px height (ROW_ART the tiling middle, ROW_CAPS the caps at their atlas size),
 -- with the kind icon alone, so nothing is squashed and the chosen card's steps start near the top.
 local COMPACT_HEIGHT, COMPACT_ICON = 26, 16
+-- A guide card's provider mark, at the card's top right: its own square file icon from the provider's theme, the
+-- chosen card larger than a compact row or the map overview's card. The mark shortens the title's run so the two never
+-- overlap.
+local PROVIDER_MARK, PROVIDER_MARK_COMPACT, PROVIDER_MARK_OVERVIEW = 18, 14, 14
+local PROVIDER_INSET = 8
+local PROVIDER_GAP = 6
 local ROW_ART = "_options_listexpand_middle"
 local ROW_CAPS = { { "options_listexpand_left", 12, "LEFT" }, { "options_listexpand_right", 28, "RIGHT" } }
 local CARD_RING, CARD_ICON = 46, 18
@@ -330,6 +336,7 @@ end
 ---@field UpdateHighlightForState fun(self: AGFJourneyCard)
 ---@field Caps Texture[]
 ---@field New Texture
+---@field Provider Texture the provider's mark at the card's top right, hidden for Adventure Guide's own cards
 
 -- An aside (Asides.lua) above the cards: its icon, its line and a row's skip. Its click goes to its place when it
 -- has one; right-click is its menu.
@@ -376,6 +383,7 @@ end
 ---@field Foot FontString
 ---@field Level FontString
 ---@field Bar AGFProgressBar
+---@field Provider Texture the provider's mark at the card's top right, hidden for Adventure Guide's own cards
 
 ---@param parent Frame
 ---@return AGFOverviewCard
@@ -398,6 +406,8 @@ local function CreateOverviewCard(parent)
 	card.New = card.Icon.Border:CreateTexture(nil, "OVERLAY", nil, 2)
 	Art.Fit(card.New, NEW_MARK, NEW_COMPACT, NEW_COMPACT)
 	card.New:SetPoint("CENTER", card.Icon, "TOPRIGHT", -2, -2)
+	card.Provider = card:CreateTexture(nil, "OVERLAY", nil, 3)
+	card.Provider:Hide()
 	card.Bar = CreateBar(card)
 	card.Title = card:CreateFontString(nil, "ARTWORK", "GameFontNormal")
 	card.Level = card:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -441,6 +451,8 @@ local function CreateJourneyCard()
 		card.Caps[#card.Caps + 1] = texture
 	end
 	card.New = card:CreateTexture(nil, "OVERLAY", nil, 2)
+	card.Provider = card:CreateTexture(nil, "OVERLAY", nil, 3)
+	card.Provider:Hide()
 	return card
 end
 
@@ -638,6 +650,19 @@ local function RefreshCard(card, journey, state)
 	end
 	local icon = compact and COMPACT_ICON or CARD_ICON
 	Art.Fit(card.IconFrame.Icon, KIND_ICONS[journey.kind], icon, icon)
+	-- An imported guide's own mark at the card's top right, clear of its title and the row's right cap.
+	local provider, mark = journey.providerIcon, compact and PROVIDER_MARK_COMPACT or PROVIDER_MARK
+	card.Provider:SetShown(provider ~= nil)
+	if provider then
+		Art.Icon(card.Provider, provider, mark)
+		card.Provider:ClearAllPoints()
+		if compact then
+			card.Provider:SetPoint("RIGHT", -(ROW_CAPS[2][2] + 4), 0)
+		else
+			card.Provider:SetPoint("TOPRIGHT", -PROVIDER_INSET, -4)
+		end
+	end
+	card.Title:SetWidth(CARD_TEXT - (provider and (mark + 2 * PROVIDER_GAP) or 0))
 	card.Title:SetText(journey.title)
 	card.Title:ClearAllPoints()
 	if compact then
@@ -821,8 +846,22 @@ local function RefreshOverviewCard(card, journey, width)
 	card:SetWidth(width)
 	RefreshIcon(card, journey, OVERVIEW_SPAN)
 	card.Title:SetText(journey.title)
+	-- An imported guide's own mark at the card's top right; the level range sits just left of it.
+	local provider = journey.providerIcon
+	card.Provider:SetShown(provider ~= nil)
+	if provider then
+		Art.Icon(card.Provider, provider, PROVIDER_MARK_OVERVIEW)
+		card.Provider:ClearAllPoints()
+		card.Provider:SetPoint("TOPRIGHT", -OVERVIEW_INSET, -9)
+	end
 	-- Never hidden: the title's right edge hangs off it, and an empty one is no wider than nothing.
 	local levels, color = Overview.Levels(journey, ns.State.Player().level)
+	card.Level:ClearAllPoints()
+	if provider then
+		card.Level:SetPoint("RIGHT", card.Provider, "LEFT", -PROVIDER_GAP, 0)
+	else
+		card.Level:SetPoint("TOPRIGHT", -OVERVIEW_INSET, -10)
+	end
 	card.Level:SetText(levels or "")
 	if color then
 		card.Level:SetTextColor(color.r, color.g, color.b)

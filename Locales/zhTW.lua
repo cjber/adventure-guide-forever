@@ -122,6 +122,8 @@ L["JOURNEY_CHOOSE"] = "在活動中選擇一段旅程即可開始。"
 L["JOURNEY_COMPLETE"] = "旅程完成"
 L["JOURNEY_INTO"] = "通往%s之路"
 L["JOURNEY_NEXT_ZONE"] = "前往%s"
+L["PROVIDER_CARD_HINT"] =
+	"來自已安裝的 %s 指南的步驟。區域故事和「整理任務日誌」是 Adventure Guide 自己的功能。"
 L["JOURNEY_PAGE"] = "%d / %d"
 L["JOURNEY_PROGRESS_EMPTY"] = "你完成的故事將顯示在這裡。"
 L["JOURNEY_QUESTS"] = "這段旅程的任務"

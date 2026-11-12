@@ -649,6 +649,11 @@ local function CardTooltip(card)
 	if journey.kind == "carry" then
 		GameTooltip_AddNormalLine(GameTooltip, L.CARRY_EXPLANATION)
 	end
+	-- A card an installed guide feeds says so beside Adventure Guide's own cards (#713): its steps follow that guide,
+	-- while Clean up my log and the zone stories are Adventure Guide's own planning.
+	if journey.provider then
+		GameTooltip_AddNormalLine(GameTooltip, L.PROVIDER_CARD_HINT:format(journey.provider))
+	end
 	local cleanup = journey.cleanup
 	if cleanup then
 		if cleanup.ready > 0 then

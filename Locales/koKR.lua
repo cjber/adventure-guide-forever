@@ -132,6 +132,8 @@ L["JOURNEY_CHOOSE"] = "시작하려면 활동에서 여정을 선택하십시오
 L["JOURNEY_COMPLETE"] = "여정 완료"
 L["JOURNEY_INTO"] = "%s(으)로 가는 길"
 L["JOURNEY_NEXT_ZONE"] = "%s(으)로 이동"
+L["PROVIDER_CARD_HINT"] =
+	"설치한 %s 가이드의 단계입니다. 지역 이야기와 ‘내 퀘스트 목록 정리’는 Adventure Guide의 자체 기능입니다."
 L["JOURNEY_PAGE"] = "%d / %d"
 L["JOURNEY_PROGRESS_EMPTY"] = "완료한 이야기가 여기에 표시됩니다."
 L["JOURNEY_QUESTS"] = "이 여정의 퀘스트"

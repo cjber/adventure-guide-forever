@@ -129,6 +129,8 @@ L["JOURNEY_CHOOSE"] = "Wählt unter Aktivitäten eine Reise, um zu beginnen."
 L["JOURNEY_COMPLETE"] = "Reise abgeschlossen"
 L["JOURNEY_INTO"] = "Der Weg nach %s"
 L["JOURNEY_NEXT_ZONE"] = "Auf nach %s"
+L["PROVIDER_CARD_HINT"] =
+	"Schritte aus deinen installierten %s-Guides. Zonen-Geschichten und „Log aufräumen“ sind Adventure Guides eigene."
 L["JOURNEY_PAGE"] = "%d / %d"
 L["JOURNEY_PROGRESS_EMPTY"] = "Eure abgeschlossenen Geschichten erscheinen hier."
 L["JOURNEY_QUESTS"] = "Quests dieser Reise"

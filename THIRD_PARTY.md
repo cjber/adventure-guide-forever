@@ -23,7 +23,7 @@ No embedded libraries ship. `media/` is this addon's own: the icon is drawn in `
 |---|---|---|
 | [QuestieDB](https://github.com/Questie/QuestieDB) and Questie, installed by the player | Quest records, NPC places and towns (WFA-2 and WFA-28 in `AGENTS.md`) | QuestieDB carries no licence; nothing is copied |
 | AtlasLoot Classic, if installed | Dungeon loot in the Dungeons tab | Its own; nothing is copied |
-| [RestedXP Guides](https://github.com/RestedXP/RXPGuides), if installed | The current guide's steps in the Adventure tab and tracker: read from its loaded tables and hooks, and its steps skipped or advanced through its own step controls | CC BY-NC-SA 4.0; nothing is copied, and `tests/rxp_fixture.lua` holds only original example steps |
+| [RestedXP Guides](https://github.com/RestedXP/RXPGuides), if installed | The current guide's steps in the Adventure tab and tracker, and its own logo at the top right of its guide cards: read from its loaded tables, hooks and v2 theme, and its steps skipped or advanced through its own step controls | CC BY-NC-SA 4.0; nothing is copied, and `tests/rxp_fixture.lua` holds only original example steps |
 | [Polestar](https://github.com/fitzforge/polestar), if installed | Whether it has a guide running, from `Polestar.Engine.GetGuide()` and its `GUIDE_CHANGED` message, so the route steps aside | GPL-3.0; read only, nothing is copied |
 | Shortest Path Forever, if installed | Routes to each step, through its public API | GPL-3.0-or-later |
 | SkillUp Forever and Tweaks Forever, if installed | The Professions tab, and class trainer places and dungeon entrances, through their public APIs | GPL-3.0-or-later |
@@ -71,6 +71,7 @@ Credit for the reports and requests behind the addon.
 | vladsnz | Marker no longer taken from another guide | CurseForge; cjber/shortest-path-forever#531 |
 | jixxor | Show of Force held until Encroaching Gnolls is done | Discord; #642 |
 | InfamousMunky | Daily Delivery no longer offered once handed on | GitHub; #629 |
+| lanprite | RestedXP guide cards marked as RestedXP's | CurseForge; #713 |
 
 ## Inspired by
 

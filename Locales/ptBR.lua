@@ -126,6 +126,8 @@ L["JOURNEY_CHOOSE"] = "Escolha uma jornada em Atividades para começar."
 L["JOURNEY_COMPLETE"] = "Jornada concluída"
 L["JOURNEY_INTO"] = "O caminho para %s"
 L["JOURNEY_NEXT_ZONE"] = "Siga para %s"
+L["PROVIDER_CARD_HINT"] =
+	"Passos dos seus guias %s instalados. As histórias de zona e «Limpar meu registro» são do Adventure Guide."
 L["JOURNEY_PAGE"] = "%d / %d"
 L["JOURNEY_PROGRESS_EMPTY"] = "As suas histórias concluídas vão aparecer aqui."
 L["JOURNEY_QUESTS"] = "Missões desta jornada"

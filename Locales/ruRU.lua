@@ -140,6 +140,8 @@ L["JOURNEY_CHOOSE"] =
 L["JOURNEY_COMPLETE"] = "Путешествие завершено"
 L["JOURNEY_INTO"] = "Путь в %s"
 L["JOURNEY_NEXT_ZONE"] = "Отправляйтесь: %s"
+L["PROVIDER_CARD_HINT"] =
+	"Шаги из установленных вами руководств %s. Сюжеты зон и «Очистить журнал» — собственные функции Adventure Guide."
 L["JOURNEY_PAGE"] = "%d / %d"
 L["JOURNEY_PROGRESS_EMPTY"] = "Здесь появятся завершенные вами истории."
 L["JOURNEY_QUESTS"] = "Задания этого путешествия"

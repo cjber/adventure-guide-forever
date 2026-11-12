@@ -346,6 +346,8 @@
 ---@class AGFJourney
 ---@field rxpGroup? string
 ---@field rxpName? string
+---@field provider? string the installed addon whose guide this card imports, e.g. "RestedXP" (#713)
+---@field providerIcon? string that addon's own square mark, drawn at the card's top right
 ---@field guideLow? integer
 ---@field guideHigh? integer
 ---@field guideStep? integer the running RestedXP guide's current step, from 1
