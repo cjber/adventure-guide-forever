@@ -473,7 +473,8 @@ L["TWEAKS_OUTDATED"] = "던전 입구를 찾으려면 Tweaks Forever를 업데�
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
-L["WHATS_NEW"] = "가이드 탭과 머리글에 나침반이 다시 표시됩니다." -- mt
+L["WHATS_NEW"] =
+	"퀘스트 툴팁에서 이제 다음 퀘스트를 Then으로 표시하고 고유한 난이도 색상을 보여줍니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"

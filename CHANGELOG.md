@@ -12,9 +12,11 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- **Quest chains:** Story tooltips show the minimum level needed to accept the next quest, alongside its own difficulty level.
+## [1.7.5] - 2026-11-12
 
-- **Navigation:** Keep routes working with Shortest Path Forever when its shared leaderboard features are removed.
+- **Quest tooltips:** Story tooltips now show successor quests with a `Then` label and each quest's own difficulty colour.
+- **Journey cards:** The misleading progress ring is gone, and the optional setting for showing outgrown zones and dungeons keeps older candidates available when wanted.
+- **Local activity:** Shared leaderboard and sharing controls are no longer registered, while local activity statistics remain available.
 
 ## [1.7.4] - 2026-11-12
 
