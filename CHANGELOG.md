@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The guide's target button keeps its own row under the step.** The tracker lays its section out again whenever the guide or a quest changes, and the second layout dropped the room reserved for the step's small target button, so the button sat a row lower and covered the Journey line of the addon below the guide's section. It now keeps its place. Reported on Discord by lanprite (cjber/shortest-path-forever#787).
+
 ## [1.7.6] - 2026-11-12
 
 - **World map quest pins no longer blink at journey stops.** A quest the game draws on the map while the guide already marks its stop stays hidden through quest log updates instead of showing for a frame each time.

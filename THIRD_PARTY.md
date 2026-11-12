@@ -71,6 +71,7 @@ Credit for the reports and requests behind the addon.
 | vladsnz | Marker no longer taken from another guide | CurseForge; cjber/shortest-path-forever#531 |
 | jixxor | Show of Force held until Encroaching Gnolls is done | Discord; #642 |
 | InfamousMunky | Daily Delivery no longer offered once handed on | GitHub; #629 |
+| lanprite | The guide's target button kept its own row under the step | Discord; cjber/shortest-path-forever#787 |
 
 ## Inspired by
 

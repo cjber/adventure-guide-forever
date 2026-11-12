@@ -90,6 +90,7 @@ end
 
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate, ForeverTrackerModule
 ---@field headerText? string the header the section shows now
+---@field hasContents? boolean whether the section laid out a block of its own this layout
 ---@field rxpActionsReserved? number the height the RestedXP action rows already added to contentsHeight
 ---@field npcHighlightReserved? number the height the next-NPC target button already added to contentsHeight
 ---@field hiddenText? FontString the grey "%d hidden" count beside the header
@@ -577,16 +578,24 @@ function ModuleMixin:LayoutContentsBase()
 	self:LayoutBlock(block)
 end
 
--- RestedXP's secure item and target buttons sit inside this section (#334). Their height is added after the section's
--- own blocks lay out, so the column reserves room for them and no section below overlaps.
+-- RestedXP's secure item and target buttons sit inside this section (#334), the talk step's NPC after them (#401).
+-- Their room is added after the section's own blocks lay out, so the column reserves it and no section below overlaps.
+-- The layout resets contentsHeight before it builds the blocks, so the height read here is that content alone: each
+-- row adds its room once, and a second layout must not take it off again (#787).
 local Contents = ModuleMixin.LayoutContentsBase
 function ModuleMixin:LayoutContents()
 	Contents(self)
+	local base = self.contentsHeight or 0
+	-- A section with no block of its own draws nothing, so its rows have no line to hang under and would sit over the
+	-- section below.
+	if self.hasContents == false then
+		base = 0
+	end
 	if ns.RXPActions then
-		ns.RXPActions.Reserve(self)
+		base = ns.RXPActions.Reserve(self, base) or base
 	end
 	if ns.NpcHighlight then
-		ns.NpcHighlight.Reserve(self)
+		ns.NpcHighlight.Reserve(self, base)
 	end
 end
 

@@ -143,6 +143,32 @@ do
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 
+-- The button's room stays reserved when the tracker lays the section out again (#787): it belongs in its own row under
+-- the section's lines, not over the Journey header of the section below.
+do
+	local h = Load()
+	local module = h.tracker
+	Step(h, { kind = "area", key = "area:test", title = "Test area", quests = { 858 } })
+	module:MarkDirty()
+	local ownHeight = module.contentsHeight
+	Step(h, STEP)
+	module:MarkDirty()
+	local reserved = assert(module.npcHighlightReserved, "the button reserves room")
+	check(module.contentsHeight == ownHeight + reserved, "the button's room is added to the section's own height")
+	local buttonTop = select(5, h.G.AdventureGuideForeverNpcHighlight:GetPoint(1))
+	check(
+		buttonTop == module.rect[2] + module.rect[4] - ownHeight - 4,
+		"the button hangs directly below the section's own content"
+	)
+	module:MarkDirty()
+	check(module.contentsHeight == ownHeight + reserved, "a second layout keeps the button's reserved room")
+	check(
+		select(5, h.G.AdventureGuideForeverNpcHighlight:GetPoint(1)) == buttonTop,
+		"and leaves the button where it was"
+	)
+	check(#h.errors == 0, table.concat(h.errors, "\n"))
+end
+
 -- A target change rebuilds the target button and calls nothing forbidden: the client refuses SetRaidTarget to addons.
 do
 	local h = Load()

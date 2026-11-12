@@ -88,6 +88,26 @@ assert(x == module.rect[1], "the action rows take their x from the section's scr
 assert(root:GetFrameStrata() == module:GetFrameStrata(), "the action rows sit at the section's frame strata")
 assert(root:GetFrameLevel() == module:GetFrameLevel() + 5, "the action rows sit just above the section")
 
+-- The tracker lays a section out again on every change, and the rows must keep the room they reserved: a second
+-- layout used to take the last reservation off a height the layout had already reset, so the rows dropped a row lower
+-- and covered the next section's header, Shortest Path's Journey line (#787).
+Aim({}, {}, {})
+h.flush()
+local ownHeight = module.contentsHeight
+Aim({ [1234] = true }, { "Quartermaster" }, {})
+h.flush()
+local rowsRoom = assert(module.rxpActionsReserved, "the rows reserve room again")
+assert(module.contentsHeight == ownHeight + rowsRoom, "the rows' room is added to the section's own height")
+local rowsTop = select(5, root:GetPoint(1))
+assert(
+	rowsTop == module.rect[2] + module.rect[4] - ownHeight - 4,
+	"the rows hang directly below the section's own content"
+)
+h.tracker:MarkDirty()
+assert(module.contentsHeight == ownHeight + rowsRoom, "a second layout keeps the rows' reserved room")
+assert(select(5, root:GetPoint(1)) == rowsTop, "and leaves the rows where they were")
+Aim({ [1234] = true, [5678] = true }, { "Quartermaster" }, { "Plainstrider" })
+
 -- A guide change during combat waits: no secure frame is created, moved, shown or given a new attribute until
 -- PLAYER_REGEN_ENABLED brings the rebuild.
 local created = h.counts.CreateFrame

@@ -834,7 +834,7 @@
 
 ---@class AGFRXPActionsModule
 ---@field Refresh fun() rebuild the secure item and target buttons, or queue the change during combat
----@field Reserve fun(module: AGFTrackerModule) add the action rows' height below the tracker section's own blocks
+---@field Reserve fun(module: AGFTrackerModule, base: number): number add the action rows' height below the tracker section's own blocks
 ---@field Shown fun(): boolean the action rows are on screen, so RestedXP's own item and target windows stay hidden
 
 -- The guidance lifecycle (Guidance.lua): the one writer of AGFPrefs.guided and AGFPrefs.waypoint. Choosing, starting
@@ -2023,7 +2023,7 @@ AdventureGuideForever = nil
 ---@field TargetShown fun(): boolean whether the secure target button is shown
 ---@field Hint fun(step?: AGFStep): string? the friendly-nameplate hint, once a session
 ---@field Refresh fun() recompute the current NPC, arrow and target button
----@field Reserve fun(module: AGFTrackerModule) keep tracker room for the target button
+---@field Reserve fun(module: AGFTrackerModule, base: number): number keep tracker room for the target button
 
 ---@class AGFNamespace
 ---@field NpcHighlight AGFNpcHighlightModule
