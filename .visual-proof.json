@@ -1,10 +1,10 @@
 {
-  "input_digest": "e06ccb8179bff47c864ff0cd49d87c35dcd29f9fc993725bdaf858708194ca49",
-  "runtime_sha256": "e06ccb8179bff47c864ff0cd49d87c35dcd29f9fc993725bdaf858708194ca49",
-  "candidate": "e48908826d5cbb4119b496ab213346abaac3159b50a083d6e93f9c2dbeb1a267",
+  "input_digest": "ca633155d31d6fc94b4bc615d19cf5465b12de01a5df1a4722b052673067dfaf",
+  "runtime_sha256": "ca633155d31d6fc94b4bc615d19cf5465b12de01a5df1a4722b052673067dfaf",
+  "candidate": "f826a5e5e1dda1b3c9ca48937aaacac9b80f32fc8811768812a495dfffd0c1dd",
   "client_build": "1.60.1.70888 (Interface 16001)",
   "source_commit": "9f1de2f513fd65dd362012793de93f4dcf3a8ed6",
-  "notes": "Runtime proof was recorded from the installed 9f1de2f candidate. Later HEAD ef0fff62 contains only the Core 1.8 test-harness compatibility fix and does not change shipped runtime files.",
+  "notes": "In-game flows and captures were recorded from installed source-tree candidate 9f1de2f. Core #497 tooling includes auto-loaded Bindings.xml and packaging policy in the measured identity. The tested source and current release source have identical .pkgmeta bytes. Every source-owned shipped runtime file matches both the tested source-tree artifact and actual BigWigs output after documented line-ending and TOC version normalization; the tested artifact additionally carries the ignored store icon media/icon-400.png. Later commits change tooling/tests only. This package equivalence check does not claim a new gameplay session from the packaged ZIP.",
   "flows": [
     {
       "name": "Redridge multi-quest stop story tooltip",
@@ -47,5 +47,6 @@
       "url": "https://gist.githubusercontent.com/cjber/7a05ce137c0697a29b6d69411b0fd30b/raw/d9d9126c930ca5717efc142f2b17aa729b72ae45/grey.png",
       "sha256": "f4a3050cf454c4f7f94f75558be4a5e2c03847ce31c8674741389ea42dc7bd88"
     }
-  ]
+  ],
+  "tested_artifact": "source-tree"
 }
