@@ -16,6 +16,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **The guide's target button keeps its own row under the step.** The tracker lays its section out again whenever the guide or a quest changes, and the second layout dropped the room reserved for the step's small target button, so the button sat a row lower and covered the Journey line of the addon below the guide's section. It now keeps its place. Reported on Discord by lanprite (cjber/shortest-path-forever#787).
 - `/agf` help no longer lists the retired leaderboard and sharing commands (#727).
+- Ships with the same shared code as your other Forever addons, so they keep working together.
 
 ## [1.7.6] - 2026-11-12
 
