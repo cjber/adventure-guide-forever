@@ -925,7 +925,7 @@ end
 local function WithInstances(data, player, completed, log, index, eligible, prefs)
 	local pool = {}
 	local eligibleIndex, dungeonIndex = 1, 1
-	local dungeons = index.dungeonsByLevel[player.level]
+	local dungeons = prefs.showOutgrown and nil or index.dungeonsByLevel[player.level]
 	if not dungeons then
 		dungeons = {}
 		for _, id in ipairs(index.dungeons) do
