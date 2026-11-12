@@ -568,7 +568,7 @@ ns.L = {
 	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of the newest
 	-- CHANGELOG entry that has a bold lead, whose version is ns.WHATS_NEW_VERSION; tests/locales_spec.lua checks both.
-	WHATS_NEW = "Quest tooltips now label successor quests with Then and show their own difficulty colour.",
+	WHATS_NEW = "Quest tooltips: now label successor quests with Then and show their own difficulty colour.",
 	DUNGEON_BOSSES_LOOT = "Bosses and loot",
 	DUNGEON_LOOT_INSTALL = "Install AtlasLoot Classic and its Dungeons and Raids module for bosses and loot.",
 	DUNGEON_LOOT_COMBAT = "Boss loot will load after combat.",
