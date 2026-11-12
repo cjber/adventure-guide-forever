@@ -1,11 +1,27 @@
 """What the translation template holds: literal lines under their keys, never a GlobalString the client translates."""
 
+import subprocess
+import tempfile
 import unittest
+from pathlib import Path
+from unittest.mock import patch
 
-from phrases import HEADER, phrases, render
+from phrases import HEADER, KEYWORD, keyword_files, phrases, render
 
 
 class PhrasesTests(unittest.TestCase):
+    def test_release_tokens_only_fail_in_processed_package_text(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "tools").mkdir()
+            (root / ".pkgmeta").write_text("ignore:\n  - tools\nplain-copy:\n  - Raw.lua\n")
+            for name in ("Runtime.lua", "Raw.lua", "tools/check.lua", "checker.py"):
+                (root / name).write_text(KEYWORD + " export\n")
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            subprocess.run(["git", "-C", str(root), "add", "."], check=True)
+            with patch("phrases.ROOT", root):
+                self.assertEqual(keyword_files(), ["Runtime.lua"])
+
     def test_lines(self):
         source = r"""
             ns.L = {

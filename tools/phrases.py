@@ -11,6 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from forever_tools import pkgmeta
 from gen_quests import lua
 from lint_copy import ns_l_entries, split, unquote
 from lint_multivalue import Token, tokenize
@@ -67,7 +68,15 @@ def render(found: dict[str, str]) -> str:
 def keyword_files() -> list[str]:
     tracked = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, capture_output=True, check=True).stdout
     names = [name for name in tracked.decode().split("\0") if name]
-    return [name for name in names if (ROOT / name).is_file() and KEYWORD.encode() in (ROOT / name).read_bytes()]
+    manifest = pkgmeta.read(ROOT)
+    return [
+        name
+        for name in names
+        if Path(name).suffix in {".lua", ".md", ".toc", ".txt", ".xml"}
+        and (manifest is None or (manifest.keeps(name) and not manifest.kept_bytes(name)))
+        and (ROOT / name).is_file()
+        and KEYWORD.encode() in (ROOT / name).read_bytes()
+    ]
 
 
 def main() -> int:
