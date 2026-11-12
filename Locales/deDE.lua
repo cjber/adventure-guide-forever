@@ -107,11 +107,8 @@ L["BEFORE_IT_RUNS_OUT"] = "bevor %s abläuft"
 L["BEFORE_ITEM_RUNS_OUT"] = "bevor ein Questgegenstand abläuft"
 L["HELP_AUDIT"] = "/agf audit - die Questdaten mit dem Spiel abgleichen"
 L["HELP_DUMP"] = "/agf dump - das Layout des Führers für einen Fehlerbericht speichern"
-L["HELP_LEADERBOARD"] =
-	"/agf leaderboard - öffnet Forever Leaderboards auf der Registerkarte dieses Addons (auch /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - den Führer auf der Weltkarte öffnen."
 L["HELP_REPORT"] = "/agf report - einen Bericht zum Kopieren in einen Fehlerbericht anzeigen"
-L["HELP_SHARE"] = "/agf share on|off - schaltet das Teilen der Questabgaben-Summen mit Gilde und Gruppen an oder aus"
 L["HELP_TRACKER"] = "/agf tracker - die Anker der Verfolgung ausgeben (bei Überlappung im Kampf)"
 L["HELP_WHERE"] =
 	"/agf where - den aktuellen Halt des Führers anzeigen, zum Kopieren in einen Bericht über einen falschen Halt"
@@ -465,7 +462,7 @@ L["TWEAKS_OUTDATED"] = "Aktualisiert Tweaks Forever, um Dungeoneingänge zu find
 L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
-L["WHATS_NEW"] = "Questmarkierungen auf der Weltkarte blinken an Reisestopps nicht mehr." -- mt
+L["WHATS_NEW"] = "Der Zielknopf des Leitfadens behält seine eigene Zeile unter dem Schritt." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"

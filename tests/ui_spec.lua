@@ -2770,14 +2770,12 @@ do
 		L.HELP_ISSUE,
 		L.HELP_WHERE,
 		L.HELP_AUDIT,
-		L.HELP_LEADERBOARD,
-		L.HELP_SHARE,
 		L.HELP_DUMP,
 		L.HELP_TRACKER,
 	}) do
 		equal(h.prints[before + index]:sub(-#line), line, "L: help line " .. index)
 	end
-	equal(#h.prints, before + 9, "L: nine help lines")
+	equal(#h.prints, before + 7, "L: seven help lines")
 	-- Map names come from the client (C_Map.GetMapInfo), which the planner prefers over the data's English.
 	h.G.C_Map.GetMapInfo = function()
 		return { name = "Client Stormwind" }

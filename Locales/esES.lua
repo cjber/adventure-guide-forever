@@ -107,12 +107,8 @@ L["BEFORE_IT_RUNS_OUT"] = "antes de que caduque %s"
 L["BEFORE_ITEM_RUNS_OUT"] = "antes de que caduque un objeto de misión"
 L["HELP_AUDIT"] = "/agf audit - comprobar los datos de misiones con el juego"
 L["HELP_DUMP"] = "/agf dump - guardar el diseño de la guía para un informe de error"
-L["HELP_LEADERBOARD"] =
-	"/agf leaderboard - abre Forever Leaderboards en la pestaña de este addon (también /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - abrir la guía en el mapa del mundo."
 L["HELP_REPORT"] = "/agf report - mostrar un informe para copiar en un informe de error"
-L["HELP_SHARE"] =
-	"/agf share on|off - activa o desactiva compartir los totales de entregas de misiones con tu hermandad y grupos"
 L["HELP_TRACKER"] = "/agf tracker - mostrar los anclajes del rastreador (si se solapa en combate)"
 L["HELP_WHERE"] = "/agf where - mostrar la parada actual de la guía, para copiarla en un informe de parada errónea"
 L["HUB_HAND_IN"] = "%d para entregar"
@@ -465,7 +461,7 @@ L["TWEAKS_OUTDATED"] = "Actualiza Tweaks Forever para encontrar entradas de mazm
 L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
-L["WHATS_NEW"] = "Los marcadores de misión del mapa del mundo ya no parpadean en las paradas del viaje." -- mt
+L["WHATS_NEW"] = "El botón de objetivo de la guía mantiene su propia fila bajo el paso." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"

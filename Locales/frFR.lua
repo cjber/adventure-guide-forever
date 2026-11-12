@@ -107,11 +107,8 @@ L["BEFORE_IT_RUNS_OUT"] = "avant que %s n'expire"
 L["BEFORE_ITEM_RUNS_OUT"] = "avant qu'un objet de quête n'expire"
 L["HELP_AUDIT"] = "/agf audit - comparer les données de quêtes avec le jeu"
 L["HELP_DUMP"] = "/agf dump - enregistrer la disposition du guide pour un rapport de bug"
-L["HELP_LEADERBOARD"] = "/agf leaderboard - ouvre Forever Leaderboards sur l'onglet de cet addon (aussi /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - ouvrir le guide sur la carte du monde."
 L["HELP_REPORT"] = "/agf report - afficher un rapport à copier dans un rapport de bug"
-L["HELP_SHARE"] =
-	"/agf share on|off - active ou désactive le partage des totaux de remises de quêtes avec votre guilde et vos groupes"
 L["HELP_TRACKER"] = "/agf tracker - afficher les ancrages du suivi (en cas de chevauchement en combat)"
 L["HELP_WHERE"] = "/agf where - afficher l’arrêt actuel du guide, à copier dans un rapport d’arrêt erroné"
 L["HUB_HAND_IN"] = "%d à rendre"
@@ -468,7 +465,7 @@ L["TWEAKS_OUTDATED"] = "Mettez à jour Tweaks Forever pour trouver les entrées 
 L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
-L["WHATS_NEW"] = "Les marqueurs de quête de la carte du monde ne clignotent plus aux étapes du voyage." -- mt
+L["WHATS_NEW"] = "Le bouton de cible du guide garde sa propre ligne sous l'étape." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"

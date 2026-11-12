@@ -110,12 +110,8 @@ L["BEFORE_IT_RUNS_OUT"] = "%s(이)가 사라지기 전에"
 L["BEFORE_ITEM_RUNS_OUT"] = "퀘스트 아이템이 사라지기 전에"
 L["HELP_AUDIT"] = "/agf audit - 퀘스트 데이터를 게임과 대조합니다"
 L["HELP_DUMP"] = "/agf dump - 오류 보고용으로 안내서 배치를 저장합니다"
-L["HELP_LEADERBOARD"] =
-	"/agf leaderboard - 이 애드온 탭에서 Forever Leaderboards를 엽니다 (또한 /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - 세계 지도에서 안내서를 엽니다."
 L["HELP_REPORT"] = "/agf report - 오류 보고에 복사할 보고서를 표시합니다"
-L["HELP_SHARE"] =
-	"/agf share on|off - 퀘스트 완료 합계를 길드 및 파티와 공유하는 기능을 켜거나 끕니다"
 L["HELP_TRACKER"] = "/agf tracker - 추적기 고정점을 출력합니다 (전투 중 겹칠 때)"
 L["HELP_WHERE"] = "/agf where - 안내서의 현재 정거장을 표시합니다 (잘못된 정거장 보고용)"
 L["HUB_HAND_IN"] = "제출 %d개"
@@ -473,7 +469,7 @@ L["TWEAKS_OUTDATED"] = "던전 입구를 찾으려면 Tweaks Forever를 업데�
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
-L["WHATS_NEW"] = "세계 지도의 퀘스트 표시가 여정 정류장에서 더 이상 깜박이지 않습니다." -- mt
+L["WHATS_NEW"] = "가이드의 대상 버튼이 단계 아래 자기 줄을 유지합니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"
