@@ -32,6 +32,7 @@ local DEFAULTS = {
 	stepSound = true,
 	trainingReminders = false,
 	maxQuestLevelOffset = 2,
+	showOutgrown = false,
 	-- Opt-in: with the Adventure tab closed the map shows no Adventure Guide mark unless the player asks for them.
 	showMapPins = false,
 	showQuestGivers = false,
@@ -409,6 +410,7 @@ function ns.Prefs()
 	charDB.camps = sessionCamps
 	-- The account-wide route-order setting, folded into the prefs the planner reads (Model.Laps, Model.Build).
 	charDB.optimisedRoute = ns.Setting("optimisedRoute") == true
+	charDB.showOutgrown = ns.Setting("showOutgrown") == true
 	return charDB
 end
 

@@ -465,6 +465,8 @@ ns.L = {
 		.. "nearer, so you tend to do them together. Party members with Adventure Guide tell each other which quests "
 		.. "they have, as hidden addon messages.",
 	SETTING_ROUTE_ORDER = "Optimised route (beta)",
+	SETTING_OUTGROWN = "Show outgrown zones and dungeons",
+	SETTING_OUTGROWN_TOOLTIP = "Keep zones and dungeons whose quests are grey in the journey choices.",
 	SETTING_ROUTE_ORDER_TOOLTIP = "Off: the route is the nearest thing to do next, step by step, so it is simple "
 		.. "and predictable. On: an experimental order that leads with the story's chapter, groups a town's work and "
 		.. "keeps its earlier suggestions steady.",

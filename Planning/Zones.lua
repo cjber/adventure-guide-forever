@@ -112,14 +112,14 @@ local function Choices(data, player, completed, log, index, prefs, far)
 	end
 	-- Joined, not formatted as integers: the 32nd race's bit is past what the client's %d holds.
 	local choiceKey = player.level .. ":" .. (player.raceBit or 0) .. ":" .. (player.classBit or 0)
-	local candidates = sideCandidates[choiceKey]
+	local candidates = prefs.showOutgrown and nil or sideCandidates[choiceKey]
 	if not candidates then
 		candidates = {}
 		for _, id in ipairs(index.sides[player.side] or index.ids) do
 			local quest = data.quests[id]
 			if
 				quest.min <= player.level
-				and not Model.IsGray(quest.level, player.level)
+				and (prefs.showOutgrown or not Model.IsGray(quest.level, player.level))
 				and Model.CouldTake(quest, player)
 			then
 				candidates[#candidates + 1] = id
@@ -156,7 +156,7 @@ local function Choices(data, player, completed, log, index, prefs, far)
 			not completed[id]
 			and ((instance and (prefs.dungeons or quest.dungeon == chosenDungeon)) or (not instance and prefs.quests))
 			and not Dropped(id)
-			and (pinned[id] or not Model.IsGray(quest.level, player.level))
+			and (prefs.showOutgrown or pinned[id] or not Model.IsGray(quest.level, player.level))
 			and not Hard(quest, player)
 			and (
 				SimpleOpen(quest, player, completed, log, id)
