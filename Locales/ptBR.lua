@@ -105,11 +105,8 @@ L["BEFORE_IT_RUNS_OUT"] = "antes que %s expire"
 L["BEFORE_ITEM_RUNS_OUT"] = "antes que um item de missão expire"
 L["HELP_AUDIT"] = "/agf audit - conferir os dados de missões com o jogo"
 L["HELP_DUMP"] = "/agf dump - salvar o layout do guia para um relatório de erro"
-L["HELP_LEADERBOARD"] = "/agf leaderboard - abre o Forever Leaderboards na aba deste addon (também /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - abrir o guia no mapa-múndi."
 L["HELP_REPORT"] = "/agf report - mostrar um relatório para copiar num relatório de erro"
-L["HELP_SHARE"] =
-	"/agf share on|off - liga ou desliga o compartilhamento dos totais de entregas de missões com sua guilda e grupos"
 L["HELP_TRACKER"] = "/agf tracker - mostrar as âncoras do rastreador (se houver sobreposição em combate)"
 L["HELP_WHERE"] = "/agf where - mostrar a parada atual do guia, para copiar num relatório de parada errada"
 L["HUB_HAND_IN"] = "%d para entregar"

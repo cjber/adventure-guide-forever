@@ -19,8 +19,6 @@ ns.L = {
 	LEADERBOARD_SHARING_OFF = "Sharing is off: nothing is sent or shown. Turn it on with /agf share on.",
 	LEADERBOARD_METRIC = "Quests turned in",
 	LEADERBOARD_TOTAL = "total",
-	HELP_LEADERBOARD = "/agf leaderboard - open Forever Leaderboards on this addon's tab (also /agf stats)",
-	HELP_SHARE = "/agf share on|off - turn sharing of quest turn-in totals with your guild and groups on or off",
 	SETTING_RXP = "Use RestedXP guides",
 	SETTING_RXP_TOOLTIP = "Add the current RestedXP guide to your journey cards, map and tracker. "
 		.. "RestedXP advances guide steps; Shortest Path Forever handles travel. "

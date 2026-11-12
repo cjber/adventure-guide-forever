@@ -60,7 +60,6 @@ local DEFAULTS = {
 	followQuest = true,
 	-- One chat line after an update (WhatsNew).
 	whatsNew = true,
-	-- Share small cumulative activity rows over guild/group addon channels; opt-out, so only an explicit off stops it.
 	-- Beta: the planned route order (chapter lead, town look-ahead, committed order); false is the simple
 	-- nearest-action order, the default (docs/design.md §4.1).
 	optimisedRoute = false,
@@ -1236,8 +1235,6 @@ local function Slash(msg)
 		ns.Print(L.HELP_ISSUE)
 		ns.Print(L.HELP_WHERE)
 		ns.Print(L.HELP_AUDIT)
-		ns.Print(L.HELP_LEADERBOARD)
-		ns.Print(L.HELP_SHARE)
 		ns.Print(L.HELP_DUMP)
 		ns.Print(L.HELP_TRACKER)
 	end

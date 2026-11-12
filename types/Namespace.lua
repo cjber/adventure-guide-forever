@@ -617,8 +617,6 @@
 ---@field HELP_REPORT string
 ---@field HELP_ISSUE string
 ---@field HELP_WHERE string
----@field HELP_LEADERBOARD string
----@field HELP_SHARE string
 ---@field REPORT_TITLE string the report window's title
 ---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
 ---@field BEFORE_IT_RUNS_OUT string format: expiring quest item name; the reason a route step is hurried

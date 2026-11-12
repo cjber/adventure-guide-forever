@@ -114,13 +114,9 @@ L["BEFORE_ITEM_RUNS_OUT"] = "пока не исчез предмет для за
 L["HELP_AUDIT"] = "/agf audit - сверить данные заданий с игрой"
 L["HELP_DUMP"] =
 	"/agf dump - сохранить раскладку путеводителя для отчета об ошибке"
-L["HELP_LEADERBOARD"] =
-	"/agf leaderboard - открывает Forever Leaderboards на вкладке этого аддона (также /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - открыть путеводитель на карте мира."
 L["HELP_REPORT"] =
 	"/agf report - показать отчет для копирования в сообщение об ошибке"
-L["HELP_SHARE"] =
-	"/agf share on|off - включить или выключить обмен итогами сданных заданий с гильдией и группами"
 L["HELP_TRACKER"] =
 	"/agf tracker - вывести привязки панели отслеживания (при наложении в бою)"
 L["HELP_WHERE"] =

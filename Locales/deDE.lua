@@ -107,11 +107,8 @@ L["BEFORE_IT_RUNS_OUT"] = "bevor %s abläuft"
 L["BEFORE_ITEM_RUNS_OUT"] = "bevor ein Questgegenstand abläuft"
 L["HELP_AUDIT"] = "/agf audit - die Questdaten mit dem Spiel abgleichen"
 L["HELP_DUMP"] = "/agf dump - das Layout des Führers für einen Fehlerbericht speichern"
-L["HELP_LEADERBOARD"] =
-	"/agf leaderboard - öffnet Forever Leaderboards auf der Registerkarte dieses Addons (auch /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - den Führer auf der Weltkarte öffnen."
 L["HELP_REPORT"] = "/agf report - einen Bericht zum Kopieren in einen Fehlerbericht anzeigen"
-L["HELP_SHARE"] = "/agf share on|off - schaltet das Teilen der Questabgaben-Summen mit Gilde und Gruppen an oder aus"
 L["HELP_TRACKER"] = "/agf tracker - die Anker der Verfolgung ausgeben (bei Überlappung im Kampf)"
 L["HELP_WHERE"] =
 	"/agf where - den aktuellen Halt des Führers anzeigen, zum Kopieren in einen Bericht über einen falschen Halt"

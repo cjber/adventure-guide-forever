@@ -110,12 +110,8 @@ L["BEFORE_IT_RUNS_OUT"] = "%s(이)가 사라지기 전에"
 L["BEFORE_ITEM_RUNS_OUT"] = "퀘스트 아이템이 사라지기 전에"
 L["HELP_AUDIT"] = "/agf audit - 퀘스트 데이터를 게임과 대조합니다"
 L["HELP_DUMP"] = "/agf dump - 오류 보고용으로 안내서 배치를 저장합니다"
-L["HELP_LEADERBOARD"] =
-	"/agf leaderboard - 이 애드온 탭에서 Forever Leaderboards를 엽니다 (또한 /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - 세계 지도에서 안내서를 엽니다."
 L["HELP_REPORT"] = "/agf report - 오류 보고에 복사할 보고서를 표시합니다"
-L["HELP_SHARE"] =
-	"/agf share on|off - 퀘스트 완료 합계를 길드 및 파티와 공유하는 기능을 켜거나 끕니다"
 L["HELP_TRACKER"] = "/agf tracker - 추적기 고정점을 출력합니다 (전투 중 겹칠 때)"
 L["HELP_WHERE"] = "/agf where - 안내서의 현재 정거장을 표시합니다 (잘못된 정거장 보고용)"
 L["HUB_HAND_IN"] = "제출 %d개"
