@@ -167,6 +167,39 @@ h.flush()
 out.journeys_four = Panel(h, "journeys_four")
 out.journeys_overflow = Panel(h, "journeys_overflow", 330)
 
+-- The Library books section on its own: a fresh character, every other card turned down, so the overview's card, its
+-- book mark, its goal gate and its stops are all in the panel.
+h = Load("v1", false, true)
+h.flush()
+for _, journey in ipairs(h.ns.Route().journeys) do
+	if journey.kind ~= "library" then
+		h.ns.NotInterested(journey.key, journey.title)
+	end
+end
+h.ns.Invalidate()
+h.flush()
+out.library_card = Panel(h, "library_card")
+
+-- The library's own journey, Horde territory first: smaller zones first, the hand-in last.
+h = Load("v1", false, false, "library")
+h.flush()
+out.library_stops = Panel(h, "library_stops")
+local library
+for _, journey in ipairs(h.ns.Route().journeys) do
+	library = journey.kind == "library" and journey or library
+end
+local libraryOwner = h.G.CreateFrame("Button", nil, h.G.UIParent)
+h.ns.Menu.Journey(libraryOwner, library)
+out.library_territory = Panel(h, "library_territory")
+out.library_territory.menu = {}
+for index, entry in ipairs(h.menu.entries) do
+	out.library_territory.menu[index] = {
+		kind = entry.kind,
+		text = entry.text,
+		selected = entry.isSelected and entry.isSelected() or nil,
+	}
+end
+
 -- The search: the Call of quests a level-18 orc shaman sees, the locked ones saying why.
 h = Load(false, false, false, STORY)
 local search = h.Find(function(frame)

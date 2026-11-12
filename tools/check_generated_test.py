@@ -24,7 +24,7 @@ class GeneratedTest(unittest.TestCase):
                 check_generated.compare(expected, check_generated.outputs(root), "Stale generated files")
 
     def test_the_corpus_is_not_committed_output(self):
-        # QuestieDB carries no licence (WFA-28): the corpus is built into the gitignored tests/.corpus/ instead.
+        # QuestieDB's licence is runtime-only (WFA-28): the corpus is built into the gitignored tests/.corpus/.
         for path in (FIXTURE, TOWN_FIXTURE):
             self.assertNotIn(path.relative_to(ROOT).as_posix(), check_generated.DATA)
             self.assertEqual(path.parent.name, ".corpus")
