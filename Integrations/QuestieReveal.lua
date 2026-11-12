@@ -119,7 +119,7 @@ local function Objectives(refs)
 		if type(id) == "number" and type(index) == "number" then
 			local ok, quest = pcall(questieDB.GetQuest, id)
 			local held = ok and type(quest) == "table" and quest.Objectives
-			local raw = type(held) == "table" and held[index]
+			local raw = type(held) == "table" and held[index] or nil
 			if Spawned(raw) then
 				objectives[#objectives + 1] = raw
 			end

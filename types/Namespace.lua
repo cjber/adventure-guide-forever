@@ -851,6 +851,7 @@
 -- The guidance lifecycle (Guidance.lua): the one writer of AGFPrefs.guided and AGFPrefs.waypoint. Choosing, starting
 -- and stopping are ns.Choose, ns.StartRoute and ns.Stop.
 ---@class AGFGuidance
+---@field ModeChanged fun(enabled: boolean) settle owned guidance when information mode changes
 ---@field Status fun(): AGFGuidanceStatus? where the chosen journey's guidance stands, when it is not simply running or absent
 ---@field Owns fun(): boolean Go's guidance is still running: our Shortest Path journey (guided or held), or the waypoint Go set
 ---@field Navigate fun(step: AGFStep|AGFGiver, follow?: boolean): boolean route there with Shortest Path, else (declined or absent) the native waypoint where the map allows one; true when something now guides

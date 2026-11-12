@@ -234,6 +234,7 @@ function Guidance.Reveal(step)
 	end
 	local quests = {}
 	if step.kind then
+		---@cast step AGFStep
 		for _, questID in ipairs(ns.LogQuests(step)) do
 			quests[#quests + 1] = questID
 		end
