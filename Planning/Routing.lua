@@ -85,8 +85,8 @@ end
 ---@param step AGFStep
 ---@return integer
 function Model.StopTier(data, log, player, step)
-	-- An active native quest timer outranks distance: its open objectives must lead, while its completed hand-in is
-	-- already tier 0. This uses the client's live timer, never quest names or static catalogue guesses.
+	-- An active native quest timer outranks distance: its open objective or completed hand-in must lead. This uses
+	-- the client's live timer, never quest names or static catalogue guesses.
 	for _, id in ipairs(step.quests or NONE) do
 		local entry = log[id]
 		if entry and entry.timed and entry.timed > 0 then
