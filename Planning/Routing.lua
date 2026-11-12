@@ -89,7 +89,7 @@ function Model.StopTier(data, log, player, step)
 	-- already tier 0. This uses the client's live timer, never quest names or static catalogue guesses.
 	for _, id in ipairs(step.quests or NONE) do
 		local entry = log[id]
-		if entry and entry.timed and not entry.complete then
+		if entry and entry.timed and entry.timed > 0 then
 			return -1
 		end
 	end

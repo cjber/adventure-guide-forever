@@ -149,4 +149,25 @@ local function firstArea(card)
 end
 equal(firstArea(timed), "area:12:0", "timed: active quest objective leads")
 
+-- A completed timed quest still has an active native timer and its turn-in leads a nearer ordinary turn-in.
+local timedTurnin = { kind = "turnin", key = "turnin:14", map = 1, x = 900, y = 500, r = 0, quests = { 14 } }
+local ordinaryTurnin = { kind = "turnin", key = "turnin:15", map = 1, x = 520, y = 500, r = 0, quests = { 15 } }
+local timerLog = {
+	[14] = { id = 14, title = "Timed hand-in", complete = true, level = 18, timed = 900 },
+	[15] = { id = 15, title = "Ordinary hand-in", complete = true, level = 18 },
+}
+local orderedTurnins = Model.Nearest(
+	{ map = 1, x = 500, y = 500, known = true },
+	{ timedTurnin, ordinaryTurnin },
+	function(step)
+		return { map = step.map, x = step.x, y = step.y, known = true }
+	end,
+	nil,
+	nil,
+	function(step)
+		return Model.StopTier(timedData, timerLog, player, step)
+	end
+)
+equal(orderedTurnins[1], timedTurnin, "timed: active completed quest turn-in leads")
+
 print(("route_order_spec: %d checks passed"):format(checks))
