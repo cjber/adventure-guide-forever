@@ -72,6 +72,7 @@ Credit for the reports and requests behind the addon.
 | jixxor | Show of Force held until Encroaching Gnolls is done | Discord; #642 |
 | InfamousMunky | Daily Delivery no longer offered once handed on | GitHub; #629 |
 | lanprite | RestedXP guide cards marked as RestedXP's | CurseForge; #713 |
+| cotijelucie | Information mode and showing a stop's quests on the map | Discord; #715 |
 
 ## Inspired by
 

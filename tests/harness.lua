@@ -4169,4 +4169,126 @@ function harness.questieMirror(data)
 	return fake
 end
 
+-- Questie through its loader, for the integrations that read its modules (Core/State.lua, UI/Pins.lua). Questie has no
+-- public per-quest pin API, so a spec drives the same modules AGF feature-detects. options:
+--   ready = false            Questie.API.isReady is false
+--   profile = {...}          Questie.db.profile, default enabled/enableMapIcons true
+--   char = {...}             Questie.db.char, kept for the no-mutation checks
+--   frames = { [id] = n }    n world map icons for a quest, or an array of icon specs: { name, shown, miniMap,
+--                            hiddenByFlash, data, map }
+--   objectives = { [id] = objectives } QuestieDB.GetQuest(id).Objectives
+--   finisherError / objectivesError make that pcall throw; noFrames/noTracker/noDB/noMap/noQuest leave a module out
+-- h.questie records every import and every call, including the calls a reveal must never make.
+function harness.questie(h, options)
+	options = options or {}
+	local calls = {
+		imports = {},
+		finisher = {},
+		objectives = {},
+		forbidden = { FocusQuest = 0, Unfocus = 0, UnhideQuest = 0, HideQuest = 0, ToggleNotes = 0 },
+	}
+	local frames = {}
+	for id, spec in pairs(options.frames or {}) do
+		local icons = {}
+		if type(spec) == "number" then
+			for index = 1, spec do
+				icons[index] = { name = ("QuestieMapIcon%d_%d"):format(id, index) }
+			end
+		else
+			icons = spec
+		end
+		local names = {}
+		for index, icon in ipairs(icons) do
+			local name = type(icon) == "string" and icon or icon.name or ("QuestieMapIcon%d_%d"):format(id, index)
+			local entry = type(icon) == "table" and icon or {}
+			if not h.G[name] then
+				h.G[name] = {
+					miniMapIcon = entry.miniMap == true,
+					_hidden_by_flash = entry.hiddenByFlash == true,
+					data = entry.data or { Id = id },
+					UiMapID = entry.map,
+					IsShown = function()
+						return entry.shown ~= false
+					end,
+				}
+			end
+			names[index] = name
+		end
+		frames[id] = names
+	end
+	local db = options.db
+		or {
+			profile = { enabled = true, enableMapIcons = true, trackerEnabled = true },
+			char = { TrackerFocus = nil, TrackerHiddenQuests = {} },
+		}
+	for key, value in pairs(options.profile or {}) do
+		db.profile[key] = value
+	end
+	for key, value in pairs(options.char or {}) do
+		db.char[key] = value
+	end
+	local questieQuest = {
+		ToggleNotes = function()
+			calls.forbidden.ToggleNotes = calls.forbidden.ToggleNotes + 1
+		end,
+		UnhideQuest = function()
+			calls.forbidden.UnhideQuest = calls.forbidden.UnhideQuest + 1
+		end,
+		HideQuest = function()
+			calls.forbidden.HideQuest = calls.forbidden.HideQuest + 1
+		end,
+	}
+	local tracker = {
+		FlashFinisher = function(_, quest)
+			calls.finisher[#calls.finisher + 1] = quest
+			if options.finisherError then
+				error("flash finisher failed")
+			end
+		end,
+		FlashObjectives = function(_, objectives)
+			calls.objectives[#calls.objectives + 1] = objectives
+			if options.objectivesError then
+				error("flash objectives failed")
+			end
+		end,
+		FocusQuest = function()
+			calls.forbidden.FocusQuest = calls.forbidden.FocusQuest + 1
+		end,
+		UnFocus = function()
+			calls.forbidden.Unfocus = calls.forbidden.Unfocus + 1
+		end,
+	}
+	local questieDB = {
+		GetQuest = function(id)
+			return { Id = id, Objectives = (options.objectives or {})[id] or {} }
+		end,
+	}
+	local questieMap = { questIdFrames = frames, manualFrames = {} }
+	h.G.Questie = { API = { isReady = options.ready ~= false }, db = db }
+	h.G.QuestieLoader = {
+		ImportModule = function(_, name)
+			calls.imports[#calls.imports + 1] = name
+			if name == "QuestieQuest" and not options.noQuest then
+				return questieQuest
+			elseif name == "TrackerUtils" and not options.noTracker then
+				return tracker
+			elseif name == "QuestieDB" and not options.noDB then
+				return questieDB
+			elseif name == "QuestieMap" and not options.noMap and not options.noFrames then
+				return questieMap
+			end
+		end,
+	}
+	h.questie = {
+		calls = calls,
+		frames = frames,
+		db = db,
+		tracker = tracker,
+		questieDB = questieDB,
+		questieMap = questieMap,
+		questieQuest = questieQuest,
+	}
+	return h.questie
+end
+
 return harness

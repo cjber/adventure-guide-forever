@@ -761,8 +761,9 @@ function AdventureGuideForeverPinMixin:OnMouseEnter()
 	if self.step and self.index then
 		MarkerTooltip(GameTooltip, self.visits or { { step = self.step, index = self.index } })
 		AddClickLine(GameTooltip)
-		-- A step past the first still has a clear way back to the story's start (docs/design.md §2.10).
-		if self.index and self.index > 1 then
+		-- A step past the first still has a clear way back to the story's start (docs/design.md §2.10), unless the
+		-- information mode leaves no route to return to.
+		if self.index and self.index > 1 and not ns.Setting("informationOnly") then
 			GameTooltip_AddInstructionLine(GameTooltip, ns.L.PIN_RETURN_STORY)
 		end
 	end
@@ -777,6 +778,11 @@ end
 
 function AdventureGuideForeverPinMixin:OnMouseClickAction(button)
 	if not self.step then
+		return
+	end
+	-- Information mode's stop click shows the stop's quests on the map; it never starts a route or returns to one.
+	if ns.Setting("informationOnly") then
+		ns.Guidance.Reveal(self.step)
 		return
 	end
 	if button == "RightButton" then
@@ -837,7 +843,11 @@ function AdventureGuideForeverGiverPinMixin:OnMouseClickAction(button)
 		end
 		GameTooltip:Hide()
 	elseif button == "LeftButton" and self.giver then
-		ns.Guidance.Navigate(self.giver)
+		if ns.Setting("informationOnly") then
+			ns.Guidance.Reveal(self.giver)
+		else
+			ns.Guidance.Navigate(self.giver)
+		end
 	end
 end
 

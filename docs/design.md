@@ -178,6 +178,23 @@ abandons quests.
 
 ### Guide navigation
 
+The Route setting **Information only** keeps journeys available to browse without starting navigation.
+All guidance entry points, including quest givers, asides and battleground suggestions, leave travel to the
+player. Enabling it stops Adventure Guide's own guidance and clears a queued start. The selected journey
+stays selected, and its automatic quest-watch ownership ends so the player's watch list is restored.
+Explicit tracking actions remain available.
+
+An integrated RestedXP guide remains readable. Information mode gives back the windows and quest watches
+Adventure Guide had taken over, and leaves RestedXP's own guide selection and progress to it. Adventure
+Guide does not automatically select a guide, apply saved skips or take over navigation in this mode.
+
+Clicking a stop first asks Questie to show the quests already in the player's log. An objective stop with
+several quests shows their combined objectives when the installed Questie supports that operation.
+The adapter uses Questie's existing map reveal functions without changing its settings or making hidden
+pins visible. Missing, unready or incompatible Questie falls back to Adventure Guide's own map reveal.
+Combat leaves no deferred navigation request. Turning information mode off restores the normal planner
+settings.
+
 The world-map sidebar is the guide. Folded sections show two Continue journeys and one journey per other
 section. Expanding a header reveals the remaining choices. Existing settings from the paged overview do
 not expand the new previews. Accepted quests, including the current story's quests, form Quests in your log,

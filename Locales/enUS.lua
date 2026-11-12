@@ -167,6 +167,9 @@ ns.L = {
 	SETTING_AUTO_START_TOOLTIP = "The guide sends your chosen journey's route to Shortest Path as soon as it is "
 		.. "ready, so the map line is drawn on login and after a reload without pressing Go. Pressing Stop still "
 		.. "clears it until you choose a journey again.",
+	SETTING_INFORMATION_ONLY = "Information only: no routes",
+	SETTING_INFORMATION_ONLY_TOOLTIP = "Keep journeys and quest information without starting routes or changing "
+		.. "your tracked quests. Clicking a stop shows its quests on the map. Turn this off to use the planner again.",
 	SETTING_AUTO_NEXT_ZONE = "Start the next zone when one is finished",
 	SETTING_AUTO_NEXT_ZONE_TOOLTIP = "When a zone journey ends after a quest hand-in, the guide chooses the next "
 		.. "zone for your level from the same list. When that journey was already guiding you, its route starts too. "
@@ -349,6 +352,7 @@ ns.L = {
 	STARTS_AFTER_COMBAT = "The route starts when combat ends",
 	CLICK_TRAVEL = "Click to travel with %s",
 	CLICK_WAYPOINT = "Click to set a waypoint",
+	CLICK_SHOW_MAP = "Click to show this stop on the map",
 	-- A numbered route pin past the first: how to get back to the story's start.
 	PIN_RETURN_STORY = "Right-click to route from the story's start",
 	STEP_NUMBERED = "%d. %s",

@@ -517,3 +517,8 @@ L["NPC_HIGHLIGHT_HINT"] =
 
 L.LEADERBOARD_METRIC = "Misiones entregadas" -- mt
 L.LEADERBOARD_TOTAL = "total" -- mt
+-- mt: Information only (#715).
+L["SETTING_INFORMATION_ONLY"] = "Solo información: sin rutas" -- mt
+L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
+	"Conserva los viajes y la información de misiones sin iniciar rutas ni cambiar las misiones que sigues. Al hacer clic en una parada, sus misiones se muestran en el mapa. Desactiva esta opción para volver a usar el planificador." -- mt
+L["CLICK_SHOW_MAP"] = "Haz clic para mostrar esta parada en el mapa" -- mt

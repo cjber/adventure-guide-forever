@@ -44,6 +44,10 @@ local DEFAULTS = {
 	autoStart = true,
 	-- Finishing a zone journey moves to the next zone card, and starts its route when the finished one was guided (#400).
 	autoNextZone = true,
+	-- Information only (#715): the guide still shows journeys and quests, but chooses, starts, follows and restores no
+	-- route, sets no waypoint from its own controls, and leaves the player's quest watches alone. Clicking a stop shows
+	-- its quests on the map instead of setting off.
+	informationOnly = false,
 	-- Highlight the NPC a talk step names, with nameplate arrows and a target button (#401).
 	npcHighlight = true,
 	-- Opt-in: a title click adds the route's own quests to the tracker. A saved true stays true.
@@ -392,6 +396,14 @@ function ns.SetSetting(key, value)
 	-- Wandering from now: what Go started stops, as the player's Stop would.
 	if key == "wanderer" and value then
 		ns.Guidance.Cancel()
+	end
+	-- Information mode cancels only what AGF guides and leaves the planner ready for when it is turned off.
+	if key == "informationOnly" then
+		ns.Guidance.ModeChanged(value == true)
+		ns.QuestWatch.Sync()
+		if ns.RestedXP then
+			ns.RestedXP.Refresh()
+		end
 	end
 	-- Rebuilds the route (cheap) and wakes listeners (Panel/Pins/Tracker) to redraw with the new setting.
 	ns.Invalidate()

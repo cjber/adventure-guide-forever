@@ -76,7 +76,8 @@ end
 local function RestedXPLeader(route)
 	local first = route.steps[1]
 	if
-		ns.RestedXP
+		not ns.Setting("informationOnly")
+		and ns.RestedXP
 		and ns.Setting("guideTracksQuests") == true
 		and ns.RestedXP.Active()
 		and route.chosen
@@ -96,7 +97,8 @@ end
 local function JourneyLeader(route)
 	local first = route.steps[1]
 	if
-		ns.Setting("journeyWatch") == true
+		not ns.Setting("informationOnly")
+		and ns.Setting("journeyWatch") == true
 		and route.chosen
 		and first ~= nil
 		and not first.preview

@@ -14,6 +14,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **RestedXP guide cards now carry RestedXP's mark.** The guides you can choose, and the one you follow, show the RestedXP logo at the card's top right, and their tooltips say the steps come from your installed guides rather than from Adventure Guide's own zone stories or Clean up my log, so the two kinds are easy to tell apart. Thanks to lanprite for the report (#713).
 
+- **Browse journeys without starting a route.** Information only in the Route settings keeps the journey's quest information and your tracked quests. Clicking a stop shows its quests with Questie's existing map pins, or marks the stop on the map when that reveal is unavailable. Thanks to cotijelucie for the idea (#715).
+
 ## [1.7.5] - 2026-11-12
 
 - **Quest tooltips:** Story tooltips now show successor quests with a `Then` label and each quest's own difficulty colour.

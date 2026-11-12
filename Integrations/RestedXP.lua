@@ -10,6 +10,9 @@ ns.RestedXP = Guide
 ---@type fun()[]
 local listeners = {}
 local active, ready, queued = false, false, false
+-- Whether AGF currently hides or suppresses any RestedXP frame, map line or arrow. Information mode gives those back
+-- only when this is true, so a session that starts in the mode never restores what it did not take.
+local suppressing = false
 ---@type AGFRXPSnapshot
 local snapshot = { name = "", group = "", index = 0, total = 0, steps = {} }
 local signature = ""
@@ -551,58 +554,76 @@ local function Sync()
 	local changed = active ~= not not enabled
 	active = not not enabled
 	if active and engine then
-		Window(engine.RXPFrame)
-		Window(LibDBIcon10_RXPGuides)
-		SuppressMap(engine)
-		Window(engine.v2 and engine.v2.state and engine.v2.state.guideWindow and engine.v2.state.guideWindow.frame)
-		-- AGF's tracker draws native-styled item and target buttons in its own section (#334): RestedXP's own windows
-		-- are hidden only while those buttons are actually shown, and come back when the tracker setting, a collapsed
-		-- section or a step without actions leaves them off.
-		if ns.RXPActions and ns.RXPActions.Shown() then
-			SuppressAction(engine.activeItemFrame)
-			SuppressAction(engine.targeting and engine.targeting.activeTargetFrame)
-		else
-			RestoreActions(engine)
-		end
-		-- A step the player skipped ahead of RestedXP stays skipped, after a /reload too (#374).
-		ApplySkips(engine)
-		snapshot = Snapshot(engine)
-		-- With Shortest Path loaded, its arrow points at the step handed to it, so RXP's arrow never shows as a second
-		-- one. Without it, RXP's arrow is the guide's only arrow: it goes only while another journey is chosen, so it
-		-- never points somewhere other than the route being followed.
-		local chosen = ns.Prefs().journey
-		if
-			ns.Integrations.Provider() ~= nil
-			or (snapshot.name ~= "" and chosen ~= nil and chosen ~= GuideKey(snapshot.group, snapshot.name))
-		then
-			Window(engine.arrowFrame)
-		else
-			Unwindow(engine.arrowFrame)
-		end
-		local skip = pendingSkip
-		pendingSkip = nil
-		if skip and skip.group == snapshot.group and skip.name == snapshot.name then
-			Guide.Skip(skip.index, skip.elementIndex)
-		end
-		if
-			snapshot.name == ""
-			and not (
-				engine.guideImporter
-				and (engine.guideImporter.importCoroutine or (engine.guideImporter.importBufferSize or 0) > 0)
-			)
-		then
-			local level, candidate, count = ns.State.Player().level, nil, 0
-			for _, card in ipairs(Guide.Cards()) do
-				if card.guideLow and card.guideHigh and level >= card.guideLow and level < card.guideHigh then
-					candidate, count = card, count + 1
+		local browsing = ns.Setting("informationOnly") == true
+		if browsing then
+			-- Information mode keeps the guide readable, but gives back anything AGF suppressed and runs none of its
+			-- automatic workflow: no hide/show, no map-line removal, no skips, no arrow, no guide selection.
+			if suppressing then
+				Restore()
+				RestoreActions(engine)
+				if engine.UpdateMap then
+					engine.UpdateMap(true)
 				end
+				suppressing = false
 			end
-			if count == 1 and candidate and autoSelected ~= candidate.key then
-				autoSelected = candidate.key
-				Guide.Select(assert(candidate.rxpGroup), assert(candidate.rxpName))
+			pendingSkip = nil
+			snapshot = Snapshot(engine)
+		else
+			suppressing = true
+			Window(engine.RXPFrame)
+			Window(LibDBIcon10_RXPGuides)
+			SuppressMap(engine)
+			Window(engine.v2 and engine.v2.state and engine.v2.state.guideWindow and engine.v2.state.guideWindow.frame)
+			-- AGF's tracker draws native-styled item and target buttons in its own section (#334): RestedXP's own windows
+			-- are hidden only while those buttons are actually shown, and come back when the tracker setting, a collapsed
+			-- section or a step without actions leaves them off.
+			if ns.RXPActions and ns.RXPActions.Shown() then
+				SuppressAction(engine.activeItemFrame)
+				SuppressAction(engine.targeting and engine.targeting.activeTargetFrame)
+			else
+				RestoreActions(engine)
+			end
+			-- A step the player skipped ahead of RestedXP stays skipped, after a /reload too (#374).
+			ApplySkips(engine)
+			snapshot = Snapshot(engine)
+			-- With Shortest Path loaded, its arrow points at the step handed to it, so RXP's arrow never shows as a second
+			-- one. Without it, RXP's arrow is the guide's only arrow: it goes only while another journey is chosen, so it
+			-- never points somewhere other than the route being followed.
+			local chosen = ns.Prefs().journey
+			if
+				ns.Integrations.Provider() ~= nil
+				or (snapshot.name ~= "" and chosen ~= nil and chosen ~= GuideKey(snapshot.group, snapshot.name))
+			then
+				Window(engine.arrowFrame)
+			else
+				Unwindow(engine.arrowFrame)
+			end
+			local skip = pendingSkip
+			pendingSkip = nil
+			if skip and skip.group == snapshot.group and skip.name == snapshot.name then
+				Guide.Skip(skip.index, skip.elementIndex)
+			end
+			if
+				snapshot.name == ""
+				and not (
+					engine.guideImporter
+					and (engine.guideImporter.importCoroutine or (engine.guideImporter.importBufferSize or 0) > 0)
+				)
+			then
+				local level, candidate, count = ns.State.Player().level, nil, 0
+				for _, card in ipairs(Guide.Cards()) do
+					if card.guideLow and card.guideHigh and level >= card.guideLow and level < card.guideHigh then
+						candidate, count = card, count + 1
+					end
+				end
+				if count == 1 and candidate and autoSelected ~= candidate.key then
+					autoSelected = candidate.key
+					Guide.Select(assert(candidate.rxpGroup), assert(candidate.rxpName))
+				end
 			end
 		end
 	else
+		suppressing = false
 		Restore()
 		RestoreActions(engine)
 		if changed and engine then

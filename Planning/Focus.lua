@@ -8,8 +8,9 @@ end
 -- Following the quest the player is working on (docs/design.md §4.2): walking into the chosen route's step 1 area
 -- ("you're here") selects its quest, the stock way (C_SuperTrack.SetSuperTrackedQuestID), so the map draws the game's
 -- own blue objective area where the player stands. Only on walking in, and never over a quest the player selected: a
--- selection that is neither none nor the one AGF made is theirs. Leaving the area, finishing its objectives or turning
--- the setting off clears AGF's selection while it is still AGF's, back to none, the only selection AGF ever replaces.
+-- selection that is neither none nor the one AGF made is theirs. Leaving the area, finishing its objectives, turning
+-- the setting off or entering information mode (which follows nothing) clears AGF's selection while it is still AGF's,
+-- back to none, the only selection AGF ever replaces.
 -- Selecting the quest must not take native navigation from whoever is using it: a super-tracked user waypoint is
 -- super-tracked again afterwards, whether AGF, Shortest Path or the player placed it, so the marker keeps leading and
 -- the quest only highlights its objective area.
@@ -85,7 +86,12 @@ local area
 function Focus.Sync()
 	local prefs = ns.Prefs()
 	local state = { area = area, quest = prefs.focus }
-	local set = Focus.Next(state, Here(ns.Route()), C_SuperTrack.GetSuperTrackedQuestID(), ns.Setting("followQuest"))
+	local set = Focus.Next(
+		state,
+		Here(ns.Route()),
+		C_SuperTrack.GetSuperTrackedQuestID(),
+		ns.Setting("followQuest") and not ns.Setting("informationOnly")
+	)
 	area, prefs.focus = state.area, state.quest
 	if set then
 		-- Whoever placed the super-tracked waypoint (AGF, Shortest Path or the player), the quest focus must not

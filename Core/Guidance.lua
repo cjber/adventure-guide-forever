@@ -63,6 +63,9 @@ end
 ---@param hold? boolean
 ---@return boolean
 local function Send(steps, hold)
+	if ns.Setting("informationOnly") then
+		return false
+	end
 	if steps[1] and steps[1].preview then
 		return false
 	end
@@ -180,7 +183,7 @@ end
 ---@param follow? boolean the chosen journey will replace held quest stops when progress changes
 ---@return boolean
 function Guidance.Navigate(step, follow)
-	if ns.Setting("wanderer") or step.preview or not ns.Model.ValidPlace(step) then
+	if ns.Setting("informationOnly") or ns.Setting("wanderer") or step.preview or not ns.Model.ValidPlace(step) then
 		return false
 	end
 	local routed = Integrations.Provider() ~= nil
@@ -221,11 +224,50 @@ function Guidance.Navigate(step, follow)
 	return true
 end
 
+-- Information mode's click: Questie's own icons for the stop's logged quests when it can show them, else AGF's own pin
+-- reveal. Never a route, a waypoint or a queued start. Returns true when the Questie reveal was scheduled.
+---@param step AGFStep|AGFGiver
+---@return boolean
+function Guidance.Reveal(step)
+	if ns.Setting("wanderer") or not ns.Model.ValidPlace(step) then
+		return false
+	end
+	local quests = {}
+	if step.kind then
+		for _, questID in ipairs(ns.LogQuests(step)) do
+			quests[#quests + 1] = questID
+		end
+	else
+		local log = ns.State.Log()
+		for _, questID in ipairs(step.quests or {}) do
+			if log[questID] then
+				quests[#quests + 1] = questID
+			end
+		end
+	end
+	local reveal = ns.QuestieReveal
+	if
+		reveal
+		and type(reveal.Show) == "function"
+		and reveal.Show(step, quests, step.objectives, function()
+			ns.Pins.Reveal(step)
+		end)
+	then
+		return true
+	end
+	ns.Pins.Reveal(step)
+	return false
+end
+
 -- Explicit place buttons reveal their destination; automatic route maintenance never opens a panel.
 ---@param step AGFStep|AGFGiver
 ---@return boolean
 function Guidance.ShowOnMap(step)
 	if ns.Setting("wanderer") or not ns.Model.ValidPlace(step) then
+		return false
+	end
+	if ns.Setting("informationOnly") then
+		Guidance.Reveal(step)
 		return false
 	end
 	local routed = Guidance.Navigate(step)
@@ -327,6 +369,9 @@ end
 -- Never in combat (Shortest Path refuses), in the air, where the player's position is unknown (at sea, in an
 -- instance), or once it no longer guides.
 local function Follow()
+	if ns.Setting("informationOnly") then
+		return
+	end
 	local spf, route, prefs = Integrations.Provider() ~= nil, ns.Route(), ns.Prefs()
 	if spf then
 		Watch()
@@ -455,7 +500,7 @@ function Guidance.Ended(route)
 	-- guided. Other journey kinds still clear.
 	local nextKey, nextTitle
 	if not Filtered(key, prefs, route) then
-		if completed and key:find("^zone:") and ns.Setting("autoNextZone") then
+		if completed and key:find("^zone:") and ns.Setting("autoNextZone") and not ns.Setting("informationOnly") then
 			for _, journey in ipairs(route.journeys or {}) do
 				if journey.key ~= key and journey.key:find("^zone:") and not prefs.notInterested[journey.key] then
 					nextKey, nextTitle = journey.key, journey.title
@@ -490,7 +535,7 @@ function ns.Choose(key, start)
 	end
 	prefs.journey = key
 	-- A wanderer's choice starts nothing (StartRoute), so nothing waits for combat's end either.
-	pendingStart = key ~= nil and start == true and not ns.Setting("wanderer")
+	pendingStart = key ~= nil and start == true and not ns.Setting("wanderer") and not ns.Setting("informationOnly")
 	if was and was ~= key and not pendingStart then
 		Guidance.Cancel()
 	end
@@ -503,6 +548,10 @@ end
 ---@param step? AGFStep
 ---@return boolean
 function ns.StartRoute(step)
+	if ns.Setting("informationOnly") then
+		pendingStart = false
+		return false
+	end
 	local route, prefs = ns.Route(), ns.Prefs()
 	if step and step.preview then
 		return false
@@ -564,6 +613,9 @@ end
 ---@param key string
 ---@return boolean
 function ns.StartJourney(key)
+	if ns.Setting("informationOnly") then
+		return false
+	end
 	local route = ns.Route()
 	if not route.chosen or route.journey ~= key then
 		ns.Choose(key, true)
@@ -583,6 +635,9 @@ end
 -- The player reordered the chosen journey's steps: the route AGF runs for it starts again from its new first step,
 -- on the frame after the rebuild the reorder asked for.
 function Guidance.Reroute()
+	if ns.Setting("informationOnly") then
+		return
+	end
 	if ns.Prefs().guided == ns.Prefs().journey and Guidance.Owns() then
 		C_Timer.After(0, function()
 			ns.StartRoute()
@@ -600,6 +655,7 @@ local function Paused()
 	local route = ns.Route()
 	local key = route.journey
 	return route.chosen
+		and not ns.Setting("informationOnly")
 		and (ns.Prefs().guided == key or stopped == key)
 		and ns.Model.ValidPlace(route.steps[1]) == true
 		and ns.Setting("titleStartsRoute") == true
@@ -661,6 +717,14 @@ local function Restore()
 	if not restoring or InCombatLockdown() or not ns.State.Ready() or ns.QuestieBuilding() then
 		return
 	end
+	-- Information mode restores and starts nothing, and the guidance saved before it was turned on goes, so no later
+	-- build or another character brings back a route the player asked not to have. Cancel is ownership-safe: it drops
+	-- only AGF's Shortest Path journey and clears the client waypoint only while it still sits where Go left it.
+	if ns.Setting("informationOnly") then
+		restoring, pendingStart = false, false
+		Guidance.Cancel()
+		return
+	end
 	-- Polestar guides: nothing comes back or starts itself until it stops or the player takes over (Polestar.lua).
 	if ns.Polestar.Active() then
 		return
@@ -700,6 +764,19 @@ local function Restore()
 		and Integrations.Provider()
 	then
 		ns.StartRoute()
+	end
+end
+
+-- Information mode came or went (Core's SetSetting). Entering cancels only what AGF guides and drops a waiting start;
+-- leaving lets the next full build restore or auto-start the chosen journey as before.
+---@param enabled boolean
+function Guidance.ModeChanged(enabled)
+	if enabled then
+		pendingStart = false
+		Guidance.Cancel()
+		restoring = false
+	else
+		restoring = true
 	end
 end
 

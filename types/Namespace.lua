@@ -252,6 +252,7 @@
 ---@class AGFAreaObjective
 ---@field id integer the quest
 ---@field slot integer the data's need slot
+---@field index? integer the client's 1-based objective index, when its objectives line up with the data's slots
 ---@field have? integer the client's count, when its objectives line up with the data's slots
 ---@field need? integer the count it needs, the client's else the data's
 ---@field text? string the client's words for it, when they line up and it has any
@@ -713,6 +714,7 @@
 ---@field STARTS_AFTER_COMBAT string the footer while a choice made in combat waits to start its route
 ---@field CLICK_TRAVEL string format: travel addon name
 ---@field CLICK_WAYPOINT string
+---@field CLICK_SHOW_MAP string information mode's stop click: show the stop's quests on the map
 ---@field PIN_RETURN_STORY string a numbered pin's instruction to route from the story's start
 ---@field STEP_NUMBERED string format: route index, step title
 ---@field QUEST_LEVEL string format: quest level, quest title
@@ -763,6 +765,8 @@
 ---@field SETTING_TITLE_ROUTE_TOOLTIP string
 ---@field SETTING_AUTO_START string
 ---@field SETTING_AUTO_START_TOOLTIP string
+---@field SETTING_INFORMATION_ONLY string
+---@field SETTING_INFORMATION_ONLY_TOOLTIP string
 ---@field SETTING_AUTO_NEXT_ZONE string starts the next zone after a zone journey is finished
 ---@field SETTING_AUTO_NEXT_ZONE_TOOLTIP string
 ---@field SETTING_NPC_HIGHLIGHT string highlight the NPC a talk step names
@@ -840,6 +844,10 @@
 ---@field Reserve fun(module: AGFTrackerModule) add the action rows' height below the tracker section's own blocks
 ---@field Shown fun(): boolean the action rows are on screen, so RestedXP's own item and target windows stay hidden
 
+-- Questie's own visible map icons for information mode (QuestieReveal.lua), feature-detected through QuestieLoader.
+---@class AGFQuestieReveal
+---@field Available fun(): boolean Questie is ready with map icons on and its flash helpers present
+---@field Show fun(step: AGFStep|AGFGiver, quests: integer[], refs: AGFAreaObjective[]?, onFail: fun()?): boolean open the step's map and flash its icons; `onFail` runs if the deferred reveal cannot
 -- The guidance lifecycle (Guidance.lua): the one writer of AGFPrefs.guided and AGFPrefs.waypoint. Choosing, starting
 -- and stopping are ns.Choose, ns.StartRoute and ns.Stop.
 ---@class AGFGuidance
@@ -847,6 +855,7 @@
 ---@field Owns fun(): boolean Go's guidance is still running: our Shortest Path journey (guided or held), or the waypoint Go set
 ---@field Navigate fun(step: AGFStep|AGFGiver, follow?: boolean): boolean route there with Shortest Path, else (declined or absent) the native waypoint where the map allows one; true when something now guides
 ---@field ShowOnMap fun(step: AGFStep|AGFGiver): boolean route, open its zone and ping the destination
+---@field Reveal fun(step: AGFStep|AGFGiver): boolean information mode's click: Questie's own icons, else AGF's pin
 ---@field Running fun(key: string): boolean the card is chosen and its route is ours, running and not paused
 ---@field Cancel fun() Stop: cancels our Shortest Path journey, and clears the native waypoint only while it is ours
 ---@field Pause fun(): boolean stops the chosen journey's route but keeps the choice, so its card and the tracker title resume it
@@ -882,6 +891,7 @@
 ---@field Model AGFModel
 ---@field State AGFState
 ---@field Integrations AGFIntegrations
+---@field QuestieReveal AGFQuestieReveal
 ---@field Guidance AGFGuidance
 ---@field Focus AGFFocus
 ---@field QuestWatch AGFQuestWatch

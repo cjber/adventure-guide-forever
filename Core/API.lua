@@ -226,7 +226,7 @@ end
 ---@param id string
 ---@return boolean
 function API.StartSuggestion(id)
-	if type(id) ~= "string" or not ns.RouteSettled() then
+	if type(id) ~= "string" or not ns.RouteSettled() or ns.Setting("informationOnly") then
 		return false
 	end
 	for _, journey in ipairs(ns.Route().journeys) do
@@ -243,18 +243,18 @@ end
 -- RXP keeps its engine; this frontend owns the guide's navigation, including Stop.
 ---@return boolean
 function API.RestedXPIntegrated()
-	return ns.RestedXP.Enabled()
+	return ns.RestedXP.Enabled() and not ns.Setting("informationOnly")
 end
 
 ---@return boolean
 function API.RestedXPNativeUI()
-	return not ns.Setting("restedxpChoiceMade") or not ns.Setting("restedxpGuide")
+	return ns.Setting("informationOnly") or not ns.Setting("restedxpChoiceMade") or not ns.Setting("restedxpGuide")
 end
 
 -- Explicit player request: return to the active RestedXP guide after another addon took navigation.
 ---@return boolean
 function API.ResumeRestedXP()
-	if not ns.RestedXP.Enabled() then
+	if not ns.RestedXP.Enabled() or ns.Setting("informationOnly") then
 		return false
 	end
 	local journey = ns.RestedXP.Journey()

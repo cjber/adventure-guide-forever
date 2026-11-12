@@ -655,6 +655,9 @@ def render():
             "restedxp",
             "guide_setup",
             "map_panel",
+            "information_only",
+            "information_fallback",
+            "information_off",
         ),
         known,
     )
@@ -685,6 +688,10 @@ def render():
     canvas, _ = quest_log(ui, content_ui, data, rects, "panel", data["panel"]["pins"])
     images["chosen"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
+    for scene in ("information_only", "information_fallback"):
+        canvas, _ = quest_log(ui, content_ui, data, rects, scene, data[scene]["pins"])
+        images[scene] = drawing.wm.scene(ui, [(canvas, 0, 0)])
+
     canvas, frame = quest_log(ui, content_ui, data, rects, "search", data["panel"]["pins"])
     qx, qy, qw, qh = frame["quests"]
     images["search"] = drawing.wm.scene(ui, [(crop(canvas, qx - 3, qy - 30, qw + 3 + 64, qh + 30 + 22), 0, 0)])
@@ -693,34 +700,9 @@ def render():
     canvas = shortest_path(ui, content_ui, data)
     images["map"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
-    hovered = data["tooltip"]["hovered"] - 1
-
-    def hover(canvas, frame_rects):
-        draw_pins(canvas, frame_rects, data["tooltip"]["pins"], hovered)
-        draw_player(canvas, frame_rects, PLAYER)
-
-    canvas, frame = map_frame(ui, art, False, hover)
-    colours = {
-        "title": drawing.wm.WHITE,
-        "highlight": drawing.wm.WHITE,
-        "normal": drawing.wm.NORMAL,
-        "instruction": GREEN,
-    }
-    tip = drawing.wm.tooltip(
-        ui,
-        [
-            drawing.wm.TooltipLine(line["text"], tuple(line["color"]) if line.get("color") else colours[line["kind"]])
-            for line in data["tooltip"]["lines"]
-        ],
-    )
-    pin = data["tooltip"]["pins"][hovered]
-    px, py = map_point(frame, pin["x"], pin["y"])
-    # ANCHOR_RIGHT: the tooltip's BOTTOMLEFT at the pin's TOPRIGHT.
-    pin_width, pin_height = pin["layout"][0]["size"]
-    tip_x, tip_y = px + pin_width / 2, py - pin_height / 2 - tip.height
-    left, top = px - 120, tip_y - 30
-    shot = crop(canvas, left, top, tip_x + tip.width + 40 - left, py + 90 - top)
-    images["tooltip"] = drawing.wm.scene(ui, [(shot, 0, 0), (tip, tip_x - left, tip_y - top)])
+    images["tooltip"] = pin_tooltip(ui, art, data["tooltip"])
+    images["information_tooltip"] = pin_tooltip(ui, art, data["information_tooltip"])
+    images["information_off"] = pin_tooltip(ui, art, data["information_off"])
 
     canvas, tracked = drawing.wm.objective_tracker(ui, [tracker_module(ui, data["tracker"])], container=False)
 
@@ -754,6 +736,38 @@ def render():
     written.append(path)
     manifest(written)
     return written
+
+
+def pin_tooltip(ui, art, scene):
+    """Draw the runtime pin tooltip on its native map in either mode."""
+    hovered = scene["hovered"] - 1
+
+    def hover(canvas, frame_rects):
+        draw_pins(canvas, frame_rects, scene["pins"], hovered)
+        draw_player(canvas, frame_rects, PLAYER)
+
+    canvas, frame = map_frame(ui, art, False, hover)
+    colours = {
+        "title": drawing.wm.WHITE,
+        "highlight": drawing.wm.WHITE,
+        "normal": drawing.wm.NORMAL,
+        "instruction": GREEN,
+    }
+    tip = drawing.wm.tooltip(
+        ui,
+        [
+            drawing.wm.TooltipLine(line["text"], tuple(line["color"]) if line.get("color") else colours[line["kind"]])
+            for line in scene["lines"]
+        ],
+    )
+    pin = scene["pins"][hovered]
+    px, py = map_point(frame, pin["x"], pin["y"])
+    # ANCHOR_RIGHT: the tooltip's BOTTOMLEFT at the pin's TOPRIGHT.
+    pin_width, pin_height = pin["layout"][0]["size"]
+    tip_x, tip_y = px + pin_width / 2, py - pin_height / 2 - tip.height
+    left, top = px - 120, tip_y - 30
+    shot = crop(canvas, left, top, tip_x + tip.width + 40 - left, py + 90 - top)
+    return drawing.wm.scene(ui, [(shot, 0, 0), (tip, tip_x - left, tip_y - top)])
 
 
 def main():

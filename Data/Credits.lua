@@ -25,6 +25,7 @@ ns.Credits = {
 		{ name = "jixxor", what = "Show of Force held until Encroaching Gnolls is done" },
 		{ name = "InfamousMunky", what = "Daily Delivery no longer offered once handed on" },
 		{ name = "lanprite", what = "RestedXP guide cards marked as RestedXP's" },
+		{ name = "cotijelucie", what = "Information mode and showing a stop's quests on the map" },
 	},
 	inspired = {
 		{ name = "Polestar by Fitz", what = "Ideas for many features" },

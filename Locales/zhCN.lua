@@ -504,3 +504,8 @@ L["NPC_HIGHLIGHT_HINT"] = "友方姓名板已关闭：请在界面选项中开�
 
 L.LEADERBOARD_METRIC = "已交付任务" -- mt
 L.LEADERBOARD_TOTAL = "总计" -- mt
+-- mt: Information only (#715).
+L["SETTING_INFORMATION_ONLY"] = "仅信息：不规划路线" -- mt
+L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
+	"保留旅程和任务信息，不启动路线，也不更改你追踪的任务。点击一个站点即可在地图上显示其任务。关闭此选项可重新使用规划器。" -- mt
+L["CLICK_SHOW_MAP"] = "点击在地图上显示此站点" -- mt

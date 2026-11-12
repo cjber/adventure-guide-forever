@@ -310,6 +310,37 @@ local setup = assert(h.G.AdventureGuideForeverGuideSetup)
 h.SetRects(setup, input.rects.guide_setup or {})
 out.guide_setup = { layout = h.ns.DumpLayout(setup, h.Describe) }
 
+-- Information mode keeps the map host and falls back to AGF pins without Questie.
+h = Load("v1", true, false, STORY)
+h.ns.SetSetting("informationOnly", true)
+h.flush()
+out.information_only = Panel(h, "information_only")
+h.ns.Pins.Refresh()
+out.information_only.pins = Pins(h)
+local informationRing = assert(h.Pins("AdventureGuideForeverPinTemplate")[HOVERED])
+h.Hover(informationRing)
+out.information_tooltip = {
+	lines = Tooltip(h),
+	pins = Pins(h),
+	hovered = #(h.Pins("AdventureGuideForeverGiverPinTemplate") or {}) + HOVERED,
+}
+informationRing:OnMouseLeave()
+h.call(informationRing.OnMouseClickAction, informationRing, "LeftButton")
+h.flush()
+out.information_fallback = Panel(h, "information_fallback")
+h.ns.Pins.Refresh()
+out.information_fallback.pins = Pins(h)
+h.ns.SetSetting("informationOnly", false)
+h.flush()
+out.information_off = Panel(h, "information_off")
+h.ns.Pins.Refresh()
+out.information_off.pins = Pins(h)
+local plannerRing = assert(h.Pins("AdventureGuideForeverPinTemplate")[HOVERED])
+h.Hover(plannerRing)
+out.information_off.lines = Tooltip(h)
+out.information_off.hovered = #(h.Pins("AdventureGuideForeverGiverPinTemplate") or {}) + HOVERED
+plannerRing:OnMouseLeave()
+
 out.errors = {}
 for _, each in ipairs(loaded) do
 	for _, err in ipairs(each.errors) do

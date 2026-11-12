@@ -516,3 +516,8 @@ L["NPC_HIGHLIGHT_HINT"] =
 
 L.LEADERBOARD_METRIC = "Abgegebene Quests" -- mt
 L.LEADERBOARD_TOTAL = "gesamt" -- mt
+-- mt: Information only (#715).
+L["SETTING_INFORMATION_ONLY"] = "Nur Informationen: keine Routen" -- mt
+L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
+	"Behalte Reisen und Questinformationen, ohne Routen zu starten oder deine verfolgten Quests zu ändern. Ein Klick auf einen Halt zeigt seine Quests auf der Karte. Schalte dies aus, um den Planer wieder zu verwenden." -- mt
+L["CLICK_SHOW_MAP"] = "Klicken, um diesen Halt auf der Karte zu zeigen" -- mt

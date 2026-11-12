@@ -525,3 +525,8 @@ L["NPC_HIGHLIGHT_HINT"] =
 
 L.LEADERBOARD_METRIC = "완료한 퀘스트" -- mt
 L.LEADERBOARD_TOTAL = "총" -- mt
+-- mt: Information only (#715).
+L["SETTING_INFORMATION_ONLY"] = "정보만 표시: 경로 없음" -- mt
+L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
+	"경로를 시작하거나 추적 중인 퀘스트를 바꾸지 않고 여정과 퀘스트 정보를 유지합니다. 중간 지점을 클릭하면 해당 퀘스트가 지도에 표시됩니다. 이 설정을 끄면 플래너를 다시 사용합니다." -- mt
+L["CLICK_SHOW_MAP"] = "이 중간 지점을 지도에 표시하려면 클릭" -- mt

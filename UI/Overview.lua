@@ -521,7 +521,11 @@ local function CardClick(self, mouseButton)
 		return
 	end
 	if journey.rxpGroup and journey.rxpName and mouseButton ~= "RightButton" then
-		ns.RestedXP.Choose(journey.rxpGroup, journey.rxpName, ns.Setting("titleStartsRoute"))
+		ns.RestedXP.Choose(
+			journey.rxpGroup,
+			journey.rxpName,
+			ns.Setting("titleStartsRoute") and not ns.Setting("informationOnly")
+		)
 		GameTooltip_Hide()
 		return
 	end

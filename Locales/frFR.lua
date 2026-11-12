@@ -521,3 +521,8 @@ L["NPC_HIGHLIGHT_HINT"] =
 
 L.LEADERBOARD_METRIC = "Quêtes rendues" -- mt
 L.LEADERBOARD_TOTAL = "total" -- mt
+-- mt: Information only (#715).
+L["SETTING_INFORMATION_ONLY"] = "Informations seulement : sans itinéraires" -- mt
+L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
+	"Gardez les voyages et les informations de quête sans lancer d’itinéraires ni modifier les quêtes suivies. Cliquer sur une étape affiche ses quêtes sur la carte. Désactivez cette option pour réutiliser le planificateur." -- mt
+L["CLICK_SHOW_MAP"] = "Cliquer pour afficher cette étape sur la carte" -- mt
