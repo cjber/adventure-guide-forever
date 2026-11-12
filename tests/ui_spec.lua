@@ -341,7 +341,8 @@ do
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
-		"maxQuestLevelOffset restedxpGuide wanderer followQuest partyQuests optimisedRoute showOutgrown includeDungeonsDefault "
+		"maxQuestLevelOffset restedxpGuide wanderer followQuest partyQuests optimisedRoute "
+			.. "showOutgrown includeDungeonsDefault "
 			.. "titleStartsRoute autoStart autoNextZone npcHighlight polestarAside warnClosing stepSound trainingReminders",
 		"Route holds its rows in order"
 	)

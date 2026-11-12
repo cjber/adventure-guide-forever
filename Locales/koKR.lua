@@ -342,6 +342,8 @@ L["SETTING_QUEST_LEVEL_VALUE"] = "%s레벨"
 L["SETTING_ROUTE_ORDER"] = "최적화된 경로 (베타)"
 L["SETTING_ROUTE_ORDER_TOOLTIP"] =
 	"끔: 경로는 단계마다 가장 가까운 일을 안내하여 단순하고 예측 가능합니다. 켬: 이야기의 장을 먼저 하고, 마을의 일을 묶고, 이전 제안을 안정적으로 유지하는 실험적인 순서입니다."
+L["SETTING_OUTGROWN"] = "지난 지역과 던전 표시"
+L["SETTING_OUTGROWN_TOOLTIP"] = "퀘스트가 회색인 지역과 던전을 선택 항목에 유지합니다."
 L["SETTING_RXP"] = "RestedXP 가이드 사용"
 L["SETTING_RXP_TOOLTIP"] =
 	"현재 RestedXP 가이드를 여정 카드, 지도, 추적기에 추가합니다. RestedXP는 가이드 단계를 진행하고, Shortest Path Forever는 이동을 맡습니다. RestedXP는 설치된 채로 가이드 진행을 관리합니다."

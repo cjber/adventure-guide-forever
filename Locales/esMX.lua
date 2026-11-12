@@ -338,6 +338,8 @@ L["SETTING_QUEST_LEVEL_VALUE"] = "%s niveles"
 L["SETTING_ROUTE_ORDER"] = "Ruta optimizada (beta)"
 L["SETTING_ROUTE_ORDER_TOOLTIP"] =
 	"Desactivado: la ruta es lo más cercano que hacer, paso a paso, sencilla y previsible. Activado: un orden experimental que empieza por el capítulo de la historia, agrupa el trabajo de cada pueblo y mantiene estables sus sugerencias anteriores."
+L["SETTING_OUTGROWN"] = "Mostrar zonas y mazmorras superadas"
+L["SETTING_OUTGROWN_TOOLTIP"] = "Mantener en las opciones las zonas y mazmorras cuyas misiones sean grises."
 L["SETTING_RXP"] = "Usar guías de RestedXP"
 L["SETTING_RXP_TOOLTIP"] =
 	"Añade la guía actual de RestedXP a tus tarjetas de viaje, el mapa y el rastreador. RestedXP avanza los pasos de la guía; Shortest Path Forever se encarga de los desplazamientos. RestedXP sigue instalado y controla el progreso de la guía."

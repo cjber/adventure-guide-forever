@@ -329,6 +329,8 @@ L["SETTING_QUEST_LEVEL_VALUE"] = "%s級"
 L["SETTING_ROUTE_ORDER"] = "最佳化路線（測試版）"
 L["SETTING_ROUTE_ORDER_TOOLTIP"] =
 	"關閉：路線逐步指向最近的下一件事，簡單且可預測。開啟：一種實驗性順序，先做故事章節，合併同一城鎮的事務，並保持先前的建議穩定。"
+L["SETTING_OUTGROWN"] = "顯示已超出等級的區域與地城"
+L["SETTING_OUTGROWN_TOOLTIP"] = "在選項中保留任務為灰色的區域與地城。"
 L["SETTING_RXP"] = "使用RestedXP指南"
 L["SETTING_RXP_TOOLTIP"] =
 	"將目前的RestedXP指南加入你的旅程卡片、地圖與追蹤器。RestedXP推進指南步驟；Shortest Path Forever負責移動。RestedXP保持安裝並控制指南進度。"

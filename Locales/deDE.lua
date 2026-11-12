@@ -337,6 +337,8 @@ L["SETTING_QUEST_LEVEL_VALUE"] = "%s Stufen"
 L["SETTING_ROUTE_ORDER"] = "Optimierte Route (Beta)"
 L["SETTING_ROUTE_ORDER_TOOLTIP"] =
 	"Aus: Die Route ist Schritt für Schritt das Nächstgelegene, einfach und vorhersehbar. An: eine experimentelle Reihenfolge, die mit dem Kapitel der Geschichte beginnt, die Aufgaben einer Stadt bündelt und frühere Vorschläge stabil hält."
+L["SETTING_OUTGROWN"] = "Ausgewachsene Zonen und Dungeons anzeigen"
+L["SETTING_OUTGROWN_TOOLTIP"] = "Zonen und Dungeons, deren Quests grau sind, in der Auswahl behalten."
 L["SETTING_RXP"] = "RestedXP-Guides nutzen"
 L["SETTING_RXP_TOOLTIP"] =
 	"Fügt den aktuellen RestedXP-Guide Euren Reisekarten, der Karte und der Verfolgung hinzu. RestedXP schaltet die Guide-Schritte weiter; Shortest Path Forever übernimmt das Reisen. RestedXP bleibt installiert und steuert den Guide-Fortschritt."
