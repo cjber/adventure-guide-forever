@@ -667,7 +667,8 @@ if module then
 			end
 			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 			GameTooltip_SetTitle(GameTooltip, module.headerText or L.TITLE)
-			GameTooltip_AddNormalLine(GameTooltip, L.TRACKER_HIDDEN_TOOLTIP:format(count))
+			local hidden = count == 1 and L.TRACKER_HIDDEN_TOOLTIP_ONE or L.TRACKER_HIDDEN_TOOLTIP:format(count)
+			GameTooltip_AddNormalLine(GameTooltip, hidden)
 			GameTooltip_AddNormalLine(GameTooltip, L.TRACKER_HIDDEN_SHOW_ALL)
 			GameTooltip:Show()
 		end)

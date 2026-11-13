@@ -12,6 +12,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The tracker's hidden count says "1 quest is hidden", not "1 quests are".** Hovering the guide's tracker header while the journey hides exactly one quest now uses a one-quest line in every language, and two or more keep the plural line (#752).
 - **Russian players no longer see empty boxes between parts of a line.** The guide now separates those parts with a bullet, which the Russian client's font draws, instead of a middle dot it does not. Found from a report by XaksFlaX on GitHub (cjber/shortest-path-forever#838).
 
 ## [1.8.1] - 2026-11-13

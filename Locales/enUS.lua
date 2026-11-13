@@ -298,6 +298,7 @@ ns.L = {
 	TRACKER_LOADING = "Loading quest data...",
 	TRACKER_HIDDEN_COUNT = "%d hidden",
 	TRACKER_HIDDEN_TOOLTIP = "%d quests are hidden from the tracker while this journey leads.",
+	TRACKER_HIDDEN_TOOLTIP_ONE = "1 quest is hidden from the tracker while this journey leads.",
 	TRACKER_HIDDEN_SHOW_ALL = "Right-click: Show all quests.",
 	TRACKER_SHOW_ALL = "Show all quests",
 	-- While Polestar runs a guide (Polestar.lua): the tracker's one line, and the setting behind it.
