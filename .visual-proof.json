@@ -1,23 +1,23 @@
 {
-  "input_digest": "bb40f1510116c4b8bdc1889452199f6dbb587a6fd8018f0801986c19ef4b4822",
-  "runtime_sha256": "bb40f1510116c4b8bdc1889452199f6dbb587a6fd8018f0801986c19ef4b4822",
-  "candidate": "a9978fd249ca7157bf02f61c362ebf25567c0f5ce343520d1859857926062bd6",
+  "input_digest": "60329a3cfaaa286564ddc46e10195ff108e68319a6bcc3ffe0118c04fad3022a",
+  "runtime_sha256": "60329a3cfaaa286564ddc46e10195ff108e68319a6bcc3ffe0118c04fad3022a",
+  "candidate": "2066763042650c422f73ff5e6248bb123b1203ab7e98fb99a17243bd762b0273",
   "client_build": "1.60.1.70938 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "6416e2aaee0b96759c697e072c8a8b41b8f42279",
+  "source_commit": "c2759004daed09ec76a754a17729b0639c2ced8e",
   "flows": [
     {
-      "name": "dungeon card and outline",
+      "name": "route",
       "steps": [
-        "../../../.cache/agent-scratch/agf-proof-dungeon.lua"
+        "/agf"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/ebb64986277b2d355bbd9f8c1e296375/raw/2029b935a9076b9fcf6a9fb638d5a8796802db6c/1-dungeon-card-and-outline.png",
-      "sha256": "da7a1d32d6788b3cf3703fdf2616f9e759147ac7a068658a04e9bb041639eb97"
+      "url": "https://gist.githubusercontent.com/cjber/ba5572d7a9b8e1cbd32586f0acf06138/raw/566be5a1e319dde8864bdb2cd562abfb118fc061/1-route.png",
+      "sha256": "0b1e5f410558336595b417978fbf7381e22bf973cc129db2f1be1969d10e7b3c"
     }
   ]
 }
