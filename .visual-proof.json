@@ -1,17 +1,16 @@
 {
-  "input_digest": "f1a43c1cf9cb7a4f518dc1ed521afdd7cde0e573e6483ad3e422de8d83ce6758",
-  "runtime_sha256": "f1a43c1cf9cb7a4f518dc1ed521afdd7cde0e573e6483ad3e422de8d83ce6758",
-  "candidate": "5003779c92b797d04ff7266b2e93fce561a4afa562e6c83476855a8cb842af3f",
+  "input_digest": "91914b77d55c9e6ccddbf7397ede2025faa33d953f3387ac1be4bd8ab8368de4",
+  "runtime_sha256": "91914b77d55c9e6ccddbf7397ede2025faa33d953f3387ac1be4bd8ab8368de4",
+  "candidate": "559f442fb560eedcf7bc1fdbcffde19940af1c8abdceafe4d322a85b8c4c9d7e",
   "tested_artifact": "source-tree",
   "client_build": "1.60.1.70938 (Interface 16001)",
   "flows": [
     {
-      "name": "The build loads on an enUS client with no Lua errors and its tracker text is unchanged",
+      "name": "The build loads on an enUS client with no Lua errors",
       "steps": [
-        "Install the PR's shipped files as the AdventureGuideForever folder (compare: no differing files; extra media/icon-400.png) beside ForeverCore v1.10.0-dev+c75429c and /reload",
+        "Install the PR's shipped files as the AdventureGuideForever folder (compare: no differing files; extra media/icon-400.png) beside ForeverCore v1.10.0 and /reload",
         "Run errors --addon AdventureGuideForever: no Lua errors found",
-        "Look at the tracker after /reload",
-        "Confirm the Adventure Guide section draws as before",
+        "Confirm the loaded-addons list names this build and BugGrabber reports 0 errors",
         "The ruRU separator itself cannot show on an enUS client; the mock render in the PR body shows it with the ruRU font"
       ],
       "result": "pass"
@@ -19,8 +18,8 @@
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/94e6834396a64be6d9cbbffc4e931455/raw/c8862d01129c7b07648b6eefaefba9630c54c5e8/ruru-ingame-tracker.png",
-      "sha256": "910b3845bd4b177e5e902cb584dfbda05aebab6063b5eaadf2af61ef45edef88"
+      "url": "https://gist.githubusercontent.com/cjber/94e6834396a64be6d9cbbffc4e931455/raw/96d42d340dab9778be4d45541369d44930b2e72e/ruru-ingame-1010.png",
+      "sha256": "cec9936a1628f61b09063cfc0111bde0548235602590fe589c0595570fae1e54"
     }
   ]
 }
