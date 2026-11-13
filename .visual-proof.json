@@ -1,31 +1,30 @@
 {
-  "input_digest": "ccabaa32e0c245e86d53bc001134b788d41758be8a3d4a61fa105b0e21ec940f",
-  "runtime_sha256": "ccabaa32e0c245e86d53bc001134b788d41758be8a3d4a61fa105b0e21ec940f",
-  "candidate": "817e32b08c1161c815086f153d8662fe2dadb3320eea910f28df9a21eebaaa6d",
+  "input_digest": "36dc7ab527c7a9c74e05e3f24cdeae6814c910997eb71c4c29bb56ce1becd1b1",
+  "runtime_sha256": "36dc7ab527c7a9c74e05e3f24cdeae6814c910997eb71c4c29bb56ce1becd1b1",
+  "candidate": "2a024787531f0d6d165f9766238fba23086d34eb07520e41581c651b71195fec",
+  "tested_artifact": "source-tree",
   "client_build": "1.60.1.70888 (Interface 16001)",
-  "source_commit": "2e028a6895753ebfa360c60aa093b84ec3290b29",
-  "notes": "Recorded in the player's live client from an installed source-tree build of this commit (git archive, merged with main for the ForeverCore v1.8.1 pin, running against ForeverCore v1.8.1); visual_proof --compare reported no differing runtime files, the install additionally carries the ignored store icon media/icon-400.png. The character's current step is a collect step, so the guide's NPC target button (#725) was not on screen: this session shows the guide section and its Shortest Path route rows keeping their layout through repeated tracker re-layouts. The target button's row under an NPC step stays a player /reload check; tests/npc_highlight_spec.lua and tests/restedxp_actions_spec.lua cover the second-layout height.",
+  "source_commit": "e3a1118135ebc9da28dc8fc57868714b5cafe522",
+  "notes": "Recorded on Hel Io in the player's live client from an installed source-tree build of this commit (git archive); --compare reported no missing or differing runtime files, the install additionally carries the ignored store icon. Every other Forever addon's 1.9.0 sync build was loaded in the same session. The only BugGrabber entries this session were the recorder's own over-long /run lines.",
   "flows": [
     {
-      "name": "Guide tracker section through re-layouts",
+      "name": "Adventure Guide's tracker on ForeverCore 1.9.0",
       "steps": [
-        "Install the candidate and /reload",
-        "/spfnear flight, so a Shortest Path route joins the guide section",
-        "Untrack and retrack a watched quest every 2 s six times (QUEST_WATCH_LIST_CHANGED, QUEST_LOG_UPDATE), capturing the tracker about every 0.8 s",
-        "Every frame shows the same guide section layout with the route rows in place and nothing overlapping the section below"
+        "Install the candidate with the store ForeverCore v1.9.0 and /reload",
+        "Print every Forever addon's loaded version into a chat tab with no channels: store ForeverCore v1.9.0 plus each 1.9.0 sync build, all loaded, and BugGrabber shows no addon errors this session",
+        "The guide section draws under the quest list with its current step and next steps, and nothing overlaps"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/a7f365aeacc1a4f07eb2e61c5c603fb9/raw/48792b8d9a38bf0a3ddb69e77dc2b1d652b3dca1/tracker.png",
-      "sha256": "4d85f3180333e406d4b9fa85372c5b6f629562c6da4a0ebef49ee23f753271a8"
+      "url": "https://gist.githubusercontent.com/cjber/627a1b4cf36d973bb26ba262c81eb601/raw/67bd0b623f26040eed9f66dd363a477dbb684579/sync190-agf-tracker.png",
+      "sha256": "e52d54dd71bba4996eb18fa6b81a954ec17ff133754f3598fb34fde114fa50dd"
     },
     {
-      "url": "https://gist.githubusercontent.com/cjber/a7f365aeacc1a4f07eb2e61c5c603fb9/raw/48792b8d9a38bf0a3ddb69e77dc2b1d652b3dca1/relayout.png",
-      "sha256": "4a8053c6f6b24b1175f35634d1b193035c48634a871da348190258de599afaa5"
+      "url": "https://gist.githubusercontent.com/cjber/627a1b4cf36d973bb26ba262c81eb601/raw/67bd0b623f26040eed9f66dd363a477dbb684579/sync190-versions.png",
+      "sha256": "9731b84977a7daf94152f9129b9ea996b4c467006f822f7acc430332fa8f08ec"
     }
-  ],
-  "tested_artifact": "source-tree"
+  ]
 }
