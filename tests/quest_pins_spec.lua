@@ -68,6 +68,18 @@ equal(pin301:IsShown(), true, "a step on another map marks nothing here")
 equal(pin999:IsShown(), true, "a quest outside the journey keeps its pin")
 equal(foreign:IsShown(), false, "a pin hidden by someone else stays hidden")
 
+-- #764: the setting keeps the game's own quest markers and areas beside the route's pins, on by default.
+ns.SetSetting("hideQuestMarkers", false)
+h.flush()
+equal(pin101:IsShown(), true, "with the setting off, a numbered stop hides nothing")
+equal(pin201:IsShown(), true, "every quest at it keeps its pin")
+equal(pin301:IsShown(), true, "a step on another map still marks nothing here")
+equal(foreign:IsShown(), false, "and a pin hidden by another addon stays hidden")
+ns.SetSetting("hideQuestMarkers", true)
+h.flush()
+equal(pin101:IsShown(), false, "the setting on hides the stop's pins again")
+equal(pin201:IsShown(), false, "every quest at it")
+
 -- The rings go with the wanderer setting: the pins we hid come back, the one we did not hide stays as it was.
 ns.SetSetting("wanderer", true)
 ns.Pins.Refresh()

@@ -531,3 +531,8 @@ L["SYNC_AND"] = "e" -- mt
 
 L.LEADERBOARD_METRIC = "Missões entregues" -- mt
 L.LEADERBOARD_TOTAL = "total" -- mt
+
+L["MENU_HIDE_QUEST_MARKERS"] = "Ocultar marcadores de missão do jogo" -- mt
+L["SETTING_HIDE_QUEST_MARKERS"] = "Ocultar os marcadores de missão do jogo nas paradas da rota" -- mt
+L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
+	"Desative esta opção para manter os marcadores de missão e as áreas de missão azuis do jogo no mapa, ao lado dos marcadores da sua rota." -- mt

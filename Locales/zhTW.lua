@@ -523,3 +523,8 @@ L["SYNC_AND"] = "和" -- mt
 
 L.LEADERBOARD_METRIC = "已繳交任務" -- mt
 L.LEADERBOARD_TOTAL = "總計" -- mt
+
+L["MENU_HIDE_QUEST_MARKERS"] = "隱藏遊戲的任務標記" -- mt
+L["SETTING_HIDE_QUEST_MARKERS"] = "在路線站點隱藏遊戲的任務標記" -- mt
+L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
+	"關閉此選項後，遊戲自帶的任務標記和藍色任務區域會與路線標記一起顯示在地圖上。" -- mt

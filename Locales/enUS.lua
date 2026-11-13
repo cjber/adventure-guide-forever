@@ -387,6 +387,7 @@ ns.L = {
 	MENU_QUESTS = "Quests",
 	MENU_DUNGEONS = "Dungeons",
 	MENU_MAP_PINS = "Show map pins",
+	MENU_HIDE_QUEST_MARKERS = "Hide game quest markers",
 	MENU_GIVERS = "Show quest givers",
 	MENU_TRACKER = "Show in objective tracker",
 	-- Sync Together (#617): the cog menu's checklist of party members running the guide, and the stops it labels.
@@ -425,6 +426,9 @@ ns.L = {
 	QUEST_AREAS_TOOLTIP = "The map's blue quest areas show where each objective is done. Questie's Questie and "
 		.. "pfQuest objective types turn them off.",
 	SETTING_MAP_PINS = "Show route pins on the map",
+	SETTING_HIDE_QUEST_MARKERS = "Hide the game's quest markers at route stops",
+	SETTING_HIDE_QUEST_MARKERS_TOOLTIP = "Turn this off to keep the game's own quest markers and blue quest areas on "
+		.. "the map beside your route pins.",
 	SETTING_GIVERS = "Show quest givers on the map",
 	SETTING_DUNGEONS_DEFAULT = "Include dungeons by default",
 	SETTING_TRAINING_REMINDERS = "Remind me to train class spells",

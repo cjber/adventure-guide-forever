@@ -542,3 +542,8 @@ L["SYNC_AND"] = "및" -- mt
 
 L.LEADERBOARD_METRIC = "완료한 퀘스트" -- mt
 L.LEADERBOARD_TOTAL = "총" -- mt
+
+L["MENU_HIDE_QUEST_MARKERS"] = "게임 퀘스트 표시 숨기기" -- mt
+L["SETTING_HIDE_QUEST_MARKERS"] = "경로 지점에서 게임 퀘스트 표시 숨기기" -- mt
+L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
+	"이 옵션을 끄면 게임의 퀘스트 표시와 파란 퀘스트 지역이 경로 표시 옆에 그대로 지도에 나타납니다." -- mt
