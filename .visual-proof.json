@@ -1,29 +1,23 @@
 {
-  "input_digest": "382dcf49c8e3ef2656fbc618d74e90d870e30e18b116d389b35e6451edf34863",
-  "runtime_sha256": "382dcf49c8e3ef2656fbc618d74e90d870e30e18b116d389b35e6451edf34863",
-  "candidate": "5e85aa2dd01c52e97009834215aa7117ccb607d37f1e372a4d0913d2ffb8bdb5",
-  "tested_artifact": "source-tree",
+  "input_digest": "bb40f1510116c4b8bdc1889452199f6dbb587a6fd8018f0801986c19ef4b4822",
+  "runtime_sha256": "bb40f1510116c4b8bdc1889452199f6dbb587a6fd8018f0801986c19ef4b4822",
+  "candidate": "a9978fd249ca7157bf02f61c362ebf25567c0f5ce343520d1859857926062bd6",
   "client_build": "1.60.1.70938 (Interface 16001)",
-  "source_commit": "261857513aa465c1e70da7560d99e195c8e60773",
-  "notes": "Recorded on Hel Io from a source-tree build of this commit (build-dev, v1.8.0-dev+26185751) linked into AddOns, with a ForeverCore source-tree build of forever-core e6a6f46 and a Macro Assist build loaded in the same session. The journey hid exactly one quest. No Lua errors from Adventure Guide this session.",
+  "tested_artifact": "source-tree",
+  "source_commit": "6416e2aaee0b96759c697e072c8a8b41b8f42279",
   "flows": [
     {
-      "name": "Hidden count tooltip, one quest",
+      "name": "dungeon card and outline",
       "steps": [
-        "A journey leads and hides one quest: the guide's tracker header shows \"1 hidden\"",
-        "Hover the header: the tooltip says \"1 quest is hidden from the tracker while this journey leads.\" and \"Right-click: Show all quests.\""
+        "../../../.cache/agent-scratch/agf-proof-dungeon.lua"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/b238e645887ffbeb53f11afb2f54a0cc/raw/ab24f8669f1d762dfb88b5f7eb83cc1b5c514890/752-tooltip-one-quest.png",
-      "sha256": "e3e6b7eef220490f9ac0ea120ad66ac0a15cc488c7593505d52ec703aa7a4261"
-    },
-    {
-      "url": "https://gist.githubusercontent.com/cjber/b238e645887ffbeb53f11afb2f54a0cc/raw/ab24f8669f1d762dfb88b5f7eb83cc1b5c514890/752-tooltip-crop.png",
-      "sha256": "44136923f0c15604a2aaf9fc9259460303d149d2a6130ded6c16232c4c24d708"
+      "url": "https://gist.githubusercontent.com/cjber/ebb64986277b2d355bbd9f8c1e296375/raw/2029b935a9076b9fcf6a9fb638d5a8796802db6c/1-dungeon-card-and-outline.png",
+      "sha256": "da7a1d32d6788b3cf3703fdf2616f9e759147ac7a068658a04e9bb041639eb97"
     }
   ]
 }
