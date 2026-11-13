@@ -1,30 +1,26 @@
 {
-  "input_digest": "36dc7ab527c7a9c74e05e3f24cdeae6814c910997eb71c4c29bb56ce1becd1b1",
-  "runtime_sha256": "36dc7ab527c7a9c74e05e3f24cdeae6814c910997eb71c4c29bb56ce1becd1b1",
-  "candidate": "2a024787531f0d6d165f9766238fba23086d34eb07520e41581c651b71195fec",
+  "input_digest": "f1a43c1cf9cb7a4f518dc1ed521afdd7cde0e573e6483ad3e422de8d83ce6758",
+  "runtime_sha256": "f1a43c1cf9cb7a4f518dc1ed521afdd7cde0e573e6483ad3e422de8d83ce6758",
+  "candidate": "5003779c92b797d04ff7266b2e93fce561a4afa562e6c83476855a8cb842af3f",
   "tested_artifact": "source-tree",
-  "client_build": "1.60.1.70888 (Interface 16001)",
-  "source_commit": "e3a1118135ebc9da28dc8fc57868714b5cafe522",
-  "notes": "Recorded on Hel Io in the player's live client from an installed source-tree build of this commit (git archive); --compare reported no missing or differing runtime files, the install additionally carries the ignored store icon. Every other Forever addon's 1.9.0 sync build was loaded in the same session. The only BugGrabber entries this session were the recorder's own over-long /run lines.",
+  "client_build": "1.60.1.70938 (Interface 16001)",
   "flows": [
     {
-      "name": "Adventure Guide's tracker on ForeverCore 1.9.0",
+      "name": "The build loads on an enUS client with no Lua errors and its tracker text is unchanged",
       "steps": [
-        "Install the candidate with the store ForeverCore v1.9.0 and /reload",
-        "Print every Forever addon's loaded version into a chat tab with no channels: store ForeverCore v1.9.0 plus each 1.9.0 sync build, all loaded, and BugGrabber shows no addon errors this session",
-        "The guide section draws under the quest list with its current step and next steps, and nothing overlaps"
+        "Install the PR's shipped files as the AdventureGuideForever folder (compare: no differing files; extra media/icon-400.png) beside ForeverCore v1.10.0-dev+c75429c and /reload",
+        "Run errors --addon AdventureGuideForever: no Lua errors found",
+        "Look at the tracker after /reload",
+        "Confirm the Adventure Guide section draws as before",
+        "The ruRU separator itself cannot show on an enUS client; the mock render in the PR body shows it with the ruRU font"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/627a1b4cf36d973bb26ba262c81eb601/raw/67bd0b623f26040eed9f66dd363a477dbb684579/sync190-agf-tracker.png",
-      "sha256": "e52d54dd71bba4996eb18fa6b81a954ec17ff133754f3598fb34fde114fa50dd"
-    },
-    {
-      "url": "https://gist.githubusercontent.com/cjber/627a1b4cf36d973bb26ba262c81eb601/raw/67bd0b623f26040eed9f66dd363a477dbb684579/sync190-versions.png",
-      "sha256": "9731b84977a7daf94152f9129b9ea996b4c467006f822f7acc430332fa8f08ec"
+      "url": "https://gist.githubusercontent.com/cjber/94e6834396a64be6d9cbbffc4e931455/raw/c8862d01129c7b07648b6eefaefba9630c54c5e8/ruru-ingame-tracker.png",
+      "sha256": "910b3845bd4b177e5e902cb584dfbda05aebab6063b5eaadf2af61ef45edef88"
     }
   ]
 }
