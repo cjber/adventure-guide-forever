@@ -31,6 +31,8 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 - **Zone stories.** Each zone's quest chains read as chapters, such as *Chapter 3 of 7*, on the journey card, the map and the tracker, without naming later quests. Finishing a story shows a short popup, once per character, then moves on to the next zone for your level.
 - **Journeys.** Pick a journey on the map: follow a zone's story, find nearby zones for your level, take class quests or tidy your log. Each journey explains why it fits.
+- **Library books.** A Library books journey gathers the books in your faction's territory and the contested zones, then ends at the librarian who takes them.
+- **Play together.** Tick party members who run the guide under *Sync with*, and the route plans the quests any of you still needs. Each stop says who it is for.
 - **Dungeons.** Read a dungeon's quests and prerequisites, then visit its givers as a numbered route. Right-click a dungeon card for [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) bosses, drops and item tooltips.
 - **A route walked for you.** Choose a journey and Shortest Path Forever takes each stop in order, on foot, by flight or by boat, with its minutes on the card. Its tracker sits above Shortest Path's directions.
 - **Quests in your log.** Finishes what you already carry so the log empties instead of growing. Ready hand-ins come first, and towns group their givers into checklists.
