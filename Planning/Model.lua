@@ -140,8 +140,19 @@ end
 
 Model.HasBit = HasBit
 
--- Whether the player could ever take `quest`: its side is theirs or open to both, its race and class masks hold them,
--- and the data places its start. The shortlist the zone choices and a dungeon card's leftovers share.
+-- Whether a quest is open to this character by its permanent restrictions alone: the side it names, then its race
+-- and class masks. A restriction the data does not state keeps the quest visible rather than hiding it.
+---@param quest AGFQuest
+---@param player AGFPlayer
+---@return boolean
+function Model.ForCharacter(quest, player)
+	return (quest.side ~= 1 and quest.side ~= 2 or quest.side == player.side)
+		and (player.raceBit == 0 or HasBit(quest.races, player.raceBit))
+		and (player.classBit == 0 or HasBit(quest.classes, player.classBit))
+end
+
+-- Whether the player could ever take `quest`: it is open to their character, and the data places its start. The
+-- shortlist the zone choices and a dungeon card's leftovers share.
 ---@param quest AGFQuest
 ---@param player AGFPlayer
 ---@return boolean

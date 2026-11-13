@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **A dungeon card counts every quest for the dungeon.** The number under a dungeon's name now counts every quest filed under it: the ones to pick up now, the ones that open after another step, and the ones you pick up inside. The full guide marks a quest with no giver outside as picked up inside, so The Hall of Thanes now shows An Ancient Grudge (#536).
+
 ## [1.8.1] - 2026-11-13
 
 <!-- forever-core-sync -->

@@ -109,6 +109,7 @@ L["MORE_CARDS"] = "%d de plus : cliquez pour afficher"
 L["GUIDE_BACK"] = "Retour aux voyages"
 L["GUIDE_OPEN"] = "Voir le guide complet"
 L["GUIDE_OUTLINE"] = "Quête ultérieure · aperçu du guide"
+L["GUIDE_OUTLINE_INSIDE"] = "À prendre à l'intérieur · aperçu du guide"
 L["GUIDE_OUTLINE_TOOLTIP"] =
 	"Quêtes de cette zone. Le guide vérifie leur disponibilité avant de recommander de les prendre."
 L["GUIDE_PAGE"] = "%d / %d · %d prochaines étapes · %d quêtes ultérieures"

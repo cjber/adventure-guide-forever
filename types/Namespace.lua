@@ -430,6 +430,7 @@
 ---@field LevelPreference fun(questLevel: integer, playerLevel: integer): integer lower is taken first; at the player's level and one or two below are free, each level above costs twice its distance, and each level further below costs one
 ---@field EXPLORE_SLOT integer the data's need slot for an explore objective (tools/gen_quests.py)
 ---@field ValidPlace fun(place?: {map?: integer, x?: number, y?: number}): boolean? true when `place` has a positive map and x, y in 0..1
+---@field ForCharacter fun(quest: AGFQuest, player: AGFPlayer): boolean its side, race and class fit the character, whatever the data says of its start
 ---@field CouldTake fun(quest: AGFQuest, player: AGFPlayer): boolean the player could ever take it: the side, race and class fit, and the data places its start
 ---@field Hub fun(data: AGFData, place: {map: integer, x: number, y: number}): string? the town `place` stands in, as "map:area"
 ---@field ChainStart fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): integer? a locked quest's earliest prerequisite open now and not orange or red
@@ -1577,6 +1578,7 @@
 ---@field MENU_UNCHECKED string
 ---@field MENU_SUBMENU string
 ---@field GUIDE_OUTLINE string
+---@field GUIDE_OUTLINE_INSIDE string
 ---@field GUIDE_OUTLINE_TOOLTIP string
 ---@field GUIDE_PAGE string
 ---@field ORDER_DRAG string
@@ -1694,6 +1696,7 @@
 
 ---@class AGFWidgets
 ---@field GuideOutline fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, journey: AGFJourney, steps: AGFStep[]): integer[]
+---@field OutlineDetail fun(data: AGFData, journey: AGFJourney, id: integer): string how a future row is labelled, including a dungeon quest picked up inside
 
 ---@class AGFStrings
 ---@field DUNGEON_BOSSES_LOOT string

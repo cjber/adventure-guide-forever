@@ -112,6 +112,7 @@ L["MORE_CARDS"] = "%d개 더 보기: 클릭하여 표시"
 L["GUIDE_BACK"] = "여정으로 돌아가기"
 L["GUIDE_OPEN"] = "전체 안내서 보기"
 L["GUIDE_OUTLINE"] = "나중 퀘스트 · 안내서 개요"
+L["GUIDE_OUTLINE_INSIDE"] = "던전 안에서 획득 · 안내서 개요"
 L["GUIDE_OUTLINE_TOOLTIP"] =
 	"이 지역의 퀘스트입니다. 안내서는 수락을 추천하기 전에 수행 가능 여부를 확인합니다."
 L["GUIDE_PAGE"] = "%d / %d · 다음 단계 %d개 · 나중 퀘스트 %d개"

@@ -110,6 +110,8 @@ ns.L = {
 	GROUP_BATTLEGROUNDS = "Battlegrounds",
 	-- The row under a folded header's last card, saying what the fold hides and that a click opens it.
 	MORE_CARDS = "%d more: click to show",
+	-- The dungeon card's count: every quest filed under the instance, the ones open now, the later ones and the
+	-- ones picked up inside.
 	DUNGEON_QUESTS = "%d quests for this dungeon",
 	DUNGEON_QUESTS_ONE = "1 quest for this dungeon",
 	-- The dungeon card's reason: the log's quests filed under its instance, counted.
@@ -549,6 +551,7 @@ ns.L = {
 	MENU_UNCHECKED = "[ ] %s",
 	MENU_SUBMENU = "%s >",
 	GUIDE_OUTLINE = "Later quest · guide outline",
+	GUIDE_OUTLINE_INSIDE = "Picked up inside · guide outline",
 	GUIDE_OUTLINE_TOOLTIP = "Quests in this area. Availability is checked before the guide recommends a pickup.",
 	GUIDE_PAGE = "%d / %d · %d next steps · %d later quests",
 	ORDER_DRAG = "Drag to change the order",
