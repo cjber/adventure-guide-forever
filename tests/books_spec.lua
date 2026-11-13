@@ -132,13 +132,15 @@ do
 end
 
 do
-	-- A book QuestieDB places nowhere (79953 in 1.0.16) is a row that says so instead of a stop: no waypoint, and no
-	-- hand-in promising a book nobody can collect.
+	-- A book QuestieDB places nowhere is a row that says so instead of a stop: no waypoint, and no hand-in promising a
+	-- book nobody can collect. No book of QuestieDB 1.1.0 has an empty spawn list (1.0.16's 79953 had, but 1.1.0
+	-- stopped listing item 215824's object 423901 among its drops, so 79953 is no longer read as a book at all), so
+	-- the fixture blanks Sanguine Sorcery's (81947) spawns to model one the data cannot place.
 	local h = Load({ completed = { 844 }, charDB = { journey = "library", booksTerritory = 1 } })
 	local ns = h.ns
 	local only
 	for _, book in ipairs(ns.Data.books) do
-		if book.id == 79953 then
+		if book.id == 81947 then
 			book.spots = {}
 			only = book
 		end
@@ -148,7 +150,7 @@ do
 	h.flush()
 	local journey = Library(h)
 	local steps = Steps(journey)
-	local step = StepOf(journey, 79953)
+	local step = StepOf(journey, 81947)
 	check(step ~= nil, "unlocated: the book is still offered")
 	equal(step.detail, ns.L.BOOKS_UNLOCATED, "unlocated: it says the place is unknown")
 	equal(step.unlocated, true, "unlocated: it is marked as unlocated")

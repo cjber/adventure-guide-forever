@@ -517,6 +517,19 @@ local function WalkLap(lap)
 		end
 		from = route[#route] and at(route[#route]) or from
 	end
+	-- A stop with a quest the town's own pickup opens waits for that town's pickup. The visit can be anchored
+	-- elsewhere: a carried quest's objectives and a new quest's can merge into one visit, and the visit then sits in
+	-- the carried quest's town, not the pickup's.
+	local function Opened(stop)
+		for id in pairs(stop.planned or NONE) do
+			local town = lap.picks[id]
+			local anchor = town and lap.anchors[town.key]
+			if not (anchor and reached[anchor]) then
+				return false
+			end
+		end
+		return true
+	end
 	-- Leave room for merged visits and log-capacity filtering without planning every eligible stop.
 	while #route < Model.MAX_STEPS * 3 do
 		local choice = {}
@@ -525,8 +538,8 @@ local function WalkLap(lap)
 				Consider(lap, walk, choice, anchor.open, anchor, Cost(from, at(anchor.open)), "open")
 			end
 			for _, stop in ipairs(anchor.stops) do
-				-- A stop the town's own pickup opens is not a place the route can go yet.
-				if not placed[stop] and not (stop.planned and not reached[anchor]) then
+				-- A stop with a quest the town's own pickup opens is not a place the route can go yet.
+				if not placed[stop] and Opened(stop) then
 					if stop.kind ~= "trainer" or not schooled then
 						Consider(lap, walk, choice, stop, anchor, Gap(from, 0, at(stop), stop.r or 0), "stop")
 					end
