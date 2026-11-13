@@ -114,7 +114,7 @@ def scan():
                 # The directory is supplied dynamically (for example, the installed addon's icon).
                 continue
             reference = match.group(1)
-            # A folder followed by a format spec (media/Numbers/%d.tga) means any texture directly inside it.
+            # A folder followed by a format spec means any texture directly inside it.
             if re.match(r"/+%[-+ #0]*\d*(?:\.\d+)?[A-Za-z]", content[match.end() :]):
                 prefix = reference.casefold() + "/"
                 pattern_media = {

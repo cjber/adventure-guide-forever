@@ -97,9 +97,24 @@ local function NewFrame(width, height)
 	return setmetatable({ width = width, height = height, hooks = {}, textures = {} }, Frame)
 end
 
+-- ForeverCore.Art, minor 2: the shared step markers, 1 to 25 and the empty ring, as core answers them.
+local ForeverCore = {
+	Art = {
+		Marker = function(number)
+			if type(number) ~= "number" or number < 1 or number > 25 or number % 1 ~= 0 then
+				return nil
+			end
+			return ("Interface\\AddOns\\ForeverCore\\media\\Numbers\\%d"):format(number)
+		end,
+		Ring = function()
+			return "Interface\\AddOns\\ForeverCore\\media\\Numbers\\Ring"
+		end,
+	},
+}
+
 local ns = {}
 local chunk = assert(loadfile("UI/Art.lua"))
-setfenv(chunk, setmetatable({ C_Texture = C_Texture }, { __index = _G }))
+setfenv(chunk, setmetatable({ C_Texture = C_Texture, ForeverCore = ForeverCore }, { __index = _G }))
 chunk("AdventureGuideForever", ns)
 local Art = ns.Art
 
@@ -173,14 +188,14 @@ do
 	near(offset.point.y, -3 / (26 / 69), "row: vertically too")
 end
 
--- Step markers: our own numbered art, square, and the empty ring for a repeated visit.
+-- Step markers: ForeverCore's shared numbered art, square, and its empty ring for a repeated visit.
 do
 	local texture = setmetatable({}, Texture)
 	Art.SetStepMarker(texture, 3, 26)
 	equal(
 		texture.file,
-		"Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\3.tga",
-		"marker: the step's own numbered art"
+		"Interface\\AddOns\\ForeverCore\\media\\Numbers\\3",
+		"marker: the step's own numbered art comes from ForeverCore"
 	)
 	equal(texture.atlas, nil, "marker: no atlas")
 	for index = 1, 4 do
@@ -189,17 +204,14 @@ do
 	equal(texture.width, 26, "marker: square")
 	equal(texture.height, 26, "marker: square")
 	Art.SetStepMarker(texture, 10, 24)
-	equal(
-		texture.file,
-		"Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\10.tga",
-		"marker: ten is a texture of its own"
-	)
+	equal(texture.file, "Interface\\AddOns\\ForeverCore\\media\\Numbers\\10", "marker: ten is a texture of its own")
 	Art.SetStepMarker(texture, 99, 24)
 	equal(
 		texture.file,
-		"Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\10.tga",
+		"Interface\\AddOns\\ForeverCore\\media\\Numbers\\10",
 		"marker: a step past the route's ten keeps the last art"
 	)
+	equal(Art.STEP_RING, "Interface\\AddOns\\ForeverCore\\media\\Numbers\\Ring", "ring: ForeverCore's empty ring")
 	Art.SetStepRing(texture, 24)
 	equal(texture.file, Art.STEP_RING, "ring: the empty ring")
 	equal(texture.width, 24, "ring: square")

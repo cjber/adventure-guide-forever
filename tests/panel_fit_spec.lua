@@ -1,5 +1,5 @@
 local harness = dofile("tests/harness.lua")
-local MARKER = "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\"
+local MARKER = "Interface\\AddOns\\ForeverCore\\media\\Numbers\\"
 local h = harness.load({ log = { { id = 99999, title = "Unknown quest", level = 18 } } })
 local ns = h.ns
 ns.OpenPanel()
@@ -87,7 +87,7 @@ for _, row in ipairs(previews) do
 		seen[row.questID] = true
 	else
 		active = active + 1
-		assert(row.Number.file == MARKER .. row.index .. ".tga", "an active row wears our numbered marker")
+		assert(row.Number.file == MARKER .. row.index, "an active row wears our numbered marker")
 	end
 end
 assert(active == #fresh.ns.Route().steps and future > 0, "outline never mutates the active navigation route")
@@ -105,7 +105,7 @@ local number = parent:CreateTexture()
 number:SetSize(20, 20)
 number:SetPoint("CENTER", parent)
 fresh.ns.Art.SetStepMarker(number, 10, 26)
-assert(number.file == MARKER .. "10.tga", "ten has a marker texture of its own")
+assert(number.file == MARKER .. "10", "ten has a marker texture of its own")
 local labelled
 for _, region in ipairs({ parent:GetRegions() }) do
 	if region.GetText and region:GetText() == "10" then
@@ -115,6 +115,6 @@ end
 assert(not labelled, "ten draws no font")
 assert(number:GetWidth() == 26 and number:GetHeight() == 26, "ten keeps the route row's square")
 fresh.ns.Art.SetStepMarker(number, 1, 26)
-assert(number.file == MARKER .. "1.tga", "recycling ten to one reuses the marker art")
+assert(number.file == MARKER .. "1", "recycling ten to one reuses the marker art")
 assert(#fresh.errors == 0, table.concat(fresh.errors, "\n"))
 print("panel_fit_spec: destinations and ten-step continuation accessible")
