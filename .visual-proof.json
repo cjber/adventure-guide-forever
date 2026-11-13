@@ -1,52 +1,23 @@
 {
-  "input_digest": "ca633155d31d6fc94b4bc615d19cf5465b12de01a5df1a4722b052673067dfaf",
-  "runtime_sha256": "ca633155d31d6fc94b4bc615d19cf5465b12de01a5df1a4722b052673067dfaf",
-  "candidate": "f826a5e5e1dda1b3c9ca48937aaacac9b80f32fc8811768812a495dfffd0c1dd",
-  "client_build": "1.60.1.70888 (Interface 16001)",
-  "source_commit": "9f1de2f513fd65dd362012793de93f4dcf3a8ed6",
-  "notes": "In-game flows and captures were recorded from installed source-tree candidate 9f1de2f. Core #497 tooling includes auto-loaded Bindings.xml and packaging policy in the measured identity. The tested source and current release source have identical .pkgmeta bytes. Every source-owned shipped runtime file matches both the tested source-tree artifact and actual BigWigs output after documented line-ending and TOC version normalization; the tested artifact additionally carries the ignored store icon media/icon-400.png. Later commits change tooling/tests only. This package equivalence check does not claim a new gameplay session from the packaged ZIP.",
+  "input_digest": "60329a3cfaaa286564ddc46e10195ff108e68319a6bcc3ffe0118c04fad3022a",
+  "runtime_sha256": "60329a3cfaaa286564ddc46e10195ff108e68319a6bcc3ffe0118c04fad3022a",
+  "candidate": "2066763042650c422f73ff5e6248bb123b1203ab7e98fb99a17243bd762b0273",
+  "client_build": "1.60.1.70938 (Interface 16001)",
+  "tested_artifact": "source-tree",
+  "source_commit": "c2759004daed09ec76a754a17729b0639c2ced8e",
   "flows": [
     {
-      "name": "Redridge multi-quest stop story tooltip",
+      "name": "route",
       "steps": [
-        "Reload the installed candidate with /rl",
-        "Open the Redridge world map and hover a multi-quest stop",
-        "Inspect chapter and successor text for The Everstill Bridge and A Baying of Gnolls; Then describes successors without an instruction or fabricated unlock level"
-      ],
-      "result": "pass"
-    },
-    {
-      "name": "Chosen journey card and guide tab",
-      "steps": [
-        "Open the native quest sidebar and select Adventure Guide",
-        "Inspect Redridge Mountains story card, compass tab, route rows and footer with no overlapping controls or misleading progress ring"
-      ],
-      "result": "pass"
-    },
-    {
-      "name": "Outgrown journey setting and grey quests",
-      "steps": [
-        "Open cog, More settings, Route",
-        "Enable Show outgrown zones and dungeons",
-        "Return to journey choices, expand quest destinations, select Dun Morogh at character level 20",
-        "Inspect grey Dwarven Outfitters level 1, A New Threat level 2, The Boar Hunter level 3 steps without accepting or completing quests"
+        "/agf"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/7a05ce137c0697a29b6d69411b0fd30b/raw/d9d9126c930ca5717efc142f2b17aa729b72ae45/story.png",
-      "sha256": "3d888701988d6968381e3ffdf2c9e5106ce819497d4ad8ccfe938b7c428cf2ca"
-    },
-    {
-      "url": "https://gist.githubusercontent.com/cjber/7a05ce137c0697a29b6d69411b0fd30b/raw/d9d9126c930ca5717efc142f2b17aa729b72ae45/settings.png",
-      "sha256": "988ed6ba4ca87b1502d8a962f7ad64c1c97a818e2d050d11f9be10d92e5c1273"
-    },
-    {
-      "url": "https://gist.githubusercontent.com/cjber/7a05ce137c0697a29b6d69411b0fd30b/raw/d9d9126c930ca5717efc142f2b17aa729b72ae45/grey.png",
-      "sha256": "f4a3050cf454c4f7f94f75558be4a5e2c03847ce31c8674741389ea42dc7bd88"
+      "url": "https://gist.githubusercontent.com/cjber/ba5572d7a9b8e1cbd32586f0acf06138/raw/566be5a1e319dde8864bdb2cd562abfb118fc061/1-route.png",
+      "sha256": "0b1e5f410558336595b417978fbf7381e22bf973cc129db2f1be1969d10e7b3c"
     }
-  ],
-  "tested_artifact": "source-tree"
+  ]
 }

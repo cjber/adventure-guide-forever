@@ -117,12 +117,12 @@ local function ParseXML(text)
 end
 
 -- The test quest corpus (tests/.corpus/, built by tools/gen_corpus.py from the pinned QuestieDB release and never
--- committed, since QuestieDB carries no licence). The addon no longer ships its own quest catalogue: in game, quests
+-- committed, since the corpus is runtime-only). The addon no longer ships its own quest catalogue: in game, quests
 -- come from QuestieDB. The specs keep this generated corpus as their deterministic model fixture.
 -- Each file is parsed and checked once per process; every call runs the chunk again for fresh tables.
 ---@type table<string, function>
 local corpora = {}
----@param name string "quests" or "towns"
+---@param name string "quests", "towns" or "books"
 ---@return function
 local function Corpus(name)
 	if corpora[name] then
@@ -177,6 +177,7 @@ end
 ---@return AGFData
 function harness.fixture(data)
 	data.quests = harness.fixtureQuests()
+	data.books = Corpus("books")()
 	for key, value in pairs(Corpus("towns")()) do
 		data[key] = value
 	end
@@ -238,6 +239,7 @@ function harness.load(options)
 			SetMapID = 0,
 			OpenQuestLog = 0,
 			OpenWorldMap = 0,
+			QuestPinWalks = 0,
 			secureCalls = 0,
 		},
 		modelCalls = {},
@@ -3124,18 +3126,20 @@ function harness.load(options)
 		h.mapPins[#h.mapPins + 1] = pin
 		return pin
 	end
+	-- The client's own iterator skips the pins of other templates. It hands back one iterator each call but allocates
+	-- nothing per pin; this one keeps that shape while allocating nothing at all, so a spec can measure what the
+	-- addon's walk costs (WFA-13).
+	local pinCursor, pinTemplate
+	local function NextPin()
+		repeat
+			pinCursor = pinCursor + 1
+		until h.mapPins[pinCursor] == nil or h.mapPins[pinCursor].template == pinTemplate
+		return h.mapPins[pinCursor]
+	end
 	function map:EnumeratePinsByTemplate(template)
-		local pins = {}
-		for _, pin in ipairs(h.mapPins) do
-			if pin.template == template then
-				pins[#pins + 1] = pin
-			end
-		end
-		local index = 0
-		return function()
-			index = index + 1
-			return pins[index]
-		end
+		h.counts.QuestPinWalks = h.counts.QuestPinWalks + 1
+		pinCursor, pinTemplate = 0, template
+		return NextPin
 	end
 	for _, name in ipairs({ "AddDataProvider", "AcquirePin", "RemoveAllPinsByTemplate" }) do
 		map[name] = function()
@@ -4132,6 +4136,11 @@ function harness.questieMirror(data)
 		end
 		local giver = rows[id] or { name = place.name, spawns = {} }
 		rows[id] = giver
+		-- QuestieDB's usual map for a giver on more than one, from the corpus's npcHomes: the real build's Place
+		-- takes the quest's zone first, then this home, then the lowest map.
+		if place.npc and data.npcHomes and data.npcHomes[id] then
+			giver.zoneID = data.npcHomes[id]
+		end
 		local spots = giver.spawns[place.map] or {}
 		giver.spawns[place.map] = spots
 		local seen = false
@@ -4178,10 +4187,12 @@ function harness.questieMirror(data)
 		row.npcFlags = npc.inn and 128 or 16
 	end
 	for giver, counts in pairs(homes) do
-		for map, count in pairs(counts) do
-			local best = giver.zoneID and counts[giver.zoneID]
-			if not best or count > best or (count == best and map < giver.zoneID) then
-				giver.zoneID = map
+		if giver.zoneID == nil then
+			for map, count in pairs(counts) do
+				local best = giver.zoneID and counts[giver.zoneID]
+				if not best or count > best or (count == best and map < giver.zoneID) then
+					giver.zoneID = map
+				end
 			end
 		end
 	end

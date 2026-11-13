@@ -15,6 +15,11 @@ on:
         description: Full SHA of the main commit to release; main's head when empty
         required: false
         type: string
+      skip_visual_proof:
+        description: Release even though the commit's visual-proof job failed; every other job must still pass
+        required: false
+        type: boolean
+        default: false
 
 permissions: {}
 
@@ -29,6 +34,7 @@ jobs:
     permissions:
       contents: write # the packager creates the GitHub release; a manual release creates its tag
       actions: read # release_check.py reads the commit's CI runs
+      statuses: read # release_check.py reads the commit's headless-smoke status
     steps:
       - name: Choose the tag and commit
         id: target
@@ -69,6 +75,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_COMMIT: ${{ steps.target.outputs.commit }}
+          SKIP_VISUAL_PROOF: ${{ inputs.skip_visual_proof && 'true' || 'false' }}
         run: |
           for attempt in $(seq 1 90); do
             state=$(gh api \
@@ -78,6 +85,14 @@ jobs:
               completed/success)
                 echo "Full CI on main is green for $RELEASE_COMMIT"
                 exit 0
+                ;;
+              completed/failure)
+                if [ "$SKIP_VISUAL_PROOF" = true ]; then
+                  echo "Full CI on main failed for $RELEASE_COMMIT; release_check decides whether only visual-proof failed"
+                  exit 0
+                fi
+                echo "::error::Full CI on main finished without success ($state) for $RELEASE_COMMIT"
+                exit 1
                 ;;
               completed/*)
                 echo "::error::Full CI on main finished without success ($state) for $RELEASE_COMMIT"
@@ -99,10 +114,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_COMMIT: ${{ steps.target.outputs.commit }}
+          SKIP_VISUAL_PROOF: ${{ inputs.skip_visual_proof && 'true' || 'false' }}
         run: |
           python3 -c 'import os; os.environ["GITHUB_SHA"] = os.environ["RELEASE_COMMIT"]
           from tools.release_check import main
-          main()'
+          main(["--skip-visual-proof"] if os.environ["SKIP_VISUAL_PROOF"] == "true" else [])'
       # The release notes are this version's CHANGELOG entry, not the whole file;
       # a tag without one fails here rather than shipping empty notes.
       - name: Release notes
@@ -128,6 +144,13 @@ jobs:
           # The packager reads the version from the tag on the checked-out commit. The full-history checkout
           # already holds a tag that existed before this run, so only a new one is created here.
           git rev-parse -q --verify "refs/tags/$RELEASE_TAG" > /dev/null || git tag "$RELEASE_TAG" "$RELEASE_COMMIT"
+      # A ForeverCore release can land between this commit's CI and this upload, and the zip carries the
+      # core its pin names. The package job already gates the pin; run the same gate once more here, with
+      # nothing between it and the packager.
+      - name: Verify the ForeverCore pin is core's latest release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 -m tools.forever_tools.core_pin --latest
       - uses: BigWigsMods/packager@01e8631a69c69d7654c788d152630d5fed9e3812 # v2.7.0
         env:
           CF_API_KEY: ${{ secrets.CF_API_KEY }}

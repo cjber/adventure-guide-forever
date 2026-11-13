@@ -26,6 +26,16 @@ L["BATTLEGROUND_SUBLINE"] = "Un champ de bataille qui vous est ouvert"
 L["BATTLEMASTER_IN"] = "Maître de guerre à %s"
 L["BATTLEMASTER_QUEUE"] = "S’inscrire pour %s"
 L["BEGINS_STORY"] = "Commence une nouvelle histoire"
+L["BOOKS_ALLIANCE"] = "Livres en territoire de l'Alliance" -- mt
+L["BOOKS_HORDE"] = "Livres en territoire de la Horde" -- mt
+L["BOOKS_SMALLER_FIRST"] = "Zones les plus petites d'abord" -- mt
+L["BOOKS_THEN_LIBRARIAN"] = "%d livres, puis le bibliothécaire" -- mt
+L["BOOKS_THEN_LIBRARIAN_ONE"] = "1 livre, puis le bibliothécaire" -- mt
+L["BOOKS_HANDIN"] = "Remettez %d livres à %s" -- mt
+L["BOOKS_HANDIN_ONE"] = "Remettez 1 livre à %s" -- mt
+L["BOOKS_UNLOCATED"] = "Emplacement inconnu" -- mt
+L["BOOKS_TERRITORY_ALLIANCE"] = "Territoire de l'Alliance" -- mt
+L["BOOKS_TERRITORY_HORDE"] = "Territoire de la Horde" -- mt
 L["CALLING_QUESTS"] = "%d quêtes pour votre classe"
 L["CALLING_QUESTS_ONE"] = "1 quête pour votre classe"
 L["CALLING_TASK"] = "Une tâche pour votre classe : %s"
@@ -86,6 +96,7 @@ L["GO_TO_ENTRANCE"] = "Aller à l’entrée"
 L["GROUP_BATTLEGROUNDS"] = "Champs de bataille"
 L["GROUP_CONTINUE"] = "Continuer"
 L["GROUP_DUNGEONS"] = "Donjons"
+L["GROUP_LIBRARY"] = "Livres de la bibliothèque" -- mt
 L["GROUP_MANY"] = "%d demandent un groupe"
 L["GROUP_NEED_DUNGEON"] = "Donjon : %s"
 L["GROUP_NEED_ELITE"] = "Élite : groupe conseillé"
@@ -98,6 +109,7 @@ L["MORE_CARDS"] = "%d de plus : cliquez pour afficher"
 L["GUIDE_BACK"] = "Retour aux voyages"
 L["GUIDE_OPEN"] = "Voir le guide complet"
 L["GUIDE_OUTLINE"] = "Quête ultérieure · aperçu du guide"
+L["GUIDE_OUTLINE_INSIDE"] = "À prendre à l'intérieur · aperçu du guide"
 L["GUIDE_OUTLINE_TOOLTIP"] =
 	"Quêtes de cette zone. Le guide vérifie leur disponibilité avant de recommander de les prendre."
 L["GUIDE_PAGE"] = "%d / %d · %d prochaines étapes · %d quêtes ultérieures"
@@ -108,11 +120,8 @@ L["BEFORE_ITEM_RUNS_OUT"] = "avant qu'un objet de quête n'expire"
 L["BEFORE_TIMER_RUNS_OUT"] = "avant la fin du temps imparti pour la quête"
 L["HELP_AUDIT"] = "/agf audit - comparer les données de quêtes avec le jeu"
 L["HELP_DUMP"] = "/agf dump - enregistrer la disposition du guide pour un rapport de bug"
-L["HELP_LEADERBOARD"] = "/agf leaderboard - ouvre Forever Leaderboards sur l'onglet de cet addon (aussi /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - ouvrir le guide sur la carte du monde."
 L["HELP_REPORT"] = "/agf report - afficher un rapport à copier dans un rapport de bug"
-L["HELP_SHARE"] =
-	"/agf share on|off - active ou désactive le partage des totaux de remises de quêtes avec votre guilde et vos groupes"
 L["HELP_TRACKER"] = "/agf tracker - afficher les ancrages du suivi (en cas de chevauchement en combat)"
 L["HELP_WHERE"] = "/agf where - afficher l’arrêt actuel du guide, à copier dans un rapport d’arrêt erroné"
 L["HUB_HAND_IN"] = "%d à rendre"
@@ -437,6 +446,7 @@ L["TRACKER_DRAG_TITLE"] = "Suivi Forever"
 L["TRACKER_DRAG_TOOLTIP"] = "Glisser pour déplacer"
 L["TRACKER_HIDDEN_COUNT"] = "%d masquées" -- mt
 L["TRACKER_HIDDEN_TOOLTIP"] = "%d quêtes sont masquées du suivi pendant que ce voyage vous guide." -- mt
+L["TRACKER_HIDDEN_TOOLTIP_ONE"] = "1 quête est masquée du suivi pendant que ce voyage vous guide." -- mt
 L["TRACKER_HIDDEN_SHOW_ALL"] = "Clic droit : Afficher toutes les quêtes." -- mt
 L["TRACKER_LOADING"] = "Chargement des données de quêtes..."
 L["TRACKER_LOCKED_TOOLTIP"] = "Le suivi est verrouillé. Désactivez Verrouiller le suivi pour le déplacer."
@@ -471,8 +481,7 @@ L["TWEAKS_OUTDATED"] = "Mettez à jour Tweaks Forever pour trouver les entrées 
 L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
-L["WHATS_NEW"] =
-	"Les infobulles de quête indiquent maintenant les quêtes suivantes avec Then et leur propre couleur de difficulté." -- mt
+L["WHATS_NEW"] = "Les membres du groupe qui utilisent le guide peuvent partager un même parcours." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
@@ -519,6 +528,16 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 	"Quand une étape parle à un PNJ qui donne ou rend une quête, une petite flèche rebondit au-dessus de sa plaque de nom et un bouton de cible apparaît sous le suivi. Désactivez cette option pour masquer les deux. Le guide ne change jamais vos réglages de plaque de nom."
 L["NPC_HIGHLIGHT_HINT"] =
 	"Les plaques de nom amies sont désactivées : activez-les dans les options d'interface pour voir où aller."
+
+L["SYNC_WITH"] = "Synchroniser avec" -- mt
+L["SYNC_MEMBERS"] = "Membres du groupe avec le guide" -- mt
+L["SYNC_NONE"] = "Personne dans votre groupe n'utilise le guide" -- mt
+L["SYNC_SUBTITLE"] = "Synchronisé avec %s" -- mt
+L["SYNC_EVERYONE"] = "Tout le monde" -- mt
+L["SYNC_FOR_YOU"] = "Pour vous" -- mt
+L["SYNC_FOR"] = "Pour %s" -- mt
+L["SYNC_FOR_YOU_AND"] = "Pour vous et %s" -- mt
+L["SYNC_AND"] = "et" -- mt
 
 L.LEADERBOARD_METRIC = "Quêtes rendues" -- mt
 L.LEADERBOARD_TOTAL = "total" -- mt

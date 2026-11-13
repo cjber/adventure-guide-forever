@@ -29,8 +29,8 @@ local function same(actual, expected, label)
 	equal(Flat(actual), Flat(expected), label)
 end
 
--- The route's gold numbered marker art: one texture per step, painted by tools/export_numbers.py.
-local MARKER = "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\"
+-- The route's gold numbered marker art: one texture per step, ForeverCore's shared step markers.
+local MARKER = "Interface\\AddOns\\ForeverCore\\media\\Numbers\\"
 
 -- The route's places: a ring each, a town the route comes back to sharing its first visit's (docs/design.md §2.9).
 local function Places(route)
@@ -158,7 +158,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 			return frame.SkipButton ~= nil
 		end)[1]
 	end
-	equal(Row().Number.file, MARKER .. "1.tga", label .. ": the first row wears our numbered marker")
+	equal(Row().Number.file, MARKER .. "1", label .. ": the first row wears our numbered marker")
 	same({ Row().Number:GetSize() }, { 26, 26 }, label .. ": the row's marker is square")
 	h.Click(Row())
 	h.flush()
@@ -1253,7 +1253,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#h.Pins("AdventureGuideForeverPinTemplate"), Places(ns.Route()), label .. ": one ring per place on this map")
 
 	local ring = h.Pins("AdventureGuideForeverPinTemplate")[1]
-	equal(ring.Icon.file, MARKER .. "1.tga", label .. ": our numbered marker, the number in the art")
+	equal(ring.Icon.file, MARKER .. "1", label .. ": our numbered marker, the number in the art")
 	equal(ring.Icon:GetAtlas(), nil, label .. ": no stock quest atlas")
 	same({ ring.Icon:GetSize() }, { 24, 24 }, label .. ": the marker is square")
 	equal(ring.Icon:GetAlpha(), 1, label .. ": the next stop is at full strength")
@@ -1262,8 +1262,9 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(ring.levelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
 	h.Hover(ring)
 	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
-	-- Zhevra opens its next chapter, handed in before the town's pickups.
-	local expected = { "title: 1. Visit The Crossroads: Pick up 5, turn in 1" }
+	-- Zhevra opens its next chapter, handed in before the town's pickups. QuestieDB v1.1.0 links Lost in Battle to
+	-- Her Name Is Olgra, so the town offers one pick-up less.
+	local expected = { "title: 1. Visit The Crossroads: Pick up 4, turn in 1" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
 	expected[#expected + 1] = "highlight: Opens the next chapter here"
 	expected[#expected + 1] = "normal: |cff009919Sergra Darkthorn|r"
@@ -1403,7 +1404,7 @@ do
 	equal(pin:GetWidth(), 20, "POI: fixed 20-unit button")
 	equal(pin.ignoreGlobalPinScale, true, "POI: ignores the global pin scale")
 	same({ pin.scaleFactor, pin.startScale, pin.endScale }, { 1, 1, 1 }, "POI: unchanged by map zoom")
-	equal(pin.Icon.file, MARKER .. "9.tga", "POI: our numbered marker, the number in the art")
+	equal(pin.Icon.file, MARKER .. "9", "POI: our numbered marker, the number in the art")
 	equal(pin.Icon:GetAtlas(), nil, "POI: no stock quest atlas")
 	same({ pin.Icon:GetSize() }, { 24, 24 }, "POI: the marker is 24 square") -- multi-value: width and height
 	equal(pin.Icon:GetAlpha(), 0.7, "POI: a later stop fades its marker")
@@ -1422,15 +1423,15 @@ do
 	equal(pin.Glow, nil, "POI: hover draws no glow")
 	pin:OnMouseLeave()
 	pin:OnAcquired(step, 10)
-	equal(pin.Icon.file, MARKER .. "10.tga", "POI: ten has a marker texture of its own")
+	equal(pin.Icon.file, MARKER .. "10", "POI: ten has a marker texture of its own")
 	equal(pin.Stack:IsShown(), false, "POI: a lone stop hides the stacked ring")
 	equal(pin.More, nil, "POI: reused lone stop has no count")
 	equal(pin.Badge:IsShown(), true, "POI: reused lone stop restores its kind")
 	pin:OnAcquired(step, 1)
-	equal(pin.Icon.file, MARKER .. "1.tga", "POI: reused current stop restores marker 1")
+	equal(pin.Icon.file, MARKER .. "1", "POI: reused current stop restores marker 1")
 	equal(pin.Icon:GetAlpha(), 1, "POI: reused current stop restores full strength")
 	pin:OnAcquired({ x = step.x, y = step.y }, 9)
-	equal(pin.Icon.file, MARKER .. "9.tga", "POI: an unmarked stop keeps its own marker")
+	equal(pin.Icon.file, MARKER .. "9", "POI: an unmarked stop keeps its own marker")
 	equal(pin.Badge:IsShown(), false, "POI: an unmarked stop loses its badge")
 	same(pin.hitRectInsets, { 0, 0, 0, 0 }, "POI: an unmarked stop restores the plain hit rect")
 	clean(h, "POI reuse")
@@ -2416,7 +2417,9 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	local expected = { "1 to hand in, 5 to pick up", "Opens the next chapter here" }
+	-- QuestieDB v1.1.0 links Lost in Battle to Her Name Is Olgra: the Barrens story's first visit offers one pick-up
+	-- less, 4 with the one hand-in.
+	local expected = { "1 to hand in, 4 to pick up", "Opens the next chapter here" }
 	for _, giver in ipairs(steps[1].checklist) do
 		expected[#expected + 1] = h.ns.StepStyle.Checklist(steps[1], giver)
 	end
@@ -2492,7 +2495,9 @@ end
 do
 	local h = Load(false, PINS_ON)
 	local ns = h.ns
-	-- Egg Hunt at 20, two over the player: yellow, so offered (at 22 it is orange and never is), a tenth to count.
+	-- Egg Hunt at 20, two over the player: yellow, so offered (at 22 it is orange and never is), one over the eight
+	-- shown to count. QuestieDB v1.1.0 links Lost in Battle to Her Name Is Olgra, which takes one pick-up off the
+	-- Crossroads: nine quests, not ten.
 	ns.Data.quests[868].level = 20
 	-- Their work a step from town and alike in XP, so the lap keeps all of them (one worth less per yard waits).
 	for _, quest in pairs(ns.Data.quests) do
@@ -2509,13 +2514,13 @@ do
 	ns.OpenPanel()
 	h.flush()
 	local step = ns.Route().steps[1]
-	equal(#step.quests, 10, "hub tooltip: Crossroads has 10 quests")
+	equal(#step.quests, 9, "hub tooltip: Crossroads has 9 quests")
 	local rows = Shown(h, function(frame)
 		return frame.SkipButton ~= nil
 	end)
 	h.Hover(rows[1])
 	local lines, colors = h.tooltip, h.tooltipColors
-	equal(lines[1], "title: 1. Visit The Crossroads: Pick up 9, turn in 1", "hub tooltip: the numbered town")
+	equal(lines[1], "title: 1. Visit The Crossroads: Pick up 8, turn in 1", "hub tooltip: the numbered town")
 	equal(lines[2], "highlight: " .. step.reason, "hub tooltip: the reason")
 	equal(lines[3], "normal: |cff009919Sergra Darkthorn|r", "hub tooltip: the hand-in's NPC first")
 	equal(lines[4], "colored: |A:questturnin:14:14|a [13] The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
@@ -2536,7 +2541,7 @@ do
 	end
 	equal(quests, 8, "hub tooltip: 8 quest lines")
 	equal(npcs, 7, "hub tooltip: one line per NPC shown")
-	equal(lines[#lines - 2], "highlight: And 2 more", "hub tooltip: the rest counted")
+	equal(lines[#lines - 2], "highlight: And 1 more", "hub tooltip: the rest counted")
 	equal(lines[#lines - 1], "instruction: " .. ns.L.ORDER_DRAG, "hub tooltip: then how to reorder")
 	local over
 	for index, line in ipairs(lines) do
@@ -2559,7 +2564,7 @@ do
 		end
 	end
 	equal(visits >= 1, true, "hub tooltip: the ring's visits")
-	equal(h.tooltip[last - visits - 1], "highlight: And 2 more", "hub tooltip: the ring's quests")
+	equal(h.tooltip[last - visits - 1], "highlight: And 1 more", "hub tooltip: the ring's quests")
 	equal(h.tooltip[last], "instruction: Click to set a waypoint", "hub tooltip: the click line last")
 
 	-- A group quest carries the quest log's group tag.
@@ -2585,8 +2590,8 @@ do
 	h.flush()
 	local steps = ns.Route().steps
 	local step = steps[1]
-	equal(step.title, "Visit The Crossroads: Pick up 5, turn in 1", "tracker, town: town and actions")
-	equal(step.detail, "1 to hand in, 5 to pick up", "tracker, town: the hand-in joins the pickups")
+	equal(step.title, "Visit The Crossroads: Pick up 4, turn in 1", "tracker, town: town and actions")
+	equal(step.detail, "1 to hand in, 4 to pick up", "tracker, town: the hand-in joins the pickups")
 	local expected = { step.detail, "Opens the next chapter here" }
 	for _, giver in ipairs(step.checklist) do
 		expected[#expected + 1] = ns.StepStyle.Checklist(step, giver)
@@ -2771,14 +2776,12 @@ do
 		L.HELP_ISSUE,
 		L.HELP_WHERE,
 		L.HELP_AUDIT,
-		L.HELP_LEADERBOARD,
-		L.HELP_SHARE,
 		L.HELP_DUMP,
 		L.HELP_TRACKER,
 	}) do
 		equal(h.prints[before + index]:sub(-#line), line, "L: help line " .. index)
 	end
-	equal(#h.prints, before + 9, "L: nine help lines")
+	equal(#h.prints, before + 7, "L: seven help lines")
 	-- Map names come from the client (C_Map.GetMapInfo), which the planner prefers over the data's English.
 	h.G.C_Map.GetMapInfo = function()
 		return { name = "Client Stormwind" }
@@ -2830,10 +2833,12 @@ do
 	clean(h, "card")
 end
 
--- The guide (F2): seven cards in this fixture. Tirisfal Glades left it when QuestieDB v1.0.11 gave The Argent
--- Emissary its level 12, grey at this fixture's level 18. The chosen one is lit, never moved, 288x86 with a 46x46 ring
--- and followed by its steps; the others sit above it as one-line 288x26 header rows with a 16x16 icon and no ring, in
--- the dumped layout the client's own dump is compared with.
+-- The guide (F2): ten cards in this fixture, the Library books card among them. Tirisfal Glades left it when
+-- QuestieDB v1.0.11 gave The Argent Emissary its level 12, grey at this fixture's level 18; QuestieDB v1.1.0 adds
+-- Stranglethorn Vale's A Special Gift and Tanaris's Field of Honor: Week 1, so both zones are offered here too. The
+-- chosen one is lit, never moved, 288x86 with a 46x46 ring and followed by its steps; the others sit above it as
+-- one-line 288x26 header rows with a 16x16 icon and no ring, in the dumped layout the client's own dump is compared
+-- with.
 do
 	local h = Load(false, nil, nil, true)
 	h.ns.OpenPanel()
@@ -2854,7 +2859,7 @@ do
 		end
 	end
 	equal(full + compact, #route.journeys, "guide: a card per journey")
-	equal(#route.journeys, 7, "guide: all seven eligible journeys survive")
+	equal(#route.journeys, 10, "guide: all ten eligible journeys survive")
 	equal(full, 1, "guide: only the chosen card is whole")
 	equal(lit, 1, "guide: and only it stays lit, so it reads as chosen in game")
 	local rows = Shown(h, function(frame)
@@ -3044,7 +3049,7 @@ do
 	capped.ns.Invalidate()
 	capped.ns.OpenPanel()
 	capped.flush()
-	equal(#capped.ns.Route().journeys, 5, "guide: at the cap, dungeon alternatives and a chain remain")
+	equal(#capped.ns.Route().journeys, 6, "guide: at the cap, the library, dungeon alternatives and a chain remain")
 	equal(Says(capped, "Dire Maul"), 1, "guide: the closest suitable dungeon card, toggle off")
 	equal(Says(capped, capped.ns.L.JOURNEY_INTO:format("Scholomance")), 1, "guide: the way in, as a story")
 	equal(Says(capped, capped.ns.L.NO_JOURNEY), 0, "guide: no empty line")
@@ -3055,8 +3060,8 @@ do
 	none.ns.Invalidate()
 	none.ns.OpenPanel()
 	none.flush()
-	equal(#none.ns.Route().journeys, 0, "guide: nothing fits")
-	equal(Says(none, none.ns.L.NO_JOURNEY), 1, "guide: says so, and where to look")
+	equal(#none.ns.Route().journeys, 1, "guide: the library still fits at level 1")
+	equal(Says(none, none.ns.L.NO_JOURNEY), 0, "guide: so the empty line is not drawn")
 	clean(none, "guide: empty")
 end
 
@@ -3356,7 +3361,8 @@ for _, spf in ipairs({ false, "v1" }) do
 			expected[#expected + 1] = "highlight: " .. card.detail
 		end
 		local warning = h.ns.Overview.VisitWarning(journey)
-		if warning then
+		-- card.detail is the visit warning when there is one (UI/Panel.lua), and CardTooltip draws it once.
+		if warning and warning ~= card.detail then
 			expected[#expected + 1] = "highlight: " .. warning
 		end
 		local travel = h.ns.Integrations.CardTravel(journey)
@@ -3411,7 +3417,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#Overview(), 0, label .. ": the overview gives way")
 	equal(Previews(), "", label .. ": with its steps")
 	equal(Says(L.OVERVIEW_WHERE:format("The Barrens", h.player.level)), 0, label .. ": and the line by the title")
-	equal(Heights(), "86 26 26 26 26 26 26", label .. ": the chosen route precedes alternatives")
+	equal(Heights(), "86 26 26 26 26 26 26 26 26 26", label .. ": the chosen route precedes alternatives")
 	equal(Cards()[1].journey.key, story.key, label .. ": the chosen card first, over its steps")
 	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
 	local chosenCard = Cards()[1]
@@ -3473,7 +3479,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.ns.Route().journey, key, label .. ": a row chooses its card")
 	equal(Starts(), 2, label .. ": and starts its route in place of the first")
-	equal(Heights(), "86 26 26 26 26 26 26", label .. ": still one whole card")
+	equal(Heights(), "86 26 26 26 26 26 26 26 26 26", label .. ": still one whole card")
 	equal(Cards()[1].journey.key, key, label .. ": the new choice over the steps")
 
 	-- The chosen card again: nothing changes but the map, which turns to it.
@@ -3508,7 +3514,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(Overview()[2])
 	h.flush()
 	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a row chooses it")
-	equal(Heights(), "86 26 26 26 26 26 26", label .. ": alternatives fold below it")
+	equal(Heights(), "86 26 26 26 26 26 26 26 26 26", label .. ": alternatives fold below it")
 	equal(Cards()[1].journey.key, second.key, label .. ": lit over its steps")
 	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
 	h.Click(Back())
@@ -3562,7 +3568,7 @@ do
 	equal(header.CollapseButton:IsShown(), true, label .. ": more choices can expand")
 	h.Click(header)
 	h.flush()
-	equal(#Cards("zones"), 5, label .. ": expansion shows every zone")
+	equal(#Cards("zones"), 7, label .. ": expansion shows every zone")
 	equal(h.ns.Prefs().previewGroups.zones, false, label .. ": expansion is saved")
 	local card = Cards("zones")[1]
 	local zone = h.ns.Data.zones[card.journey.zone]
@@ -3859,13 +3865,14 @@ for _, spf in ipairs({ false, "v1+" }) do
 	h.fire(event)
 	equal(StopButton(h):IsShown(), true, label .. ": not in the event's own frame")
 	h.fire(event)
-	-- With Shortest Path, SUPER_TRACKING_CHANGED also queues the open map's quest pin pass (#468): one timer each.
-	equal(h.tick(), spf and 2 or 1, label .. ": one redraw however many events")
+	-- SUPER_TRACKING_CHANGED also queues the open map's quest pin pass (#468), which runs from the frame's own
+	-- OnUpdate in the same frame (#718), so the one timer is the redraw.
+	equal(h.tick(), 1, label .. ": one redraw however many events")
 	equal(StopButton(h):IsShown(), false, label .. ": Stop goes on the next frame")
 	h.ClickTab(h.G.ForeverQuestLogQuestsTab)
 	h.flush()
 	h.fire(event)
-	equal(h.tick(), spf and 2 or 1, label .. ": the ending is judged with the guide closed too, in one frame")
+	equal(h.tick(), 1, label .. ": the ending is judged with the guide closed too, in one frame")
 	clean(h, label)
 end
 
@@ -4321,6 +4328,13 @@ do
 	equal(current == stored, true, "golden: layout.json matches (AGF_UPDATE_GOLDEN=1 rewrites it)")
 	equal(json.encode(json.decode(stored)), stored, "golden: json round trip")
 	equal(stored:lower():find("unreachable", 1, true), nil, "golden: no line ever says unreachable")
+	-- The header's lines share the span between the guide icon and the panel's right inset, clear of the back arrow.
+	local headerProblems = diff.HeaderLines(json.decode(stored).layout, h.ns.L.TITLE)
+	equal(
+		#headerProblems,
+		0,
+		"golden: the header's lines keep the title's span\n" .. table.concat(headerProblems, "\n")
+	)
 
 	-- The in-game diff, fed a dump taken the way /agf dump takes it.
 	local golden, game = json.decode(stored).layout, h.ns.DumpLayout(panel)
@@ -4351,6 +4365,15 @@ do
 	laid.size = { 628.12, 64 }
 	differences = diff.Compare({ scaled }, { laid })
 	equal(#differences, 1, "dump_diff: its native height is")
+	-- The overview's line under the title is checked in the same span as the chosen view's title.
+	h.ns.Choose(nil)
+	h.flush()
+	headerProblems = diff.HeaderLines(h.ns.DumpLayout(panel, h.Describe), h.ns.L.TITLE)
+	equal(
+		#headerProblems,
+		0,
+		"golden: the overview's line keeps the title's span\n" .. table.concat(headerProblems, "\n")
+	)
 	clean(h, "golden")
 end
 

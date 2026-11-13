@@ -17,7 +17,8 @@ abandons quests.
   your log, the story and your calling), Zones for your level, Dungeons, then Battlegrounds. With no journey chosen the
   route follows Quests in your log, and its card leads; RestedXP guides stay selectable cards and take over only when
   the player picks one. A card an installed guide addon feeds carries that provider's own mark at its top right, and
-  its tooltip names the provider and says its steps are not Adventure Guide's own. A group with no card draws no header, each header remembers its open state per character, and
+  its tooltip names the provider and says its steps are not Adventure Guide's own. A group with no card draws no
+  header, each header remembers its open state per character, and
   the header holding the route the guide follows stays open. Prefer useful green/yellow quests; the maximum quest level slider defaults to +2, excluding
   orange/red pickups. The limit applies to recommendations, zone ranking and search recommendation eligibility; higher-level quests remain searchable, and accepted quests keep their steps. A choice shows up to ten route actions,
   followed by upcoming quest entries when fewer actions are available. The active route appears above alternative
@@ -110,7 +111,10 @@ abandons quests.
   Unplaced objectives may lead to a known entrance, explicitly labelled as an entrance, never an invented objective location.
   QuestieDB supplies quest chains and outdoor entrance points; Tweaks Forever is the entrance fallback.
   The full guide lists remaining prerequisites before their dungeon quest. Future entries are an outline,
-  not a pickup recommendation or navigation target. The dungeon card itself walks every prerequisite chain back to
+  not a pickup recommendation or navigation target. It lists every quest filed under the instance: the ones to pick
+  up now, the later ones and the ones picked up inside, and a quest no giver outside holds is marked as picked up
+  inside. The card's count is how many of the instance's own quests that list holds, so the two never disagree.
+  The dungeon card itself walks every prerequisite chain back to
   what the player can do now, through branches, and offers the steps that open another of its quests first, then the
   rest, before its entrance; each chain carries its label and progress, and the entrance says how many of the
   instance's quests are still to pick up. Character restrictions and completion apply throughout.
@@ -175,6 +179,15 @@ abandons quests.
   is marked, since Pawn marks the same rewards with every stat weighed. Tweaks Forever's best-selling coin sits on
   the icon's other corner and answers a different question. The setting `markUpgrades` (on) turns it off.
   `UI/Upgrades.lua`.
+- **2.29 Library books.** One card in the Library books section lists the books QuestieDB places in the player's
+  faction territory and the contested zones, never the other faction's. The card's right-click menu picks Horde or
+  Alliance territory for this character; the default is the character's own faction. Books run smaller zones first
+  (the width of the zone's level range, then its lower level and name), and up to the guide's ten actions; the
+  librarian hand-in ends the card, so the route is the next books and their turn-in rather than the whole library.
+  Books already completed, the other faction's only spots and class-restricted books outside that class are left out;
+  a book with no spawn shows its name with "Location unknown" and no waypoint. The card's level is the next reward
+  goal's level (78150, 79536, 82208). `Planning/Books.lua` reads `data.books` from QuestieDB at runtime and the
+  territories from `Data/Territory.lua`.
 
 ### Guide navigation
 
@@ -268,22 +281,35 @@ follow the shared family voice.
   An objective whose count reaches its need is done, and a quest whose objectives are all done is complete, even
   while the client's finished and complete flags lag the count (a looted quest item reports it a tick later;
   `ITEM_COUNT_CHANGED` and `BAG_UPDATE_DELAYED` re-read it). The objective's words carry the live count too.
-- **4.5 Party quests.** In a party (not a raid) with *Favour quests your party has* on (the default), a step holding
-  a quest someone in the party also has costs half as much to reach, but never more than 300 yards less
+- **4.5 Party quests and Sync Together.** In a party (not a raid) with *Favour quests your party has* on (the default),
+  a step holding a quest someone in the party also has costs half as much to reach, but never more than 300 yards less
   (`Model.PartyCost`, in the selection, the nearest order and the laps' walk alike). The route stays the nearest
   action at every step, so it leans towards shared work without a fixed order, and a step the player stands in or a
   ready hand-in beside them still comes first; the optimised-route beta's committed order still holds the steps it
   has (§4.3), so there only new steps lean. A pickup someone in the party has says so. The party's quests
   (`Core/Party.lua`) are what the client shows, `C_QuestLog.IsUnitOnQuest` for each quest in the player's log, and
-  what party members running the guide say: one hidden addon message (prefix `AGFParty`, to `PARTY` only) carrying
-  their log's quest IDs in base 36, never text. It goes out 2 seconds after the log or the party changes, at most
-  once every 15 seconds, never in combat (it waits for the fight's end) and never on a timer of its own; one that
-  says what the last said is not sent again unless it asks or someone asked, one the client throttles is tried once
-  more, and one it refuses counts as unsaid. Joining a party, or someone new in it, asks the others for theirs once.
-  Only the home party counts (`LE_PARTY_CATEGORY_HOME`), never an instance group of strangers; members are told apart
-  as "Name-Realm", and a message from someone whose name the client doesn't know yet waits until it does. A sender's name is read through `ns.Readable`; a malformed
-  message, another version's, our own echo or a raid's is ignored. With the setting off, or out of a party, nothing
-  is sent, kept or favoured.
+  what party members running the guide say: hidden addon messages (prefix `AGFParty`, to `PARTY` only) carrying
+  numbers only, never text. Version 2 carries the quest IDs in their log and every quest they have completed, the
+  completed set as gaps between ascending base-36 IDs; a set too large for one message is cut into pages sharing a
+  generation and page count, each within the client's 255 bytes, and only a whole set counts. Version 1 peers ignore
+  ours and we ignore theirs, so a mixed party syncs nothing rather than guessing. Messages go out 2 seconds after the
+  log, the completed set or the party changes, at most once every 15 seconds, never in combat (it waits for the
+  fight's end) and never on a timer of its own; one that says what the last said is not sent again unless it asks or
+  someone asked, a page the client throttles is tried at most three times a second apart, and one it refuses counts as
+  unsaid. Joining a party, or someone new in it, asks the others for theirs once. Only the home party counts
+  (`LE_PARTY_CATEGORY_HOME`), never an instance group of strangers; members are told apart as "Name-Realm", and a
+  message from someone whose name the client doesn't know yet waits until it does. A sender's name is read through
+  `ns.Readable`; a malformed message, another version's, our own echo or a raid's is ignored. With the setting off, or
+  out of a party, nothing is sent, kept or favoured.
+  **Sync Together (#617).** The guide's cog menu offers **Sync with**, a checklist titled *Party members with the
+  guide* of the party members heard from (no row for nobody; no tick means not synced, and several may be ticked).
+  While any is ticked the guide plans the quests anybody synced still needs: the planner's completed set is the one
+  every synced player holds (`Model.GroupCompleted`), so a quest the player finished but a member has not is planned
+  for them. A tick is per character, and a ticked member who leaves the party is unticked. The line under the guide's
+  title reads "Synced with <names>", and every stop says who it is for (`Model.SyncLabel`): "Everyone" when the player
+  and each member still need one of its quests, else "For you", "For <name>", or a list, on its own wrapped line so a
+  long list is never cut, and under the tracker's current step. A ticked member whose completed set has not arrived yet
+  is left out of the plan until it does. Sync needs only this addon: Shortest Path Forever is not required.
 
 ### Full guide outline
 

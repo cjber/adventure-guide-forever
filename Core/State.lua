@@ -282,6 +282,7 @@ function State.Player()
 		battlegrounds = State.Battlegrounds(),
 		notOffered = ns.Prefs().notOffered,
 		party = ns.Party.Quests(),
+		synced = ns.Party.Synced(),
 	}
 end
 
@@ -338,6 +339,9 @@ end
 ---@type table<integer, boolean>
 local completed = {}
 local ready = false
+-- Bumped whenever the completed set grows, so a listener (Party's sharing) can tell the set itself moved, without
+-- walking it.
+local completedVersion = 0
 
 -- Every completed quest ID the game currently knows about, merged into `completed`: a quest is only ever added, so
 -- a turn-in the server's list has not caught up with yet is kept. Nil means the game hasn't answered yet (Ready()
@@ -356,12 +360,21 @@ local function LoadCompleted()
 			added = true
 		end
 	end
+	if added then
+		completedVersion = completedVersion + 1
+	end
 	return true, added
 end
 
 ---@return table<integer, boolean>
 function State.Completed()
 	return completed
+end
+
+-- How many times the completed set has grown: a cheap "did it move?" for listeners that cannot walk it on every event.
+---@return integer
+function State.CompletedVersion()
+	return completedVersion
 end
 
 ---@return boolean

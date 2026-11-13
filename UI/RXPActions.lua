@@ -182,19 +182,17 @@ local function ModuleVisible(module)
 	return module:IsVisible() and not module.isCollapsed
 end
 
--- The section's height without the action rows' own reservation, which they hang below.
+-- The section's content height the rows hang below, from the height the last layout left: `contentsHeight` includes
+-- the rows' own reservation between layouts, so this is the section's content again.
 ---@param module AGFTrackerModule
 ---@return number
 local function BaseHeight(module)
-	local reserved = module.rxpActionsReserved or 0
-	if (module.contentsHeight or 0) < reserved then
-		reserved = 0
-	end
-	return math.max(0, (module.contentsHeight or 0) - reserved)
+	return math.max(0, (module.contentsHeight or 0) - (module.rxpActionsReserved or 0))
 end
 
 ---@param module AGFTrackerModule
-local function Anchor(module)
+---@param base number the section's own content height, which the rows hang below
+local function Anchor(module, base)
 	if InCombatLockdown() or not root then
 		return
 	end
@@ -207,7 +205,7 @@ local function Anchor(module)
 	root:SetFrameStrata(module:GetFrameStrata())
 	root:SetFrameLevel(module:GetFrameLevel() + 5)
 	root:ClearAllPoints()
-	root:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left * scale, (top - BaseHeight(module)) * scale - ROW_GAP)
+	root:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left * scale, (top - base) * scale - ROW_GAP)
 end
 
 local function Clear()
@@ -311,15 +309,18 @@ local function Apply()
 		appliedHeight = height
 		module:MarkDirty()
 	end
-	Anchor(module)
+	Anchor(module, BaseHeight(module))
 end
 
--- Called after the tracker section lays its own blocks out: reserve the action rows below them. The reservation is
--- kept separately so a repeated layout (the specs call LayoutContents directly) never adds it twice.
+-- Called after the tracker section lays its own blocks out: reserve the action rows below them. `base` is the
+-- section's own content height, measured after the layout reset `contentsHeight`, so the rows' room is added once and
+-- a later layout never takes off a reservation that is no longer in that height (#787).
 ---@param module AGFTrackerModule
-function Actions.Reserve(module)
+---@param base number
+---@return number contentsHeight the section's height with the rows' room
+function Actions.Reserve(module, base)
 	if not root then
-		return
+		return base
 	end
 	local visible = ModuleVisible(module)
 	if not InCombatLockdown() then
@@ -329,36 +330,25 @@ function Actions.Reserve(module)
 			root:Show()
 		end
 	end
-	NotifyShown()
 	local shown = visible and root:IsShown() and ns.Setting("showTracker")
-	local height = shown and root:GetHeight() or 0
-	local reserved = module.rxpActionsReserved or 0
-	if (module.contentsHeight or 0) < reserved then
-		reserved = 0
-	end
-	local base = (module.contentsHeight or 0) - reserved
-	if height <= 0 or base <= 0 then
-		if reserved > 0 then
-			module.contentsHeight = base
-			module.rxpActionsReserved = nil
-			if module.UpdateHeight then
-				module:UpdateHeight()
-			end
-		end
+	if shown and base <= 0 then
+		-- Nothing of the section's own is on screen: the rows would hang over the section below.
 		if not InCombatLockdown() then
-			Anchor(module)
+			root:Hide()
 		end
-		return
+		shown = false
 	end
-	local extra = height + ROW_GAP
+	local extra = shown and root:GetHeight() + ROW_GAP or 0
+	module.rxpActionsReserved = extra > 0 and extra or nil
 	module.contentsHeight = base + extra
-	module.rxpActionsReserved = extra
-	if module.UpdateHeight then
+	if extra > 0 and module.UpdateHeight then
 		module:UpdateHeight()
 	end
+	NotifyShown()
 	if not InCombatLockdown() then
-		Anchor(module)
+		Anchor(module, base)
 	end
+	return module.contentsHeight
 end
 
 -- The parts of a shown button that carry no secure state may follow the bags and the target mid-fight; attributes,
@@ -418,7 +408,7 @@ events:SetScript("OnEvent", function(_, event)
 	if event == "PLAYER_REGEN_ENABLED" then
 		local module = ns.TrackerModule()
 		if module then
-			Anchor(module)
+			Anchor(module, BaseHeight(module))
 		end
 	end
 end)

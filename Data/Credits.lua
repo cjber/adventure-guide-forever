@@ -24,9 +24,11 @@ ns.Credits = {
 		{ name = "vladsnz", what = "Marker no longer taken from another guide" },
 		{ name = "jixxor", what = "Show of Force held until Encroaching Gnolls is done" },
 		{ name = "InfamousMunky", what = "Daily Delivery no longer offered once handed on" },
+		{ name = "InfamousMunky", what = "Library books journey" },
+		{ name = "InfamousMunky", what = "Timed quests lead the automatic journey order" },
 		{ name = "lanprite", what = "RestedXP guide cards marked as RestedXP's" },
 		{ name = "cotijelucie", what = "Information mode and showing a stop's quests on the map" },
-		{ name = "InfamousMunky", what = "Timed quests lead the automatic journey order" },
+		{ name = "lanprite", what = "The guide's target button kept its own row under the step" },
 	},
 	inspired = {
 		{ name = "Polestar by Fitz", what = "Ideas for many features" },

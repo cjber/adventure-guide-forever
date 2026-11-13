@@ -449,7 +449,7 @@ function Pins.StepTooltip(tooltip, step, index, travel)
 	end
 	if step.kind == "town" then
 		TownQuests(tooltip, step)
-	elseif step.kind == "turnin" then
+	elseif step.kind == "turnin" or step.kind == "bookhandin" then
 		for _, id in ipairs(step.quests) do
 			QuestLine(tooltip, id, HAND_IN_ICON)
 		end
@@ -500,27 +500,40 @@ local PROVIDER_EVENTS = {
 ---@type table<AGFQuestPin, true>
 local hiddenPins = setmetatable({}, { __mode = "k" })
 
--- The quests whose game pins a numbered stop on `mapID` marks. A stop the player stands in draws no numbered marker,
--- so its quests keep their pins; RingsShown already leaves a wanderer's map alone.
+-- The quests whose game pins a numbered stop on `mapID` marks, kept while the route, the map and the marker switch
+-- stay as they were: a quest-log event then runs no walk of the route's steps and allocates nothing (WFA-13). A stop
+-- the player stands in draws no numbered marker, so its quests keep their pins; RingsShown already leaves a
+-- wanderer's map alone.
+---@type AGFRoute?, integer?, boolean?, table<integer, true>?
+local markedRoute, markedMap, markedRings, markedQuests
 ---@param mapID integer
 ---@return table<integer, true>
 local function MarkedQuests(mapID)
-	local marked = {}
-	if not RingsShown() then
-		return marked
+	local route, rings = ns.Route(), RingsShown()
+	if markedRoute == route and markedMap == mapID and markedRings == rings then
+		return markedQuests --[[@as table<integer, true>]]
 	end
-	for _, step in ipairs(ns.Route().steps) do
-		if step.map == mapID and not step.here then
-			for _, id in ipairs(step.quests or NONE) do
-				marked[id] = true
+	local marked = {}
+	if rings then
+		for _, step in ipairs(route.steps) do
+			if step.map == mapID and not step.here then
+				for _, id in ipairs(step.quests or NONE) do
+					marked[id] = true
+				end
 			end
 		end
 	end
+	markedRoute, markedMap, markedRings, markedQuests = route, mapID, rings, marked
 	return marked
 end
 
+-- The pins one pass walked, cleared at its end so the next pass reuses the table: a quest-log event's pass allocates
+-- nothing of its own (WFA-13).
+local seenPins = {}
+
 -- One pass over the map's quest pins: hide the marked quests, bring back the pins this pass hid, and forget the pins
--- the provider has released. A hidden map has nothing to do, and combat waits for its end redraw.
+-- the provider has released. Nothing marked and nothing hidden is nothing to do, a hidden map has nothing to do, and
+-- combat waits for its end redraw.
 local function RefreshQuestPins()
 	if not map or InCombatLockdown() or not map:IsShown() then
 		return
@@ -530,38 +543,54 @@ local function RefreshQuestPins()
 		return
 	end
 	local marked = MarkedQuests(mapID)
-	local seen = {}
+	if next(marked) == nil and next(hiddenPins) == nil then
+		return
+	end
 	for pin in map:EnumeratePinsByTemplate(QUEST_PINS) do
 		---@cast pin AGFQuestPin
-		seen[pin] = true
+		seenPins[pin] = true
 		if pin.questID and marked[pin.questID] then
-			hiddenPins[pin] = true
-			pin:Hide()
+			if not hiddenPins[pin] then
+				hiddenPins[pin] = true
+			end
+			if pin:IsShown() then
+				pin:Hide()
+			end
 		elseif hiddenPins[pin] then
 			hiddenPins[pin] = nil
-			pin:Show()
+			if not pin:IsShown() then
+				pin:Show()
+			end
 		end
 	end
 	for pin in pairs(hiddenPins) do
-		if not seen[pin] then
+		if not seenPins[pin] then
 			hiddenPins[pin] = nil
 		end
 	end
+	for pin in pairs(seenPins) do
+		seenPins[pin] = nil
+	end
 end
 
--- The provider refreshes first and re-acquires every pin, so the walk waits a frame for the pins it has just drawn.
--- Many events in one frame share one pass, and a closed map has none: opening it redraws through Draw.
----@type boolean?
-local pinsQueued
+-- The pass runs in the frame its event arrived in, from this frame's OnUpdate: after every event handler of that frame
+-- and before the client draws it. The provider registers its own events on the map's OnShow, after these, so its
+-- re-acquired pins exist by then and no pin of a stopped quest shows for a frame (#718). Many events in one frame share
+-- one pass, and a closed map has none: opening it redraws through Draw. Draw never cancels a queued pass: it can run
+-- from a handler that fires before the provider's, which then re-acquires its pins, and the pass's early-outs make a
+-- second run in the frame free.
+local pinPass = CreateFrame("Frame")
+pinPass:Hide()
+pinPass:SetScript("OnUpdate", function(self)
+	self:Hide()
+	RefreshQuestPins()
+end)
+
 local function QueueQuestPins()
-	if pinsQueued or not (map and map:IsShown()) then
+	if pinPass:IsShown() or not (map and map:IsShown()) then
 		return
 	end
-	pinsQueued = true
-	C_Timer.After(0, function()
-		pinsQueued = nil
-		RefreshQuestPins()
-	end)
+	pinPass:Show()
 end
 
 local providerEvents = CreateFrame("Frame")

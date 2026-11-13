@@ -83,6 +83,7 @@ local function Complete()
 		APIKit = { Hub = function() end, NotReady = function() end },
 		TrackerSection = { Create = function() end, Room = function() end },
 		TrackerLine = { SetHeaderTooltip = function() end },
+		Art = { Marker = function() end, Ring = function() end },
 	}
 end
 
@@ -105,6 +106,15 @@ do
 		"Adventure Guide Forever could not start. Reinstall Adventure Guide Forever to fix this.",
 		"the shared warning asks for a reinstall when no other addon is named"
 	)
+end
+
+-- A core without the shared step markers stops it too: the route's numbers are core's art now.
+do
+	local core = Complete()
+	core.Art = nil
+	local ns, messages = Load(core)
+	equal(ns.broken, true, "a missing step markers module stops the addon")
+	equal(#messages, 1, "one line for the missing markers")
 end
 
 -- A core whose API kit lacks the hub this addon's API builds on stops it too.

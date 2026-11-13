@@ -25,6 +25,16 @@ L["BATTLEGROUND_SUBLINE"] = "Ein Schlachtfeld, das Euch offensteht"
 L["BATTLEMASTER_IN"] = "Kampfmeister in %s"
 L["BATTLEMASTER_QUEUE"] = "Für %s anmelden"
 L["BEGINS_STORY"] = "Beginnt eine neue Geschichte"
+L["BOOKS_ALLIANCE"] = "Bücher im Allianzgebiet" -- mt
+L["BOOKS_HORDE"] = "Bücher im Hordengebiet" -- mt
+L["BOOKS_SMALLER_FIRST"] = "Kleinere Gebiete zuerst" -- mt
+L["BOOKS_THEN_LIBRARIAN"] = "%d Bücher, dann der Bibliothekar" -- mt
+L["BOOKS_THEN_LIBRARIAN_ONE"] = "1 Buch, dann der Bibliothekar" -- mt
+L["BOOKS_HANDIN"] = "%d Bücher bei %s abgeben" -- mt
+L["BOOKS_HANDIN_ONE"] = "1 Buch bei %s abgeben" -- mt
+L["BOOKS_UNLOCATED"] = "Ort unbekannt" -- mt
+L["BOOKS_TERRITORY_ALLIANCE"] = "Allianzgebiet" -- mt
+L["BOOKS_TERRITORY_HORDE"] = "Hordengebiet" -- mt
 L["CALLING_QUESTS"] = "%d Quests für Eure Klasse"
 L["CALLING_QUESTS_ONE"] = "1 Quest für Eure Klasse"
 L["CALLING_TASK"] = "Eine Aufgabe für Eure Klasse: %s"
@@ -86,6 +96,7 @@ L["GO_TO_ENTRANCE"] = "Zum Eingang"
 L["GROUP_BATTLEGROUNDS"] = "Schlachtfelder"
 L["GROUP_CONTINUE"] = "Fortsetzen"
 L["GROUP_DUNGEONS"] = "Dungeons"
+L["GROUP_LIBRARY"] = "Bücher der Bibliothek" -- mt
 L["GROUP_MANY"] = "%d brauchen eine Gruppe"
 L["GROUP_NEED_DUNGEON"] = "Dungeon: %s"
 L["GROUP_NEED_ELITE"] = "Elite: Gruppe empfohlen"
@@ -98,6 +109,7 @@ L["MORE_CARDS"] = "%d weitere: Klicken zum Anzeigen"
 L["GUIDE_BACK"] = "Zurück zu den Reisen"
 L["GUIDE_OPEN"] = "Ganzen Führer anzeigen"
 L["GUIDE_OUTLINE"] = "Spätere Quest · Übersicht"
+L["GUIDE_OUTLINE_INSIDE"] = "Im Dungeon angenommen · Übersicht"
 L["GUIDE_OUTLINE_TOOLTIP"] =
 	"Quests in diesem Gebiet. Bevor der Führer eine Quest zum Annehmen empfiehlt, prüft er, ob sie verfügbar ist."
 L["GUIDE_PAGE"] = "%d / %d · %d nächste Schritte · %d spätere Quests"
@@ -108,11 +120,8 @@ L["BEFORE_ITEM_RUNS_OUT"] = "bevor ein Questgegenstand abläuft"
 L["BEFORE_TIMER_RUNS_OUT"] = "bevor die Questzeit abläuft"
 L["HELP_AUDIT"] = "/agf audit - die Questdaten mit dem Spiel abgleichen"
 L["HELP_DUMP"] = "/agf dump - das Layout des Führers für einen Fehlerbericht speichern"
-L["HELP_LEADERBOARD"] =
-	"/agf leaderboard - öffnet Forever Leaderboards auf der Registerkarte dieses Addons (auch /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - den Führer auf der Weltkarte öffnen."
 L["HELP_REPORT"] = "/agf report - einen Bericht zum Kopieren in einen Fehlerbericht anzeigen"
-L["HELP_SHARE"] = "/agf share on|off - schaltet das Teilen der Questabgaben-Summen mit Gilde und Gruppen an oder aus"
 L["HELP_TRACKER"] = "/agf tracker - die Anker der Verfolgung ausgeben (bei Überlappung im Kampf)"
 L["HELP_WHERE"] =
 	"/agf where - den aktuellen Halt des Führers anzeigen, zum Kopieren in einen Bericht über einen falschen Halt"
@@ -435,6 +444,7 @@ L["TRACKER_DRAG_TITLE"] = "Forever-Verfolgung"
 L["TRACKER_DRAG_TOOLTIP"] = "Ziehen zum Verschieben"
 L["TRACKER_HIDDEN_COUNT"] = "%d verborgen" -- mt
 L["TRACKER_HIDDEN_TOOLTIP"] = "%d Quests sind in der Zielverfolgung verborgen, solange diese Reise führt." -- mt
+L["TRACKER_HIDDEN_TOOLTIP_ONE"] = "1 Quest ist in der Zielverfolgung verborgen, solange diese Reise führt." -- mt
 L["TRACKER_HIDDEN_SHOW_ALL"] = "Rechtsklick: Alle Quests zeigen." -- mt
 L["TRACKER_LOADING"] = "Questdaten werden geladen..."
 L["TRACKER_LOCKED_TOOLTIP"] = "Die Verfolgung ist gesperrt. Schaltet Verfolgung sperren aus, um sie zu verschieben."
@@ -468,7 +478,7 @@ L["TWEAKS_OUTDATED"] = "Aktualisiert Tweaks Forever, um Dungeoneingänge zu find
 L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
-L["WHATS_NEW"] = "Quest-Tooltips kennzeichnen Folgequests jetzt mit Then und zeigen deren eigene Schwierigkeitsfarbe." -- mt
+L["WHATS_NEW"] = "Gruppenmitglieder, die den Leitfaden nutzen, können eine gemeinsame Reise teilen." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"
@@ -514,6 +524,16 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 	"Wenn ein Schritt mit einem Questgeber oder Abgabe-NPC spricht, hüpft ein kleiner Pfeil über seinem Namensschild und unter dem Tracker steht eine Ziel-Schaltfläche. Schaltet dies aus, um beides zu verbergen. Der Guide ändert nie Eure Namensschild-Einstellungen."
 L["NPC_HIGHLIGHT_HINT"] =
 	"Freundliche Namensschilder sind aus: Schaltet sie in den Interface-Optionen ein, um zu sehen, wohin Ihr gehen müsst."
+
+L["SYNC_WITH"] = "Synchronisieren mit" -- mt
+L["SYNC_MEMBERS"] = "Gruppenmitglieder mit dem Guide" -- mt
+L["SYNC_NONE"] = "Niemand in Eurer Gruppe nutzt den Guide" -- mt
+L["SYNC_SUBTITLE"] = "Synchronisiert mit %s" -- mt
+L["SYNC_EVERYONE"] = "Alle" -- mt
+L["SYNC_FOR_YOU"] = "Für Euch" -- mt
+L["SYNC_FOR"] = "Für %s" -- mt
+L["SYNC_FOR_YOU_AND"] = "Für Euch und %s" -- mt
+L["SYNC_AND"] = "und" -- mt
 
 L.LEADERBOARD_METRIC = "Abgegebene Quests" -- mt
 L.LEADERBOARD_TOTAL = "gesamt" -- mt

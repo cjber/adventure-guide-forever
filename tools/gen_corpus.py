@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Build the test-only QuestieDB quest corpus into tests/.corpus/ (quests.lua and towns.lua; stdlib only).
+"""Build the test-only QuestieDB quest corpus into tests/.corpus/ (quests.lua, towns.lua and books.lua; stdlib only).
 
 The corpus is the model fixture: one deterministic world for the headless specs, composed by the addon's own
 QuestieSource build over a pinned QuestieDB release, so what the specs plan against is what a player's game carries.
-QuestieDB carries no licence, so the corpus is never committed (WFA-28): it is built here, before the specs run, into
-the gitignored tests/.corpus/ (the package check lays tests/ over the packaged files, so it travels with the smoke
-spec). tools/corpus.lua loads the baked store offline in LuaJIT and writes the two files; this downloads the release
-once into tools/.cache, checks its sha256 against the pin, supplies the client's skill and faction names, and keeps
-the pin. --offline builds from tools/.cache only, as CI does from its cache. The classic-db corpus this replaces is
-gone; tools/gen_quests.py still generates Forever's shipped route geometry from CMaNGOS.
+The corpus is runtime-only and never committed (WFA-28): it is built here, before the specs run, into the gitignored
+tests/.corpus/ (the package check lays tests/ over the packaged files, so it travels with the smoke spec).
+tools/corpus.lua loads the baked store offline in LuaJIT and writes the three files; this downloads the release once
+into tools/.cache, checks its sha256 against the pin, supplies the client's skill and faction names, and keeps the
+pin. --offline builds from tools/.cache only, as CI does from its cache. The classic-db corpus this replaces is gone;
+tools/gen_quests.py still generates Forever's shipped route geometry from CMaNGOS.
 """
 
 import hashlib
@@ -28,12 +28,13 @@ CACHE = gen_quests.CACHE
 CORPUS = ROOT / "tests" / ".corpus"
 FIXTURE = CORPUS / "quests.lua"
 TOWN_FIXTURE = CORPUS / "towns.lua"
+BOOK_FIXTURE = CORPUS / "books.lua"
 # QuestieDB's Forever release, pinned to the tag, the asset name and the asset's sha256. QuestieDB renamed its
 # assets at v1.0.11 to QuestieDB-<version>-<flavour>.zip, so the asset name is pinned beside the tag and moved by
 # tools/refresh_pins.py. The refresh workflow moves all three.
-QUESTIEDB_TAG = "v1.0.13"
-QUESTIEDB_ASSET = "QuestieDB-1.0.13-Forever.zip"
-QUESTIEDB_SHA256 = "f07c6cb18a723c8fba824038ffaaf5de23ab5c8ecd1d9235b122f06a59666f0c"
+QUESTIEDB_TAG = "v1.1.0"
+QUESTIEDB_ASSET = "QuestieDB-1.1.0-Forever.zip"
+QUESTIEDB_SHA256 = "283779bc9b9b3e352be63cb665e86ccc1b29bd893186e03062bcff943f20995c"
 QUESTIEDB_URL = f"https://github.com/Questie/QuestieDB/releases/download/{QUESTIEDB_TAG}/{QUESTIEDB_ASSET}"
 
 
@@ -110,10 +111,10 @@ def main():
     # Built a second time, apart, and compared: a corpus that differs between runs would fail specs at random.
     with tempfile.TemporaryDirectory(prefix="agf-corpus-") as scratch:
         build(Path(scratch), environment)
-        for path in (FIXTURE, TOWN_FIXTURE):
+        for path in (FIXTURE, TOWN_FIXTURE, BOOK_FIXTURE):
             if (Path(scratch) / path.name).read_bytes() != path.read_bytes():
                 raise ValueError(f"{path.relative_to(ROOT)} is not byte-for-byte reproducible")
-    for path in (FIXTURE, TOWN_FIXTURE):
+    for path in (FIXTURE, TOWN_FIXTURE, BOOK_FIXTURE):
         if not path.is_file() or not path.stat().st_size:
             raise ValueError(f"tools/corpus.lua wrote no {path.relative_to(ROOT)}")
         print(f"Wrote {path.relative_to(ROOT)} ({path.stat().st_size:,} bytes)")

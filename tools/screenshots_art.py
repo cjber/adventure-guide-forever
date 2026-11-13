@@ -12,6 +12,7 @@ FOREVER_CORE = Path(os.environ.get("FOREVER_CORE", Path(__file__).resolve().pare
 WOWMOCK = FOREVER_CORE / "tools" / "wowmock"
 ROOT = Path(__file__).resolve().parent.parent
 ADDON_MEDIA = "interface/addons/adventureguideforever/"
+CORE_MEDIA = "interface/addons/forevercore/"
 
 # RestedXP's own mark, read from the installed addon or the exact pinned upstream file: never copied into this addon,
 # never guessed at (docs/screenshots/manifest.txt records the pin). v4.11.36, the release whose v2 theme names it.
@@ -121,13 +122,24 @@ def companion_asset(relative):
     return data
 
 
+def texture_file(path: Path):
+    """A texture in a checkout, named the way the client names it: the extension may be left off."""
+    for candidate in (path, path.with_name(path.name + ".tga"), path.with_name(path.name + ".blp")):
+        if candidate.is_file():
+            return wm.Image.open(candidate).convert("RGBA")
+    sys.exit(f"{path}: texture file not found in the checkout")
+
+
 def texture(ui, ref):
     if isinstance(ref, str):
         path = ref.replace("\\", "/")
         # The addon's own art ships in this repository, not the client's listfile.
         lower = path.lower()
         if lower.startswith(ADDON_MEDIA):
-            return wm.Image.open(ROOT / path[len(ADDON_MEDIA) :]).convert("RGBA")
+            return texture_file(ROOT / path[len(ADDON_MEDIA) :])
+        # ForeverCore's shared art (its step markers) ships in the core checkout the renderer uses, not the client.
+        if lower.startswith(CORE_MEDIA):
+            return texture_file(FOREVER_CORE / path[len(CORE_MEDIA) :])
         # A companion addon's own art (RXPGuides' provider mark) is installed beside this one, never in the client's
         # listfile and never copied here.
         if lower.startswith("interface/addons/rxpguides/"):

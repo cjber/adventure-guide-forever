@@ -167,4 +167,41 @@ end
 equal(hall and hall.title, "The Hall of Thanes", "Forever dungeon: The Hall of Thanes is offered at level 17")
 equal(hall and #hall.steps > 0, true, "Forever dungeon: its card has a way in")
 
+-- #536: every quest filed under the instance is listed, including one the guide cannot send the player outside for.
+-- An Ancient Grudge (96395) has no giver: the data files it under the Hall, so it is picked up inside and the guide
+-- lists it there instead of dropping it from the journey.
+local future = forever.ns.Widgets.GuideOutline(forever.ns.Data, foreverPlayer, {}, hall, hall.steps)
+local listed = {}
+for _, id in ipairs(future) do
+	listed[id] = true
+end
+equal(listed[96395], true, "Forever dungeon: a quest with no giver is listed")
+local stepped = false
+for _, step in ipairs(hall.steps) do
+	for _, id in ipairs(step.quests) do
+		stepped = stepped or id == 96395
+	end
+end
+equal(stepped, false, "Forever dungeon: a quest picked up inside is no step outside")
+equal(hall.subline, "4 quests for this dungeon", "Forever dungeon: the count counts every quest filed under it")
+
+local hallUI = harness.load({
+	player = { level = 17, faction = "Alliance", raceID = 1, classID = 1, map = 1426, x = 0.5, y = 0.5 },
+	charDB = { journey = "dungeon:3065", dungeons = true },
+})
+hallUI.ns.OpenPanel()
+hallUI.flush()
+local labels = {}
+for _, row in
+	ipairs(hallUI.Find(function(entry)
+		return entry:IsVisible() and entry.questID ~= nil
+	end))
+do
+	labels[row.questID] = row.Detail:GetText()
+end
+equal(labels[96395], "Picked up inside · guide outline", "Forever dungeon: the inside quest says so")
+equal(labels[96393], "Later quest · guide outline", "Forever dungeon: a quest with a giver is just later")
+equal(labels[96391], "Later quest · guide outline", "Forever dungeon: a prerequisite outside is not inside")
+equal(#hallUI.errors, 0, "Forever dungeon: the panel draws it without error")
+
 print(("dungeons_spec: %d checks passed"):format(checks))

@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## Dependencies: ForeverCore
-## X-Forever-Core: v1.8.0
+## X-Forever-Core: v1.11.0
 ## Title: Adventure Guide Forever - story levelling and quest routes
 ## Notes: Zone stories as chapters, journeys you pick on the map, and a route walked to each hand-in.
 ## Author: cjber
@@ -33,6 +33,7 @@ Locales\zhTW.lua
 Data\Geometry.lua
 Data\Forever.lua
 Data\ZoneArt.lua
+Data\Territory.lua
 Data\Credits.lua
 Core\Secret.lua
 UI\StepStyle.lua
@@ -45,6 +46,7 @@ Planning\Services.lua
 Planning\Routing.lua
 Planning\Laps.lua
 Planning\Journeys.lua
+Planning\Books.lua
 Planning\Decoration.lua
 Planning\Plan.lua
 Planning\Refresh.lua

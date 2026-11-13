@@ -279,6 +279,12 @@ function Model.StepTitle(data, log, step)
 	elseif step.kind == "battlemaster" then
 		step.verb = "battlemaster"
 		step.title = L.STEP_BATTLEMASTER:format(Model.TownName(data, step))
+	elseif step.kind == "book" then
+		-- A library book the player loots from its object: the builder already named it and its place.
+		step.verb = "book"
+	elseif step.kind == "bookhandin" then
+		-- The library's hand-in: "Hand in N books to <librarian>", ready to hand in.
+		step.verb = "turnin"
 	else
 		step.verb = step.kind == "turnin" and "turnin" or "trainer"
 	end

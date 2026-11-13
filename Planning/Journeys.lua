@@ -670,28 +670,17 @@ local function InDungeon(instance)
 end
 
 -- The dungeon card for `best`: its steps the givers of its quests. Named by the client, in the player's language, and
--- by the data otherwise; an instance the data doesn't name gets no card. Its reason counts the log's
--- quests filed under the instance, which end inside it: "2 of your quests end inside Wailing Caverns".
+-- by the data otherwise; an instance the data doesn't name gets no card. Its count is every quest filed under the
+-- instance that it lists, and its reason counts the log's quests filed under the instance, which end inside it:
+-- "2 of your quests end inside Wailing Caverns".
 ---@param instanceName? fun(id: integer): string?
 ---@param best integer
----@param quests integer how many of its quests the player can take now
-local function DungeonJourney(
-	data,
-	player,
-	completed,
-	log,
-	eligible,
-	prefs,
-	mapName,
-	instanceName,
-	best,
-	quests,
-	entrances
-)
+local function DungeonJourney(data, player, completed, log, eligible, prefs, mapName, instanceName, best, entrances)
 	local candidates, stops, belongs, preparation, groups, chainOf = {}, {}, InDungeon(best), {}, {}, {}
+	local chains = Model.Chains(data, best)
 	-- Every prerequisite chain that reaches one of the instance's quests, through every branch: the card offers the
 	-- reachable next step of each, so following it ends with all of the dungeon's quests in the log.
-	for _, chain in ipairs(Model.Chains(data, best)) do
+	for _, chain in ipairs(chains) do
 		local group = { direct = chain.direct, members = {}, set = {}, done = 0, total = 0 }
 		for _, id in ipairs(chain.members) do
 			local quest = data.quests[id]
@@ -744,7 +733,7 @@ local function DungeonJourney(
 			end
 		end
 	end
-	for _, chain in ipairs(Model.Chains(data, best)) do
+	for _, chain in ipairs(chains) do
 		for _, id in ipairs(chain.direct) do
 			if not completed[id] and not log[id] and not Dropped(id) then
 				Lead(id, {})
@@ -888,6 +877,18 @@ local function DungeonJourney(
 			step.chapter = table.concat(labels, ns.L.LIST_SEPARATOR)
 		end
 	end
+	-- The card counts every quest filed under the instance that the guide lists: the ones open now, the later ones,
+	-- and the ones picked up inside, which have no giver to step to. A prerequisite outside the instance is a step on
+	-- the way, not one of its quests.
+	local listed = 0
+	for _, chain in ipairs(chains) do
+		for _, id in ipairs(chain.direct) do
+			local quest = data.quests[id]
+			if quest and not completed[id] and Model.ForCharacter(quest, player) then
+				listed = listed + 1
+			end
+		end
+	end
 	local name = instanceName and instanceName(best) or data.instances[best].name
 	local L, inside = ns.L, 0
 	for id in pairs(log) do
@@ -905,12 +906,14 @@ local function DungeonJourney(
 			label = group.label,
 		}
 	end
+	local subline = Count(L.DUNGEON_QUESTS_ONE, L.DUNGEON_QUESTS, listed)
 	return {
 		kind = "dungeon",
 		key = "dungeon:" .. best,
 		instance = best,
 		title = name,
-		subline = Count(L.DUNGEON_QUESTS_ONE, L.DUNGEON_QUESTS, quests),
+		subline = subline,
+		count = subline,
 		reason = reason,
 		map = steps[1].map,
 		steps = steps,
@@ -1043,6 +1046,7 @@ local SECTION_OF_KIND = {
 	story = "continue",
 	calling = "continue",
 	nextzone = "zones",
+	library = "library",
 	dungeon = "dungeons",
 	battleground = "battlegrounds",
 }
@@ -1500,7 +1504,6 @@ function Model.Journeys(
 							mapName,
 							instanceName,
 							inst,
-							count,
 							entrances
 						)
 					end,
@@ -1556,6 +1559,11 @@ function Model.Journeys(
 		end, pool)
 	end
 	diversions[#diversions + 1] = prefs.battlegrounds and Battleground(data, player, prefs, mapName) or nil
+	-- The libraries are their own section, so they join the cards once every story and diversion is built.
+	local library = ns.Planner.Books and ns.Planner.Books.Card(data, player, completed, log, prefs, mapName) or nil
+	if library then
+		journeys[#journeys + 1] = library
+	end
 	table.sort(diversions, function(a, b)
 		if a.opened ~= b.opened then
 			return a.opened > b.opened
@@ -1569,7 +1577,7 @@ function Model.Journeys(
 		return a.kind == "dungeon" and a.instance < b.instance
 	end)
 	for _, diversion in ipairs(diversions) do
-		journeys[#journeys + 1] = diversion.build(diversion.quests)
+		journeys[#journeys + 1] = diversion.build()
 		Yield()
 	end
 	SortDungeons(data, player, journeys, dungeonAccepted, dungeonCounts)

@@ -12,7 +12,7 @@ import screenshots_art as drawing
 from screenshots_resolver import map_point
 
 ROOT = Path(__file__).resolve().parent.parent
-NUMBER_DIR = ROOT / "media" / "Numbers"
+NUMBER_DIR = drawing.FOREVER_CORE / "media" / "Numbers"
 NUMBER_IMAGES = {}
 
 # SPF #52's stock quest POIs. Its geometry is SPF's own Path.FindSync, run by LuaJIT in an extracted copy.
@@ -332,7 +332,7 @@ def stop_groups(rects, stops):
 
 
 def marker(number):
-    """Our gold numbered marker art, decoded from the TGA the addon ships (media/Numbers)."""
+    """The gold numbered marker art ForeverCore ships (media/Numbers in the core checkout)."""
     number = max(1, min(number, 10))
     if number not in NUMBER_IMAGES:
         NUMBER_IMAGES[number] = drawing.wm.Image.open(NUMBER_DIR / f"{number}.tga").convert("RGBA")

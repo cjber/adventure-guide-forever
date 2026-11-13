@@ -15,12 +15,7 @@ ns.Dungeons = Dungeons
 ---@param player AGFPlayer
 ---@return boolean
 function Dungeons.ForCharacter(quest, player)
-	return not quest
-		or (
-			(quest.side ~= 1 and quest.side ~= 2 or quest.side == player.side)
-			and (player.raceBit == 0 or Model.HasBit(quest.races, player.raceBit))
-			and (player.classBit == 0 or Model.HasBit(quest.classes, player.classBit))
-		)
+	return not quest or Model.ForCharacter(quest, player)
 end
 
 ---@param data AGFData

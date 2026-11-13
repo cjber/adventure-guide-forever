@@ -78,7 +78,7 @@ assert(represented == 10 and #numbered < 10, "all ten destinations are represent
 local hovered = numbered[1].icon
 local first = hovered.visits[1]
 assert(
-	hovered.marker.file == "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\" .. first.index .. ".tga",
+	hovered.marker.file == "Interface\\AddOns\\ForeverCore\\media\\Numbers\\" .. first.index,
 	"minimap markers wear our numbered marker art"
 )
 assert(hovered.marker:GetWidth() == 24 and hovered.marker:GetHeight() == 24, "a minimap marker is square")

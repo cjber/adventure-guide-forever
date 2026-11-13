@@ -19,8 +19,6 @@ ns.L = {
 	LEADERBOARD_SHARING_OFF = "Sharing is off: nothing is sent or shown. Turn it on with /agf share on.",
 	LEADERBOARD_METRIC = "Quests turned in",
 	LEADERBOARD_TOTAL = "total",
-	HELP_LEADERBOARD = "/agf leaderboard - open Forever Leaderboards on this addon's tab (also /agf stats)",
-	HELP_SHARE = "/agf share on|off - turn sharing of quest turn-in totals with your guild and groups on or off",
 	SETTING_RXP = "Use RestedXP guides",
 	SETTING_RXP_TOOLTIP = "Add the current RestedXP guide to your journey cards, map and tracker. "
 		.. "RestedXP advances guide steps; Shortest Path Forever handles travel. "
@@ -90,6 +88,18 @@ ns.L = {
 		.. "plus quests you added to the route.",
 	JOURNEY_STORY = "%s story",
 	JOURNEY_NEXT_ZONE = "Head to %s",
+	-- The Library books card (issue #706): one territory's books, smaller zones first, ending at the librarian. The
+	-- card's menu picks the territory; the hand-in lists the books the route just picked up.
+	BOOKS_ALLIANCE = "Books in Alliance territory",
+	BOOKS_HORDE = "Books in Horde territory",
+	BOOKS_SMALLER_FIRST = "Smaller zones first",
+	BOOKS_THEN_LIBRARIAN = "%d books, then the librarian",
+	BOOKS_THEN_LIBRARIAN_ONE = "1 book, then the librarian",
+	BOOKS_HANDIN = "Hand in %d books to %s",
+	BOOKS_HANDIN_ONE = "Hand in 1 book to %s",
+	BOOKS_UNLOCATED = "Location unknown",
+	BOOKS_TERRITORY_ALLIANCE = "Alliance territory",
+	BOOKS_TERRITORY_HORDE = "Horde territory",
 	-- A guide card fed by an installed guide addon (#713): the player sees where its steps come from, beside the
 	-- guide's own Clean up my log and zone stories.
 	PROVIDER_CARD_HINT = "Steps from your installed %s guides. "
@@ -99,10 +109,13 @@ ns.L = {
 	GROUP_CONTINUE = "Continue",
 	QUEST_VISIT_WARNING = "Quest visit: %s. This zone is recommended for levels %d-%d.",
 	GROUP_ZONES = "Quest destinations",
+	GROUP_LIBRARY = "Library books",
 	GROUP_DUNGEONS = "Dungeons",
 	GROUP_BATTLEGROUNDS = "Battlegrounds",
 	-- The row under a folded header's last card, saying what the fold hides and that a click opens it.
 	MORE_CARDS = "%d more: click to show",
+	-- The dungeon card's count: every quest filed under the instance, the ones open now, the later ones and the
+	-- ones picked up inside.
 	DUNGEON_QUESTS = "%d quests for this dungeon",
 	DUNGEON_QUESTS_ONE = "1 quest for this dungeon",
 	-- The dungeon card's reason: the log's quests filed under its instance, counted.
@@ -294,6 +307,7 @@ ns.L = {
 	TRACKER_LOADING = "Loading quest data...",
 	TRACKER_HIDDEN_COUNT = "%d hidden",
 	TRACKER_HIDDEN_TOOLTIP = "%d quests are hidden from the tracker while this journey leads.",
+	TRACKER_HIDDEN_TOOLTIP_ONE = "1 quest is hidden from the tracker while this journey leads.",
 	TRACKER_HIDDEN_SHOW_ALL = "Right-click: Show all quests.",
 	TRACKER_SHOW_ALL = "Show all quests",
 	-- While Polestar runs a guide (Polestar.lua): the tracker's one line, and the setting behind it.
@@ -384,6 +398,16 @@ ns.L = {
 	MENU_MAP_PINS = "Show map pins",
 	MENU_GIVERS = "Show quest givers",
 	MENU_TRACKER = "Show in objective tracker",
+	-- Sync Together (#617): the cog menu's checklist of party members running the guide, and the stops it labels.
+	SYNC_WITH = "Sync with",
+	SYNC_MEMBERS = "Party members with the guide",
+	SYNC_NONE = "No one in your party is running the guide",
+	SYNC_SUBTITLE = "Synced with %s",
+	SYNC_EVERYONE = "Everyone",
+	SYNC_FOR_YOU = "For you",
+	SYNC_FOR = "For %s",
+	SYNC_FOR_YOU_AND = "For you and %s",
+	SYNC_AND = "and",
 	MENU_MORE_SETTINGS = "More settings",
 	-- The settings page's index groups, and the index button that opens each one.
 	SETTINGS_GROUP_ROUTE = "Route",
@@ -537,6 +561,7 @@ ns.L = {
 	MENU_UNCHECKED = "[ ] %s",
 	MENU_SUBMENU = "%s >",
 	GUIDE_OUTLINE = "Later quest · guide outline",
+	GUIDE_OUTLINE_INSIDE = "Picked up inside · guide outline",
 	GUIDE_OUTLINE_TOOLTIP = "Quests in this area. Availability is checked before the guide recommends a pickup.",
 	GUIDE_PAGE = "%d / %d · %d next steps · %d later quests",
 	ORDER_DRAG = "Drag to change the order",
@@ -577,7 +602,7 @@ ns.L = {
 	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of the newest
 	-- CHANGELOG entry that has a bold lead, whose version is ns.WHATS_NEW_VERSION; tests/locales_spec.lua checks both.
-	WHATS_NEW = "Quest tooltips: now label successor quests with Then and show their own difficulty colour.",
+	WHATS_NEW = "Party members running the guide can share one journey.",
 	DUNGEON_BOSSES_LOOT = "Bosses and loot",
 	DUNGEON_LOOT_INSTALL = "Install AtlasLoot Classic and its Dungeons and Raids module for bosses and loot.",
 	DUNGEON_LOOT_COMBAT = "Boss loot will load after combat.",
@@ -604,7 +629,7 @@ ns.L = {
 
 -- The release whose WHATS_NEW is the newest headline in CHANGELOG.md. A core sync adds a maintenance release above it
 -- with no bold lead, so the game prints nothing new for that version but still remembers it.
-ns.WHATS_NEW_VERSION = "1.7.5"
+ns.WHATS_NEW_VERSION = "1.8.0"
 
 -- The shared out-of-date warning (Core/ForeverRequire.lua) reads ns.L by the English phrase itself, so these keys are
 -- the sentence. A locale translates the same keys.

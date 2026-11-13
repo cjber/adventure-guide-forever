@@ -102,6 +102,14 @@
 ---@field heights? table<string, table<integer, integer>> by kind ("npc" or "object"): entry -> world height in yards, for an NPC or object with one spawn
 ---@field expiring? table<integer, integer> item ID -> the seconds it lasts in the bags, a day or less (ItemSparse)
 ---@field itemIDs? table<string, integer> a collect item's lower-cased name -> its ID, for the quality colour of its name
+---@field territory? table<integer, integer> uiMapID -> AreaTable.FactionGroupMask (2 Alliance, 4 Horde, 0 contested, 6 both); Data/Territory.lua
+---@field books? AGFBook[] the library books QuestieDB holds, by quest ID ascending (QuestieSource.lua); nil before its build
+-- One library book (Planning/Books.lua): the quest, where its world object spawns, and the librarian who takes it.
+-- QuestieDB supplies every field at runtime; nothing is bundled.
+---@class AGFBook
+---@field id integer the quest ID
+---@field spots {map: integer, x: number, y: number, z?: integer, name: string}[] its object's spawns on placed maps, in map then point order; empty when QuestieDB places none
+---@field finish? {npc?: integer, name: string, map: integer, x: number, y: number, z?: integer} the hand-in NPC and its place
 
 -- Measures between steps on different maps without travel maths (Travel.lua Cost). World coordinates are yards.
 ---@class AGFMapCentre
@@ -130,9 +138,16 @@
 ---@field x number world x, yards
 ---@field y number world y, yards
 
+-- One party member ticked under Sync with and heard from (Core/Party.lua, issue #617).
+---@class AGFPartyMember
+---@field key string "Name-Realm"
+---@field name string the name without its realm
+---@field completed table<integer, true> the quests they have completed
+
 -- What the live state tells the planner. Built by State.lua, consumed by the planner.
 ---@class AGFPlayer
 ---@field party? table<integer, integer> in a party with the setting on (Party.lua): quest ID -> how many party members have it; nil when nothing is shared
+---@field synced? AGFPartyMember[] the ticked party members with a completed set heard (Party.lua), by name then key; nil when not synced
 ---@field notOffered? table<integer, integer> quests marked not offered: quest ID -> the level marked at; one marked at the player's level is unproven, with its own Why line
 ---@field questAvailable? fun(id: integer): boolean
 ---@field level integer
@@ -187,6 +202,7 @@
 ---@field camps? table<string, table<string, true>> the spots "Next spot" passed over this session, by area step key and Model.SpotKey
 ---@field notOffered table<integer, integer> route pickups their giver's window left out: quest ID -> the player's level then (Offers.lua)
 ---@field guideSkips table<string, table<integer, true>> RestedXP guide steps skipped while RestedXP had not reached them, by guide key (RestedXP.lua)
+---@field sync table<string, true> party members ticked under Sync with, by "Name-Realm" (Party.lua)
 ---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
 ---@field dungeons boolean
@@ -194,6 +210,7 @@
 ---@field optimisedRoute? boolean the account-wide planned (beta) route order; nil/false is the nearest-action order
 ---@field showOutgrown? boolean keep zones and dungeons whose quests are grey in the journey choices
 ---@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, the first card drawn
+---@field booksTerritory? integer the Library books card's territory: 1 Alliance, 2 Horde; nil is the player's own faction
 ---@field previewGroups table<string, boolean> the overview headers this character collapsed, by group key; a group with no entry uses its default
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
@@ -231,7 +248,7 @@
 
 -- "town" is a visit to a town (its pickups and agreeing hand-ins), "turnin" a hand-in anywhere else, and "area" or
 -- "dungeon" (a group quest's) where the log's quests under way are done.
----@alias AGFStepKind "guide"|"town"|"turnin"|"area"|"dungeon"|"trainer"|"battlemaster"
+---@alias AGFStepKind "guide"|"town"|"turnin"|"area"|"dungeon"|"trainer"|"battlemaster"|"book"|"bookhandin"
 
 -- Where a quest under way is done next (Steps.lua Nodes): one open objective's area, or the client's point for the
 -- quest with every open objective.
@@ -287,12 +304,14 @@
 ---@field place? string the town's name, else its busiest giver; a turn-in's NPC only where its waypoint agrees; a trainer's NPC
 ---@field zone? string the client's name for `map`, else the data's
 ---@field optional? boolean elite/group or outside the player's level band
+---@field sync? string who the stop is for while synced (#617): "Everyone", "For you", "For <name>" or a list
 ---@field r? number an area's radius in yards, wide enough for all its objectives; 0 for a point
 ---@field planned? table<integer, true> the quests on it the route picks up first, not in the log yet (Laps.lua)
 ---@field returns? table<integer, true> a town's hand-ins the route comes back for once their objectives are done
 ---@field hurry? boolean it leads because a bag item it needs runs out or its quest timer is live (Laps Urgent); a held step yields to it
 ---@field hurryKept? {reason: string?, detail: string?} the step's own reason the urgency line replaced, restored when it ends
 ---@field chapter? string the story card's chapter line, or a dungeon chain's label, on the step that holds its quests
+---@field unlocated? boolean a library book QuestieDB places nowhere: a row with no waypoint
 ---@field shapes? AGFNode[] an area's objective nodes, each its own ring, merged into it
 ---@field here? true step 1 is the area the player stands in, objectives open: nothing guides to it, only on past it
 
@@ -314,7 +333,7 @@
 
 -- The overview's quest log header a journey shows under (Overview.GROUPS): its kind at build time, so no title is
 -- guessed from. "continue" holds the story, Quests in your log and your calling.
----@alias AGFJourneySection "continue"|"zones"|"dungeons"|"battlegrounds"
+---@alias AGFJourneySection "continue"|"zones"|"library"|"dungeons"|"battlegrounds"
 
 -- A quest's place in its chain (Model.Story): the data's `next` links from the chain's head. Later members are IDs
 -- only, so no later chapter's title is ever drawn.
@@ -418,10 +437,14 @@
 ---@field LevelPreference fun(questLevel: integer, playerLevel: integer): integer lower is taken first; at the player's level and one or two below are free, each level above costs twice its distance, and each level further below costs one
 ---@field EXPLORE_SLOT integer the data's need slot for an explore objective (tools/gen_quests.py)
 ---@field ValidPlace fun(place?: {map?: integer, x?: number, y?: number}): boolean? true when `place` has a positive map and x, y in 0..1
+---@field ForCharacter fun(quest: AGFQuest, player: AGFPlayer): boolean its side, race and class fit the character, whatever the data says of its start
 ---@field CouldTake fun(quest: AGFQuest, player: AGFPlayer): boolean the player could ever take it: the side, race and class fit, and the data places its start
 ---@field Hub fun(data: AGFData, place: {map: integer, x: number, y: number}): string? the town `place` stands in, as "map:area"
 ---@field ChainStart fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): integer? a locked quest's earliest prerequisite open now and not orange or red
 ---@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean above the chosen quest level ceiling
+---@field GroupCompleted fun(completed: table<integer, boolean>, synced: AGFPartyMember[]): table<integer, boolean> the quests every synced player has done
+---@field SyncLabel fun(completed: table<integer, boolean>, synced: AGFPartyMember[], ids?: integer[]): string? who a stop is for while synced (#617)
+---@field NameList fun(names: string[]): string the names as a line of people reads
 ---@field AboveCeiling fun(level: integer, player: AGFPlayer): boolean `level` is past the player's quest level ceiling (maxQuestLevelOffset)
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Closes fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): integer[] what taking the quest closes for good that the character could still do, ascending
@@ -452,6 +475,7 @@
 ---@field Player fun(): AGFPlayer
 ---@field Where fun(): integer?, number?, number? the player's map and point on it; nil where the client places them nowhere
 ---@field Completed fun(): table<integer, boolean>
+---@field CompletedVersion fun(): integer how many times the completed set has grown, for a cheap "did it move?"
 ---@field Log fun(): table<integer, AGFLogQuest>
 ---@field OnChange fun(callback: fun(countsOnly: boolean)) countsOnly: a burst of quest-log events only, which may have moved only counts
 ---@field QuestChanged fun() a quest changed outside the client's own events (Questie's live updates), coalesced with them
@@ -624,8 +648,6 @@
 ---@field HELP_REPORT string
 ---@field HELP_ISSUE string
 ---@field HELP_WHERE string
----@field HELP_LEADERBOARD string
----@field HELP_SHARE string
 ---@field REPORT_TITLE string the report window's title
 ---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
 ---@field BEFORE_IT_RUNS_OUT string format: expiring quest item name; the reason a route step is hurried
@@ -743,6 +765,15 @@
 ---@field MENU_GIVERS string
 ---@field MENU_TRACKER string
 ---@field MENU_MORE_SETTINGS string
+---@field SYNC_WITH string the cog menu's Sync Together checklist
+---@field SYNC_MEMBERS string the checklist's title
+---@field SYNC_NONE string the checklist's line when no party member runs the guide
+---@field SYNC_SUBTITLE string format: the names synced with, under the guide title
+---@field SYNC_EVERYONE string a stop every synced player needs
+---@field SYNC_FOR_YOU string a stop only the player needs
+---@field SYNC_FOR string format: the members a stop is for
+---@field SYNC_FOR_YOU_AND string format: the player and the members a stop is for
+---@field SYNC_AND string joins two names in a list
 ---@field SETTINGS_GROUP_ROUTE string
 ---@field SETTINGS_GROUP_MAP string
 ---@field SETTINGS_GROUP_TRACKER string
@@ -784,6 +815,7 @@
 ---@field SETTING_JOURNEY_WATCH_TOOLTIP string
 ---@field TRACKER_HIDDEN_COUNT string
 ---@field TRACKER_HIDDEN_TOOLTIP string
+---@field TRACKER_HIDDEN_TOOLTIP_ONE string the same for one quest
 ---@field TRACKER_HIDDEN_SHOW_ALL string
 ---@field TRACKER_SHOW_ALL string
 ---@field PREVIOUS_PAGE string
@@ -796,6 +828,17 @@
 ---@field JOURNEY_NEXT_ZONE string format: zone name
 ---@field GROUP_CONTINUE string the overview's quest log header over the story, the log and your calling
 ---@field GROUP_ZONES string the header over the "Head to <zone>" cards
+---@field GROUP_LIBRARY string the header over the Library books card
+---@field BOOKS_ALLIANCE string the Library books card in Alliance territory
+---@field BOOKS_HORDE string the Library books card in Horde territory
+---@field BOOKS_SMALLER_FIRST string the Library books card's reason
+---@field BOOKS_THEN_LIBRARIAN string format: count of books the card picks up
+---@field BOOKS_THEN_LIBRARIAN_ONE string the same for one book
+---@field BOOKS_HANDIN string format: count of books, the NPC who takes them
+---@field BOOKS_HANDIN_ONE string format: the NPC who takes one book
+---@field BOOKS_UNLOCATED string a book whose object QuestieDB places nowhere
+---@field BOOKS_TERRITORY_ALLIANCE string the card menu's Alliance territory radio
+---@field BOOKS_TERRITORY_HORDE string the card menu's Horde territory radio
 ---@field GROUP_DUNGEONS string the header over the dungeon cards
 ---@field GROUP_BATTLEGROUNDS string the header over the battleground cards
 ---@field MORE_CARDS string format: how many cards a folded header hides
@@ -846,7 +889,7 @@
 
 ---@class AGFRXPActionsModule
 ---@field Refresh fun() rebuild the secure item and target buttons, or queue the change during combat
----@field Reserve fun(module: AGFTrackerModule) add the action rows' height below the tracker section's own blocks
+---@field Reserve fun(module: AGFTrackerModule, base: number): number add the action rows' height below the tracker section's own blocks
 ---@field Shown fun(): boolean the action rows are on screen, so RestedXP's own item and target windows stay hidden
 
 -- Questie's own visible map icons for information mode (QuestieReveal.lua), feature-detected through QuestieLoader.
@@ -1448,7 +1491,7 @@
 ---@field place AGFPlace
 
 ---@class AGFStep
----@field verb? "pickup"|"turnin"|"objective"|"town"|"trainer"|"battlemaster"
+---@field verb? "pickup"|"turnin"|"objective"|"town"|"trainer"|"battlemaster"|"book"
 ---@field orderKey? string stable identity of this visit, distinguishing repeat visits at a town
 ---@field questTitle? string undecorated objective quest title
 ---@field checklist? AGFTownGiver[]
@@ -1555,6 +1598,7 @@
 ---@field MENU_UNCHECKED string
 ---@field MENU_SUBMENU string
 ---@field GUIDE_OUTLINE string
+---@field GUIDE_OUTLINE_INSIDE string
 ---@field GUIDE_OUTLINE_TOOLTIP string
 ---@field GUIDE_PAGE string
 ---@field ORDER_DRAG string
@@ -1672,6 +1716,7 @@
 
 ---@class AGFWidgets
 ---@field GuideOutline fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, journey: AGFJourney, steps: AGFStep[]): integer[]
+---@field OutlineDetail fun(data: AGFData, journey: AGFJourney, id: integer): string how a future row is labelled, including a dungeon quest picked up inside
 
 ---@class AGFStrings
 ---@field DUNGEON_BOSSES_LOOT string
@@ -1793,6 +1838,7 @@
 ---@field Routing AGFPlannerRouting
 ---@field Laps AGFPlannerLaps
 ---@field Journeys AGFPlannerJourneys
+---@field Books AGFBooksModule
 ---@field Decoration AGFPlannerDecoration
 ---@field Plan AGFPlannerPlan
 
@@ -1881,6 +1927,9 @@
 ---@field Added fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, elsewhere: (fun(quest: AGFQuest): boolean)): integer[]
 ---@field Carry fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, prefs: AGFPrefs, mapName: AGFMapName?, added: integer[], eligible?: integer[]): AGFJourney?
 ---@field Summarise fun(journey: AGFJourney)
+
+---@class AGFBooksModule
+---@field Card fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: AGFMapName): AGFJourney?
 
 ---@class AGFPlannerDecoration
 ---@field FinishRoute fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, route: AGFRoute, last: AGFRoute?, prefs: AGFPrefs)
@@ -2044,7 +2093,7 @@ AdventureGuideForever = nil
 ---@field TargetShown fun(): boolean whether the secure target button is shown
 ---@field Hint fun(step?: AGFStep): string? the friendly-nameplate hint, once a session
 ---@field Refresh fun() recompute the current NPC, arrow and target button
----@field Reserve fun(module: AGFTrackerModule) keep tracker room for the target button
+---@field Reserve fun(module: AGFTrackerModule, base: number): number keep tracker room for the target button
 
 ---@class AGFNamespace
 ---@field NpcHighlight AGFNpcHighlightModule

@@ -37,7 +37,9 @@ CODE = (
     "tools/screenshots_spf.py",
     "tools/screenshots_stock.py",
     "tools/gen_quests.py",
+    "tools/gen_territory.py",
     "Data/ZoneArt.lua",
+    "Data/Territory.lua",
 )
 # Each image and the parts of tests/scenes.lua's run tools/screenshots.py reads for it: a scene, or one of its
 # fields ("panel.map" is the zone every quest-log image is drawn on).
@@ -46,10 +48,15 @@ IMAGES = {
     "spf_minimap.png": ("map", "panel.map"),
     "spf_steps.png": ("steps",),
     "panel.png": ("journeys", "panel.map"),
+    "library.png": ("library_card", "panel.map"),
+    "library_stops.png": ("library_stops", "panel.map"),
+    "library_territory.png": ("library_territory", "panel.map"),
     "chosen.png": ("panel",),
     "panel_four.png": ("journeys_four", "panel.map"),
     "panel_overflow.png": ("journeys_overflow", "panel.map"),
     "search.png": ("search", "panel.map", "panel.pins"),
+    "sync_picker.png": ("sync", "sync_menu", "sync_submenu"),
+    "sync_stops.png": ("sync_stops",),
     "restedxp.png": ("restedxp", "panel.map"),
     "rxp_chosen.png": ("restedxp", "panel.map"),
     "rxp_compact.png": ("rxp_compact", "panel.map"),

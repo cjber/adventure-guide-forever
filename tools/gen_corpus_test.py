@@ -4,7 +4,7 @@
 import re
 import unittest
 
-from gen_corpus import FIXTURE, TOWN_FIXTURE
+from gen_corpus import BOOK_FIXTURE, FIXTURE, TOWN_FIXTURE
 
 
 def span(text, key):
@@ -86,6 +86,17 @@ class CorpusTest(unittest.TestCase):
         for key in ("hubs", "npcs", "skills", "factions"):
             self.assertIn(f"\t{key} = {{", towns)
         self.assertGreater(len(re.findall(r"^\t\t\[\d+\] = \{ name = ", towns, re.M)), 0)
+
+    def test_the_books_carry_their_object_spawns_and_hand_in(self):
+        books = BOOK_FIXTURE.read_text(encoding="utf-8")
+        records = re.findall(r"^\t\{.*$", books, re.M)
+        # The library's books (39 with QuestieDB 1.1.0, down from 40 with 1.0.13: 1.1.0 no longer lists item 215824's
+        # object 423901 among its drops, so 79953 is no longer read as a book), every one with the NPC that takes it.
+        self.assertEqual(len(records), 39)
+        for record in records:
+            self.assertIn("finish = {", record)
+            self.assertIn("spots = {", record)
+        self.assertIn('name = "Garion Wendell", npc = 211033', books)
 
 
 if __name__ == "__main__":

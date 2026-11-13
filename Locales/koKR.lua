@@ -28,6 +28,16 @@ L["BATTLEGROUND_SUBLINE"] = "참여할 수 있는 전장"
 L["BATTLEMASTER_IN"] = "전투모병관: %s"
 L["BATTLEMASTER_QUEUE"] = "%s 대기열 참가"
 L["BEGINS_STORY"] = "새 이야기를 시작합니다"
+L["BOOKS_ALLIANCE"] = "얼라이언스 영토의 책" -- mt
+L["BOOKS_HORDE"] = "호드 영토의 책" -- mt
+L["BOOKS_SMALLER_FIRST"] = "작은 지역부터" -- mt
+L["BOOKS_THEN_LIBRARIAN"] = "%d권의 책, 그다음 사서" -- mt
+L["BOOKS_THEN_LIBRARIAN_ONE"] = "책 1권, 그다음 사서" -- mt
+L["BOOKS_HANDIN"] = "%2$s에게 책 %1$d권을 넘기세요" -- mt
+L["BOOKS_HANDIN_ONE"] = "%s에게 책 1권을 넘기세요" -- mt
+L["BOOKS_UNLOCATED"] = "위치 미확인" -- mt
+L["BOOKS_TERRITORY_ALLIANCE"] = "얼라이언스 영토" -- mt
+L["BOOKS_TERRITORY_HORDE"] = "호드 영토" -- mt
 L["CALLING_QUESTS"] = "직업 퀘스트 %d개"
 L["CALLING_QUESTS_ONE"] = "직업 퀘스트 1개"
 L["CALLING_TASK"] = "직업 과제: %s"
@@ -89,6 +99,7 @@ L["GO_TO_ENTRANCE"] = "입구로 가기"
 L["GROUP_BATTLEGROUNDS"] = "전장"
 L["GROUP_CONTINUE"] = "계속하기"
 L["GROUP_DUNGEONS"] = "던전"
+L["GROUP_LIBRARY"] = "도서관 책" -- mt
 L["GROUP_MANY"] = "파티 필요 %d개"
 L["GROUP_NEED_DUNGEON"] = "던전: %s"
 L["GROUP_NEED_ELITE"] = "정예: 파티 권장"
@@ -101,6 +112,7 @@ L["MORE_CARDS"] = "%d개 더 보기: 클릭하여 표시"
 L["GUIDE_BACK"] = "여정으로 돌아가기"
 L["GUIDE_OPEN"] = "전체 안내서 보기"
 L["GUIDE_OUTLINE"] = "나중 퀘스트 · 안내서 개요"
+L["GUIDE_OUTLINE_INSIDE"] = "던전 안에서 획득 · 안내서 개요"
 L["GUIDE_OUTLINE_TOOLTIP"] =
 	"이 지역의 퀘스트입니다. 안내서는 수락을 추천하기 전에 수행 가능 여부를 확인합니다."
 L["GUIDE_PAGE"] = "%d / %d · 다음 단계 %d개 · 나중 퀘스트 %d개"
@@ -111,12 +123,8 @@ L["BEFORE_ITEM_RUNS_OUT"] = "퀘스트 아이템이 사라지기 전에"
 L["BEFORE_TIMER_RUNS_OUT"] = "퀘스트 제한 시간이 끝나기 전에"
 L["HELP_AUDIT"] = "/agf audit - 퀘스트 데이터를 게임과 대조합니다"
 L["HELP_DUMP"] = "/agf dump - 오류 보고용으로 안내서 배치를 저장합니다"
-L["HELP_LEADERBOARD"] =
-	"/agf leaderboard - 이 애드온 탭에서 Forever Leaderboards를 엽니다 (또한 /agf stats)" -- mt
 L["HELP_OPEN"] = "/agf - 세계 지도에서 안내서를 엽니다."
 L["HELP_REPORT"] = "/agf report - 오류 보고에 복사할 보고서를 표시합니다"
-L["HELP_SHARE"] =
-	"/agf share on|off - 퀘스트 완료 합계를 길드 및 파티와 공유하는 기능을 켜거나 끕니다"
 L["HELP_TRACKER"] = "/agf tracker - 추적기 고정점을 출력합니다 (전투 중 겹칠 때)"
 L["HELP_WHERE"] = "/agf where - 안내서의 현재 정거장을 표시합니다 (잘못된 정거장 보고용)"
 L["HUB_HAND_IN"] = "제출 %d개"
@@ -442,6 +450,8 @@ L["TRACKER_DRAG_TOOLTIP"] = "끌어서 이동"
 L["TRACKER_HIDDEN_COUNT"] = "%d개 숨김" -- mt
 L["TRACKER_HIDDEN_TOOLTIP"] =
 	"이 여정이 이끄는 동안 %d개의 퀘스트가 추적기에서 숨겨져 있습니다." -- mt
+L["TRACKER_HIDDEN_TOOLTIP_ONE"] =
+	"이 여정이 이끄는 동안 퀘스트 1개가 추적기에서 숨겨져 있습니다." -- mt
 L["TRACKER_HIDDEN_SHOW_ALL"] = "오른쪽 클릭: 모든 퀘스트 표시." -- mt
 L["TRACKER_LOADING"] = "퀘스트 데이터 불러오는 중..."
 L["TRACKER_LOCKED_TOOLTIP"] = "추적기가 잠겨 있습니다. 추적기 잠금을 끄면 이동할 수 있습니다."
@@ -476,8 +486,7 @@ L["TWEAKS_OUTDATED"] = "던전 입구를 찾으려면 Tweaks Forever를 업데�
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
-L["WHATS_NEW"] =
-	"퀘스트 툴팁에서 이제 다음 퀘스트를 Then으로 표시하고 고유한 난이도 색상을 보여줍니다." -- mt
+L["WHATS_NEW"] = "가이드를 사용하는 파티원끼리 하나의 여정을 함께할 수 있습니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"
@@ -523,6 +532,16 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 	"단계가 퀘스트를 주거나 받는 NPC와 대화할 때 작은 화살표가 이름표 위에서 튀고 추적기 아래에 대상 버튼이 표시됩니다. 끄면 둘 다 숨깁니다. 안내는 이름표 설정을 바꾸지 않습니다."
 L["NPC_HIGHLIGHT_HINT"] =
 	"우호적 이름표가 꺼져 있습니다. 인터페이스 설정에서 켜면 어디로 가야 하는지 볼 수 있습니다."
+
+L["SYNC_WITH"] = "동기화" -- mt
+L["SYNC_MEMBERS"] = "가이드를 사용하는 파티원" -- mt
+L["SYNC_NONE"] = "파티원 중 가이드를 사용하는 사람이 없습니다" -- mt
+L["SYNC_SUBTITLE"] = "%s와(과) 동기화됨" -- mt
+L["SYNC_EVERYONE"] = "모두" -- mt
+L["SYNC_FOR_YOU"] = "당신을 위해" -- mt
+L["SYNC_FOR"] = "%s을(를) 위해" -- mt
+L["SYNC_FOR_YOU_AND"] = "당신과 %s을(를) 위해" -- mt
+L["SYNC_AND"] = "및" -- mt
 
 L.LEADERBOARD_METRIC = "완료한 퀘스트" -- mt
 L.LEADERBOARD_TOTAL = "총" -- mt

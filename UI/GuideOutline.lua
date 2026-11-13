@@ -175,6 +175,20 @@ function Widgets.GuideOutline(data, player, completed, journey, steps)
 	return ordered
 end
 
+-- How a future row is labelled: a quest filed under the journey's instance with no giver the data can place is
+-- picked up inside the dungeon, so the guide never sends the player outside to look for it.
+---@param data AGFData
+---@param journey AGFJourney
+---@param id integer
+---@return string
+function Widgets.OutlineDetail(data, journey, id)
+	local quest = data.quests[id]
+	if journey.instance and quest and quest.dungeon == journey.instance and not ns.Model.ValidPlace(quest.start) then
+		return ns.L.GUIDE_OUTLINE_INSIDE
+	end
+	return ns.L.GUIDE_OUTLINE
+end
+
 ---@class AGFGuideRow : AGFWindowRow, AGFStepHoverRow
 ---@field step? AGFStep
 ---@field index? integer

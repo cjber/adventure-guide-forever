@@ -1748,7 +1748,8 @@ for id, q in pairs(ns.Data.quests) do
 	end
 end
 equal(count > 3000, true, "full dataset loaded")
--- F15: quests filed under a dungeon or raid carry its instance Map.ID, and every such instance is named.
+-- F15: quests filed under a dungeon or raid carry its instance Map.ID, and every such instance is named. QuestieDB
+-- v1.1.0 adds 11, across eight instances from Blackfathom Deeps to The Hall of Thanes; no raid.
 do
 	local flagged, raids = 0, 0
 	for _, q in pairs(ns.Data.quests) do
@@ -1757,7 +1758,7 @@ do
 			assert(ns.Data.instances[q.dungeon].name ~= "", q.title)
 		end
 	end
-	equal(flagged, 596, "dungeon and raid quests flagged")
+	equal(flagged, 607, "dungeon and raid quests flagged")
 	equal(raids, 283, "raid quests flagged")
 end
 -- Raid quests filed outdoors (typed Raid) are on no card, nor is a raid's quest given outdoors under its instance:
@@ -1813,7 +1814,8 @@ end
 
 -- Story against an independent walk over every chain head in the data (F4 acceptance): a head is a quest with a
 -- `next` that no quest's `next` names. The walker recurses where Model.Story loops, and asserts each total rule
--- on its own: no total on a chain that touches a dangling `next`, a `preAny` or a multi-`pre`.
+-- on its own: no total on a chain that touches a dangling `next`, a `preAny` or a multi-`pre`. QuestieDB v1.1.0's
+-- trace-built relations add 146 heads: 77 with a proven total, 69 shown as a chapter only.
 local quests, named, heads = ns.Data.quests, {}, {}
 for _, q in pairs(quests) do
 	if q.next then
@@ -1871,9 +1873,9 @@ do
 			end
 		end
 	end
-	equal(#heads, 921, "walk: chain heads in the data")
-	equal(totals, 741, "walk: heads whose total the data proves")
-	equal(textOnly, 180, "walk: heads shown as a chapter only")
+	equal(#heads, 1067, "walk: chain heads in the data")
+	equal(totals, 818, "walk: heads whose total the data proves")
+	equal(textOnly, 249, "walk: heads shown as a chapter only")
 	equal(#heads - totals - textOnly, 0, "walk: heads whose next dangles at once")
 end
 

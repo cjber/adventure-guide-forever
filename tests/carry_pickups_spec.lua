@@ -145,4 +145,69 @@ do -- Detours stay small: a giver far off the route waits, and every one offered
 	end
 end
 
+-- A new quest's objective can merge into the visit a carried quest's own is done at, and that visit then sits in the
+-- carried quest's town, not the giver's. It waits for the pickup wherever it is anchored: the card keeps the carried
+-- quest's work, and the new quest's only after its pickup.
+do
+	local merged = {
+		build = "test",
+		source = "fixture",
+		quests = {},
+		zones = { [1] = { name = "Zone", min = 10, max = 30 } },
+		maps = { [1] = { name = "Zone", continent = 1, cx = 0, cy = 0, sx = 10000, sy = 10000 } },
+		continents = { [1] = { x = 0, y = 0 } },
+		hubs = { [1] = { name = "Town One" }, [2] = { name = "Town Two" } },
+		towns = { [1] = {}, [2] = {} },
+	}
+	-- The carried quest is worked at 0.60 and handed in at Town One, where the player stands.
+	merged.quests[100] = Quest(0.6, 0.5, 1)
+	-- The new quest is given and handed in at Town Two, 200 yards on, and worked at the same spot.
+	merged.quests[200] = Quest(0.6, 0.5, 2)
+	merged.quests[200].start = Place(0.62, 0.5, 2, "Giver")
+	merged.quests[200].finish = Place(0.62, 0.5, 2, "Ender")
+	local player = {
+		level = 20,
+		maxLevel = 60,
+		side = 1,
+		raceBit = 1,
+		classBit = 1,
+		map = 1,
+		x = 0.5,
+		y = 0.5,
+		logMax = 40,
+	}
+	local log = {
+		[100] = {
+			id = 100,
+			title = "Carried",
+			level = 20,
+			complete = false,
+			objectives = { { type = "monster", done = false, have = 0, need = 1 } },
+		},
+	}
+	local carry = Carry(Model.Plan(merged, player, {}, log, { quests = true, dungeons = false, skipped = {} }))
+	local pickup, shared = nil, nil
+	for index, step in ipairs(carry.steps) do
+		for _, id in ipairs(step.pickups or {}) do
+			if id == 200 then
+				pickup = index
+			end
+		end
+		for _, objective in ipairs(step.objectives or {}) do
+			if objective.id == 200 then
+				shared = index
+			end
+		end
+	end
+	equal(pickup ~= nil, true, "merged: the new quest is still offered")
+	equal(shared ~= nil, true, "merged: its work is planned, not dropped")
+	equal(shared > pickup, true, "merged: and only after its pickup")
+	-- The carried quest's work keeps the same visit: one area, both quests' objectives.
+	local carried = false
+	for _, objective in ipairs(carry.steps[shared].objectives) do
+		carried = carried or objective.id == 100
+	end
+	equal(carried, true, "merged: one visit for both quests' objectives")
+end
+
 print("carry_pickups_spec: " .. checks .. " checks passed")

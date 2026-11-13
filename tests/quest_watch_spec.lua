@@ -76,6 +76,10 @@ check(
 	"the tooltip says how many are hidden"
 )
 check(table.concat(h.tooltip, "\n"):find(h.ns.L.TRACKER_HIDDEN_SHOW_ALL, 1, true) ~= nil, "and how to show them")
+check(
+	table.concat(h.tooltip, "\n"):find(h.ns.L.TRACKER_HIDDEN_TOOLTIP_ONE, 1, true) == nil,
+	"the two-quest line is not the one-quest line"
+)
 
 -- The player tracks one of their own quests by hand while the journey leads: it stays, and the count drops. The
 -- header keeps the journey's whole title on one line, narrowed so the client ellipsises it before the count.
@@ -88,6 +92,11 @@ h.flush()
 equal(Watched(h, 850), true, "a quest the player tracks by hand stays tracked")
 equal(h.ns.QuestWatch.Hidden(), 1, "and is no longer counted as hidden")
 equal(h.tracker.hiddenText:GetText(), h.ns.L.TRACKER_HIDDEN_COUNT:format(1), "the count follows")
+h.tooltip = {}
+h.tracker.Header.scripts.OnEnter(h.tracker.Header)
+local oneLine = table.concat(h.tooltip, "\n")
+check(oneLine:find(h.ns.L.TRACKER_HIDDEN_TOOLTIP_ONE, 1, true) ~= nil, "the tooltip says one quest is hidden")
+check(oneLine:find(h.ns.L.TRACKER_HIDDEN_TOOLTIP:format(1), 1, true) == nil, "not the plural line")
 local heading = h.tracker.Header.Text
 equal(heading:GetText(), journey.title, "the full journey title is the header's text")
 equal(heading.wordWrap, false, "the title stays on one line")

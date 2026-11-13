@@ -78,7 +78,7 @@ function Highlight.StepNpc(step)
 			name, npc = spot.name, spot.npc
 		end
 		return name and { name = name, npc = npc } or nil
-	elseif step.kind == "turnin" then
+	elseif step.kind == "turnin" or step.kind == "bookhandin" then
 		local quest = ns.Data.quests[step.quests[1]]
 		local finish = quest and quest.finish
 		if finish and finish.name then
@@ -187,18 +187,17 @@ local function ModuleVisible(module)
 	return module:IsVisible() and not module.isCollapsed
 end
 
+-- The section's content height the button hangs below, from the height the last layout left: `contentsHeight`
+-- includes the button's own reservation between layouts, so this is the section's content again.
 ---@param module AGFTrackerModule
 ---@return number
 local function BaseHeight(module)
-	local reserved = module.npcHighlightReserved or 0
-	if (module.contentsHeight or 0) < reserved then
-		reserved = 0
-	end
-	return math.max(0, (module.contentsHeight or 0) - reserved)
+	return math.max(0, (module.contentsHeight or 0) - (module.npcHighlightReserved or 0))
 end
 
 ---@param module AGFTrackerModule
-local function Anchor(module)
+---@param base number the section's own content height, which the button hangs below
+local function Anchor(module, base)
 	if InCombatLockdown() or not targetRoot then
 		return
 	end
@@ -211,7 +210,7 @@ local function Anchor(module)
 	targetRoot:SetFrameStrata(module:GetFrameStrata())
 	targetRoot:SetFrameLevel(module:GetFrameLevel() + 5)
 	targetRoot:ClearAllPoints()
-	targetRoot:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left * scale, (top - BaseHeight(module)) * scale - ROW_GAP)
+	targetRoot:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left * scale, (top - base) * scale - ROW_GAP)
 end
 
 local function ClearTarget()
@@ -255,7 +254,7 @@ local function UpdateTarget()
 	ActionButton.SetKeybind(targetButton, "AdventureGuideForeverNpcTarget")
 	targetRoot:SetSize(ITEM_SIZE, ITEM_SIZE)
 	targetRoot:Show()
-	Anchor(module)
+	Anchor(module, BaseHeight(module))
 	if not lastTargetShown then
 		lastTargetShown = true
 		module:MarkDirty()
@@ -267,15 +266,22 @@ function Highlight.TargetShown()
 	return targetRoot ~= nil and targetRoot:IsShown()
 end
 
--- The tracker's room for the target button, kept beside its own layout like RestedXP's action rows.
+-- The tracker's room for the target button, kept beside its own layout like RestedXP's action rows. `base` is the
+-- section's own content height after the layout reset `contentsHeight`, plus any rows reserved before this one.
 ---@param module AGFTrackerModule
-function Highlight.Reserve(module)
+---@param base number
+---@return number contentsHeight the section's height with the button's room
+function Highlight.Reserve(module, base)
 	local shown = Enabled()
 		and activeNpc ~= nil
 		and ns.Setting("showTracker")
 		and ModuleVisible(module)
 		and targetRoot ~= nil
 		and targetRoot:IsShown()
+	-- Nothing of the section's own is on screen: the button would hang over the section below.
+	if shown and base <= 0 then
+		shown = false
+	end
 	if not InCombatLockdown() then
 		if not shown then
 			if targetRoot then
@@ -285,32 +291,17 @@ function Highlight.Reserve(module)
 			targetRoot:Show()
 		end
 	end
-	local height = shown and ITEM_SIZE or 0
-	local reserved = module.npcHighlightReserved or 0
-	if (module.contentsHeight or 0) < reserved then
-		reserved = 0
+	local extra = shown and ITEM_SIZE + ROW_GAP or 0
+	module.npcHighlightReserved = extra > 0 and extra or nil
+	module.contentsHeight = base + extra
+	if extra > 0 and module.UpdateHeight then
+		module:UpdateHeight()
 	end
-	local base = (module.contentsHeight or 0) - reserved
-	if height <= 0 or base <= 0 then
-		if reserved > 0 then
-			module.contentsHeight = base
-			module.npcHighlightReserved = nil
-			if module.UpdateHeight then
-				module:UpdateHeight()
-			end
-		end
-	else
-		local extra = height + ROW_GAP
-		module.contentsHeight = base + extra
-		module.npcHighlightReserved = extra
-		if module.UpdateHeight then
-			module:UpdateHeight()
-		end
-	end
-	appliedHeight = height
+	appliedHeight = shown and ITEM_SIZE or 0
 	if not InCombatLockdown() then
-		Anchor(module)
+		Anchor(module, base)
 	end
+	return module.contentsHeight
 end
 
 -- Friendly nameplates off: one hint a session, as the tracker's own muted objective line. Nil otherwise.

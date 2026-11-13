@@ -53,6 +53,69 @@ local function Load(spf, optIn, fresh, journey, carried, extra)
 	return h
 end
 
+-- Sync Together (#617): a party of members running the guide, each heard from with a completed set, and the given
+-- members ticked under Sync with. `members` is { { name = "Barry Bogwhistle", done = set, synced = true }, ... }.
+local function Sync(h, members)
+	local G = h.G
+	local units = {}
+	for index, member in ipairs(members) do
+		units["party" .. index] = member.name
+	end
+	G.LE_PARTY_CATEGORY_HOME = 1
+	G.IsInGroup = function(category)
+		return category == 1
+	end
+	G.IsInRaid = function()
+		return false
+	end
+	G.GetNormalizedRealmName = function()
+		return "Realm"
+	end
+	G.UnitExists = function(unit)
+		return units[unit] ~= nil
+	end
+	G.UnitName = function(unit)
+		if unit == "player" then
+			return "Me"
+		end
+		return units[unit]
+	end
+	G.C_QuestLog.IsUnitOnQuest = function()
+		return false
+	end
+	G.C_ChatInfo = {
+		RegisterAddonMessagePrefix = function()
+			return 0
+		end,
+		SendAddonMessage = function()
+			return 0
+		end,
+	}
+	G.Enum = setmetatable({
+		SendAddonMessageResult = { Success = 0, AddonMessageThrottle = 3, ChannelThrottle = 8 },
+	}, { __index = G.Enum })
+	h.fire("GROUP_ROSTER_UPDATE")
+	h.flush()
+	for index, member in ipairs(members) do
+		local done = {}
+		for id in pairs(member.done) do
+			done[#done + 1] = id
+		end
+		table.sort(done)
+		local pages = assert(h.ns.Party.Encode({}, done, false, index))
+		for _, text in ipairs(pages) do
+			h.fire("CHAT_MSG_ADDON", "AGFParty", text, "PARTY", member.name .. "-Realm")
+		end
+	end
+	h.flush()
+	for _, member in ipairs(members) do
+		if member.synced then
+			h.ns.Party.Toggle(member.name .. "-Realm")
+		end
+	end
+	h.flush()
+end
+
 -- The guide's panel after the layout pass: rects in, OnSizeChanged run, then the refresh the client's next frame
 -- would do with the laid-out sizes.
 local function Panel(h, scene, height)
@@ -166,6 +229,39 @@ h.ns.Invalidate()
 h.flush()
 out.journeys_four = Panel(h, "journeys_four")
 out.journeys_overflow = Panel(h, "journeys_overflow", 330)
+
+-- The Library books section on its own: a fresh character, every other card turned down, so the overview's card, its
+-- book mark, its goal gate and its stops are all in the panel.
+h = Load("v1", false, true)
+h.flush()
+for _, journey in ipairs(h.ns.Route().journeys) do
+	if journey.kind ~= "library" then
+		h.ns.NotInterested(journey.key, journey.title)
+	end
+end
+h.ns.Invalidate()
+h.flush()
+out.library_card = Panel(h, "library_card")
+
+-- The library's own journey, Horde territory first: smaller zones first, the hand-in last.
+h = Load("v1", false, false, "library")
+h.flush()
+out.library_stops = Panel(h, "library_stops")
+local library
+for _, journey in ipairs(h.ns.Route().journeys) do
+	library = journey.kind == "library" and journey or library
+end
+local libraryOwner = h.G.CreateFrame("Button", nil, h.G.UIParent)
+h.ns.Menu.Journey(libraryOwner, library)
+out.library_territory = Panel(h, "library_territory")
+out.library_territory.menu = {}
+for index, entry in ipairs(h.menu.entries) do
+	out.library_territory.menu[index] = {
+		kind = entry.kind,
+		text = entry.text,
+		selected = entry.isSelected and entry.isSelected() or nil,
+	}
+end
 
 -- The search: the Call of quests a level-18 orc shaman sees, the locked ones saying why.
 h = Load(false, false, false, STORY)
@@ -377,6 +473,66 @@ dofile("tests/rxp_fixture.lua")(h, nil, true)
 local setup = assert(h.G.AdventureGuideForeverGuideSetup)
 h.SetRects(setup, input.rects.guide_setup or {})
 out.guide_setup = { layout = h.ns.DumpLayout(setup, h.Describe) }
+
+-- Sync Together (#617): the cog's Sync with checklist, and the stops a synced journey labels. The party's completed
+-- sets are invented for the scene; the route is the fixture's. The player has done the Dry Hills stops, so those are
+-- one member's alone, while the Crossroads and Forgotten Pools stops are shared by two and three of the party.
+h = Load("v1", false, false, STORY)
+local sharedRoute = h.ns.Route()
+local routeQuests = {}
+for _, step in ipairs(sharedRoute.steps) do
+	for _, id in ipairs(step.quests or {}) do
+		routeQuests[id] = true
+	end
+end
+local DRY_HILLS = { 95494, 95495, 95507, 95508, 95621 }
+local dryHills = {}
+for _, id in ipairs(DRY_HILLS) do
+	dryHills[id] = true
+	h.ns.State.Completed()[id] = true
+end
+h.ns.Invalidate()
+h.flush()
+local bogwhistle, puddingfoot, puddingstone = {}, {}, {}
+for id in pairs(routeQuests) do
+	-- Bogwhistle has done everything but the Crossroads hand-in, the second Forgotten Pools quest and the Dry Hills
+	-- stops; Puddingfoot still needs the fungus and Kolkar work; Puddingstone still needs the Crossroads errand. The
+	-- Forgotten Pools label then names both members besides Puddingstone and wraps onto a second line, which the
+	-- scene shows is not cut.
+	bogwhistle[id] = id ~= 845 and id ~= 855 and not dryHills[id] or nil
+	puddingfoot[id] = id ~= 848 and id ~= 850 or nil
+	puddingstone[id] = id ~= 869 or nil
+end
+Sync(h, {
+	{ name = "Barry Bogwhistle", done = bogwhistle, synced = true },
+	{ name = "Barry Puddingfoot", done = puddingfoot, synced = true },
+	{ name = "Barry Puddingstone", done = puddingstone, synced = true },
+})
+out.sync = Panel(h, "sync")
+out.sync_stops = Panel(h, "sync_stops")
+
+-- The cog menu the picker draws: its own entries, the Sync with row and the checklist under it.
+local menuOwner = h.G.CreateFrame("Button", nil, h.G.UIParent)
+h.G.ForeverCore.ContextMenu(menuOwner, h.ns.Menu.Settings)
+local function MenuEntries(description)
+	local list = {}
+	for _, entry in ipairs(description.entries) do
+		local selected
+		if type(entry.isSelected) == "function" then
+			selected = entry.isSelected()
+		end
+		list[#list + 1] = { kind = entry.kind, text = entry.text, selected = selected }
+	end
+	return list
+end
+out.sync_menu = { entries = MenuEntries(h.menu), syncRow = 0 }
+for index, entry in ipairs(h.menu.entries) do
+	if entry.text == h.ns.L.SYNC_WITH then
+		out.sync_menu.syncRow = index
+		out.sync_menu.entries[index].submenu = true
+		out.sync_submenu = MenuEntries(entry)
+	end
+end
 
 -- Information mode keeps the map host and falls back to AGF pins without Questie.
 h = Load("v1", true, false, STORY)

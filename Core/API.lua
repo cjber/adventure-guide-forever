@@ -47,8 +47,12 @@ local function Kind(step)
 	if step.kind == "guide" then
 		return "guide"
 	end
+	if step.verb == "book" then
+		-- A library book is looted from its world object: the API's pickup, not a kind of its own.
+		return "pickup"
+	end
 	if step.verb then
-		return step.verb
+		return step.verb --[[@as AGFAPIStopKind]]
 	end
 	local kind = step.kind --[[@as string]]
 	return KINDS[kind] or "guide"

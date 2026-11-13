@@ -64,7 +64,6 @@ local DEFAULTS = {
 	followQuest = true,
 	-- One chat line after an update (WhatsNew).
 	whatsNew = true,
-	-- Share small cumulative activity rows over guild/group addon channels; opt-out, so only an explicit off stops it.
 	-- Beta: the planned route order (chapter lead, town look-ahead, committed order); false is the simple
 	-- nearest-action order, the default (docs/design.md §4.1).
 	optimisedRoute = false,
@@ -106,6 +105,8 @@ local PREFS_DEFAULTS = {
 	notOffered = {},
 	-- RestedXP guide steps skipped while RestedXP had not reached them, by guide key: step index -> true (RestedXP.lua).
 	guideSkips = {},
+	-- Party members ticked under Sync with (Party.lua), by "Name-Realm"; a member who leaves is unticked.
+	sync = {},
 }
 
 ---@type table<string, any>?
@@ -276,6 +277,15 @@ local function LoadCharDB()
 	for key, text in pairs(type(loaded.asides) == "table" and loaded.asides or {}) do
 		if type(key) ~= "string" or type(text) ~= "string" then
 			loaded.asides[key] = nil
+		end
+	end
+	-- Members ticked under Sync with: a key ("Name-Realm") set to true, nothing else (Party.lua).
+	if type(loaded.sync) ~= "table" then
+		loaded.sync = {}
+	end
+	for key, value in pairs(loaded.sync) do
+		if type(key) ~= "string" or value ~= true then
+			loaded.sync[key] = nil
 		end
 	end
 	-- The zone picked in the old "Where next?" cards: nothing offers that choice any more, so none is kept.
@@ -569,9 +579,9 @@ end
 ---@param step AGFStep
 ---@return integer[]
 function ns.LogQuests(step)
-	local quests = (step.kind == "town" and step.handins)
-		or ((step.kind == "turnin" or step.kind == "area" or step.kind == "dungeon") and step.quests)
-		or {}
+	local kind = step.kind
+	local tracked = kind == "turnin" or kind == "area" or kind == "dungeon" or kind == "book" or kind == "bookhandin"
+	local quests = (kind == "town" and step.handins) or (tracked and step.quests) or {}
 	if not step.planned then
 		return quests
 	end
@@ -1248,8 +1258,6 @@ local function Slash(msg)
 		ns.Print(L.HELP_ISSUE)
 		ns.Print(L.HELP_WHERE)
 		ns.Print(L.HELP_AUDIT)
-		ns.Print(L.HELP_LEADERBOARD)
-		ns.Print(L.HELP_SHARE)
 		ns.Print(L.HELP_DUMP)
 		ns.Print(L.HELP_TRACKER)
 	end

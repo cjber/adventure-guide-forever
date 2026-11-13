@@ -90,6 +90,7 @@ end
 
 ---@class AGFTrackerModule : ObjectiveTrackerModuleTemplate, ForeverTrackerModule
 ---@field headerText? string the header the section shows now
+---@field hasContents? boolean whether the section laid out a block of its own this layout
 ---@field rxpActionsReserved? number the height the RestedXP action rows already added to contentsHeight
 ---@field npcHighlightReserved? number the height the next-NPC target button already added to contentsHeight
 ---@field hiddenText? FontString the grey "%d hidden" count beside the header
@@ -486,6 +487,11 @@ function ModuleMixin:LayoutContentsBase()
 	local block = self:GetBlock(step.key)
 	block:SetHeader(ns.StepStyle.StepTitle(step, ns.Overview.VerbMarkup(step, 14) .. step.title))
 	local line = 0
+	-- Who the stop is for while synced (#617), right under its title.
+	if step.sync then
+		line = line + 1
+		block:AddObjective(line, step.sync)
+	end
 	if step.rxpIndex then
 		GuideSection(self, block, step)
 		return
@@ -538,7 +544,9 @@ function ModuleMixin:LayoutContentsBase()
 	end
 	local resume = ns.Resume(step)
 	-- A lone hand-in, a turn-in or a town's, is titled "Turn in: %s" (L.TURN_IN), which already says it is ready.
-	local handIn = step.kind == "turnin" or (step.kind == "town" and #step.quests == 1 and #step.handins == 1)
+	local handIn = step.kind == "turnin"
+		or step.kind == "bookhandin"
+		or (step.kind == "town" and #step.quests == 1 and #step.handins == 1)
 	-- Mid-line, a reason that is a sentence of its own ("Continues a story you started") loses its capital; German keeps
 	-- it, since there a capital may begin a noun ("Quests in Arbeit").
 	if resume and GetLocale() ~= "deDE" then
@@ -577,16 +585,24 @@ function ModuleMixin:LayoutContentsBase()
 	self:LayoutBlock(block)
 end
 
--- RestedXP's secure item and target buttons sit inside this section (#334). Their height is added after the section's
--- own blocks lay out, so the column reserves room for them and no section below overlaps.
+-- RestedXP's secure item and target buttons sit inside this section (#334), the talk step's NPC after them (#401).
+-- Their room is added after the section's own blocks lay out, so the column reserves it and no section below overlaps.
+-- The layout resets contentsHeight before it builds the blocks, so the height read here is that content alone: each
+-- row adds its room once, and a second layout must not take it off again (#787).
 local Contents = ModuleMixin.LayoutContentsBase
 function ModuleMixin:LayoutContents()
 	Contents(self)
+	local base = self.contentsHeight or 0
+	-- A section with no block of its own draws nothing, so its rows have no line to hang under and would sit over the
+	-- section below.
+	if self.hasContents == false then
+		base = 0
+	end
 	if ns.RXPActions then
-		ns.RXPActions.Reserve(self)
+		base = ns.RXPActions.Reserve(self, base) or base
 	end
 	if ns.NpcHighlight then
-		ns.NpcHighlight.Reserve(self)
+		ns.NpcHighlight.Reserve(self, base)
 	end
 end
 
@@ -651,7 +667,8 @@ if module then
 			end
 			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 			GameTooltip_SetTitle(GameTooltip, module.headerText or L.TITLE)
-			GameTooltip_AddNormalLine(GameTooltip, L.TRACKER_HIDDEN_TOOLTIP:format(count))
+			local hidden = count == 1 and L.TRACKER_HIDDEN_TOOLTIP_ONE or L.TRACKER_HIDDEN_TOOLTIP:format(count)
+			GameTooltip_AddNormalLine(GameTooltip, hidden)
 			GameTooltip_AddNormalLine(GameTooltip, L.TRACKER_HIDDEN_SHOW_ALL)
 			GameTooltip:Show()
 		end)

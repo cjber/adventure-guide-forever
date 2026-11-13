@@ -8,6 +8,7 @@
 Adventure Guide Forever turns levelling into the zone's story: chapters you finish, journeys you pick on the map, dungeons with their quests and prerequisites, and a route walked for you to the next hand-in.<br>
 <a href="https://github.com/cjber/adventure-guide-forever/actions/workflows/ci.yml"><img src="https://github.com/cjber/adventure-guide-forever/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 <a href="https://github.com/cjber/adventure-guide-forever/releases/latest"><img src="https://img.shields.io/github/v/release/cjber/adventure-guide-forever" alt="Latest release"></a>
+<a href="https://www.curseforge.com/wow/addons/adventure-guide-forever"><img src="https://img.shields.io/curseforge/dt/1711538?label=CurseForge%20downloads" alt="CurseForge downloads"></a>
 <br><br><a href="https://github.com/sponsors/cjber"><img src="docs/github-sponsors-button.png" alt="Sponsor me on GitHub"></a> <a href="https://ko-fi.com/cjber"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support me on Ko-fi"></a>
 </p>
 
@@ -31,6 +32,8 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 - **Zone stories.** Each zone's quest chains read as chapters, such as *Chapter 3 of 7*, on the journey card, the map and the tracker, without naming later quests. Finishing a story shows a short popup, once per character, then moves on to the next zone for your level.
 - **Journeys.** Pick a journey on the map: follow a zone's story, find nearby zones for your level, take class quests or tidy your log. Each journey explains why it fits.
+- **Library books.** A Library books journey gathers the books in your faction's territory and the contested zones, then ends at the librarian who takes them.
+- **Play together.** Tick party members who run the guide under *Sync with*, and the route plans the quests any of you still needs. Each stop says who it is for.
 - **Dungeons.** Read a dungeon's quests and prerequisites, then visit its givers as a numbered route. Right-click a dungeon card for [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) bosses, drops and item tooltips.
 - **A route walked for you.** Choose a journey and Shortest Path Forever takes each stop in order, on foot, by flight or by boat, with its minutes on the card. Its tracker sits above Shortest Path's directions.
 - **Quests in your log.** Finishes what you already carry so the log empties instead of growing. Ready hand-ins come first, and towns group their givers into checklists.
@@ -81,7 +84,6 @@ Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-
 | `/agf timing` | Print where the login's wait went, for a slow-login report |
 | `/agf tracker` | Print the tracker anchors for an overlap report |
 | `/agf audit` | Compare the quest data with the game and report its source |
-| `/agf share on\|off` | Turn sharing of your quest turn-in total with guild and groups on or off |
 | `/agf dump` | Save the drawn layout; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
 
 Open the guide from its world-map tab, its minimap button or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including tracking route quests and detaching the shared Forever tracker. Its Forever addons page lists all five Forever addons, with a box to turn off suggestions.
@@ -143,7 +145,7 @@ Data comes from [wago.tools](https://wago.tools), [CMaNGOS classic-db](https://g
 
 <!-- forever-credits:start -->
 
-Thanks to starkovsky, InfamousMunky, sampconrad, VinzNL, fuguer-ai, rhednak, jechten, Gnatz_0815, CodeHoax, eliasbusato, wfournier, methabolic, kragmars, Naburiel, vladsnz, jixxor, lanprite, cotijelucie and everyone who reported a bug or asked for a feature.
+Thanks to InfamousMunky, starkovsky, sampconrad, lanprite, VinzNL, fuguer-ai, rhednak, jechten, Gnatz_0815, CodeHoax, eliasbusato, wfournier, methabolic, kragmars, Naburiel, vladsnz, jixxor, cotijelucie and everyone who reported a bug or asked for a feature.
 
 <!-- forever-credits:end -->
 

@@ -12,10 +12,49 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **A dungeon card counts every quest for the dungeon.** The number under a dungeon's name now counts every quest filed under it: the ones to pick up now, the ones that open after another step, and the ones you pick up inside. The full guide marks a quest with no giver outside as picked up inside, so The Hall of Thanes now shows An Ancient Grudge (#536).
+- **The tracker's hidden count says "1 quest is hidden", not "1 quests are".** Hovering the guide's tracker header while the journey hides exactly one quest now uses a one-quest line in every language, and two or more keep the plural line (#752).
+- **Russian players no longer see empty boxes between parts of a line.** The guide now separates those parts with a bullet, which the Russian client's font draws, instead of a middle dot it does not. Found from a report by XaksFlaX on GitHub (cjber/shortest-path-forever#838).
 - **RestedXP guide cards now carry RestedXP's mark.** The guides you can choose, and the one you follow, show the RestedXP logo at the card's top right, and their tooltips say the steps come from your installed guides rather than from Adventure Guide's own zone stories or Clean up my log, so the two kinds are easy to tell apart. Thanks to lanprite for the report (#713).
-
 - **Browse journeys without starting a route.** Information only in the Route settings keeps the journey's quest information and your tracked quests. Clicking a stop shows its quests with Questie's existing map pins, or marks the stop on the map when that reveal is unavailable. Thanks to cotijelucie for the idea (#715).
 - **Timed quests go first:** A quest with a live timer moves its objectives and its hand-in ahead in the automatic journey order, and the step says why. Your own saved order and quest dependencies still win, and a failed, expired or missing quest timer never adds urgency. (#709)
+
+## [1.8.1] - 2026-11-13
+
+<!-- forever-core-sync -->
+
+- Ships with the same shared code as your other Forever addons, so they keep working together.
+
+## [1.8.0] - 2026-11-13
+
+<!-- discord-image: docs/screenshots/sync_picker.png -->
+
+- **Party members running the guide can share one journey.** Tick one or more of them under **Sync with** in the guide's cog menu, and the route plans the quests anyone you are synced with still needs, so you can do them together instead of catching up alone. Every stop says who it is for, "Everyone", "For you", or the names of the members who need it, on its own line so a long list is never cut, and the line under the guide's title names who you are synced with. A ticked member who leaves the party is unticked, and the party message now carries each player's completed quests too. Sync needs only Adventure Guide Forever (#617).
+- **A Library books journey collects the books for you.** The overview's new Library books section lists the books lying in your faction's territory and the contested zones, smaller zones first, and ends at the librarian who takes them. Right-click the card to switch between Horde and Alliance territory. A book the game cannot place says its location is unknown instead of pointing nowhere, books you have already done are left out, and the library's reward quests show as the card's level (#706).
+- **Quest data refresh:** QuestieDB 1.1.0 adds its quests, givers and chains, and some routes change with it. New quests at Booty Bay, Gadgetzan, Azshara and the Plaguelands now appear; Lost in Battle leads to Her Name Is Olgra, Blackrock Blockade to Tharil'zun, and the Great Cat Spirit trip to Moonglade waits for its breadcrumb; a rogue-only lockpicking quest is no longer offered to other classes. The guide also knows 11 more quests that belong to a dungeon, from Blackfathom Deeps to The Hall of Thanes.
+- **A smaller saved catalogue:** A quest you hand in where you picked it up is stored once, so the copy the guide reads at login is smaller. The first login after this update rebuilds it once.
+
+## [1.7.9] - 2026-11-12
+
+<!-- forever-core-sync -->
+
+- Ships with the same shared code as your other Forever addons, so they keep working together.
+
+## [1.7.8] - 2026-11-12
+
+<!-- forever-core-sync -->
+
+- Ships with the same shared code as your other Forever addons, so they keep working together.
+
+## [1.7.7] - 2026-11-12
+
+- **The guide's target button keeps its own row under the step.** The tracker lays its section out again whenever the guide or a quest changes, and the second layout dropped the room reserved for the step's small target button, so the button sat a row lower and covered the Journey line of the addon below the guide's section. It now keeps its place. Reported on Discord by lanprite (cjber/shortest-path-forever#787).
+- `/agf` help no longer lists the retired leaderboard and sharing commands (#727).
+- Ships with the same shared code as your other Forever addons, so they keep working together.
+
+## [1.7.6] - 2026-11-12
+
+- **World map quest pins no longer blink at journey stops.** A quest the game draws on the map while the guide already marks its stop stays hidden through quest log updates instead of showing for a frame each time.
 
 ## [1.7.5] - 2026-11-12
 
