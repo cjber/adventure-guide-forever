@@ -109,6 +109,7 @@ L["MORE_CARDS"] = "%d más: haz clic para mostrar"
 L["GUIDE_BACK"] = "Volver a los viajes"
 L["GUIDE_OPEN"] = "Ver la guía completa"
 L["GUIDE_OUTLINE"] = "Misión posterior · esquema de la guía"
+L["GUIDE_OUTLINE_INSIDE"] = "Se recoge dentro · esquema de la guía"
 L["GUIDE_OUTLINE_TOOLTIP"] =
 	"Misiones de esta zona. La guía comprueba si están disponibles antes de recomendar aceptarlas."
 L["GUIDE_PAGE"] = "%d / %d · %d próximos pasos · %d misiones posteriores"

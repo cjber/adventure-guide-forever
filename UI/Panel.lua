@@ -829,7 +829,7 @@ local function LayoutRows(route, top, hidden, journey)
 		row:SetShown(id ~= nil)
 		if id then
 			local title, color = ns.Pins.QuestLineText(id)
-			ns.Widgets.SetStepRow(row, 1, title, L.GUIDE_OUTLINE)
+			ns.Widgets.SetStepRow(row, 1, title, ns.Widgets.OutlineDetail(ns.Data, journey --[[@as AGFJourney]], id))
 			row.Number:Hide()
 			row.Selected:Hide()
 			row.Title:SetTextColor(color.r, color.g, color.b)

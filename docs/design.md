@@ -109,7 +109,10 @@ abandons quests.
   Unplaced objectives may lead to a known entrance, explicitly labelled as an entrance, never an invented objective location.
   QuestieDB supplies quest chains and outdoor entrance points; Tweaks Forever is the entrance fallback.
   The full guide lists remaining prerequisites before their dungeon quest. Future entries are an outline,
-  not a pickup recommendation or navigation target. The dungeon card itself walks every prerequisite chain back to
+  not a pickup recommendation or navigation target. It lists every quest filed under the instance: the ones to pick
+  up now, the later ones and the ones picked up inside, and a quest no giver outside holds is marked as picked up
+  inside. The card's count is how many of the instance's own quests that list holds, so the two never disagree.
+  The dungeon card itself walks every prerequisite chain back to
   what the player can do now, through branches, and offers the steps that open another of its quests first, then the
   rest, before its entrance; each chain carries its label and progress, and the entrance says how many of the
   instance's quests are still to pick up. Character restrictions and completion apply throughout.

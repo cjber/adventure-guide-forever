@@ -109,6 +109,7 @@ L["MORE_CARDS"] = "%d weitere: Klicken zum Anzeigen"
 L["GUIDE_BACK"] = "Zurück zu den Reisen"
 L["GUIDE_OPEN"] = "Ganzen Führer anzeigen"
 L["GUIDE_OUTLINE"] = "Spätere Quest · Übersicht"
+L["GUIDE_OUTLINE_INSIDE"] = "Im Dungeon angenommen · Übersicht"
 L["GUIDE_OUTLINE_TOOLTIP"] =
 	"Quests in diesem Gebiet. Bevor der Führer eine Quest zum Annehmen empfiehlt, prüft er, ob sie verfügbar ist."
 L["GUIDE_PAGE"] = "%d / %d · %d nächste Schritte · %d spätere Quests"
