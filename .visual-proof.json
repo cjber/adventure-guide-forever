@@ -1,30 +1,29 @@
 {
-  "input_digest": "36dc7ab527c7a9c74e05e3f24cdeae6814c910997eb71c4c29bb56ce1becd1b1",
-  "runtime_sha256": "36dc7ab527c7a9c74e05e3f24cdeae6814c910997eb71c4c29bb56ce1becd1b1",
-  "candidate": "2a024787531f0d6d165f9766238fba23086d34eb07520e41581c651b71195fec",
+  "input_digest": "fd3eb23c373acdc82ada636682dc01476583946523bac94420fd7b5ba9ab9f92",
+  "runtime_sha256": "fd3eb23c373acdc82ada636682dc01476583946523bac94420fd7b5ba9ab9f92",
+  "candidate": "6e30a7b363ea56ce01a35a11c18e500938e708d3c3bd9bd6b0b1e1f995d76779",
   "tested_artifact": "source-tree",
-  "client_build": "1.60.1.70888 (Interface 16001)",
-  "source_commit": "e3a1118135ebc9da28dc8fc57868714b5cafe522",
-  "notes": "Recorded on Hel Io in the player's live client from an installed source-tree build of this commit (git archive); --compare reported no missing or differing runtime files, the install additionally carries the ignored store icon. Every other Forever addon's 1.9.0 sync build was loaded in the same session. The only BugGrabber entries this session were the recorder's own over-long /run lines.",
+  "client_build": "1.60.1.70938 (Interface 16001)",
+  "source_commit": "39f6e1385c400fdcbf9dd802ee3e1869b62accac",
+  "notes": "Recorded on Hel Io from a source-tree build of this commit (build-dev, v1.8.0-dev+39f6e138) linked into AddOns, with a ForeverCore source-tree build of forever-core e6a6f46 and a Macro Assist build loaded in the same session. The journey hid exactly one quest. No Lua errors from Adventure Guide this session.",
   "flows": [
     {
-      "name": "Adventure Guide's tracker on ForeverCore 1.9.0",
+      "name": "Hidden count tooltip, one quest",
       "steps": [
-        "Install the candidate with the store ForeverCore v1.9.0 and /reload",
-        "Print every Forever addon's loaded version into a chat tab with no channels: store ForeverCore v1.9.0 plus each 1.9.0 sync build, all loaded, and BugGrabber shows no addon errors this session",
-        "The guide section draws under the quest list with its current step and next steps, and nothing overlaps"
+        "A journey leads and hides one quest: the guide's tracker header shows \"1 hidden\"",
+        "Hover the header: the tooltip says \"1 quest is hidden from the tracker while this journey leads.\" and \"Right-click: Show all quests.\""
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/627a1b4cf36d973bb26ba262c81eb601/raw/67bd0b623f26040eed9f66dd363a477dbb684579/sync190-agf-tracker.png",
-      "sha256": "e52d54dd71bba4996eb18fa6b81a954ec17ff133754f3598fb34fde114fa50dd"
+      "url": "https://gist.githubusercontent.com/cjber/b238e645887ffbeb53f11afb2f54a0cc/raw/af1415a5f357b052bebf7fcf6a5eeba0a81ad69f/752-tooltip-one-quest.png",
+      "sha256": "e60618cff7828188eaac84545ed2e32dee4aa701404f64c1ed64f413ddf7897a"
     },
     {
-      "url": "https://gist.githubusercontent.com/cjber/627a1b4cf36d973bb26ba262c81eb601/raw/67bd0b623f26040eed9f66dd363a477dbb684579/sync190-versions.png",
-      "sha256": "9731b84977a7daf94152f9129b9ea996b4c467006f822f7acc430332fa8f08ec"
+      "url": "https://gist.githubusercontent.com/cjber/b238e645887ffbeb53f11afb2f54a0cc/raw/af1415a5f357b052bebf7fcf6a5eeba0a81ad69f/752-tooltip-crop.png",
+      "sha256": "c5c35b3326844860ec9f82c1a2e8083d6d0d19987d5b65a4cf8c114df242d98b"
     }
   ]
 }
