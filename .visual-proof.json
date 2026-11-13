@@ -1,23 +1,34 @@
 {
-  "input_digest": "60329a3cfaaa286564ddc46e10195ff108e68319a6bcc3ffe0118c04fad3022a",
-  "runtime_sha256": "60329a3cfaaa286564ddc46e10195ff108e68319a6bcc3ffe0118c04fad3022a",
-  "candidate": "2066763042650c422f73ff5e6248bb123b1203ab7e98fb99a17243bd762b0273",
+  "input_digest": "20eb15a2d8dc9a5740a925d7a98502c0fc7bdaeeb7f53bda71359651bfc03273",
+  "runtime_sha256": "20eb15a2d8dc9a5740a925d7a98502c0fc7bdaeeb7f53bda71359651bfc03273",
+  "candidate": "da9faf6faba9dfdb7300f5e642881fabde908fce9996866458bf0d24d1cb826f",
   "client_build": "1.60.1.70938 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "c2759004daed09ec76a754a17729b0639c2ced8e",
+  "source_commit": "89a31e758b50995bf684a53f61f0ea9e24dfbc38",
   "flows": [
     {
-      "name": "route",
+      "name": "prepare update",
       "steps": [
-        "/agf"
+        "../../../.cache/agent-scratch/agf-release-prepare.lua"
+      ],
+      "result": "pass"
+    },
+    {
+      "name": "update line",
+      "steps": [
+        "../../../.cache/agent-scratch/agf-release-update-line.lua"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/ba5572d7a9b8e1cbd32586f0acf06138/raw/566be5a1e319dde8864bdb2cd562abfb118fc061/1-route.png",
-      "sha256": "0b1e5f410558336595b417978fbf7381e22bf973cc129db2f1be1969d10e7b3c"
+      "url": "https://gist.githubusercontent.com/cjber/e708925e8c89a483d6dd3810f4e06895/raw/683459f2173f9ee90df51fb71dc053d33db66b53/1-prepare-update.png",
+      "sha256": "026c951f026effbd1c80c8efc0fba0d080ce0a8cd7a568eb9d200d472728d34e"
+    },
+    {
+      "url": "https://gist.githubusercontent.com/cjber/e708925e8c89a483d6dd3810f4e06895/raw/683459f2173f9ee90df51fb71dc053d33db66b53/2-update-line.png",
+      "sha256": "f87751b852b688e5fd16e756fea63fcad6938edf2c75216329c19c86a62f0db3"
     }
   ]
 }
