@@ -31,7 +31,7 @@ These images are generated previews of the guide UI.
 ## Features
 
 - **Zone stories.** Each zone's quest chains read as chapters, such as *Chapter 3 of 7*, on the journey card, the map and the tracker, without naming later quests. Finishing a story shows a short popup, once per character, and moves on to the next zone.
-- **Journeys.** Pick a journey on the map: follow a zone's story, find nearby zones for your level, take class quests or tidy your log. Each journey explains why it fits.
+- **Journeys.** Pick a journey on the map: follow a zone's story, find nearby zones for your level, take class quests, collect Library books or tidy your log. Each journey explains why it fits. Party members who run the guide can sync and share one route.
 - **Dungeons.** Read a dungeon's quests and prerequisites, then visit its givers as a numbered route. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) supplies bosses, drops and native item tooltips.
 - **A route walked for you.** Choose a journey and Shortest Path Forever takes each stop in order, on foot, by flight or by boat, with its minutes on the card. Without it, the game's waypoint marks the next stop.
 - **Your route.** Ready hand-ins come first, towns group their givers into checklists, and a quest missing from its giver's list drops off with a line in chat.
