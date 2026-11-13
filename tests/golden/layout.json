@@ -675,7 +675,7 @@
           "y": 0.00
         }
       ],
-      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\1.tga",
+      "file": "Interface\\AddOns\\ForeverCore\\media\\Numbers\\1",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[1].Number",
       "size": [
@@ -887,7 +887,7 @@
           "y": 0.00
         }
       ],
-      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\2.tga",
+      "file": "Interface\\AddOns\\ForeverCore\\media\\Numbers\\2",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[2].Number",
       "size": [
@@ -1099,7 +1099,7 @@
           "y": 0.00
         }
       ],
-      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\3.tga",
+      "file": "Interface\\AddOns\\ForeverCore\\media\\Numbers\\3",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Number",
       "size": [
@@ -1311,7 +1311,7 @@
           "y": 0.00
         }
       ],
-      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\4.tga",
+      "file": "Interface\\AddOns\\ForeverCore\\media\\Numbers\\4",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[4].Number",
       "size": [
@@ -1523,7 +1523,7 @@
           "y": 0.00
         }
       ],
-      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\5.tga",
+      "file": "Interface\\AddOns\\ForeverCore\\media\\Numbers\\5",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[5].Number",
       "size": [
@@ -1735,7 +1735,7 @@
           "y": 0.00
         }
       ],
-      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\6.tga",
+      "file": "Interface\\AddOns\\ForeverCore\\media\\Numbers\\6",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[6].Number",
       "size": [
@@ -1947,7 +1947,7 @@
           "y": 0.00
         }
       ],
-      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\7.tga",
+      "file": "Interface\\AddOns\\ForeverCore\\media\\Numbers\\7",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[7].Number",
       "size": [
@@ -2159,7 +2159,7 @@
           "y": 0.00
         }
       ],
-      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\8.tga",
+      "file": "Interface\\AddOns\\ForeverCore\\media\\Numbers\\8",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[8].Number",
       "size": [
@@ -2371,7 +2371,7 @@
           "y": 0.00
         }
       ],
-      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\9.tga",
+      "file": "Interface\\AddOns\\ForeverCore\\media\\Numbers\\9",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[9].Number",
       "size": [
@@ -2583,7 +2583,7 @@
           "y": 0.00
         }
       ],
-      "file": "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\10.tga",
+      "file": "Interface\\AddOns\\ForeverCore\\media\\Numbers\\10",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[10].Number",
       "size": [

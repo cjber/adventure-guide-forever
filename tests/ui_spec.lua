@@ -29,8 +29,8 @@ local function same(actual, expected, label)
 	equal(Flat(actual), Flat(expected), label)
 end
 
--- The route's gold numbered marker art: one texture per step, painted by tools/export_numbers.py.
-local MARKER = "Interface\\AddOns\\AdventureGuideForever\\media\\Numbers\\"
+-- The route's gold numbered marker art: one texture per step, ForeverCore's shared step markers.
+local MARKER = "Interface\\AddOns\\ForeverCore\\media\\Numbers\\"
 
 -- The route's places: a ring each, a town the route comes back to sharing its first visit's (docs/design.md §2.9).
 local function Places(route)
@@ -158,7 +158,7 @@ for _, spf in ipairs({ false, "v1", "v1+" }) do
 			return frame.SkipButton ~= nil
 		end)[1]
 	end
-	equal(Row().Number.file, MARKER .. "1.tga", label .. ": the first row wears our numbered marker")
+	equal(Row().Number.file, MARKER .. "1", label .. ": the first row wears our numbered marker")
 	same({ Row().Number:GetSize() }, { 26, 26 }, label .. ": the row's marker is square")
 	h.Click(Row())
 	h.flush()
@@ -1252,7 +1252,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#h.Pins("AdventureGuideForeverPinTemplate"), Places(ns.Route()), label .. ": one ring per place on this map")
 
 	local ring = h.Pins("AdventureGuideForeverPinTemplate")[1]
-	equal(ring.Icon.file, MARKER .. "1.tga", label .. ": our numbered marker, the number in the art")
+	equal(ring.Icon.file, MARKER .. "1", label .. ": our numbered marker, the number in the art")
 	equal(ring.Icon:GetAtlas(), nil, label .. ": no stock quest atlas")
 	same({ ring.Icon:GetSize() }, { 24, 24 }, label .. ": the marker is square")
 	equal(ring.Icon:GetAlpha(), 1, label .. ": the next stop is at full strength")
@@ -1403,7 +1403,7 @@ do
 	equal(pin:GetWidth(), 20, "POI: fixed 20-unit button")
 	equal(pin.ignoreGlobalPinScale, true, "POI: ignores the global pin scale")
 	same({ pin.scaleFactor, pin.startScale, pin.endScale }, { 1, 1, 1 }, "POI: unchanged by map zoom")
-	equal(pin.Icon.file, MARKER .. "9.tga", "POI: our numbered marker, the number in the art")
+	equal(pin.Icon.file, MARKER .. "9", "POI: our numbered marker, the number in the art")
 	equal(pin.Icon:GetAtlas(), nil, "POI: no stock quest atlas")
 	same({ pin.Icon:GetSize() }, { 24, 24 }, "POI: the marker is 24 square") -- multi-value: width and height
 	equal(pin.Icon:GetAlpha(), 0.7, "POI: a later stop fades its marker")
@@ -1422,15 +1422,15 @@ do
 	equal(pin.Glow, nil, "POI: hover draws no glow")
 	pin:OnMouseLeave()
 	pin:OnAcquired(step, 10)
-	equal(pin.Icon.file, MARKER .. "10.tga", "POI: ten has a marker texture of its own")
+	equal(pin.Icon.file, MARKER .. "10", "POI: ten has a marker texture of its own")
 	equal(pin.Stack:IsShown(), false, "POI: a lone stop hides the stacked ring")
 	equal(pin.More, nil, "POI: reused lone stop has no count")
 	equal(pin.Badge:IsShown(), true, "POI: reused lone stop restores its kind")
 	pin:OnAcquired(step, 1)
-	equal(pin.Icon.file, MARKER .. "1.tga", "POI: reused current stop restores marker 1")
+	equal(pin.Icon.file, MARKER .. "1", "POI: reused current stop restores marker 1")
 	equal(pin.Icon:GetAlpha(), 1, "POI: reused current stop restores full strength")
 	pin:OnAcquired({ x = step.x, y = step.y }, 9)
-	equal(pin.Icon.file, MARKER .. "9.tga", "POI: an unmarked stop keeps its own marker")
+	equal(pin.Icon.file, MARKER .. "9", "POI: an unmarked stop keeps its own marker")
 	equal(pin.Badge:IsShown(), false, "POI: an unmarked stop loses its badge")
 	same(pin.hitRectInsets, { 0, 0, 0, 0 }, "POI: an unmarked stop restores the plain hit rect")
 	clean(h, "POI reuse")

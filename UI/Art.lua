@@ -179,10 +179,10 @@ function Art.RowArt(row, withSelected)
 	return selected
 end
 
--- The route's gold numbered markers, one per step in Model.MAX_STEPS, painted into the art by
--- tools/export_numbers.py; Ring is the empty ring a place visited twice stacks behind its marker.
-local NUMBER_MARKER = [[Interface\AddOns\AdventureGuideForever\media\Numbers\%d.tga]]
-Art.STEP_RING = [[Interface\AddOns\AdventureGuideForever\media\Numbers\Ring.tga]]
+-- The route's gold numbered markers and the empty ring a place visited twice stacks behind its marker: ForeverCore's
+-- shared art, so one Forever addon's step looks like the next (ForeverCore.Art, minor 2). Core names each marker for
+-- the step's number and answers nil past its own 1 to 25.
+Art.STEP_RING = ForeverCore.Art.Ring()
 
 -- A marker's own square, with the crop cleared first so a texture that drew an atlas does not keep its corner.
 ---@param texture Texture
@@ -196,13 +196,17 @@ local function SetMarker(texture, file, size)
 	end
 end
 
--- The gold marker for route step `index`, its number painted into the art.
+-- The gold marker for route step `index`, its number in the art, in this addon's own range: a route is at most
+-- Model.MAX_STEPS long, so a step past it keeps the last marker's art rather than core's wider 1 to 25.
 ---@param texture Texture
 ---@param index integer
 ---@param size? number
 function Art.SetStepMarker(texture, index, size)
 	local last = ns.Model and ns.Model.MAX_STEPS or 10
-	SetMarker(texture, NUMBER_MARKER:format(math.max(1, math.min(index, last))), size)
+	local file = ForeverCore.Art.Marker(math.max(1, math.min(index, last)))
+	if file then
+		SetMarker(texture, file, size)
+	end
 end
 
 -- The empty ring behind a marker for a place the route visits twice.

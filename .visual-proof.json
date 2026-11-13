@@ -1,23 +1,23 @@
 {
-  "input_digest": "c8412a1cca32c1983c5e1d8f1fb43839f1d1bddc2acb915d6a6270e54c0286a2",
-  "runtime_sha256": "c8412a1cca32c1983c5e1d8f1fb43839f1d1bddc2acb915d6a6270e54c0286a2",
-  "candidate": "6e235f650eaf884329e59f61c78d0d04d815aea991c3704837dc34131750ca6b",
+  "input_digest": "60329a3cfaaa286564ddc46e10195ff108e68319a6bcc3ffe0118c04fad3022a",
+  "runtime_sha256": "60329a3cfaaa286564ddc46e10195ff108e68319a6bcc3ffe0118c04fad3022a",
+  "candidate": "2066763042650c422f73ff5e6248bb123b1203ab7e98fb99a17243bd762b0273",
   "client_build": "1.60.1.70938 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "4794e2838415c1d59a4ec3ecf4051ca8290a235e",
+  "source_commit": "c2759004daed09ec76a754a17729b0639c2ced8e",
   "flows": [
     {
-      "name": "agf report",
+      "name": "route",
       "steps": [
-        "/agf report"
+        "/agf"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/aa9a85677276ba32c847c4efac545986/raw/0b58e24d888c0628601dc7931e6d1f10f8a8b241/1-agf-report.png",
-      "sha256": "5b046ff5ee500999b66ff111f90f0bd2021eef19183e33e257480a97a784114b"
+      "url": "https://gist.githubusercontent.com/cjber/ba5572d7a9b8e1cbd32586f0acf06138/raw/566be5a1e319dde8864bdb2cd562abfb118fc061/1-route.png",
+      "sha256": "0b1e5f410558336595b417978fbf7381e22bf973cc129db2f1be1969d10e7b3c"
     }
   ]
 }

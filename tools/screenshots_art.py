@@ -9,6 +9,7 @@ FOREVER_CORE = Path(os.environ.get("FOREVER_CORE", Path(__file__).resolve().pare
 WOWMOCK = FOREVER_CORE / "tools" / "wowmock"
 ROOT = Path(__file__).resolve().parent.parent
 ADDON_MEDIA = "interface/addons/adventureguideforever/"
+CORE_MEDIA = "interface/addons/forevercore/"
 
 wm = None  # Imported by load_wowmock so headless tests need no Pillow.
 
@@ -54,12 +55,23 @@ def font(name):
     return wm.FONTS[name]
 
 
+def texture_file(path: Path):
+    """A texture in a checkout, named the way the client names it: the extension may be left off."""
+    for candidate in (path, path.with_name(path.name + ".tga"), path.with_name(path.name + ".blp")):
+        if candidate.is_file():
+            return wm.Image.open(candidate).convert("RGBA")
+    sys.exit(f"{path}: texture file not found in the checkout")
+
+
 def texture(ui, ref):
     if isinstance(ref, str):
         path = ref.replace("\\", "/")
         # The addon's own art ships in this repository, not the client's listfile.
         if path.lower().startswith(ADDON_MEDIA):
-            return wm.Image.open(ROOT / path[len(ADDON_MEDIA) :]).convert("RGBA")
+            return texture_file(ROOT / path[len(ADDON_MEDIA) :])
+        # ForeverCore's shared art (its step markers) ships in the core checkout the renderer uses, not the client.
+        if path.lower().startswith(CORE_MEDIA):
+            return texture_file(FOREVER_CORE / path[len(CORE_MEDIA) :])
         return ui.texture(path.lower() + ".blp")
     return ui.texture(int(ref) if isinstance(ref, (int, float)) else ref)
 
