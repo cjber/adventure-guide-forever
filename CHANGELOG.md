@@ -14,6 +14,12 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 - **Russian players no longer see empty boxes between parts of a line.** The guide now separates those parts with a bullet, which the Russian client's font draws, instead of a middle dot it does not. Found from a report by XaksFlaX on GitHub (cjber/shortest-path-forever#838).
 
+## [1.8.1] - 2026-11-13
+
+<!-- forever-core-sync -->
+
+- Ships with the same shared code as your other Forever addons, so they keep working together.
+
 ## [1.8.0] - 2026-11-13
 
 <!-- discord-image: docs/screenshots/sync_picker.png -->
