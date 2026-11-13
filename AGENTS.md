@@ -106,8 +106,9 @@ exact, never loosened; a golden route is re-based only when the new data explain
 
 Pins moved by hand: `UI_ART_BUILD` in `tools/screenshots.py` (the independently reviewed art pin), `LEGACY_MAP_BUILD` (the last build with WorldMapArea, fixed), `CLASSICDB_COMMIT` (the waivers
 below; not bumped), `SPF_SHA` in `tests/contract_spec.lua` and `tools/screenshots_spf.py` (a new Shortest Path API
-needs its types reviewed), and the tool versions in
-`.github/workflows/ci.yml` and `tools/typecheck.sh`.
+needs its types reviewed). Tool versions live in `tools/toolchain.json` and `tools/pyproject.toml`: both are vendored
+from ForeverCore, whose daily bump workflow and Dependabot move them, so a workflow here names a tool and never its
+version.
 
 ## Rules
 
@@ -172,6 +173,9 @@ needs its types reviewed), and the tool versions in
 `tools/check_editorconfig.py` and `tools/check_family.py` (the shared family block between the `forever-family` markers in README.md and docs/curseforge.md).
 `tools/forever_tools/` is the shared tooling (cjber/forever-core, https://github.com/cjber/forever-core/tree/main/.agents/skills/wow-forever-addon/tooling), vendored byte for byte: never edit it here.
 `python3 tools/forever_tools/sync.py check` verifies it offline; `sync.py update --source <checkout>` is the only way to refresh it.
+CI installs every Lua, LuaLS, StyLua and gitleaks pin through ForeverCore's `.github/actions/toolchain` action, which
+reads `tools/toolchain.json` and verifies what it installed, and the Python tools as
+`uv run --project tools --frozen --group dev <tool>` from `tools/pyproject.toml`, resolved in `tools/uv.lock`.
 Never touch Blizzard's Lua state: WFA-38 in `wow-forever-addon` lists what addon code may do to Blizzard's
 frames, how to restyle one by drawing on top, and when a `taint-ok` exception holds.
 Keep addon tracker sections in ForeverCore's shared column: set its `legacySettings` and `safeCall`, add its
