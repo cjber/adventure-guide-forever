@@ -122,7 +122,7 @@ function ns.RegisterSettings()
 					Checkbox(
 						subcategory,
 						"hideQuestMarkers",
-						ns.L.SETTING_HIDE_QUEST_MARKERS,
+						ns.L.MENU_HIDE_QUEST_MARKERS,
 						ns.L.SETTING_HIDE_QUEST_MARKERS_TOOLTIP
 					),
 					Checkbox(subcategory, "showQuestGivers", ns.L.SETTING_GIVERS, ns.L.SETTING_GIVERS_TOOLTIP),

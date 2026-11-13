@@ -536,6 +536,5 @@ L.LEADERBOARD_METRIC = "Abgegebene Quests" -- mt
 L.LEADERBOARD_TOTAL = "gesamt" -- mt
 
 L["MENU_HIDE_QUEST_MARKERS"] = "Questmarkierungen des Spiels ausblenden" -- mt
-L["SETTING_HIDE_QUEST_MARKERS"] = "Die Questmarkierungen des Spiels an Routenstopps ausblenden" -- mt
 L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
 	"Schalte dies aus, damit die Questmarkierungen und blauen Questgebiete des Spiels neben deinen Routenmarkierungen auf der Karte sichtbar bleiben." -- mt

@@ -535,6 +535,5 @@ L.LEADERBOARD_METRIC = "Misiones entregadas" -- mt
 L.LEADERBOARD_TOTAL = "total" -- mt
 
 L["MENU_HIDE_QUEST_MARKERS"] = "Ocultar marcadores de misión del juego" -- mt
-L["SETTING_HIDE_QUEST_MARKERS"] = "Ocultar los marcadores de misión del juego en las paradas de la ruta" -- mt
 L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
 	"Desactiva esta opción para que los marcadores de misión y las zonas de misión azules del juego sigan visibles en el mapa junto a los marcadores de tu ruta." -- mt

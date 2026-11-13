@@ -426,7 +426,6 @@ ns.L = {
 	QUEST_AREAS_TOOLTIP = "The map's blue quest areas show where each objective is done. Questie's Questie and "
 		.. "pfQuest objective types turn them off.",
 	SETTING_MAP_PINS = "Show route pins on the map",
-	SETTING_HIDE_QUEST_MARKERS = "Hide the game's quest markers at route stops",
 	SETTING_HIDE_QUEST_MARKERS_TOOLTIP = "Turn this off to keep the game's own quest markers and blue quest areas on "
 		.. "the map beside your route pins.",
 	SETTING_GIVERS = "Show quest givers on the map",
