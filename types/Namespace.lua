@@ -803,6 +803,7 @@
 ---@field SETTING_JOURNEY_WATCH_TOOLTIP string
 ---@field TRACKER_HIDDEN_COUNT string
 ---@field TRACKER_HIDDEN_TOOLTIP string
+---@field TRACKER_HIDDEN_TOOLTIP_ONE string the same for one quest
 ---@field TRACKER_HIDDEN_SHOW_ALL string
 ---@field TRACKER_SHOW_ALL string
 ---@field PREVIOUS_PAGE string

@@ -472,6 +472,8 @@ L["TRACKER_DRAG_TOOLTIP"] = "Перетащите, чтобы перемести
 L["TRACKER_HIDDEN_COUNT"] = "%d скрыто" -- mt
 L["TRACKER_HIDDEN_TOOLTIP"] =
 	"%d заданий скрыто из отслеживания, пока ведёт это путешествие." -- mt
+L["TRACKER_HIDDEN_TOOLTIP_ONE"] =
+	"1 задание скрыто из отслеживания, пока ведёт это путешествие." -- mt
 L["TRACKER_HIDDEN_SHOW_ALL"] = "ПКМ: Показать все задания." -- mt
 L["TRACKER_LOADING"] = "Загрузка данных заданий..."
 L["TRACKER_LOCKED_TOOLTIP"] =

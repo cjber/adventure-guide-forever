@@ -431,6 +431,7 @@ L["TRACKER_DRAG_TITLE"] = "Forever追蹤器"
 L["TRACKER_DRAG_TOOLTIP"] = "拖曳以移動"
 L["TRACKER_HIDDEN_COUNT"] = "已隱藏 %d 個" -- mt
 L["TRACKER_HIDDEN_TOOLTIP"] = "此旅程引導期間，有 %d 個任務在追蹤器中隱藏。" -- mt
+L["TRACKER_HIDDEN_TOOLTIP_ONE"] = "此旅程引導期間，有 1 個任務在追蹤器中隱藏。" -- mt
 L["TRACKER_HIDDEN_SHOW_ALL"] = "右鍵：顯示所有任務。" -- mt
 L["TRACKER_LOADING"] = "正在載入任務資料..."
 L["TRACKER_LOCKED_TOOLTIP"] = "追蹤器已鎖定。關閉「鎖定追蹤器」即可移動它。"

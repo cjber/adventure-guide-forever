@@ -439,6 +439,7 @@ L["TRACKER_DRAG_TITLE"] = "Rastreador Forever"
 L["TRACKER_DRAG_TOOLTIP"] = "Arrastra para mover"
 L["TRACKER_HIDDEN_COUNT"] = "%d ocultas" -- mt
 L["TRACKER_HIDDEN_TOOLTIP"] = "%d misiones están ocultas del rastreador mientras este viaje guía." -- mt
+L["TRACKER_HIDDEN_TOOLTIP_ONE"] = "1 misión está oculta del rastreador mientras este viaje guía." -- mt
 L["TRACKER_HIDDEN_SHOW_ALL"] = "Clic derecho: Mostrar todas las misiones." -- mt
 L["TRACKER_LOADING"] = "Cargando datos de misiones..."
 L["TRACKER_LOCKED_TOOLTIP"] = "El rastreador está bloqueado. Desactiva Bloquear el rastreador para moverlo."

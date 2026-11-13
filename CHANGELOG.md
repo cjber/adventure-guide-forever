@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **The tracker's hidden count says "1 quest is hidden", not "1 quests are".** Hovering the guide's tracker header while the journey hides exactly one quest now uses a one-quest line in every language, and two or more keep the plural line (#752).
+
 ## [1.8.0] - 2026-11-13
 
 <!-- discord-image: docs/screenshots/sync_picker.png -->
