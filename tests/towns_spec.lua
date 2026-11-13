@@ -177,7 +177,12 @@ for id, quest in pairs(corpus.quests) do
 		local place = quest[key]
 		if place and place.hub then
 			compared = compared + 1
-			equal(runtime.quests[id][key].hub, place.hub, ("quest %d %s town"):format(id, key))
+			local rebuilt = runtime.quests[id][key]
+			equal(rebuilt.hub, place.hub, ("quest %d %s town"):format(id, key))
+			-- A giver on more than one map stands where QuestieDB's zoneID says: the corpus's own npcHomes.
+			equal(rebuilt.map, place.map, ("quest %d %s map"):format(id, key))
+			equal(math.abs(rebuilt.x - place.x) < 1e-9, true, ("quest %d %s x"):format(id, key))
+			equal(math.abs(rebuilt.y - place.y) < 1e-9, true, ("quest %d %s y"):format(id, key))
 		end
 	end
 end

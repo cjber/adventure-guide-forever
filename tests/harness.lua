@@ -4117,6 +4117,11 @@ function harness.questieMirror(data)
 		end
 		local giver = rows[id] or { name = place.name, spawns = {} }
 		rows[id] = giver
+		-- QuestieDB's usual map for a giver on more than one, from the corpus's npcHomes: the real build's Place
+		-- takes the quest's zone first, then this home, then the lowest map.
+		if place.npc and data.npcHomes and data.npcHomes[id] then
+			giver.zoneID = data.npcHomes[id]
+		end
 		local spots = giver.spawns[place.map] or {}
 		giver.spawns[place.map] = spots
 		local seen = false
@@ -4163,10 +4168,12 @@ function harness.questieMirror(data)
 		row.npcFlags = npc.inn and 128 or 16
 	end
 	for giver, counts in pairs(homes) do
-		for map, count in pairs(counts) do
-			local best = giver.zoneID and counts[giver.zoneID]
-			if not best or count > best or (count == best and map < giver.zoneID) then
-				giver.zoneID = map
+		if giver.zoneID == nil then
+			for map, count in pairs(counts) do
+				local best = giver.zoneID and counts[giver.zoneID]
+				if not best or count > best or (count == best and map < giver.zoneID) then
+					giver.zoneID = map
+				end
 			end
 		end
 	end

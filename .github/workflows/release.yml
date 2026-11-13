@@ -15,6 +15,11 @@ on:
         description: Full SHA of the main commit to release; main's head when empty
         required: false
         type: string
+      skip_visual_proof:
+        description: Release even though the commit's visual-proof job failed; every other job must still pass
+        required: false
+        type: boolean
+        default: false
 
 permissions: {}
 
@@ -29,6 +34,7 @@ jobs:
     permissions:
       contents: write # the packager creates the GitHub release; a manual release creates its tag
       actions: read # release_check.py reads the commit's CI runs
+      statuses: read # release_check.py reads the commit's headless-smoke status
     steps:
       - name: Choose the tag and commit
         id: target
@@ -69,6 +75,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_COMMIT: ${{ steps.target.outputs.commit }}
+          SKIP_VISUAL_PROOF: ${{ inputs.skip_visual_proof && 'true' || 'false' }}
         run: |
           for attempt in $(seq 1 90); do
             state=$(gh api \
@@ -78,6 +85,14 @@ jobs:
               completed/success)
                 echo "Full CI on main is green for $RELEASE_COMMIT"
                 exit 0
+                ;;
+              completed/failure)
+                if [ "$SKIP_VISUAL_PROOF" = true ]; then
+                  echo "Full CI on main failed for $RELEASE_COMMIT; release_check decides whether only visual-proof failed"
+                  exit 0
+                fi
+                echo "::error::Full CI on main finished without success ($state) for $RELEASE_COMMIT"
+                exit 1
                 ;;
               completed/*)
                 echo "::error::Full CI on main finished without success ($state) for $RELEASE_COMMIT"
@@ -99,10 +114,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_COMMIT: ${{ steps.target.outputs.commit }}
+          SKIP_VISUAL_PROOF: ${{ inputs.skip_visual_proof && 'true' || 'false' }}
         run: |
           python3 -c 'import os; os.environ["GITHUB_SHA"] = os.environ["RELEASE_COMMIT"]
           from tools.release_check import main
-          main()'
+          main(["--skip-visual-proof"] if os.environ["SKIP_VISUAL_PROOF"] == "true" else [])'
       # The release notes are this version's CHANGELOG entry, not the whole file;
       # a tag without one fails here rather than shipping empty notes.
       - name: Release notes
