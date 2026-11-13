@@ -754,6 +754,7 @@
 ---@field MENU_QUESTS string
 ---@field MENU_DUNGEONS string
 ---@field MENU_MAP_PINS string
+---@field MENU_HIDE_QUEST_MARKERS string
 ---@field MENU_GIVERS string
 ---@field MENU_TRACKER string
 ---@field MENU_MORE_SETTINGS string
@@ -787,6 +788,8 @@
 ---@field SETTING_TRAINING_REMINDERS string
 ---@field SETTING_TRAINING_REMINDERS_TOOLTIP string
 ---@field SETTING_MAP_PINS_TOOLTIP string
+---@field SETTING_HIDE_QUEST_MARKERS string
+---@field SETTING_HIDE_QUEST_MARKERS_TOOLTIP string
 ---@field SETTING_GIVERS_TOOLTIP string
 ---@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string
 ---@field SETTING_TITLE_ROUTE string
