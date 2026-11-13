@@ -631,6 +631,23 @@ def demo(ui, images):
     return content
 
 
+def menu_entries(entries):
+    """A tests/scenes.lua menu dump as wowmock's rows: titles, buttons with their submenu arrow, and checkboxes with
+    their tick."""
+    rows = []
+    for entry in entries:
+        kind, text = entry.get("kind"), entry.get("text") or ""
+        if kind == "title":
+            rows.append(drawing.wm.MenuTitle(text))
+        elif kind == "checkbox":
+            rows.append(drawing.wm.MenuCheckbox(text, entry.get("selected") is True))
+        elif kind == "radio":
+            rows.append(drawing.wm.MenuRadio(text, entry.get("selected") is True))
+        else:
+            rows.append(drawing.wm.MenuButton(text, submenu=entry.get("submenu") is True))
+    return rows
+
+
 def render():
     """Every scene into OUT; returns the written paths."""
     load_wowmock()
@@ -658,6 +675,8 @@ def render():
             "restedxp",
             "guide_setup",
             "map_panel",
+            "sync",
+            "sync_stops",
         ),
         known,
     )
@@ -688,6 +707,24 @@ def render():
     canvas, _ = quest_log(ui, content_ui, data, rects, "panel", data["panel"]["pins"])
     images["chosen"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
+    # Sync Together (#617): the guide with its party of three, the Sync with checklist open beside it, and the same
+    # stops without the menu for the store gallery.
+    canvas, _ = quest_log(ui, content_ui, data, rects, "sync")
+    x, y, width, height = rects["sync"]["AdventureGuideForeverPanel"]
+    panel = crop(canvas, x - 6, y - 6, width + 12, height + 12)
+    parent, parent_rects = drawing.wm.context_menu(ui, menu_entries(data["sync_menu"]["entries"]))
+    child, _ = drawing.wm.context_menu(ui, menu_entries(data["sync_submenu"]))
+    fx, fy, fw, _ = parent_rects["menu"]
+    _, row_y, _, _ = parent_rects["rows"][data["sync_menu"]["syncRow"] - 1]
+    menu_x = width + 18
+    images["sync_picker"] = drawing.wm.scene(
+        ui,
+        [(panel, 0, 0), (parent, menu_x, 8), (child, menu_x + fw + 4, 8 + row_y - fy - 4)],
+    )
+    canvas, _ = quest_log(ui, content_ui, data, rects, "sync_stops")
+    x, y, width, height = rects["sync_stops"]["AdventureGuideForeverPanel"]
+    images["sync_stops"] = drawing.wm.scene(ui, [(crop(canvas, x - 6, y - 6, width + 12, height + 12), 0, 0)])
+
     # The Library books card on the overview, then its own journey's stops, each cropped to the guide's panel.
     canvas, _ = quest_log(ui, content_ui, data, rects, "library_card")
     images["library"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
@@ -702,13 +739,13 @@ def render():
         "button": drawing.wm.MenuButton,
         "radio": lambda text, selected=False: drawing.wm.MenuRadio(text, selected),
     }
-    menu_entries = []
+    territory_entries = []
     for entry in data["library_territory"]["menu"]:
         if entry["kind"] == "radio":
-            menu_entries.append(menu_kinds["radio"](entry["text"], entry.get("selected") is True))
+            territory_entries.append(menu_kinds["radio"](entry["text"], entry.get("selected") is True))
         else:
-            menu_entries.append(menu_kinds[entry["kind"]](entry["text"]))
-    territory_menu, menu_rects = drawing.wm.context_menu(ui, menu_entries)
+            territory_entries.append(menu_kinds[entry["kind"]](entry["text"]))
+    territory_menu, menu_rects = drawing.wm.context_menu(ui, territory_entries)
     layout = data["library_territory"]["layout"]
     title = next(
         entry
@@ -770,7 +807,7 @@ def render():
     kinds = {"title": drawing.wm.MenuTitle, "button": drawing.wm.MenuButton}
     loot, _ = drawing.wm.context_menu(ui, [kinds[entry["kind"]](entry["text"]) for entry in data["loot_menu"]])
     images["loot"] = drawing.wm.scene(ui, [(loot, 0, 0)])
-    menu, menu_rects = drawing.wm.context_menu(ui, [kinds[entry["kind"]](entry["text"]) for entry in data["menu"]])
+    menu, menu_rects = drawing.wm.context_menu(ui, menu_entries(data["menu"]))
     bx, by, _, _ = tracked["blocks"][0]
     # A right-click on the block header: Blizzard_Menu opens the menu with its TOPLEFT at the cursor.
     fx, fy, _, _ = menu_rects["menu"]

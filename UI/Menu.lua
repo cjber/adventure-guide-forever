@@ -259,6 +259,24 @@ function Menu.Settings(_, menu)
 		return ns.Setting("showMapPins")
 	end)
 	Setting(ns.L.MENU_TRACKER, "showTracker")
+	-- Sync Together (#617): a checklist of the party members running the guide, no "Nobody" row. None ticked means
+	-- not synced; several can be ticked at once.
+	local members = ns.Party.Members()
+	local sync = menu:CreateButton(ns.L.SYNC_WITH)
+	sync:CreateTitle(ns.L.SYNC_MEMBERS)
+	sync:SetScrollMode(MENU_EXTENT)
+	if #members == 0 then
+		sync:CreateTitle(ns.L.SYNC_NONE)
+	else
+		for _, member in ipairs(members) do
+			local key = member.key
+			sync:CreateCheckbox(member.name, function()
+				return ns.Party.IsSynced(key)
+			end, function()
+				ns.Party.Toggle(key)
+			end)
+		end
+	end
 	-- Skipped steps, journeys not wanted and asides turned down, each with Show again.
 	local skipped = #ns.Skipped()
 	if skipped > 0 then

@@ -306,14 +306,22 @@
     {
       "anchors": [
         {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
+          "point": "LEFT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1].Texture[1]",
+          "x": 8.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1]",
-          "x": 14.00,
+          "x": 0.00,
           "y": 0.00
         }
       ],
       "font": "GameFontNormalLarge",
+      "justifyH": "CENTER",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1].FontString[1]",
       "text": "Adventure Guide",

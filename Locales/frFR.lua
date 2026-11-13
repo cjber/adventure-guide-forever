@@ -524,5 +524,15 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 L["NPC_HIGHLIGHT_HINT"] =
 	"Les plaques de nom amies sont désactivées : activez-les dans les options d'interface pour voir où aller."
 
+L["SYNC_WITH"] = "Synchroniser avec" -- mt
+L["SYNC_MEMBERS"] = "Membres du groupe avec le guide" -- mt
+L["SYNC_NONE"] = "Personne dans votre groupe n'utilise le guide" -- mt
+L["SYNC_SUBTITLE"] = "Synchronisé avec %s" -- mt
+L["SYNC_EVERYONE"] = "Tout le monde" -- mt
+L["SYNC_FOR_YOU"] = "Pour vous" -- mt
+L["SYNC_FOR"] = "Pour %s" -- mt
+L["SYNC_FOR_YOU_AND"] = "Pour vous et %s" -- mt
+L["SYNC_AND"] = "et" -- mt
+
 L.LEADERBOARD_METRIC = "Quêtes rendues" -- mt
 L.LEADERBOARD_TOTAL = "total" -- mt
