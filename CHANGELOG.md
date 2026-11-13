@@ -13,6 +13,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **Party members running the guide can share one journey.** Tick one or more of them under **Sync with** in the guide's cog menu, and the route plans the quests anyone you are synced with still needs, so you can do them together instead of catching up alone. Every stop says who it is for, "Everyone", "For you", or the names of the members who need it, on its own line so a long list is never cut, and the line under the guide's title names who you are synced with. A ticked member who leaves the party is unticked, and the party message now carries each player's completed quests too. Sync needs only Adventure Guide Forever (#617).
+- **A Library books journey collects the books for you.** The overview's new Library books section lists the books lying in your faction's territory and the contested zones, smaller zones first, and ends at the librarian who takes them. Right-click the card to switch between Horde and Alliance territory. A book the game cannot place says its location is unknown instead of pointing nowhere, books you have already done are left out, and the library's reward quests show as the card's level (#706).
 
 ## [1.7.9] - 2026-11-12
 

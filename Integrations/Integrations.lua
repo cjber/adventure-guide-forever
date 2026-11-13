@@ -303,6 +303,8 @@ local KINDS = {
 	dungeon = "dungeon",
 	trainer = "trainer",
 	battlemaster = "battlemaster",
+	book = "pickup",
+	bookhandin = "turnin",
 }
 
 -- A town's point is one of its quests' places: the "?" when a hand-in is there, else a giver's "!". A giver is a "!".

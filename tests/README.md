@@ -46,9 +46,10 @@ methods are errors, so each new client call is stubbed on purpose.
 
 ## Data
 
-- `.corpus/quests.lua` and `.corpus/towns.lua` are the test corpus, built by `python3 tools/gen_corpus.py` from the
-  sha-pinned QuestieDB release through the addon's own QuestieSource build, before the specs run. They are gitignored:
-  QuestieDB carries no licence, so the corpus is never committed. The release downloads once into `tools/.cache`.
+- `.corpus/quests.lua`, `.corpus/towns.lua` and `.corpus/books.lua` are the test corpus, built by
+  `python3 tools/gen_corpus.py` from the sha-pinned QuestieDB release through the addon's own QuestieSource build,
+  before the specs run. They are gitignored: QuestieDB's licence treats the pinned release's content as all rights
+  reserved, so the corpus is never committed. The release downloads once into `tools/.cache`.
 - `fixtures/client.lua` holds the hand-written facts only the client gives (objective counts, timed and elite flags)
   for the quests a spec names.
 - `fixtures/characters.lua`, `dungeons.lua`, `skillup.lua` and `dun_morogh_live.lua` are smaller hand-written inputs

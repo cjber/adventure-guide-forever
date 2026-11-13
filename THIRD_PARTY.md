@@ -9,7 +9,7 @@ it, so a data refresh that moves the pin never leaves this file behind. The addo
 
 | Input | Used for | Pin | Licence |
 |---|---|---|---|
-| WoW: Forever client tables, via [wago.tools](https://wago.tools) | Zones, maps, crossings, overlays and new quests in `Data/Geometry.lua`, `Data/Forever.lua` and `Data/ZoneArt.lua` | `BUILD` in `tools/gen_quests.py`; `LEGACY_MAP_BUILD` there for the old map areas | Blizzard Entertainment's game data |
+| WoW: Forever client tables, via [wago.tools](https://wago.tools) | Zones, maps, crossings, overlays, faction territories and new quests in `Data/Geometry.lua`, `Data/Forever.lua`, `Data/ZoneArt.lua` and `Data/Territory.lua` | `BUILD` in `tools/gen_quests.py` (also read by `tools/gen_territory.py`); `LEGACY_MAP_BUILD` there for the old map areas | Blizzard Entertainment's game data |
 | Classic Era client tables, via wago.tools | What Forever added over Classic Era, in `Data/Forever.lua` | `ERA` in `tools/diff_forever.py` | Blizzard Entertainment's game data |
 | [CMaNGOS classic-db](https://github.com/cmangos/classic-db) | Trainer roles, profession ranks, dungeon entrance requirements and boat routes in `Data/Geometry.lua` (the WFA-28 waivers in `AGENTS.md`) | `CLASSICDB_COMMIT` in `tools/gen_quests.py` | GPL-3.0 |
 | [Warcraft Wiki: Zones by level (original)](https://warcraft.wiki.gg/wiki/Zones_by_level_(original)) | The original zones' level ranges, typed into `PUBLISHED` in `tools/gen_quests.py` | `ZONE_SOURCE` there; the table is the pin | Facts cited from the wiki; no text copied |
@@ -21,7 +21,7 @@ No embedded libraries ship. `media/` is this addon's own: the icon is drawn in `
 
 | Input | Used for | Licence |
 |---|---|---|
-| [QuestieDB](https://github.com/Questie/QuestieDB) and Questie, installed by the player | Quest records, NPC places and towns (WFA-2 and WFA-28 in `AGENTS.md`) | QuestieDB carries no licence; nothing is copied |
+| [QuestieDB](https://github.com/Questie/QuestieDB) and Questie, installed by the player | Quest records, NPC places, towns and the library books (WFA-2 and WFA-28 in `AGENTS.md`) | QuestieDB 1.0.16 ships a LICENSE.md (GPLv3 from 2026-10-21) and treats earlier content as all rights reserved; nothing is copied |
 | AtlasLoot Classic, if installed | Dungeon loot in the Dungeons tab | Its own; nothing is copied |
 | [RestedXP Guides](https://github.com/RestedXP/RXPGuides), if installed | The current guide's steps in the Adventure tab and tracker: read from its loaded tables and hooks, and its steps skipped or advanced through its own step controls | CC BY-NC-SA 4.0; nothing is copied, and `tests/rxp_fixture.lua` holds only original example steps |
 | [Polestar](https://github.com/fitzforge/polestar), if installed | Whether it has a guide running, from `Polestar.Engine.GetGuide()` and its `GUIDE_CHANGED` message, so the route steps aside | GPL-3.0; read only, nothing is copied |
@@ -32,7 +32,7 @@ No embedded libraries ship. `media/` is this addon's own: the icon is drawn in `
 
 | Input | Used for | Pin | Licence |
 |---|---|---|---|
-| QuestieDB Forever release | The test corpus, `quests.lua` and `towns.lua` in the gitignored `tests/.corpus/`, built from the release at test time by `tools/gen_corpus.py` | `QUESTIEDB_TAG`, `QUESTIEDB_ASSET` and `QUESTIEDB_SHA256` in `tools/gen_corpus.py` | No licence, so it is fetched for the tests and never committed or shipped |
+| QuestieDB Forever release | The test corpus, `quests.lua`, `towns.lua` and `books.lua` in the gitignored `tests/.corpus/`, built from the release at test time by `tools/gen_corpus.py` | `QUESTIEDB_TAG`, `QUESTIEDB_ASSET` and `QUESTIEDB_SHA256` in `tools/gen_corpus.py` | 1.0.16's LICENSE.md is GPLv3 and treats earlier content as all rights reserved, so the corpus is fetched for the tests and never committed or shipped |
 | Shortest Path Forever types and source | The API contract spec and the map screenshots | `SPF_SHA` in `tests/contract_spec.lua` and `tools/screenshots_spf.py` | GPL-3.0-or-later |
 | [Ketho's WoW API annotations](https://github.com/Ketho/vscode-wow-api) | lua-language-server types in `tools/typecheck.sh` | `revision` in `tools/typecheck.sh` | MIT |
 | [forever_tools](https://github.com/cjber/forever-core/tree/main/.agents/skills/wow-forever-addon/tooling/forever_tools) | Shared lints, release checks and the generated-data gate, vendored in `tools/forever_tools/` | `revision` in `tools/forever_tools/MANIFEST.json` | MIT |
@@ -72,6 +72,7 @@ Credit for the reports and requests behind the addon.
 | jixxor | Show of Force held until Encroaching Gnolls is done | Discord; #642 |
 | InfamousMunky | Daily Delivery no longer offered once handed on | GitHub; #629 |
 | lanprite | The guide's target button kept its own row under the step | Discord; cjber/shortest-path-forever#787 |
+| InfamousMunky | Library books journey | GitHub; #706 |
 
 ## Inspired by
 

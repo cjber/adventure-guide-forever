@@ -667,6 +667,9 @@ def render():
             "journeys",
             "journeys_four",
             "journeys_overflow",
+            "library_card",
+            "library_stops",
+            "library_territory",
             "search",
             "story_complete",
             "restedxp",
@@ -721,6 +724,46 @@ def render():
     canvas, _ = quest_log(ui, content_ui, data, rects, "sync_stops")
     x, y, width, height = rects["sync_stops"]["AdventureGuideForeverPanel"]
     images["sync_stops"] = drawing.wm.scene(ui, [(crop(canvas, x - 6, y - 6, width + 12, height + 12), 0, 0)])
+
+    # The Library books card on the overview, then its own journey's stops, each cropped to the guide's panel.
+    canvas, _ = quest_log(ui, content_ui, data, rects, "library_card")
+    images["library"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
+    canvas, _ = quest_log(ui, content_ui, data, rects, "library_stops")
+    lx, ly, lw, lh = rects["library_stops"]["AdventureGuideForeverPanel"]
+    images["library_stops"] = drawing.wm.scene(ui, [(crop(canvas, lx - 6, ly - 6, lw + 12, lh + 12), 0, 0)])
+
+    # The card's territory menu, opened over it: Horde selected, Alliance the other choice.
+    canvas, _ = quest_log(ui, content_ui, data, rects, "library_territory")
+    menu_kinds = {
+        "title": drawing.wm.MenuTitle,
+        "button": drawing.wm.MenuButton,
+        "radio": lambda text, selected=False: drawing.wm.MenuRadio(text, selected),
+    }
+    territory_entries = []
+    for entry in data["library_territory"]["menu"]:
+        if entry["kind"] == "radio":
+            territory_entries.append(menu_kinds["radio"](entry["text"], entry.get("selected") is True))
+        else:
+            territory_entries.append(menu_kinds[entry["kind"]](entry["text"]))
+    territory_menu, menu_rects = drawing.wm.context_menu(ui, territory_entries)
+    layout = data["library_territory"]["layout"]
+    title = next(
+        entry
+        for entry in layout
+        if entry.get("text") == data["library_territory"]["menu"][0]["text"] and entry["path"].endswith(".Title")
+    )
+    card_path = title["path"].removesuffix(".Title")
+    cx, cy, _, _ = rects["library_territory"][card_path]
+    tx, ty, tw, th = rects["library_territory"]["AdventureGuideForeverPanel"]
+    left, top = tx - 6, ty - 6
+    mx, my, _, _ = menu_rects["menu"]
+    images["library_territory"] = drawing.wm.scene(
+        ui,
+        [
+            (crop(canvas, left, top, tw + 12, th + 12), 0, 0),
+            (territory_menu, cx + 66 - left - mx, cy + 22 - top - my),
+        ],
+    )
 
     canvas, frame = quest_log(ui, content_ui, data, rects, "search", data["panel"]["pins"])
     qx, qy, qw, qh = frame["quests"]

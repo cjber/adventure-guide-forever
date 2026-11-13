@@ -13,7 +13,7 @@ ns.Model = Model
 
 -- The overview's headers in the order they show; UI/Overview.lua labels them (GROUPS).
 ---@type AGFJourneySection[]
-Model.SECTIONS = { "continue", "zones", "dungeons", "battlegrounds" }
+Model.SECTIONS = { "continue", "zones", "library", "dungeons", "battlegrounds" }
 
 -- The cards of `section` in the order the guide draws them: Quests in your log leads Continue, ahead of the zone story
 -- and a companion guide, then the route's own order. The carry card is the journey the guide follows until the player
@@ -181,7 +181,8 @@ function Model.Hub(data, place)
 end
 
 function Model.Handins(step)
-	return step.handins or (step.kind == "turnin" and step.quests) or NONE
+	local kind = step.kind --[[@as string]]
+	return step.handins or ((kind == "turnin" or kind == "bookhandin") and step.quests) or NONE
 end
 
 -- The quests a step picks up: a town's eligible pickups, else a lone pickup step's own quests.
@@ -189,7 +190,7 @@ end
 ---@return integer[]
 function Model.Pickups(step)
 	local kind = step.kind --[[@as string]]
-	return step.pickups or (kind == "pickup" and step.quests) or NONE
+	return step.pickups or ((kind == "pickup" or kind == "book") and step.quests) or NONE
 end
 
 -- The distinct quest IDs a step works on, ascending: an area step's open objectives, or an objective step's own quests.

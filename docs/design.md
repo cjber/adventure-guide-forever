@@ -174,6 +174,15 @@ abandons quests.
   is marked, since Pawn marks the same rewards with every stat weighed. Tweaks Forever's best-selling coin sits on
   the icon's other corner and answers a different question. The setting `markUpgrades` (on) turns it off.
   `UI/Upgrades.lua`.
+- **2.29 Library books.** One card in the Library books section lists the books QuestieDB places in the player's
+  faction territory and the contested zones, never the other faction's. The card's right-click menu picks Horde or
+  Alliance territory for this character; the default is the character's own faction. Books run smaller zones first
+  (the width of the zone's level range, then its lower level and name), and up to the guide's ten actions; the
+  librarian hand-in ends the card, so the route is the next books and their turn-in rather than the whole library.
+  Books already completed, the other faction's only spots and class-restricted books outside that class are left out;
+  a book with no spawn shows its name with "Location unknown" and no waypoint. The card's level is the next reward
+  goal's level (78150, 79536, 82208). `Planning/Books.lua` reads `data.books` from QuestieDB at runtime and the
+  territories from `Data/Territory.lua`.
 
 ### Guide navigation
 

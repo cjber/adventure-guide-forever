@@ -8,6 +8,11 @@
 ---@field GetAllIds fun(): integer[]
 ---@field GetAll fun(id: integer, keys: string[]): table? the fields in `keys` order, with `n`; nil for an unknown ID
 
+-- An item reader adds the objects and NPCs that drop an item.
+---@class AGFQuestieItem : AGFQuestieEntity
+---@field objectDrops fun(id: integer): integer[]? the object entries that drop it
+---@field npcDrops fun(id: integer): integer[]? the NPC entries that drop it
+
 ---@class AGFQuestieDB
 ---@field ObjectiveFirst? {killCreditObjectiveFirst: table<integer, boolean>}
 ---@field Enum? {raceMaskById: table<integer, integer>} a race's number -> its bit in a quest's requiredRaces
@@ -16,7 +21,7 @@
 ---@field Quest AGFQuestieEntity
 ---@field Npc AGFQuestieEntity
 ---@field Object AGFQuestieEntity
----@field Item AGFQuestieEntity
+---@field Item AGFQuestieItem
 ---@field Support {Get: fun(module: string): table?} Get("ZoneDB"): its zone tables, some as Lua source
 
 -- ZoneDB's tables as QuestieSource.lua reads them: area ID -> uiMapID, subzone -> zone, instance Map.ID -> area.
