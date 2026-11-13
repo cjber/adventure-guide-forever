@@ -556,9 +556,9 @@ end
 ---@param step AGFStep
 ---@return integer[]
 function ns.LogQuests(step)
-	local quests = (step.kind == "town" and step.handins)
-		or ((step.kind == "turnin" or step.kind == "area" or step.kind == "dungeon") and step.quests)
-		or {}
+	local kind = step.kind
+	local tracked = kind == "turnin" or kind == "area" or kind == "dungeon" or kind == "book" or kind == "bookhandin"
+	local quests = (kind == "town" and step.handins) or (tracked and step.quests) or {}
 	if not step.planned then
 		return quests
 	end

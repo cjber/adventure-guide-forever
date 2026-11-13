@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **A Library books journey collects the books for you.** The overview's new Library books section lists the books lying in your faction's territory and the contested zones, smaller zones first, and ends at the librarian who takes them. Right-click the card to switch between Horde and Alliance territory. A book the game cannot place says its location is unknown instead of pointing nowhere, books you have already done are left out, and the library's reward quests show as the card's level (#706).
+
 ## [1.7.9] - 2026-11-12
 
 <!-- forever-core-sync -->

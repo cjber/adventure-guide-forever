@@ -102,6 +102,14 @@
 ---@field heights? table<string, table<integer, integer>> by kind ("npc" or "object"): entry -> world height in yards, for an NPC or object with one spawn
 ---@field expiring? table<integer, integer> item ID -> the seconds it lasts in the bags, a day or less (ItemSparse)
 ---@field itemIDs? table<string, integer> a collect item's lower-cased name -> its ID, for the quality colour of its name
+---@field territory? table<integer, integer> uiMapID -> AreaTable.FactionGroupMask (2 Alliance, 4 Horde, 0 contested, 6 both); Data/Territory.lua
+---@field books? AGFBook[] the library books QuestieDB holds, by quest ID ascending (QuestieSource.lua); nil before its build
+-- One library book (Planning/Books.lua): the quest, where its world object spawns, and the librarian who takes it.
+-- QuestieDB supplies every field at runtime; nothing is bundled.
+---@class AGFBook
+---@field id integer the quest ID
+---@field spots {map: integer, x: number, y: number, z?: integer, name: string}[] its object's spawns on placed maps, in map then point order; empty when QuestieDB places none
+---@field finish? {npc?: integer, name: string, map: integer, x: number, y: number, z?: integer} the hand-in NPC and its place
 
 -- Measures between steps on different maps without travel maths (Travel.lua Cost). World coordinates are yards.
 ---@class AGFMapCentre
@@ -191,6 +199,7 @@
 ---@field optimisedRoute? boolean the account-wide planned (beta) route order; nil/false is the nearest-action order
 ---@field showOutgrown? boolean keep zones and dungeons whose quests are grey in the journey choices
 ---@field journey? string key of the journey card the player chose; nil (or gone) = none chosen, the first card drawn
+---@field booksTerritory? integer the Library books card's territory: 1 Alliance, 2 Horde; nil is the player's own faction
 ---@field previewGroups table<string, boolean> the overview headers this character collapsed, by group key; a group with no entry uses its default
 ---@field skipped table<string, boolean> step keys skipped this session
 ---@field last? {key: string, reason: string} step 1 at the last rebuild, for the next login's resume line
@@ -228,7 +237,7 @@
 
 -- "town" is a visit to a town (its pickups and agreeing hand-ins), "turnin" a hand-in anywhere else, and "area" or
 -- "dungeon" (a group quest's) where the log's quests under way are done.
----@alias AGFStepKind "guide"|"town"|"turnin"|"area"|"dungeon"|"trainer"|"battlemaster"
+---@alias AGFStepKind "guide"|"town"|"turnin"|"area"|"dungeon"|"trainer"|"battlemaster"|"book"|"bookhandin"
 
 -- Where a quest under way is done next (Steps.lua Nodes): one open objective's area, or the client's point for the
 -- quest with every open objective.
@@ -288,6 +297,7 @@
 ---@field returns? table<integer, true> a town's hand-ins the route comes back for once their objectives are done
 ---@field hurry? boolean it leads because a bag item it needs runs out (Laps Hurry); a held step yields to it
 ---@field chapter? string the story card's chapter line, or a dungeon chain's label, on the step that holds its quests
+---@field unlocated? boolean a library book QuestieDB places nowhere: a row with no waypoint
 ---@field shapes? AGFNode[] an area's objective nodes, each its own ring, merged into it
 ---@field here? true step 1 is the area the player stands in, objectives open: nothing guides to it, only on past it
 
@@ -309,7 +319,7 @@
 
 -- The overview's quest log header a journey shows under (Overview.GROUPS): its kind at build time, so no title is
 -- guessed from. "continue" holds the story, Quests in your log and your calling.
----@alias AGFJourneySection "continue"|"zones"|"dungeons"|"battlegrounds"
+---@alias AGFJourneySection "continue"|"zones"|"library"|"dungeons"|"battlegrounds"
 
 -- A quest's place in its chain (Model.Story): the data's `next` links from the chain's head. Later members are IDs
 -- only, so no later chapter's title is ever drawn.
@@ -782,6 +792,17 @@
 ---@field JOURNEY_NEXT_ZONE string format: zone name
 ---@field GROUP_CONTINUE string the overview's quest log header over the story, the log and your calling
 ---@field GROUP_ZONES string the header over the "Head to <zone>" cards
+---@field GROUP_LIBRARY string the header over the Library books card
+---@field BOOKS_ALLIANCE string the Library books card in Alliance territory
+---@field BOOKS_HORDE string the Library books card in Horde territory
+---@field BOOKS_SMALLER_FIRST string the Library books card's reason
+---@field BOOKS_THEN_LIBRARIAN string format: count of books the card picks up
+---@field BOOKS_THEN_LIBRARIAN_ONE string the same for one book
+---@field BOOKS_HANDIN string format: count of books, the NPC who takes them
+---@field BOOKS_HANDIN_ONE string format: the NPC who takes one book
+---@field BOOKS_UNLOCATED string a book whose object QuestieDB places nowhere
+---@field BOOKS_TERRITORY_ALLIANCE string the card menu's Alliance territory radio
+---@field BOOKS_TERRITORY_HORDE string the card menu's Horde territory radio
 ---@field GROUP_DUNGEONS string the header over the dungeon cards
 ---@field GROUP_BATTLEGROUNDS string the header over the battleground cards
 ---@field MORE_CARDS string format: how many cards a folded header hides
@@ -1427,7 +1448,7 @@
 ---@field place AGFPlace
 
 ---@class AGFStep
----@field verb? "pickup"|"turnin"|"objective"|"town"|"trainer"|"battlemaster"
+---@field verb? "pickup"|"turnin"|"objective"|"town"|"trainer"|"battlemaster"|"book"
 ---@field orderKey? string stable identity of this visit, distinguishing repeat visits at a town
 ---@field questTitle? string undecorated objective quest title
 ---@field checklist? AGFTownGiver[]
@@ -1772,6 +1793,7 @@
 ---@field Routing AGFPlannerRouting
 ---@field Laps AGFPlannerLaps
 ---@field Journeys AGFPlannerJourneys
+---@field Books AGFBooksModule
 ---@field Decoration AGFPlannerDecoration
 ---@field Plan AGFPlannerPlan
 
@@ -1858,6 +1880,9 @@
 ---@field Added fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, elsewhere: (fun(quest: AGFQuest): boolean)): integer[]
 ---@field Carry fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, prefs: AGFPrefs, mapName: AGFMapName?, added: integer[], eligible?: integer[]): AGFJourney?
 ---@field Summarise fun(journey: AGFJourney)
+
+---@class AGFBooksModule
+---@field Card fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, mapName?: AGFMapName): AGFJourney?
 
 ---@class AGFPlannerDecoration
 ---@field FinishRoute fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, route: AGFRoute, last: AGFRoute?, prefs: AGFPrefs)

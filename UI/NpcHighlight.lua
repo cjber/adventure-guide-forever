@@ -78,7 +78,7 @@ function Highlight.StepNpc(step)
 			name, npc = spot.name, spot.npc
 		end
 		return name and { name = name, npc = npc } or nil
-	elseif step.kind == "turnin" then
+	elseif step.kind == "turnin" or step.kind == "bookhandin" then
 		local quest = ns.Data.quests[step.quests[1]]
 		local finish = quest and quest.finish
 		if finish and finish.name then

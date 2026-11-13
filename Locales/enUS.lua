@@ -88,11 +88,24 @@ ns.L = {
 		.. "plus quests you added to the route.",
 	JOURNEY_STORY = "%s story",
 	JOURNEY_NEXT_ZONE = "Head to %s",
+	-- The Library books card (issue #706): one territory's books, smaller zones first, ending at the librarian. The
+	-- card's menu picks the territory; the hand-in lists the books the route just picked up.
+	BOOKS_ALLIANCE = "Books in Alliance territory",
+	BOOKS_HORDE = "Books in Horde territory",
+	BOOKS_SMALLER_FIRST = "Smaller zones first",
+	BOOKS_THEN_LIBRARIAN = "%d books, then the librarian",
+	BOOKS_THEN_LIBRARIAN_ONE = "1 book, then the librarian",
+	BOOKS_HANDIN = "Hand in %d books to %s",
+	BOOKS_HANDIN_ONE = "Hand in 1 book to %s",
+	BOOKS_UNLOCATED = "Location unknown",
+	BOOKS_TERRITORY_ALLIANCE = "Alliance territory",
+	BOOKS_TERRITORY_HORDE = "Horde territory",
 	-- The overview's quest log headers (docs/design.md §2.2): one per kind of card, in this order. A collapsed one
 	-- shows how many cards it holds.
 	GROUP_CONTINUE = "Continue",
 	QUEST_VISIT_WARNING = "Quest visit: %s. This zone is recommended for levels %d-%d.",
 	GROUP_ZONES = "Quest destinations",
+	GROUP_LIBRARY = "Library books",
 	GROUP_DUNGEONS = "Dungeons",
 	GROUP_BATTLEGROUNDS = "Battlegrounds",
 	-- The row under a folded header's last card, saying what the fold hides and that a click opens it.
