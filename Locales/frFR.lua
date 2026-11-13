@@ -26,6 +26,16 @@ L["BATTLEGROUND_SUBLINE"] = "Un champ de bataille qui vous est ouvert"
 L["BATTLEMASTER_IN"] = "Maître de guerre à %s"
 L["BATTLEMASTER_QUEUE"] = "S’inscrire pour %s"
 L["BEGINS_STORY"] = "Commence une nouvelle histoire"
+L["BOOKS_ALLIANCE"] = "Livres en territoire de l'Alliance" -- mt
+L["BOOKS_HORDE"] = "Livres en territoire de la Horde" -- mt
+L["BOOKS_SMALLER_FIRST"] = "Zones les plus petites d'abord" -- mt
+L["BOOKS_THEN_LIBRARIAN"] = "%d livres, puis le bibliothécaire" -- mt
+L["BOOKS_THEN_LIBRARIAN_ONE"] = "1 livre, puis le bibliothécaire" -- mt
+L["BOOKS_HANDIN"] = "Remettez %d livres à %s" -- mt
+L["BOOKS_HANDIN_ONE"] = "Remettez 1 livre à %s" -- mt
+L["BOOKS_UNLOCATED"] = "Emplacement inconnu" -- mt
+L["BOOKS_TERRITORY_ALLIANCE"] = "Territoire de l'Alliance" -- mt
+L["BOOKS_TERRITORY_HORDE"] = "Territoire de la Horde" -- mt
 L["CALLING_QUESTS"] = "%d quêtes pour votre classe"
 L["CALLING_QUESTS_ONE"] = "1 quête pour votre classe"
 L["CALLING_TASK"] = "Une tâche pour votre classe : %s"
@@ -86,6 +96,7 @@ L["GO_TO_ENTRANCE"] = "Aller à l’entrée"
 L["GROUP_BATTLEGROUNDS"] = "Champs de bataille"
 L["GROUP_CONTINUE"] = "Continuer"
 L["GROUP_DUNGEONS"] = "Donjons"
+L["GROUP_LIBRARY"] = "Livres de la bibliothèque" -- mt
 L["GROUP_MANY"] = "%d demandent un groupe"
 L["GROUP_NEED_DUNGEON"] = "Donjon : %s"
 L["GROUP_NEED_ELITE"] = "Élite : groupe conseillé"
@@ -465,7 +476,7 @@ L["TWEAKS_OUTDATED"] = "Mettez à jour Tweaks Forever pour trouver les entrées 
 L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
-L["WHATS_NEW"] = "Le bouton de cible du guide garde sa propre ligne sous l'étape." -- mt
+L["WHATS_NEW"] = "Les membres du groupe qui utilisent le guide peuvent partager un même parcours." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
@@ -512,6 +523,16 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 	"Quand une étape parle à un PNJ qui donne ou rend une quête, une petite flèche rebondit au-dessus de sa plaque de nom et un bouton de cible apparaît sous le suivi. Désactivez cette option pour masquer les deux. Le guide ne change jamais vos réglages de plaque de nom."
 L["NPC_HIGHLIGHT_HINT"] =
 	"Les plaques de nom amies sont désactivées : activez-les dans les options d'interface pour voir où aller."
+
+L["SYNC_WITH"] = "Synchroniser avec" -- mt
+L["SYNC_MEMBERS"] = "Membres du groupe avec le guide" -- mt
+L["SYNC_NONE"] = "Personne dans votre groupe n'utilise le guide" -- mt
+L["SYNC_SUBTITLE"] = "Synchronisé avec %s" -- mt
+L["SYNC_EVERYONE"] = "Tout le monde" -- mt
+L["SYNC_FOR_YOU"] = "Pour vous" -- mt
+L["SYNC_FOR"] = "Pour %s" -- mt
+L["SYNC_FOR_YOU_AND"] = "Pour vous et %s" -- mt
+L["SYNC_AND"] = "et" -- mt
 
 L.LEADERBOARD_METRIC = "Quêtes rendues" -- mt
 L.LEADERBOARD_TOTAL = "total" -- mt

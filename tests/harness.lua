@@ -117,12 +117,12 @@ local function ParseXML(text)
 end
 
 -- The test quest corpus (tests/.corpus/, built by tools/gen_corpus.py from the pinned QuestieDB release and never
--- committed, since QuestieDB carries no licence). The addon no longer ships its own quest catalogue: in game, quests
+-- committed, since the corpus is runtime-only). The addon no longer ships its own quest catalogue: in game, quests
 -- come from QuestieDB. The specs keep this generated corpus as their deterministic model fixture.
 -- Each file is parsed and checked once per process; every call runs the chunk again for fresh tables.
 ---@type table<string, function>
 local corpora = {}
----@param name string "quests" or "towns"
+---@param name string "quests", "towns" or "books"
 ---@return function
 local function Corpus(name)
 	if corpora[name] then
@@ -177,6 +177,7 @@ end
 ---@return AGFData
 function harness.fixture(data)
 	data.quests = harness.fixtureQuests()
+	data.books = Corpus("books")()
 	for key, value in pairs(Corpus("towns")()) do
 		data[key] = value
 	end

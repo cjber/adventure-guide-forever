@@ -13,7 +13,7 @@ ns.Model = Model
 
 -- The overview's headers in the order they show; UI/Overview.lua labels them (GROUPS).
 ---@type AGFJourneySection[]
-Model.SECTIONS = { "continue", "zones", "dungeons", "battlegrounds" }
+Model.SECTIONS = { "continue", "zones", "library", "dungeons", "battlegrounds" }
 
 -- The cards of `section` in the order the guide draws them: Quests in your log leads Continue, ahead of the zone story
 -- and a companion guide, then the route's own order. The carry card is the journey the guide follows until the player
@@ -181,7 +181,8 @@ function Model.Hub(data, place)
 end
 
 function Model.Handins(step)
-	return step.handins or (step.kind == "turnin" and step.quests) or NONE
+	local kind = step.kind --[[@as string]]
+	return step.handins or ((kind == "turnin" or kind == "bookhandin") and step.quests) or NONE
 end
 
 -- The quests a step picks up: a town's eligible pickups, else a lone pickup step's own quests.
@@ -189,7 +190,7 @@ end
 ---@return integer[]
 function Model.Pickups(step)
 	local kind = step.kind --[[@as string]]
-	return step.pickups or (kind == "pickup" and step.quests) or NONE
+	return step.pickups or ((kind == "pickup" or kind == "book") and step.quests) or NONE
 end
 
 -- The distinct quest IDs a step works on, ascending: an area step's open objectives, or an objective step's own quests.
@@ -1058,3 +1059,82 @@ ns.Planner.Eligibility = {
 	ReadDropped = ReadDropped,
 	SimpleOpen = SimpleOpen,
 }
+
+-- A journey shared with party members (docs/design.md §4.5): a quest the group still needs is one anybody synced
+-- still needs, so the group's completed set is what every member's own completed set holds, the player's included.
+---@param completed table<integer, boolean>
+---@param synced AGFPartyMember[]
+---@return table<integer, boolean>
+function Model.GroupCompleted(completed, synced)
+	local group = {}
+	for id in pairs(completed) do
+		local done = true
+		for _, member in ipairs(synced) do
+			if not member.completed[id] then
+				done = false
+				break
+			end
+		end
+		group[id] = done or nil
+	end
+	return group
+end
+
+-- `names` joined the way a line of people reads: "Ana", "Ana and Bo", "Ana, Bo and Cy".
+---@param names string[]
+---@return string
+function Model.NameList(names)
+	local count = #names
+	if count == 0 then
+		return ""
+	elseif count == 1 then
+		return names[1]
+	end
+	local head = {}
+	for index = 1, count - 1 do
+		head[index] = names[index]
+	end
+	return table.concat(head, ns.L.LIST_SEPARATOR) .. " " .. ns.L.SYNC_AND .. " " .. names[count]
+end
+
+-- Who a stop is for, while synced (docs/design.md §4.5): "Everyone" when the player and every synced member still
+-- need one of its quests, else "For you", "For <name>", or a list. Nil when the player is not synced, the step holds
+-- no quests, or the group has nothing left there.
+---@param completed table<integer, boolean> the player's own completed quests
+---@param synced AGFPartyMember[]
+---@param ids? integer[]
+---@return string?
+function Model.SyncLabel(completed, synced, ids)
+	if #synced == 0 or not ids or #ids == 0 then
+		return nil
+	end
+	local you = false
+	for _, id in ipairs(ids) do
+		you = you or not completed[id]
+	end
+	local names, everyone = {}, you
+	for _, member in ipairs(synced) do
+		local needs = false
+		for _, id in ipairs(ids) do
+			if not member.completed[id] then
+				needs = true
+				break
+			end
+		end
+		everyone = everyone and needs
+		if needs then
+			names[#names + 1] = member.name
+		end
+	end
+	local L = ns.L
+	if everyone then
+		return L.SYNC_EVERYONE
+	elseif you and #names == 0 then
+		return L.SYNC_FOR_YOU
+	elseif you then
+		return L.SYNC_FOR_YOU_AND:format(Model.NameList(names))
+	elseif #names > 0 then
+		return L.SYNC_FOR:format(Model.NameList(names))
+	end
+	return nil
+end

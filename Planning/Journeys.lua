@@ -1043,6 +1043,7 @@ local SECTION_OF_KIND = {
 	story = "continue",
 	calling = "continue",
 	nextzone = "zones",
+	library = "library",
 	dungeon = "dungeons",
 	battleground = "battlegrounds",
 }
@@ -1556,6 +1557,11 @@ function Model.Journeys(
 		end, pool)
 	end
 	diversions[#diversions + 1] = prefs.battlegrounds and Battleground(data, player, prefs, mapName) or nil
+	-- The libraries are their own section, so they join the cards once every story and diversion is built.
+	local library = ns.Planner.Books and ns.Planner.Books.Card(data, player, completed, log, prefs, mapName) or nil
+	if library then
+		journeys[#journeys + 1] = library
+	end
 	table.sort(diversions, function(a, b)
 		if a.opened ~= b.opened then
 			return a.opened > b.opened

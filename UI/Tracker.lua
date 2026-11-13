@@ -487,6 +487,11 @@ function ModuleMixin:LayoutContentsBase()
 	local block = self:GetBlock(step.key)
 	block:SetHeader(ns.StepStyle.StepTitle(step, ns.Overview.VerbMarkup(step, 14) .. step.title))
 	local line = 0
+	-- Who the stop is for while synced (#617), right under its title.
+	if step.sync then
+		line = line + 1
+		block:AddObjective(line, step.sync)
+	end
 	if step.rxpIndex then
 		GuideSection(self, block, step)
 		return
@@ -539,7 +544,9 @@ function ModuleMixin:LayoutContentsBase()
 	end
 	local resume = ns.Resume(step)
 	-- A lone hand-in, a turn-in or a town's, is titled "Turn in: %s" (L.TURN_IN), which already says it is ready.
-	local handIn = step.kind == "turnin" or (step.kind == "town" and #step.quests == 1 and #step.handins == 1)
+	local handIn = step.kind == "turnin"
+		or step.kind == "bookhandin"
+		or (step.kind == "town" and #step.quests == 1 and #step.handins == 1)
 	-- Mid-line, a reason that is a sentence of its own ("Continues a story you started") loses its capital; German keeps
 	-- it, since there a capital may begin a noun ("Quests in Arbeit").
 	if resume and GetLocale() ~= "deDE" then

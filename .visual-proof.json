@@ -1,30 +1,30 @@
 {
-  "input_digest": "cf1ff121bb1dd42173c39829928c323d48ee5b389d743dadbcca63995b9e221d",
-  "runtime_sha256": "cf1ff121bb1dd42173c39829928c323d48ee5b389d743dadbcca63995b9e221d",
-  "candidate": "615b23a89518a69e5620a9e77e31f5584d982df5cc6548ee4635d43dd91f617a",
+  "input_digest": "36dc7ab527c7a9c74e05e3f24cdeae6814c910997eb71c4c29bb56ce1becd1b1",
+  "runtime_sha256": "36dc7ab527c7a9c74e05e3f24cdeae6814c910997eb71c4c29bb56ce1becd1b1",
+  "candidate": "2a024787531f0d6d165f9766238fba23086d34eb07520e41581c651b71195fec",
   "tested_artifact": "source-tree",
   "client_build": "1.60.1.70888 (Interface 16001)",
-  "source_commit": "e1c06d50c05d6d744b9e729b197a680671a10b74",
-  "notes": "Recorded on Hel Io in the player's live client from an installed source-tree build of this commit (git archive); visual_proof --compare reported no missing or differing runtime files, the install additionally carries the ignored store icon media/icon-400.png. Every other Forever addon's ForeverCore 1.8.2 sync build was loaded in the same session. BugGrabber recorded no addon errors (the session's two errors were the recorder's own /run lines calling a missing client API).",
+  "source_commit": "e3a1118135ebc9da28dc8fc57868714b5cafe522",
+  "notes": "Recorded on Hel Io in the player's live client from an installed source-tree build of this commit (git archive); --compare reported no missing or differing runtime files, the install additionally carries the ignored store icon. Every other Forever addon's 1.9.0 sync build was loaded in the same session. The only BugGrabber entries this session were the recorder's own over-long /run lines.",
   "flows": [
     {
-      "name": "Adventure Guide's tracker section on ForeverCore 1.8.2",
+      "name": "Adventure Guide's tracker on ForeverCore 1.9.0",
       "steps": [
-        "Install the candidate with ForeverCore v1.8.2 and /reload",
-        "Print every Forever addon's loaded version into a chat tab with no channels: ForeverCore v1.8.2 plus this candidate, all loaded",
-        "The guide section draws under the quest list with its current step, route lines and next steps, and nothing overlaps"
+        "Install the candidate with the store ForeverCore v1.9.0 and /reload",
+        "Print every Forever addon's loaded version into a chat tab with no channels: store ForeverCore v1.9.0 plus each 1.9.0 sync build, all loaded, and BugGrabber shows no addon errors this session",
+        "The guide section draws under the quest list with its current step and next steps, and nothing overlaps"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/5cd61b138c1e01654d7aadd509568514/raw/82bfd62fbba753c8cc0a35be3f8e1c07fb2ac713/sync182-agf-tracker.png",
-      "sha256": "7242163ac22fafad0fe6481d8d968fdddf8d11db4a6f91a6f762af0cbac04ca6"
+      "url": "https://gist.githubusercontent.com/cjber/627a1b4cf36d973bb26ba262c81eb601/raw/67bd0b623f26040eed9f66dd363a477dbb684579/sync190-agf-tracker.png",
+      "sha256": "e52d54dd71bba4996eb18fa6b81a954ec17ff133754f3598fb34fde114fa50dd"
     },
     {
-      "url": "https://gist.githubusercontent.com/cjber/5cd61b138c1e01654d7aadd509568514/raw/82bfd62fbba753c8cc0a35be3f8e1c07fb2ac713/sync182-versions.png",
-      "sha256": "0a95af5dcd4392712f85093832d05c14411d76b4099d3b60185209cbdf0e1e1b"
+      "url": "https://gist.githubusercontent.com/cjber/627a1b4cf36d973bb26ba262c81eb601/raw/67bd0b623f26040eed9f66dd363a477dbb684579/sync190-versions.png",
+      "sha256": "9731b84977a7daf94152f9129b9ea996b4c467006f822f7acc430332fa8f08ec"
     }
   ]
 }

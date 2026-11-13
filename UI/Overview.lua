@@ -24,6 +24,8 @@ local KIND_ICONS = {
 	calling = "questlog-questtypeicon-class",
 	-- The minimap's battlemaster mark (CSV:1319).
 	battleground = "battlemaster",
+	-- The spellbook's book mark, already the family's book aside (UI/Asides.lua).
+	library = "minortalents-icon-book",
 }
 
 -- The overview's quest log headers (docs/design.md §2.2), in the order they show. A journey carries its header's key
@@ -39,6 +41,7 @@ local GROUPS = {}
 local LABELS = {
 	continue = L.GROUP_CONTINUE,
 	zones = L.GROUP_ZONES,
+	library = L.GROUP_LIBRARY,
 	dungeons = L.GROUP_DUNGEONS,
 	battlegrounds = L.GROUP_BATTLEGROUNDS,
 }
@@ -151,6 +154,7 @@ local VERB_ATLAS = {
 	objective = "questobjective",
 	trainer = "Class",
 	battlemaster = "battlemaster",
+	book = "minortalents-icon-book",
 }
 -- An objective step whose open objectives are all one kind wears the mark the game shows over that kind of
 -- target: the targeting frame's skull for kills, the quest log's own objective mark for something to collect or use.

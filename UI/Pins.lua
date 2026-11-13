@@ -449,7 +449,7 @@ function Pins.StepTooltip(tooltip, step, index, travel)
 	end
 	if step.kind == "town" then
 		TownQuests(tooltip, step)
-	elseif step.kind == "turnin" then
+	elseif step.kind == "turnin" or step.kind == "bookhandin" then
 		for _, id in ipairs(step.quests) do
 			QuestLine(tooltip, id, HAND_IN_ICON)
 		end

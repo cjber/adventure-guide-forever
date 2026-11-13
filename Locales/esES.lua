@@ -26,6 +26,16 @@ L["BATTLEGROUND_SUBLINE"] = "Un campo de batalla disponible para ti"
 L["BATTLEMASTER_IN"] = "Maestro de batalla en %s"
 L["BATTLEMASTER_QUEUE"] = "Entrar en cola para %s"
 L["BEGINS_STORY"] = "Comienza una nueva historia"
+L["BOOKS_ALLIANCE"] = "Libros en territorio de la Alianza" -- mt
+L["BOOKS_HORDE"] = "Libros en territorio de la Horda" -- mt
+L["BOOKS_SMALLER_FIRST"] = "Zonas más pequeñas primero" -- mt
+L["BOOKS_THEN_LIBRARIAN"] = "%d libros, luego el bibliotecario" -- mt
+L["BOOKS_THEN_LIBRARIAN_ONE"] = "1 libro, luego el bibliotecario" -- mt
+L["BOOKS_HANDIN"] = "Entrega %d libros a %s" -- mt
+L["BOOKS_HANDIN_ONE"] = "Entrega 1 libro a %s" -- mt
+L["BOOKS_UNLOCATED"] = "Ubicación desconocida" -- mt
+L["BOOKS_TERRITORY_ALLIANCE"] = "Territorio de la Alianza" -- mt
+L["BOOKS_TERRITORY_HORDE"] = "Territorio de la Horda" -- mt
 L["CALLING_QUESTS"] = "%d misiones para tu clase"
 L["CALLING_QUESTS_ONE"] = "1 misión para tu clase"
 L["CALLING_TASK"] = "Una tarea para tu clase: %s"
@@ -86,6 +96,7 @@ L["GO_TO_ENTRANCE"] = "Ir a la entrada"
 L["GROUP_BATTLEGROUNDS"] = "Campos de batalla"
 L["GROUP_CONTINUE"] = "Continuar"
 L["GROUP_DUNGEONS"] = "Mazmorras"
+L["GROUP_LIBRARY"] = "Libros de la biblioteca" -- mt
 L["GROUP_MANY"] = "%d necesitan grupo"
 L["GROUP_NEED_DUNGEON"] = "Mazmorra: %s"
 L["GROUP_NEED_ELITE"] = "Élite: se recomienda grupo"
@@ -461,7 +472,7 @@ L["TWEAKS_OUTDATED"] = "Actualiza Tweaks Forever para encontrar entradas de mazm
 L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
-L["WHATS_NEW"] = "El botón de objetivo de la guía mantiene su propia fila bajo el paso." -- mt
+L["WHATS_NEW"] = "Los miembros del grupo que usan la guía pueden compartir un mismo viaje." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
@@ -507,6 +518,16 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 	"Cuando un paso habla con un PNJ que da o recibe una misión, una flecha pequeña bota sobre su placa de nombre y un botón de objetivo aparece bajo el rastreador. Desactívalo para ocultar ambos. La guía nunca cambia la configuración de tus placas de nombre."
 L["NPC_HIGHLIGHT_HINT"] =
 	"Las placas de nombre amistosas están desactivadas: actívalas en las opciones de interfaz para ver adónde ir."
+
+L["SYNC_WITH"] = "Sincronizar con" -- mt
+L["SYNC_MEMBERS"] = "Miembros del grupo con la guía" -- mt
+L["SYNC_NONE"] = "Nadie de tu grupo usa la guía" -- mt
+L["SYNC_SUBTITLE"] = "Sincronizado con %s" -- mt
+L["SYNC_EVERYONE"] = "Todos" -- mt
+L["SYNC_FOR_YOU"] = "Para ti" -- mt
+L["SYNC_FOR"] = "Para %s" -- mt
+L["SYNC_FOR_YOU_AND"] = "Para ti y %s" -- mt
+L["SYNC_AND"] = "y" -- mt
 
 L.LEADERBOARD_METRIC = "Misiones entregadas" -- mt
 L.LEADERBOARD_TOTAL = "total" -- mt

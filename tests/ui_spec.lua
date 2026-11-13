@@ -2832,11 +2832,12 @@ do
 	clean(h, "card")
 end
 
--- The guide (F2): nine cards in this fixture. Tirisfal Glades left it when QuestieDB v1.0.11 gave The Argent
--- Emissary its level 12, grey at this fixture's level 18; QuestieDB v1.1.0 adds Stranglethorn Vale's A Special Gift
--- and Tanaris's Field of Honor: Week 1, so both zones are offered here too. The chosen one is lit, never moved,
--- 288x86 with a 46x46 ring and followed by its steps; the others sit above it as one-line 288x26 header rows with a
--- 16x16 icon and no ring, in the dumped layout the client's own dump is compared with.
+-- The guide (F2): ten cards in this fixture, the Library books card among them. Tirisfal Glades left it when
+-- QuestieDB v1.0.11 gave The Argent Emissary its level 12, grey at this fixture's level 18; QuestieDB v1.1.0 adds
+-- Stranglethorn Vale's A Special Gift and Tanaris's Field of Honor: Week 1, so both zones are offered here too. The
+-- chosen one is lit, never moved, 288x86 with a 46x46 ring and followed by its steps; the others sit above it as
+-- one-line 288x26 header rows with a 16x16 icon and no ring, in the dumped layout the client's own dump is compared
+-- with.
 do
 	local h = Load(false, nil, nil, true)
 	h.ns.OpenPanel()
@@ -2857,7 +2858,7 @@ do
 		end
 	end
 	equal(full + compact, #route.journeys, "guide: a card per journey")
-	equal(#route.journeys, 9, "guide: all nine eligible journeys survive")
+	equal(#route.journeys, 10, "guide: all ten eligible journeys survive")
 	equal(full, 1, "guide: only the chosen card is whole")
 	equal(lit, 1, "guide: and only it stays lit, so it reads as chosen in game")
 	local rows = Shown(h, function(frame)
@@ -3047,7 +3048,7 @@ do
 	capped.ns.Invalidate()
 	capped.ns.OpenPanel()
 	capped.flush()
-	equal(#capped.ns.Route().journeys, 5, "guide: at the cap, dungeon alternatives and a chain remain")
+	equal(#capped.ns.Route().journeys, 6, "guide: at the cap, the library, dungeon alternatives and a chain remain")
 	equal(Says(capped, "Dire Maul"), 1, "guide: the closest suitable dungeon card, toggle off")
 	equal(Says(capped, capped.ns.L.JOURNEY_INTO:format("Scholomance")), 1, "guide: the way in, as a story")
 	equal(Says(capped, capped.ns.L.NO_JOURNEY), 0, "guide: no empty line")
@@ -3058,8 +3059,8 @@ do
 	none.ns.Invalidate()
 	none.ns.OpenPanel()
 	none.flush()
-	equal(#none.ns.Route().journeys, 0, "guide: nothing fits")
-	equal(Says(none, none.ns.L.NO_JOURNEY), 1, "guide: says so, and where to look")
+	equal(#none.ns.Route().journeys, 1, "guide: the library still fits at level 1")
+	equal(Says(none, none.ns.L.NO_JOURNEY), 0, "guide: so the empty line is not drawn")
 	clean(none, "guide: empty")
 end
 
@@ -3415,7 +3416,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#Overview(), 0, label .. ": the overview gives way")
 	equal(Previews(), "", label .. ": with its steps")
 	equal(Says(L.OVERVIEW_WHERE:format("The Barrens", h.player.level)), 0, label .. ": and the line by the title")
-	equal(Heights(), "86 26 26 26 26 26 26 26 26", label .. ": the chosen route precedes alternatives")
+	equal(Heights(), "86 26 26 26 26 26 26 26 26 26", label .. ": the chosen route precedes alternatives")
 	equal(Cards()[1].journey.key, story.key, label .. ": the chosen card first, over its steps")
 	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
 	local chosenCard = Cards()[1]
@@ -3477,7 +3478,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.ns.Route().journey, key, label .. ": a row chooses its card")
 	equal(Starts(), 2, label .. ": and starts its route in place of the first")
-	equal(Heights(), "86 26 26 26 26 26 26 26 26", label .. ": still one whole card")
+	equal(Heights(), "86 26 26 26 26 26 26 26 26 26", label .. ": still one whole card")
 	equal(Cards()[1].journey.key, key, label .. ": the new choice over the steps")
 
 	-- The chosen card again: nothing changes but the map, which turns to it.
@@ -3512,7 +3513,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(Overview()[2])
 	h.flush()
 	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a row chooses it")
-	equal(Heights(), "86 26 26 26 26 26 26 26 26", label .. ": alternatives fold below it")
+	equal(Heights(), "86 26 26 26 26 26 26 26 26 26", label .. ": alternatives fold below it")
 	equal(Cards()[1].journey.key, second.key, label .. ": lit over its steps")
 	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
 	h.Click(Back())
@@ -4326,6 +4327,13 @@ do
 	equal(current == stored, true, "golden: layout.json matches (AGF_UPDATE_GOLDEN=1 rewrites it)")
 	equal(json.encode(json.decode(stored)), stored, "golden: json round trip")
 	equal(stored:lower():find("unreachable", 1, true), nil, "golden: no line ever says unreachable")
+	-- The header's lines share the span between the guide icon and the panel's right inset, clear of the back arrow.
+	local headerProblems = diff.HeaderLines(json.decode(stored).layout, h.ns.L.TITLE)
+	equal(
+		#headerProblems,
+		0,
+		"golden: the header's lines keep the title's span\n" .. table.concat(headerProblems, "\n")
+	)
 
 	-- The in-game diff, fed a dump taken the way /agf dump takes it.
 	local golden, game = json.decode(stored).layout, h.ns.DumpLayout(panel)
@@ -4356,6 +4364,15 @@ do
 	laid.size = { 628.12, 64 }
 	differences = diff.Compare({ scaled }, { laid })
 	equal(#differences, 1, "dump_diff: its native height is")
+	-- The overview's line under the title is checked in the same span as the chosen view's title.
+	h.ns.Choose(nil)
+	h.flush()
+	headerProblems = diff.HeaderLines(h.ns.DumpLayout(panel, h.Describe), h.ns.L.TITLE)
+	equal(
+		#headerProblems,
+		0,
+		"golden: the overview's line keeps the title's span\n" .. table.concat(headerProblems, "\n")
+	)
 	clean(h, "golden")
 end
 

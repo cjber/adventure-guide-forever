@@ -16,6 +16,15 @@ local CreateBar, SetBar = Overview.CreateBar, Overview.SetBar
 
 local PAD = 8
 local ROW_HEIGHT = 44
+-- A row's "who this stop is for" line while synced (#617): one line of GameFontHighlightSmall, its own row height
+-- added for every line it wraps to.
+local SYNC_LINE, SYNC_GAP = 10, 2
+-- The header's height and one more line of its subtitle: a synced line naming several members wraps, and the header
+-- grows rather than cutting it.
+local GUIDE_HEADER_HEIGHT, SUBTITLE_LINE = 34, 11
+-- The guide icon, and the gap it leaves before the header's text. The title and the line under it share the span
+-- between the icon's right edge and the panel's right inset, so neither can run back over the icon or the back arrow.
+local PORTRAIT_LEFT, PORTRAIT_LEFT_CHOSEN, PORTRAIT_SIZE, HEADER_TEXT_GAP = 2, 22, 30, 8
 -- A row's detail runs under the skip button, to 10px short of the row's edge; the tag follows it within that room.
 local DETAIL_WIDTH = 230
 local GROUP_ICON = 12
@@ -36,7 +45,7 @@ local CARD_TEXT, CARD_INSET = 212, 8
 local UNLISTED_HEIGHT = 26
 local EMPTY_HEIGHT = 40
 -- The content above the cards: the header 4px down and 34px tall, then 6px to the first card.
-local LIST_TOP = 4 + 34 + 6
+local LIST_TOP = 4 + GUIDE_HEADER_HEIGHT + 6
 -- Something new (docs/design.md §2.13): the Adventure Guide's own "new" mark (CSV:2024) on a card the character
 -- hasn't been offered before, over its ring's top-right, or beside a one-line row's "+"; the Adventure Guide alert
 -- pip (CSV:2025) on the tab.
@@ -118,6 +127,8 @@ local scrollContent
 local headerTitle
 ---@type FontString?
 local subtitle
+---@type Frame?
+local headerBox
 ---@type FontString?
 local unlistedText
 ---@type FontString?
@@ -157,6 +168,7 @@ local checks = {}
 ---@field Number Texture
 ---@field Title FontString
 ---@field Detail FontString
+---@field Sync FontString who the stop is for while synced (#617)
 ---@field Group Texture
 ---@field Tag FontString
 ---@field SkipButton AGFSkipButton
@@ -235,6 +247,14 @@ local function CreateRow(parent)
 	row.Detail:SetPoint("TOPLEFT", row.Title, "BOTTOMLEFT", 0, -4)
 	row.Detail:SetJustifyH("LEFT")
 	row.Detail:SetWordWrap(false)
+	-- Who a stop is for while synced with party members (#617): its own line, wrapped rather than cut, so a long list
+	-- of names is never hidden behind the row's edge.
+	row.Sync = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	row.Sync:SetPoint("TOPLEFT", row.Title, "BOTTOMLEFT", 0, -2)
+	row.Sync:SetPoint("RIGHT", row.SkipButton, "LEFT", -4, 0)
+	row.Sync:SetJustifyH("LEFT")
+	row.Sync:SetWordWrap(true)
+	row.Sync:Hide()
 	-- Blizzard's group quest tag (QUEST_TAG_ATLAS), after the detail when a quest at the stop needs a group.
 	row.Group = row:CreateTexture(nil, "ARTWORK")
 	Art.Fit(row.Group, "questlog-questtypeicon-group", GROUP_ICON, GROUP_ICON)
@@ -266,9 +286,10 @@ end
 ---@return Frame
 local function BuildHeader(parent)
 	local header = CreateFrame("Frame", nil, parent)
+	headerBox = header
 	header:SetPoint("TOPLEFT", PAD, -4)
 	header:SetPoint("RIGHT", -PAD, 0)
-	header:SetHeight(34)
+	header:SetHeight(GUIDE_HEADER_HEIGHT)
 	-- The game's own back arrow (CSV:4624), as Forever's character creation draws on its Back button; shown only while
 	-- a card is chosen (Refresh). A right-click anywhere on the header goes back too.
 	backButton = CreateFrame("Button", nil, header) --[[@as Button]]
@@ -296,13 +317,18 @@ local function BuildHeader(parent)
 		end
 	end)
 	portrait = header:CreateTexture(nil, "ARTWORK")
-	Art.Fit(portrait, "islands-queue-prop-compass", 30, 30)
-	portrait:SetPoint("LEFT", 2, 0)
+	Art.Fit(portrait, "islands-queue-prop-compass", PORTRAIT_SIZE, PORTRAIT_SIZE)
+	portrait:SetPoint("LEFT", PORTRAIT_LEFT, 0)
 	headerTitle = header:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
 	headerTitle:SetText(ns.TITLE)
-	-- In the overview, the player's zone and level under the title (Refresh).
+	headerTitle:SetJustifyH("CENTER")
+	-- In the overview, the player's zone and level under the title (Refresh); while synced, the members instead. Both
+	-- lines are anchored to the title's span (Refresh), so the line wraps inside it and the header grows for it.
 	subtitle = header:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-	subtitle:SetPoint("TOP", headerTitle, "BOTTOM", 0, -3)
+	subtitle:SetPoint("TOPLEFT", headerTitle, "BOTTOMLEFT", 0, -3)
+	subtitle:SetPoint("TOPRIGHT", headerTitle, "BOTTOMRIGHT", 0, -3)
+	subtitle:SetJustifyH("CENTER")
+	subtitle:SetWordWrap(true)
 	return header
 end
 
@@ -591,6 +617,17 @@ local function RefreshRow(row, step, index)
 	row.index = index
 	ns.Art.SetStepMarker(row.Number, index, 26)
 	row.Title:SetText(ns.StepStyle.StepTitle(step))
+	-- Who the stop is for while synced with party members (#617), on its own line above the reason.
+	row.Sync:SetShown(step.sync ~= nil)
+	row.Sync:SetText(step.sync or "")
+	row.Detail:ClearAllPoints()
+	if step.sync then
+		row.Detail:SetPoint("TOPLEFT", row.Sync, "BOTTOMLEFT", 0, -1)
+	else
+		row.Detail:SetPoint("TOPLEFT", row.Title, "BOTTOMLEFT", 0, -4)
+	end
+	local syncHeight = step.sync and math.max(1, row.Sync:GetNumLines()) * SYNC_LINE or 0
+	row:SetHeight(ROW_HEIGHT + (syncHeight > 0 and syncHeight + SYNC_GAP or 0))
 	-- Step 1 adds how long it takes when Shortest Path knows; its tooltip gives the way.
 	local minutes = index == 1 and ns.Integrations.TravelMinutes(step)
 	local detail = minutes and L.TRAVEL:format(step.detail, minutes) or step.detail
@@ -751,7 +788,7 @@ local function LayoutRows(route, top, hidden, journey)
 			RefreshRow(row, step, index)
 			row:SetPoint("TOPLEFT", 6, -top)
 			row:SetPoint("TOPRIGHT", -6, -top)
-			top = top + ROW_HEIGHT + ROW_GAP
+			top = top + row:GetHeight() + ROW_GAP
 			if step.checklist then
 				---@cast list -?
 				top, check = Overview.LayoutChecklist(
@@ -1133,11 +1170,46 @@ local function LayoutJourneys(route)
 		top = top + SKIPPED_HEIGHT + CARD_GAP
 	end
 	list:SetHeight(top)
-	content:SetHeight(LIST_TOP + top + PAD)
+	local grown = headerBox and headerBox:GetHeight() - GUIDE_HEADER_HEIGHT or 0
+	content:SetHeight(LIST_TOP + grown + top + PAD)
 	if scrollContent then
-		scrollContent:SetSize(panel:GetWidth(), LIST_TOP + top + PAD)
+		scrollContent:SetSize(panel:GetWidth(), LIST_TOP + grown + top + PAD)
 	end
 	return searching, found
+end
+
+-- The line under the guide's title: the player's zone and level in the overview, or the members synced with (#617).
+-- It shares the title's span, so a long list wraps inside it and the header grows rather than cutting it.
+---@param route AGFRoute
+local function RefreshHeader(route)
+	---@cast headerTitle -?
+	---@cast subtitle -?
+	---@cast headerBox -?
+	local player = ns.State.Player()
+	local zone = player.map and ns.State.ZoneName(player.map)
+	local synced = player.synced
+	local names = {}
+	if synced then
+		for _, member in ipairs(synced) do
+			names[#names + 1] = member.name
+		end
+	end
+	local syncLine = synced and L.SYNC_SUBTITLE:format(ns.Model.NameList(names)) or nil
+	local where = not route.chosen and zone ~= nil and syncLine == nil
+	subtitle:SetShown(where or syncLine ~= nil)
+	subtitle:SetText(where and L.OVERVIEW_WHERE:format(zone, player.level) or syncLine or "")
+	-- The title's span runs from the guide icon's right edge to the panel's right inset; its text is centred in it.
+	-- Anchored before the line is measured, since the line wraps inside this span.
+	headerTitle:ClearAllPoints()
+	if where or syncLine then
+		headerTitle:SetPoint("TOPLEFT", portrait, "TOPRIGHT", HEADER_TEXT_GAP, -1)
+		headerTitle:SetPoint("TOPRIGHT", headerBox, "TOPRIGHT", 0, -1)
+	else
+		headerTitle:SetPoint("LEFT", portrait, "RIGHT", HEADER_TEXT_GAP, 0)
+		headerTitle:SetPoint("RIGHT", headerBox, "RIGHT", 0, 0)
+	end
+	local lines = subtitle:IsShown() and subtitle:GetNumLines() or 1
+	headerBox:SetHeight(GUIDE_HEADER_HEIGHT + math.max(0, lines - 1) * SUBTITLE_LINE)
 end
 
 function Refresh()
@@ -1149,6 +1221,13 @@ function Refresh()
 	---@cast queuedText -?
 	---@cast stopButton -?
 	local route = ns.Route()
+	---@cast backButton -?
+	---@cast portrait -?
+	-- The leading art first: the title and the line under it are anchored in the span the icon leaves.
+	backButton:SetShown(route.chosen)
+	portrait:SetPoint("LEFT", route.chosen and PORTRAIT_LEFT_CHOSEN or PORTRAIT_LEFT, 0)
+	-- Before the list lays itself out, so the room its taller header takes is known.
+	RefreshHeader(route)
 
 	local ready = ns.State.Ready()
 	local searching, found = LayoutJourneys(route)
@@ -1160,24 +1239,6 @@ function Refresh()
 	queuedText:SetText(queued and L.STARTS_AFTER_COMBAT or L.ROUTE_PAUSED)
 	queuedText:SetShown(queued or status == "paused")
 	stopButton:SetShown(ns.Guidance.Owns())
-	---@cast backButton -?
-	---@cast portrait -?
-	backButton:SetShown(route.chosen)
-	portrait:SetPoint("LEFT", route.chosen and 22 or 2, 0)
-	-- The overview names where the player is under the title.
-	---@cast headerTitle -?
-	---@cast subtitle -?
-	local player = ns.State.Player()
-	local zone = player.map and ns.State.ZoneName(player.map)
-	local where = not route.chosen and zone ~= nil
-	subtitle:SetShown(where)
-	subtitle:SetText(where and L.OVERVIEW_WHERE:format(zone, player.level) or "")
-	headerTitle:ClearAllPoints()
-	if where then
-		headerTitle:SetPoint("TOP", 14, -1)
-	else
-		headerTitle:SetPoint("CENTER", 14, 0)
-	end
 end
 
 local function Attach()

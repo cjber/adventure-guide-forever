@@ -230,7 +230,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild",
       "size": [
         306.00,
-        1020.00
+        1048.00
       ],
       "type": "Frame"
     },
@@ -255,7 +255,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1]",
       "size": [
         0.00,
-        1020.00
+        1048.00
       ],
       "type": "Frame"
     },
@@ -306,14 +306,22 @@
     {
       "anchors": [
         {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
+          "point": "LEFT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1].Texture[1]",
+          "x": 8.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1]",
-          "x": 14.00,
+          "x": 0.00,
           "y": 0.00
         }
       ],
       "font": "GameFontNormalLarge",
+      "justifyH": "CENTER",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[1].FontString[1]",
       "text": "Adventure Guide",
@@ -397,7 +405,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
       "size": [
         0.00,
-        968.00
+        996.00
       ],
       "type": "Frame"
     },
@@ -4026,6 +4034,146 @@
       "size": [
         16.00,
         16.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOP",
+          "relativePoint": "TOP",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
+          "x": 0.00,
+          "y": -968.00
+        }
+      ],
+      "highlightAtlas": "_options_listexpand_middle",
+      "highlightLocked": false,
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21]",
+      "size": [
+        288.00,
+        26.00
+      ],
+      "stockTemplate": "AlphaHighlightButtonTemplate",
+      "type": "Button"
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21]",
+          "x": 0.00,
+          "y": 0.00
+        },
+        {
+          "point": "BOTTOMRIGHT",
+          "relativePoint": "BOTTOMRIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "_options_listexpand_middle",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21].NormalTexture",
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21].IconFrame",
+          "x": 6.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontNormalMed2",
+      "justifyH": "LEFT",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21].Title",
+      "size": [
+        212.00,
+        16.00
+      ],
+      "text": "Books in Horde territory",
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "options_listexpand_left",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21].Texture[1]",
+      "size": [
+        12.00,
+        26.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "options_listexpand_right",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21].Texture[2]",
+      "size": [
+        28.00,
+        26.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21]",
+          "x": 12.00,
+          "y": 0.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21].IconFrame",
+      "size": [
+        16.00,
+        16.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21].IconFrame",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "minortalents-icon-book",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21].IconFrame.Icon",
+      "size": [
+        16.00,
+        15.20
       ],
       "type": "Texture"
     },

@@ -160,6 +160,25 @@ function Menu.Step(root, step)
 	end
 end
 
+-- The Library books card's territory: Horde or Alliance radio buttons, the player's own faction until they pick one.
+-- The choice is the character's, so switching territories rebuilds the single card rather than adding a second.
+---@param root ForeverMenuDescription
+local function LibraryTerritories(root)
+	local prefs, player = ns.Prefs(), ns.State.Player()
+	local current = prefs.booksTerritory
+	if current ~= 1 and current ~= 2 then
+		current = player.side == 2 and 2 or 1
+	end
+	for value, label in ipairs({ L.BOOKS_TERRITORY_ALLIANCE, L.BOOKS_TERRITORY_HORDE }) do
+		root:CreateRadio(label, function()
+			return current == value
+		end, function()
+			prefs.booksTerritory = value
+			ns.Invalidate()
+		end)
+	end
+end
+
 -- The journey card's menu, including its dungeon companion data.
 ---@param owner Region
 ---@param journey AGFJourney
@@ -168,6 +187,9 @@ function Menu.Journey(owner, journey)
 		root:CreateTitle(journey.title)
 		if journey.kind == "guide" then
 			GuideEntries(root)
+		end
+		if journey.kind == "library" then
+			LibraryTerritories(root)
 		end
 		if journey.instance then
 			local loot = root:CreateButton(L.DUNGEON_BOSSES_LOOT)
@@ -237,6 +259,24 @@ function Menu.Settings(_, menu)
 		return ns.Setting("showMapPins")
 	end)
 	Setting(ns.L.MENU_TRACKER, "showTracker")
+	-- Sync Together (#617): a checklist of the party members running the guide, no "Nobody" row. None ticked means
+	-- not synced; several can be ticked at once.
+	local members = ns.Party.Members()
+	local sync = menu:CreateButton(ns.L.SYNC_WITH)
+	sync:CreateTitle(ns.L.SYNC_MEMBERS)
+	sync:SetScrollMode(MENU_EXTENT)
+	if #members == 0 then
+		sync:CreateTitle(ns.L.SYNC_NONE)
+	else
+		for _, member in ipairs(members) do
+			local key = member.key
+			sync:CreateCheckbox(member.name, function()
+				return ns.Party.IsSynced(key)
+			end, function()
+				ns.Party.Toggle(key)
+			end)
+		end
+	end
 	-- Skipped steps, journeys not wanted and asides turned down, each with Show again.
 	local skipped = #ns.Skipped()
 	if skipped > 0 then

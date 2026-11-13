@@ -88,11 +88,24 @@ ns.L = {
 		.. "plus quests you added to the route.",
 	JOURNEY_STORY = "%s story",
 	JOURNEY_NEXT_ZONE = "Head to %s",
+	-- The Library books card (issue #706): one territory's books, smaller zones first, ending at the librarian. The
+	-- card's menu picks the territory; the hand-in lists the books the route just picked up.
+	BOOKS_ALLIANCE = "Books in Alliance territory",
+	BOOKS_HORDE = "Books in Horde territory",
+	BOOKS_SMALLER_FIRST = "Smaller zones first",
+	BOOKS_THEN_LIBRARIAN = "%d books, then the librarian",
+	BOOKS_THEN_LIBRARIAN_ONE = "1 book, then the librarian",
+	BOOKS_HANDIN = "Hand in %d books to %s",
+	BOOKS_HANDIN_ONE = "Hand in 1 book to %s",
+	BOOKS_UNLOCATED = "Location unknown",
+	BOOKS_TERRITORY_ALLIANCE = "Alliance territory",
+	BOOKS_TERRITORY_HORDE = "Horde territory",
 	-- The overview's quest log headers (docs/design.md §2.2): one per kind of card, in this order. A collapsed one
 	-- shows how many cards it holds.
 	GROUP_CONTINUE = "Continue",
 	QUEST_VISIT_WARNING = "Quest visit: %s. This zone is recommended for levels %d-%d.",
 	GROUP_ZONES = "Quest destinations",
+	GROUP_LIBRARY = "Library books",
 	GROUP_DUNGEONS = "Dungeons",
 	GROUP_BATTLEGROUNDS = "Battlegrounds",
 	-- The row under a folded header's last card, saying what the fold hides and that a click opens it.
@@ -373,6 +386,16 @@ ns.L = {
 	MENU_MAP_PINS = "Show map pins",
 	MENU_GIVERS = "Show quest givers",
 	MENU_TRACKER = "Show in objective tracker",
+	-- Sync Together (#617): the cog menu's checklist of party members running the guide, and the stops it labels.
+	SYNC_WITH = "Sync with",
+	SYNC_MEMBERS = "Party members with the guide",
+	SYNC_NONE = "No one in your party is running the guide",
+	SYNC_SUBTITLE = "Synced with %s",
+	SYNC_EVERYONE = "Everyone",
+	SYNC_FOR_YOU = "For you",
+	SYNC_FOR = "For %s",
+	SYNC_FOR_YOU_AND = "For you and %s",
+	SYNC_AND = "and",
 	MENU_MORE_SETTINGS = "More settings",
 	-- The settings page's index groups, and the index button that opens each one.
 	SETTINGS_GROUP_ROUTE = "Route",
@@ -566,7 +589,7 @@ ns.L = {
 	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of the newest
 	-- CHANGELOG entry that has a bold lead, whose version is ns.WHATS_NEW_VERSION; tests/locales_spec.lua checks both.
-	WHATS_NEW = "The guide's target button keeps its own row under the step.",
+	WHATS_NEW = "Party members running the guide can share one journey.",
 	DUNGEON_BOSSES_LOOT = "Bosses and loot",
 	DUNGEON_LOOT_INSTALL = "Install AtlasLoot Classic and its Dungeons and Raids module for bosses and loot.",
 	DUNGEON_LOOT_COMBAT = "Boss loot will load after combat.",
@@ -593,7 +616,7 @@ ns.L = {
 
 -- The release whose WHATS_NEW is the newest headline in CHANGELOG.md. A core sync adds a maintenance release above it
 -- with no bold lead, so the game prints nothing new for that version but still remembers it.
-ns.WHATS_NEW_VERSION = "1.7.7"
+ns.WHATS_NEW_VERSION = "1.8.0"
 
 -- The shared out-of-date warning (Core/ForeverRequire.lua) reads ns.L by the English phrase itself, so these keys are
 -- the sentence. A locale translates the same keys.

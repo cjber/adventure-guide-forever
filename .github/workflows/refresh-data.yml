@@ -71,6 +71,7 @@ jobs:
           python3 tools/gen_quests.py
           python3 tools/diff_forever.py
           python3 tools/gen_zoneart.py
+          python3 tools/gen_territory.py
           python3 tools/gen_corpus.py
           python3 tools/catalogue_revision.py --write
       - if: steps.pins.outputs.changed == 'true'
@@ -81,6 +82,7 @@ jobs:
           python3 tools/gen_quests_test.py
           python3 tools/gen_corpus_test.py
           python3 tools/gen_zoneart_test.py
+          python3 tools/gen_territory_test.py
           python3 tools/diff_forever_test.py
           python3 tools/refresh_pins_test.py
           python3 tools/catalogue_revision_test.py
@@ -105,9 +107,9 @@ jobs:
           title: "data: refresh game data"
           commit-message: "data: refresh game data (${{ steps.pins.outputs.summary }})"
           body: |
-            Regenerated `Data/Geometry.lua`, `Data/Forever.lua` and `Data/ZoneArt.lua`, and ran the specs on the test corpus built from the new QuestieDB pin (never committed), after moving the pins: ${{ steps.pins.outputs.summary }}.
+            Regenerated `Data/Geometry.lua`, `Data/Forever.lua`, `Data/ZoneArt.lua` and `Data/Territory.lua`, and ran the specs on the test corpus built from the new QuestieDB pin (never committed), after moving the pins: ${{ steps.pins.outputs.summary }}.
 
-            Before merging, read the diff of `Data/Geometry.lua` for maps, flight masters, crossings or trainer roles that appeared, moved or dropped out, and `Data/Forever.lua` for lands and quests Forever added or lost. The specs and the golden routes passed on this data, so a changed route would have failed the run. Add a `CHANGELOG.md` line under Unreleased saying what a player would notice.
+            Before merging, read the diff of `Data/Geometry.lua` for maps, flight masters, crossings or trainer roles that appeared, moved or dropped out, `Data/Forever.lua` for lands and quests Forever added or lost, and `Data/Territory.lua` for a map whose faction territory moved. The specs and the golden routes passed on this data, so a changed route would have failed the run. Add a `CHANGELOG.md` line under Unreleased saying what a player would notice.
 
             The workflow that opened this PR also approved its CI, so the required checks run without a maintainer's approval.
 

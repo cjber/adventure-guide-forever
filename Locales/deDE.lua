@@ -25,6 +25,16 @@ L["BATTLEGROUND_SUBLINE"] = "Ein Schlachtfeld, das Euch offensteht"
 L["BATTLEMASTER_IN"] = "Kampfmeister in %s"
 L["BATTLEMASTER_QUEUE"] = "Für %s anmelden"
 L["BEGINS_STORY"] = "Beginnt eine neue Geschichte"
+L["BOOKS_ALLIANCE"] = "Bücher im Allianzgebiet" -- mt
+L["BOOKS_HORDE"] = "Bücher im Hordengebiet" -- mt
+L["BOOKS_SMALLER_FIRST"] = "Kleinere Gebiete zuerst" -- mt
+L["BOOKS_THEN_LIBRARIAN"] = "%d Bücher, dann der Bibliothekar" -- mt
+L["BOOKS_THEN_LIBRARIAN_ONE"] = "1 Buch, dann der Bibliothekar" -- mt
+L["BOOKS_HANDIN"] = "%d Bücher bei %s abgeben" -- mt
+L["BOOKS_HANDIN_ONE"] = "1 Buch bei %s abgeben" -- mt
+L["BOOKS_UNLOCATED"] = "Ort unbekannt" -- mt
+L["BOOKS_TERRITORY_ALLIANCE"] = "Allianzgebiet" -- mt
+L["BOOKS_TERRITORY_HORDE"] = "Hordengebiet" -- mt
 L["CALLING_QUESTS"] = "%d Quests für Eure Klasse"
 L["CALLING_QUESTS_ONE"] = "1 Quest für Eure Klasse"
 L["CALLING_TASK"] = "Eine Aufgabe für Eure Klasse: %s"
@@ -86,6 +96,7 @@ L["GO_TO_ENTRANCE"] = "Zum Eingang"
 L["GROUP_BATTLEGROUNDS"] = "Schlachtfelder"
 L["GROUP_CONTINUE"] = "Fortsetzen"
 L["GROUP_DUNGEONS"] = "Dungeons"
+L["GROUP_LIBRARY"] = "Bücher der Bibliothek" -- mt
 L["GROUP_MANY"] = "%d brauchen eine Gruppe"
 L["GROUP_NEED_DUNGEON"] = "Dungeon: %s"
 L["GROUP_NEED_ELITE"] = "Elite: Gruppe empfohlen"
@@ -462,7 +473,7 @@ L["TWEAKS_OUTDATED"] = "Aktualisiert Tweaks Forever, um Dungeoneingänge zu find
 L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
-L["WHATS_NEW"] = "Der Zielknopf des Leitfadens behält seine eigene Zeile unter dem Schritt." -- mt
+L["WHATS_NEW"] = "Gruppenmitglieder, die den Leitfaden nutzen, können eine gemeinsame Reise teilen." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"
@@ -508,6 +519,16 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 	"Wenn ein Schritt mit einem Questgeber oder Abgabe-NPC spricht, hüpft ein kleiner Pfeil über seinem Namensschild und unter dem Tracker steht eine Ziel-Schaltfläche. Schaltet dies aus, um beides zu verbergen. Der Guide ändert nie Eure Namensschild-Einstellungen."
 L["NPC_HIGHLIGHT_HINT"] =
 	"Freundliche Namensschilder sind aus: Schaltet sie in den Interface-Optionen ein, um zu sehen, wohin Ihr gehen müsst."
+
+L["SYNC_WITH"] = "Synchronisieren mit" -- mt
+L["SYNC_MEMBERS"] = "Gruppenmitglieder mit dem Guide" -- mt
+L["SYNC_NONE"] = "Niemand in Eurer Gruppe nutzt den Guide" -- mt
+L["SYNC_SUBTITLE"] = "Synchronisiert mit %s" -- mt
+L["SYNC_EVERYONE"] = "Alle" -- mt
+L["SYNC_FOR_YOU"] = "Für Euch" -- mt
+L["SYNC_FOR"] = "Für %s" -- mt
+L["SYNC_FOR_YOU_AND"] = "Für Euch und %s" -- mt
+L["SYNC_AND"] = "und" -- mt
 
 L.LEADERBOARD_METRIC = "Abgegebene Quests" -- mt
 L.LEADERBOARD_TOTAL = "gesamt" -- mt
