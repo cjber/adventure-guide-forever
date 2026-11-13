@@ -443,6 +443,7 @@ L["TRACKER_DRAG_TITLE"] = "Suivi Forever"
 L["TRACKER_DRAG_TOOLTIP"] = "Glisser pour déplacer"
 L["TRACKER_HIDDEN_COUNT"] = "%d masquées" -- mt
 L["TRACKER_HIDDEN_TOOLTIP"] = "%d quêtes sont masquées du suivi pendant que ce voyage vous guide." -- mt
+L["TRACKER_HIDDEN_TOOLTIP_ONE"] = "1 quête est masquée du suivi pendant que ce voyage vous guide." -- mt
 L["TRACKER_HIDDEN_SHOW_ALL"] = "Clic droit : Afficher toutes les quêtes." -- mt
 L["TRACKER_LOADING"] = "Chargement des données de quêtes..."
 L["TRACKER_LOCKED_TOOLTIP"] = "Le suivi est verrouillé. Désactivez Verrouiller le suivi pour le déplacer."

@@ -441,6 +441,7 @@ L["TRACKER_DRAG_TITLE"] = "Forever-Verfolgung"
 L["TRACKER_DRAG_TOOLTIP"] = "Ziehen zum Verschieben"
 L["TRACKER_HIDDEN_COUNT"] = "%d verborgen" -- mt
 L["TRACKER_HIDDEN_TOOLTIP"] = "%d Quests sind in der Zielverfolgung verborgen, solange diese Reise führt." -- mt
+L["TRACKER_HIDDEN_TOOLTIP_ONE"] = "1 Quest ist in der Zielverfolgung verborgen, solange diese Reise führt." -- mt
 L["TRACKER_HIDDEN_SHOW_ALL"] = "Rechtsklick: Alle Quests zeigen." -- mt
 L["TRACKER_LOADING"] = "Questdaten werden geladen..."
 L["TRACKER_LOCKED_TOOLTIP"] = "Die Verfolgung ist gesperrt. Schaltet Verfolgung sperren aus, um sie zu verschieben."

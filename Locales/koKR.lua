@@ -447,6 +447,8 @@ L["TRACKER_DRAG_TOOLTIP"] = "끌어서 이동"
 L["TRACKER_HIDDEN_COUNT"] = "%d개 숨김" -- mt
 L["TRACKER_HIDDEN_TOOLTIP"] =
 	"이 여정이 이끄는 동안 %d개의 퀘스트가 추적기에서 숨겨져 있습니다." -- mt
+L["TRACKER_HIDDEN_TOOLTIP_ONE"] =
+	"이 여정이 이끄는 동안 퀘스트 1개가 추적기에서 숨겨져 있습니다." -- mt
 L["TRACKER_HIDDEN_SHOW_ALL"] = "오른쪽 클릭: 모든 퀘스트 표시." -- mt
 L["TRACKER_LOADING"] = "퀘스트 데이터 불러오는 중..."
 L["TRACKER_LOCKED_TOOLTIP"] = "추적기가 잠겨 있습니다. 추적기 잠금을 끄면 이동할 수 있습니다."

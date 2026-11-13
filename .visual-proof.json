@@ -1,25 +1,29 @@
 {
-  "input_digest": "91914b77d55c9e6ccddbf7397ede2025faa33d953f3387ac1be4bd8ab8368de4",
-  "runtime_sha256": "91914b77d55c9e6ccddbf7397ede2025faa33d953f3387ac1be4bd8ab8368de4",
-  "candidate": "559f442fb560eedcf7bc1fdbcffde19940af1c8abdceafe4d322a85b8c4c9d7e",
+  "input_digest": "382dcf49c8e3ef2656fbc618d74e90d870e30e18b116d389b35e6451edf34863",
+  "runtime_sha256": "382dcf49c8e3ef2656fbc618d74e90d870e30e18b116d389b35e6451edf34863",
+  "candidate": "5e85aa2dd01c52e97009834215aa7117ccb607d37f1e372a4d0913d2ffb8bdb5",
   "tested_artifact": "source-tree",
   "client_build": "1.60.1.70938 (Interface 16001)",
+  "source_commit": "261857513aa465c1e70da7560d99e195c8e60773",
+  "notes": "Recorded on Hel Io from a source-tree build of this commit (build-dev, v1.8.0-dev+26185751) linked into AddOns, with a ForeverCore source-tree build of forever-core e6a6f46 and a Macro Assist build loaded in the same session. The journey hid exactly one quest. No Lua errors from Adventure Guide this session.",
   "flows": [
     {
-      "name": "The build loads on an enUS client with no Lua errors",
+      "name": "Hidden count tooltip, one quest",
       "steps": [
-        "Install the PR's shipped files as the AdventureGuideForever folder (compare: no differing files; extra media/icon-400.png) beside ForeverCore v1.10.0 and /reload",
-        "Run errors --addon AdventureGuideForever: no Lua errors found",
-        "Confirm the loaded-addons list names this build and BugGrabber reports 0 errors",
-        "The ruRU separator itself cannot show on an enUS client; the mock render in the PR body shows it with the ruRU font"
+        "A journey leads and hides one quest: the guide's tracker header shows \"1 hidden\"",
+        "Hover the header: the tooltip says \"1 quest is hidden from the tracker while this journey leads.\" and \"Right-click: Show all quests.\""
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/94e6834396a64be6d9cbbffc4e931455/raw/96d42d340dab9778be4d45541369d44930b2e72e/ruru-ingame-1010.png",
-      "sha256": "cec9936a1628f61b09063cfc0111bde0548235602590fe589c0595570fae1e54"
+      "url": "https://gist.githubusercontent.com/cjber/b238e645887ffbeb53f11afb2f54a0cc/raw/ab24f8669f1d762dfb88b5f7eb83cc1b5c514890/752-tooltip-one-quest.png",
+      "sha256": "e3e6b7eef220490f9ac0ea120ad66ac0a15cc488c7593505d52ec703aa7a4261"
+    },
+    {
+      "url": "https://gist.githubusercontent.com/cjber/b238e645887ffbeb53f11afb2f54a0cc/raw/ab24f8669f1d762dfb88b5f7eb83cc1b5c514890/752-tooltip-crop.png",
+      "sha256": "44136923f0c15604a2aaf9fc9259460303d149d2a6130ded6c16232c4c24d708"
     }
   ]
 }
