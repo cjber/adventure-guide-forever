@@ -79,6 +79,11 @@ local first = harness.load({ version = "1.8.0", questiedb = Fake(), setup = Poli
 first.flush()
 equal(#first.ns.Data.books, 1, "the first login builds the book list")
 equal(first.ns.Data.books[1].id, 900002, "the book is the librarian's quest")
+equal(
+	first.ns.Data.books[1].items and first.ns.Data.books[1].items[1],
+	700,
+	"the first login keeps the tome's ID on the book"
+)
 equal(first.ns.Data.itemIDs and first.ns.Data.itemIDs.tome, 700, "the first login names the tome's item ID")
 equal(first.ns.Data.itemIDs and first.ns.Data.itemIDs.scroll, 701, "and the scroll's")
 check(first.ns.QuestieStatus.state == "questie", "the first login has the QuestieDB catalogue")
@@ -95,6 +100,7 @@ equal(second.ns.QuestieStatus.state, "questie", "the second login adopts the sav
 equal(type(second.ns.Data.books), "table", "the adopted catalogue keeps its book list")
 equal(#second.ns.Data.books, 1, "with the book the first login found")
 equal(second.ns.Data.books[1].id, 900002, "the same book")
+equal(second.ns.Data.books[1].items and second.ns.Data.books[1].items[1], 700, "with the tome's ID the card reads")
 equal(second.ns.Data.itemIDs and second.ns.Data.itemIDs.tome, 700, "the adopted catalogue keeps the tome's item ID")
 equal(second.ns.Data.itemIDs and second.ns.Data.itemIDs.scroll, 701, "and the scroll's")
 

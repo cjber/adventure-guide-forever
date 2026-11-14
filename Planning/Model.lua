@@ -748,6 +748,19 @@ local function SimpleOpen(quest, player, completed, log, id)
 		and not (player.notOffered and player.notOffered[id] == player.level)
 end
 
+-- The library books the player carries, by book quest ID, as one string a rebuild compares: a bag or bank change that
+-- moves no quest log shape still moves the Library books card, so it must plan in full rather than repaint (#767).
+---@param owned table<integer, boolean>?
+---@return string
+function Model.OwnedShape(owned)
+	local ids = {}
+	for id in pairs(owned or NONE) do
+		ids[#ids + 1] = id
+	end
+	table.sort(ids)
+	return table.concat(ids, ",")
+end
+
 -- The quest log's shape (docs/design.md §4.4): each quest by ID, whether it is complete, whether it carries an item
 -- that runs out (`expiring`), its waypoint, and each objective's type and done flag. The counts are left out, so two
 -- logs that differ only in a kill or an item count share a shape.

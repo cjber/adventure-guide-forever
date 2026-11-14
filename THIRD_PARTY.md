@@ -73,6 +73,7 @@ Credit for the reports and requests behind the addon.
 | InfamousMunky | Library books journey | GitHub; #706 |
 | iPulse | Library books card vanishing after a login, and Stop not surviving a reload | CurseForge; #756, #757; thread 8705846 |
 | MrOxiMoron | Keeping the game's own quest markers on the map | CurseForge; #764; thread 8698185 |
+| InfamousMunky | A collected book no longer stays the next stop | GitHub; #767 |
 
 ## Inspired by
 

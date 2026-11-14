@@ -193,6 +193,9 @@ function Books.Card(data, player, completed, log, prefs, mapName)
 		return nil
 	end
 	local side = Territory(player, prefs)
+	-- A book whose collected item the player carries is taken, whether or not its hidden quest is: the item waits in
+	-- the bags or the bank until the librarian is visited (#767, #756).
+	local owned = player.ownedBooks or NONE
 	local entries = {}
 	for _, book in ipairs(data.books) do
 		local quest = data.quests[book.id]
@@ -213,7 +216,7 @@ function Books.Card(data, player, completed, log, prefs, mapName)
 					quest = quest,
 					spot = spot,
 					id = book.id,
-					held = log[book.id] ~= nil,
+					held = log[book.id] ~= nil or owned[book.id] == true,
 					order = Order(data, { book = book, quest = quest, spot = spot }),
 				}
 			end

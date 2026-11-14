@@ -2137,13 +2137,15 @@ function harness.load(options)
 		end,
 	}
 	-- Items and spells: options.items maps an item ID to {name, icon}; anything else has neither yet. options.bags maps
-	-- an item ID to how many the bags hold (h.bags, changed in place).
+	-- an item ID to how many the bags hold (h.bags, changed in place), and options.bank those the bank holds, which
+	-- only a read asking for the bank counts (h.bank, changed in place).
 	local items = options.items or {}
 	h.bags = options.bags or {}
+	h.bank = options.bank or {}
 	G.C_Item = {
 		RequestLoadItemDataByID = noop,
-		GetItemCount = function(itemID)
-			return h.bags[itemID] or 0
+		GetItemCount = function(itemID, includeBank)
+			return (h.bags[itemID] or 0) + (includeBank and (h.bank[itemID] or 0) or 0)
 		end,
 		GetItemNameByID = function(itemID)
 			return items[itemID] and items[itemID].name
