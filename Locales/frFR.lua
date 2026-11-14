@@ -117,6 +117,7 @@ L["HAND_IN_WHEN"] = "À rendre quand vous serez à %s"
 L["HAND_IN_WHEN_DONE"] = "une fois terminée"
 L["BEFORE_IT_RUNS_OUT"] = "avant que %s n'expire"
 L["BEFORE_ITEM_RUNS_OUT"] = "avant qu'un objet de quête n'expire"
+L["BEFORE_TIMER_RUNS_OUT"] = "avant la fin du temps imparti pour la quête"
 L["HELP_AUDIT"] = "/agf audit - comparer les données de quêtes avec le jeu"
 L["HELP_DUMP"] = "/agf dump - enregistrer la disposition du guide pour un rapport de bug"
 L["HELP_OPEN"] = "/agf - ouvrir le guide sur la carte du monde."
@@ -137,6 +138,8 @@ L["JOURNEY_CHOOSE"] = "Choisissez un voyage dans Activités pour commencer."
 L["JOURNEY_COMPLETE"] = "Voyage terminé"
 L["JOURNEY_INTO"] = "Le chemin vers %s"
 L["JOURNEY_NEXT_ZONE"] = "Direction %s"
+L["PROVIDER_CARD_HINT"] =
+	"Étapes de vos guides %s installés. Les histoires de zone et « Nettoyer mon journal » sont propres à Adventure Guide."
 L["JOURNEY_PAGE"] = "%d / %d"
 L["JOURNEY_PROGRESS_EMPTY"] = "Vos histoires terminées apparaîtront ici."
 L["JOURNEY_QUESTS"] = "Quêtes de ce voyage"
@@ -538,6 +541,11 @@ L["SYNC_AND"] = "et" -- mt
 
 L.LEADERBOARD_METRIC = "Quêtes rendues" -- mt
 L.LEADERBOARD_TOTAL = "total" -- mt
+-- mt: Information only (#715).
+L["SETTING_INFORMATION_ONLY"] = "Informations seulement : sans itinéraires" -- mt
+L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
+	"Gardez les voyages et les informations de quête sans lancer d’itinéraires ni modifier les quêtes suivies. Cliquer sur une étape affiche ses quêtes sur la carte. Désactivez cette option pour réutiliser le planificateur." -- mt
+L["CLICK_SHOW_MAP"] = "Cliquer pour afficher cette étape sur la carte" -- mt
 
 L["MENU_HIDE_QUEST_MARKERS"] = "Masquer les marqueurs de quête du jeu" -- mt
 L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =

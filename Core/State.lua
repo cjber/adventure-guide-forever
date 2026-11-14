@@ -509,6 +509,92 @@ local function Expiring(id)
 	return nil
 end
 
+-- Live quest timers (AGF709): C_QuestLog.GetTimeAllowed(questID) answers total and elapsed seconds, or nothing when
+-- the quest has no timer. The client's own tracker draws a bar only while both are present and elapsed < total,
+-- anchored at GetTime() - elapsed (Blizzard_QuestObjectiveTracker.lua), so the absolute deadline is
+-- GetTime() - elapsed + total. It is computed once per active timer and cached by quest ID: a later reading sees the
+-- same deadline, so elapsed advancing, or its second being rounded, never reshapes or reorders the route. A timer
+-- that is inactive or missing drops its cache entry; one that expires or fails leaves a tombstone, so a stale
+-- reading cannot reopen it; and a quest leaving the log or PLAYER_ENTERING_WORLD starts it clean.
+---@type table<integer, {total: number, deadline?: number, expired?: boolean}>
+local questTimers = {}
+-- The deadline the one-shot invalidation below waits for; nil when none is armed. Kept equal to the cached earliest
+-- deadline, so a rebuild that still sees the same timer active never arms another.
+---@type number?
+local armedDeadline
+
+-- The absolute deadline of `id`'s active timer, or nil when it has none: the cached one while the same timer runs,
+-- computed from the client's total/elapsed when it first appears.
+---@param id integer
+---@return number?
+local function TimerDeadline(id)
+	local allowed = C_QuestLog.GetTimeAllowed
+	if not allowed then
+		return nil
+	end
+	local total, elapsed = allowed(id)
+	if not (total and elapsed) or total <= 0 then
+		questTimers[id] = nil
+		return nil
+	end
+	local now = GetTime()
+	if elapsed >= total then
+		-- An inactive or exhausted reading is a tombstone: a later stale reading of the same timer must not reopen it.
+		questTimers[id] = { total = total, expired = true }
+		return nil
+	end
+	local timer = questTimers[id]
+	if timer and timer.total == total then
+		if timer.expired then
+			return nil
+		end
+		if timer.deadline and timer.deadline <= now then
+			-- The cached absolute deadline passed: urgency ends here even if the client has not sent a quest event and
+			-- still reports the last elapsed. The tombstone outlives the stale reading; a different total or the quest
+			-- leaving the log (which clears this cache) is what starts a new timer.
+			timer.deadline, timer.expired = nil, true
+			return nil
+		end
+		return timer.deadline
+	end
+	local deadline = now - elapsed + total
+	if deadline <= now then
+		questTimers[id] = { total = total, expired = true }
+		return nil
+	end
+	questTimers[id] = { total = total, deadline = deadline }
+	return deadline
+end
+
+-- One shot at the earliest cached deadline, so a timer that runs out with no quest event still drops its urgency
+-- (AGF709). It arms only when that earliest deadline changed: the same active timer never re-arms as elapsed
+-- advances, and no periodic poll runs. A full plan reads the shape again; a timer that is gone loses its marker.
+local function ArmTimer()
+	local earliest
+	for _, timer in pairs(questTimers) do
+		if timer.deadline and (not earliest or timer.deadline < earliest) then
+			earliest = timer.deadline
+		end
+	end
+	if earliest == armedDeadline then
+		return
+	end
+	armedDeadline = earliest
+	if not earliest then
+		return
+	end
+	local delay = earliest - GetTime()
+	C_Timer.After(delay > 0 and delay or 0, function()
+		-- Once armed, this shot always asks for a full plan. An observer read (QuestWatch, pins, RXP) can tombstone the
+		-- timer a moment before the shot and clear `armedDeadline`; suppressing the shot then would leave the drawn
+		-- route hurried with no event to correct it. A shot replaced by a newer deadline costs at most one extra plan.
+		-- `armedDeadline` stays, so the rebuild this causes arms no repeat while the same deadline set stands.
+		if ns.Invalidate then
+			ns.Invalidate()
+		end
+	end)
+end
+
 -- Keyed by quest ID, like Completed(), so the model can look either up in O(1).
 ---@return table<integer, AGFLogQuest>
 function State.Log()
@@ -518,10 +604,16 @@ function State.Log()
 		if info and not info.isHeader then
 			local map, x, y = C_QuestLog.GetNextWaypoint(info.questID)
 			local objectives = Objectives(info.questID)
-			local complete = C_QuestLog.IsComplete(info.questID) or false
+			local failed = C_QuestLog.IsFailed and C_QuestLog.IsFailed(info.questID) == true or false
+			local complete = (C_QuestLog.IsComplete(info.questID) or false) and not failed
+			-- A failed quest is never ready to hand in, whatever its objectives read; it has no timer to hurry either.
+			if failed then
+				questTimers[info.questID] = nil
+			end
+			local deadline = not failed and TimerDeadline(info.questID) or nil
 			-- The client can keep IsComplete false for a tick after an item objective's count fills (#410): a quest
 			-- whose every objective is done is ready to hand in, the same answer it gives a moment later.
-			if not complete and #objectives > 0 then
+			if not complete and not failed and #objectives > 0 then
 				complete = true
 				for _, objective in ipairs(objectives) do
 					complete = complete and objective.done
@@ -538,9 +630,18 @@ function State.Log()
 				x = x,
 				y = y,
 				objectives = objectives,
+				failed = failed,
+				deadline = deadline,
 			}
 		end
 	end
+	-- A cached timer whose quest left the log is gone; a later active reading starts a fresh deadline.
+	for id in pairs(questTimers) do
+		if not log[id] then
+			questTimers[id] = nil
+		end
+	end
+	ArmTimer()
 	if pointsStale then
 		LoadPoints(log)
 	end
@@ -736,6 +837,9 @@ local function OnEvent(_, event, arg)
 	elseif event == "PLAYER_ENTERING_WORLD" then
 		-- A loading screen settles the client's level: a stale announcement never outlives it.
 		announced = nil
+		-- A timer's cached deadline is rebuilt from the client's elapsed after the screen; a shot still queued for
+		-- the old set is superseded by the fresh arming.
+		questTimers, armedDeadline = {}, nil
 	end
 	if event == "QUEST_TURNED_IN" then
 		ns.Sound.ClientEvent()

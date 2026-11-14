@@ -123,6 +123,7 @@ L["HAND_IN_WHEN"] = "Сдать, когда будете здесь: %s"
 L["HAND_IN_WHEN_DONE"] = "когда будет выполнено"
 L["BEFORE_IT_RUNS_OUT"] = "пока не исчез предмет «%s»"
 L["BEFORE_ITEM_RUNS_OUT"] = "пока не исчез предмет для задания"
+L["BEFORE_TIMER_RUNS_OUT"] = "до истечения времени задания"
 L["HELP_AUDIT"] = "/agf audit - сверить данные заданий с игрой"
 L["HELP_DUMP"] =
 	"/agf dump - сохранить раскладку путеводителя для отчета об ошибке"
@@ -148,6 +149,8 @@ L["JOURNEY_CHOOSE"] =
 L["JOURNEY_COMPLETE"] = "Путешествие завершено"
 L["JOURNEY_INTO"] = "Путь в %s"
 L["JOURNEY_NEXT_ZONE"] = "Отправляйтесь: %s"
+L["PROVIDER_CARD_HINT"] =
+	"Шаги из установленных вами руководств %s. Сюжеты зон и «Очистить журнал» — собственные функции Adventure Guide."
 L["JOURNEY_PAGE"] = "%d / %d"
 L["JOURNEY_PROGRESS_EMPTY"] = "Здесь появятся завершенные вами истории."
 L["JOURNEY_QUESTS"] = "Задания этого путешествия"
@@ -579,6 +582,11 @@ L["SYNC_AND"] = "и" -- mt
 
 L.LEADERBOARD_METRIC = "Сданные задания" -- mt
 L.LEADERBOARD_TOTAL = "всего" -- mt
+-- mt: Information only (#715).
+L["SETTING_INFORMATION_ONLY"] = "Только информация: без маршрутов" -- mt
+L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
+	"Сохраняйте путешествия и информацию о заданиях, не запуская маршруты и не меняя отслеживаемые задания. Нажмите на остановку, чтобы показать её задания на карте. Отключите этот параметр, чтобы снова использовать планировщик." -- mt
+L["CLICK_SHOW_MAP"] = "Нажмите, чтобы показать эту остановку на карте" -- mt
 
 L["MENU_HIDE_QUEST_MARKERS"] = "Скрывать игровые метки заданий" -- mt
 L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =

@@ -270,12 +270,13 @@ end
 
 -- The data's need slots still open for a quest under way, each to the client's objective for it. The client's
 -- objectives line up with the slots only when it lists as many as the data needs and each kind fills a slot of its
--- own; otherwise every slot counts as open, to `true`, and the second return is false. Where two slots share a type,
--- an objective goes to the slot whose NPC or item name its words hold (quest.names); the rest take the first free
--- slot of their type, in order.
+-- own; otherwise every slot counts as open, to `true`, and the second return is false. When they line up, the third
+-- return maps each slot to its 1-based client objective index, which Questie keeps its own objectives by. Where two
+-- slots share a type, an objective goes to the slot whose NPC or item name its words hold (quest.names); the rest take
+-- the first free slot of their type, in order.
 ---@param quest AGFQuest
 ---@param entry AGFLogQuest
----@return table<integer, AGFLogObjective|true>, boolean aligned
+---@return table<integer, AGFLogObjective|true>, boolean aligned, table<integer, integer>? indices
 local function OpenSlots(quest, entry)
 	local slots, open = {}, {}
 	for slot in pairs(quest.need or NONE) do
@@ -286,7 +287,7 @@ local function OpenSlots(quest, entry)
 		return open, false
 	end
 	table.sort(slots)
-	local aligned, used, placed = {}, {}, {}
+	local aligned, indices, used, placed = {}, {}, {}, {}
 	NamePass(quest, slots, objectives, used, placed)
 	for index, objective in ipairs(objectives) do
 		local slot = placed[index] or nil
@@ -298,9 +299,9 @@ local function OpenSlots(quest, entry)
 		if not slot then
 			return open, false
 		end
-		used[slot], aligned[slot] = true, (not objective.done) and objective or nil
+		used[slot], aligned[slot], indices[slot] = true, (not objective.done) and objective or nil, index
 	end
-	return aligned, true
+	return aligned, true, indices
 end
 
 function Model.ObjectiveDone(data, entry, slot)
@@ -313,18 +314,21 @@ function Model.ObjectiveDone(data, entry, slot)
 end
 
 -- One open objective of a quest under way: the client's count and words for it when its objectives line up with the
--- data's slots (`counted`), the data's count otherwise, and the town it is handed in at, which a route visits after.
+-- data's slots (`counted`), the data's count otherwise, the town it is handed in at, which a route visits after, and
+-- the client's objective index when the log lines up, which Questie's own objective records use.
 ---@param quest? AGFQuest
 ---@param entry AGFLogQuest
 ---@param slot integer
 ---@param counted AGFLogObjective|true|nil
+---@param index? integer the client's 1-based objective index, when its objectives line up
 ---@return AGFAreaObjective
-local function Objective(quest, entry, slot, counted)
+local function Objective(quest, entry, slot, counted, index)
 	local client = counted ~= true and counted or nil
 	local finish = quest and quest.finish
 	return {
 		id = entry.id,
 		slot = slot,
+		index = index,
 		have = client and client.have,
 		-- A client count of 0 is a kind it does not tally, not a need of none: the data's count stands then.
 		need = client and client.need ~= 0 and client.need or (quest and quest.need and quest.need[slot]),
@@ -341,12 +345,16 @@ local function LiveObjectives(data, log, objectives)
 	for _, old in ipairs(objectives) do
 		local entry, quest = log[old.id], data.quests[old.id]
 		if entry and quest then
-			if not slots[old.id] then
-				slots[old.id] = (OpenSlots(quest, entry))
+			local aligned = slots[old.id]
+			if not aligned then
+				local open, ok, indices = OpenSlots(quest, entry)
+				aligned = { values = open, indices = ok and indices or nil }
+				slots[old.id] = aligned
 			end
-			local counted = slots[old.id][old.slot]
+			local counted = aligned.values[old.slot]
 			if counted and not entry.complete then
-				result[#result + 1] = Objective(quest, entry, old.slot, counted)
+				local index = aligned.indices and aligned.indices[old.slot]
+				result[#result + 1] = Objective(quest, entry, old.slot, counted, index)
 			end
 		else
 			result[#result + 1] = old
@@ -413,22 +421,26 @@ end
 -- catalogue orders them; AreaNode passes over a harder one for the player's `level`) with its radius. The client's
 -- point for the quest stands in for them all when its objectives don't line up with the data's slots or the data places
 -- none of the open ones, and the client's waypoint (the live client gives one only once finished) before anything.
--- Empty when nothing places it.
+-- Empty when nothing places it. A ref carries the client's objective index where the log lines up, as LiveObjectives'
+-- do, so a freshly built route and every RestedXP step reach Questie's own objectives without a later log refresh.
 ---@param entry AGFLogQuest
 ---@param level? integer the player's
 ---@return AGFNode[]
 local function Nodes(data, entry, level)
 	local quest = data.quests[entry.id]
-	local open, aligned, slots, nodes = {}, false, {}, {}
+	local open, aligned, indices, slots, nodes = {}, false, nil, {}, {}
 	if quest then
-		open, aligned = OpenSlots(quest, entry)
+		open, aligned, indices = OpenSlots(quest, entry)
 	end
+	-- Questie keeps its own objectives by the client's 1-based index: carry it only when the log lines up, and never
+	-- guess one, so a misaligned log keeps the nil LiveObjectives would leave.
+	local slotIndex = aligned and indices or NONE
 	for slot in pairs(open) do
 		slots[#slots + 1] = slot
 	end
 	table.sort(slots)
 	for _, slot in ipairs(ValidPlace(entry) and NONE or slots) do
-		nodes[#nodes + 1] = AreaNode(quest, slot, Objective(quest, entry, slot, open[slot]), level)
+		nodes[#nodes + 1] = AreaNode(quest, slot, Objective(quest, entry, slot, open[slot], slotIndex[slot]), level)
 	end
 	if #nodes > 0 and (aligned or not ValidPlace(entry.poi)) then
 		return nodes
@@ -439,7 +451,7 @@ local function Nodes(data, entry, level)
 	end
 	local objectives = {}
 	for _, slot in ipairs(slots) do
-		objectives[#objectives + 1] = Objective(quest, entry, slot, open[slot])
+		objectives[#objectives + 1] = Objective(quest, entry, slot, open[slot], slotIndex[slot])
 	end
 	return { { map = point.map, x = point.x, y = point.y, r = 0, slot = slots[1] or 0, objectives = objectives } }
 end

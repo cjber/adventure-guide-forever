@@ -117,6 +117,7 @@ L["HAND_IN_WHEN"] = "Entrégala cuando estés en %s"
 L["HAND_IN_WHEN_DONE"] = "cuando esté hecha"
 L["BEFORE_IT_RUNS_OUT"] = "antes de que caduque %s"
 L["BEFORE_ITEM_RUNS_OUT"] = "antes de que caduque un objeto de misión"
+L["BEFORE_TIMER_RUNS_OUT"] = "antes de que se agote el tiempo de la misión"
 L["HELP_AUDIT"] = "/agf audit - comprobar los datos de misiones con el juego"
 L["HELP_DUMP"] = "/agf dump - guardar el diseño de la guía para un informe de error"
 L["HELP_OPEN"] = "/agf - abrir la guía en el mapa del mundo."
@@ -137,6 +138,8 @@ L["JOURNEY_CHOOSE"] = "Elige un viaje en Actividades para empezar."
 L["JOURNEY_COMPLETE"] = "Viaje completado"
 L["JOURNEY_INTO"] = "El camino a %s"
 L["JOURNEY_NEXT_ZONE"] = "Dirígete a %s"
+L["PROVIDER_CARD_HINT"] =
+	"Pasos de tus guías %s instaladas. Las historias de zona y «Limpiar mi registro» son de Adventure Guide."
 L["JOURNEY_PAGE"] = "%d / %d"
 L["JOURNEY_PROGRESS_EMPTY"] = "Tus historias completadas aparecerán aquí."
 L["JOURNEY_QUESTS"] = "Misiones de este viaje"
@@ -533,6 +536,11 @@ L["SYNC_AND"] = "y" -- mt
 
 L.LEADERBOARD_METRIC = "Misiones entregadas" -- mt
 L.LEADERBOARD_TOTAL = "total" -- mt
+-- mt: Information only (#715).
+L["SETTING_INFORMATION_ONLY"] = "Solo información: sin rutas" -- mt
+L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
+	"Conserva los viajes y la información de misiones sin iniciar rutas ni cambiar las misiones que sigues. Al hacer clic en una parada, sus misiones se muestran en el mapa. Desactiva esta opción para volver a usar el planificador." -- mt
+L["CLICK_SHOW_MAP"] = "Haz clic para mostrar esta parada en el mapa" -- mt
 
 L["MENU_HIDE_QUEST_MARKERS"] = "Ocultar marcadores de misión del juego" -- mt
 L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =

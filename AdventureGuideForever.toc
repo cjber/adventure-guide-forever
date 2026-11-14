@@ -76,6 +76,7 @@ Integrations\QuestieObjectives.lua
 Integrations\QuestieTowns.lua
 Integrations\QuestieSource.lua
 Integrations\QuestieOptions.lua
+Integrations\QuestieReveal.lua
 Integrations\Dungeons.lua
 Integrations\AtlasLoot.lua
 Integrations\OpenMap.lua

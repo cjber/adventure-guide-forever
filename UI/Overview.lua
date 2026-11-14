@@ -525,7 +525,11 @@ local function CardClick(self, mouseButton)
 		return
 	end
 	if journey.rxpGroup and journey.rxpName and mouseButton ~= "RightButton" then
-		ns.RestedXP.Choose(journey.rxpGroup, journey.rxpName, ns.Setting("titleStartsRoute"))
+		ns.RestedXP.Choose(
+			journey.rxpGroup,
+			journey.rxpName,
+			ns.Setting("titleStartsRoute") and not ns.Setting("informationOnly")
+		)
 		GameTooltip_Hide()
 		return
 	end
@@ -652,6 +656,11 @@ local function CardTooltip(card)
 	end
 	if journey.kind == "carry" then
 		GameTooltip_AddNormalLine(GameTooltip, L.CARRY_EXPLANATION)
+	end
+	-- A card an installed guide feeds says so beside Adventure Guide's own cards (#713): its steps follow that guide,
+	-- while Clean up my log and the zone stories are Adventure Guide's own planning.
+	if journey.provider then
+		GameTooltip_AddNormalLine(GameTooltip, L.PROVIDER_CARD_HINT:format(journey.provider))
 	end
 	local cleanup = journey.cleanup
 	if cleanup then

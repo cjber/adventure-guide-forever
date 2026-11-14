@@ -120,6 +120,7 @@ L["HAND_IN_WHEN"] = "%s에 있을 때 제출"
 L["HAND_IN_WHEN_DONE"] = "완료하면"
 L["BEFORE_IT_RUNS_OUT"] = "%s(이)가 사라지기 전에"
 L["BEFORE_ITEM_RUNS_OUT"] = "퀘스트 아이템이 사라지기 전에"
+L["BEFORE_TIMER_RUNS_OUT"] = "퀘스트 제한 시간이 끝나기 전에"
 L["HELP_AUDIT"] = "/agf audit - 퀘스트 데이터를 게임과 대조합니다"
 L["HELP_DUMP"] = "/agf dump - 오류 보고용으로 안내서 배치를 저장합니다"
 L["HELP_OPEN"] = "/agf - 세계 지도에서 안내서를 엽니다."
@@ -140,6 +141,8 @@ L["JOURNEY_CHOOSE"] = "시작하려면 활동에서 여정을 선택하십시오
 L["JOURNEY_COMPLETE"] = "여정 완료"
 L["JOURNEY_INTO"] = "%s(으)로 가는 길"
 L["JOURNEY_NEXT_ZONE"] = "%s(으)로 이동"
+L["PROVIDER_CARD_HINT"] =
+	"설치한 %s 가이드의 단계입니다. 지역 이야기와 ‘내 퀘스트 목록 정리’는 Adventure Guide의 자체 기능입니다."
 L["JOURNEY_PAGE"] = "%d / %d"
 L["JOURNEY_PROGRESS_EMPTY"] = "완료한 이야기가 여기에 표시됩니다."
 L["JOURNEY_QUESTS"] = "이 여정의 퀘스트"
@@ -542,6 +545,11 @@ L["SYNC_AND"] = "및" -- mt
 
 L.LEADERBOARD_METRIC = "완료한 퀘스트" -- mt
 L.LEADERBOARD_TOTAL = "총" -- mt
+-- mt: Information only (#715).
+L["SETTING_INFORMATION_ONLY"] = "정보만 표시: 경로 없음" -- mt
+L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
+	"경로를 시작하거나 추적 중인 퀘스트를 바꾸지 않고 여정과 퀘스트 정보를 유지합니다. 중간 지점을 클릭하면 해당 퀘스트가 지도에 표시됩니다. 이 설정을 끄면 플래너를 다시 사용합니다." -- mt
+L["CLICK_SHOW_MAP"] = "이 중간 지점을 지도에 표시하려면 클릭" -- mt
 
 L["MENU_HIDE_QUEST_MARKERS"] = "게임 퀘스트 표시 숨기기" -- mt
 L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =

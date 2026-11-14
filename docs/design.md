@@ -16,7 +16,9 @@ abandons quests.
   pages through them. The home view groups its cards under collapsible quest log headers, in order: Continue (Quests in
   your log, the story and your calling), Zones for your level, Dungeons, then Battlegrounds. With no journey chosen the
   route follows Quests in your log, and its card leads; RestedXP guides stay selectable cards and take over only when
-  the player picks one. A group with no card draws no header, each header remembers its open state per character, and
+  the player picks one. A card an installed guide addon feeds carries that provider's own mark at its top right, and
+  its tooltip names the provider and says its steps are not Adventure Guide's own. A group with no card draws no
+  header, each header remembers its open state per character, and
   the header holding the route the guide follows stays open. Prefer useful green/yellow quests; the maximum quest level slider defaults to +2, excluding
   orange/red pickups. The limit applies to recommendations, zone ranking and search recommendation eligibility; higher-level quests remain searchable, and accepted quests keep their steps. A choice shows up to ten route actions,
   followed by upcoming quest entries when fewer actions are available. The active route appears above alternative
@@ -190,6 +192,23 @@ abandons quests.
 
 ### Guide navigation
 
+The Route setting **Information only** keeps journeys available to browse without starting navigation.
+All guidance entry points, including quest givers, asides and battleground suggestions, leave travel to the
+player. Enabling it stops Adventure Guide's own guidance and clears a queued start. The selected journey
+stays selected, and its automatic quest-watch ownership ends so the player's watch list is restored.
+Explicit tracking actions remain available.
+
+An integrated RestedXP guide remains readable. Information mode gives back the windows and quest watches
+Adventure Guide had taken over, and leaves RestedXP's own guide selection and progress to it. Adventure
+Guide does not automatically select a guide, apply saved skips or take over navigation in this mode.
+
+Clicking a stop first asks Questie to show the quests already in the player's log. An objective stop with
+several quests shows their combined objectives when the installed Questie supports that operation.
+The adapter uses Questie's existing map reveal functions without changing its settings or making hidden
+pins visible. Missing, unready or incompatible Questie falls back to Adventure Guide's own map reveal.
+Combat leaves no deferred navigation request. Turning information mode off restores the normal planner
+settings.
+
 The world-map sidebar is the guide. Folded sections show two Continue journeys and one journey per other
 section. Expanding a header reveals the remaining choices. Existing settings from the paged overview do
 not expand the new previews. Accepted quests, including the current story's quests, form Quests in your log,
@@ -222,6 +241,11 @@ follow the shared family voice.
   A quest whose item runs out in the bags (one the client lets last a day or less, ItemSparse DurationInInventory,
   that the quest hands over, needs or collects) goes first while the player carries one, ahead even of the area they
   stand in and of a held step: its hand-in once it is done, else its objectives, with the reason "before <item> runs out".
+  An accepted quest with a live client timer (`C_QuestLog.GetTimeAllowed`, the total and elapsed the objective
+  tracker's bar uses) goes first the same way, ordered by its exact cached deadline and then quest ID: its open
+  objectives, or its ready hand-in once they are done, with the reason "before the quest timer runs out". A failed,
+  expired or missing timer adds no urgency, and the player's saved order (§4.3) and the pickup, objective and hand-in
+  dependencies still win.
   Group town visits and cross
   the sea at most once. This nearest order is the default; the opt-in `optimisedRoute` beta instead keeps the
   older heuristics (the story's chapter lead, a town's-own look-ahead and the committed order), which the
@@ -251,8 +275,9 @@ follow the shared family voice.
   its in-progress quest is selected, its travel line and numbered pin go, and the route stays on it until its
   objectives are done (a merged visit takes only the objectives the player can work on now).
 - **4.3 Committed order.** Preserve the chosen sequence and visit identities across rebuilds.
-- **4.4 Count ticks.** A burst of quest-log events that leaves the log's shape alone (the same quests, complete flags
-  and objective done flags; `Model.LogShape`) only moved counts: the last route is repainted with the live counts
+- **4.4 Count ticks.** A burst of quest-log events that leaves the log's shape alone (the same quests, complete and
+  failed flags, live-timer deadlines and objective done flags; `Model.LogShape`) only moved counts: the last route is
+  repainted with the live counts
   (`Model.Repaint`), every journey, order, `here` hold and choice kept, without a plan. Anything else plans in full.
   An objective whose count reaches its need is done, and a quest whose objectives are all done is complete, even
   while the client's finished and complete flags lag the count (a looted quest item reports it a tick later;

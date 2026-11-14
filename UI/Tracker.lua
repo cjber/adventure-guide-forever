@@ -125,7 +125,7 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 		self:MarkDirty()
 		return
 	elseif block.id == POLESTAR then
-		if mouseButton ~= "RightButton" then
+		if mouseButton ~= "RightButton" and not ns.Setting("informationOnly") then
 			ns.Polestar.TakeOver()
 			ns.StartRoute()
 		end

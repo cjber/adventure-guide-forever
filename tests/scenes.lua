@@ -400,6 +400,74 @@ out.restedxp = Panel(h, "restedxp")
 h.ns.Pins.Refresh()
 out.restedxp.pins = Pins(h)
 
+-- The provider's mark in each state it is drawn (#713): the chosen card at 18px, a compact row at 14px while another
+-- journey is chosen (one also carries the "new" badge, the pair's hardest case), and the map overview's card at 14px.
+-- RestedXP's v2 theme names the installed logo, which tools/screenshots_art.py resolves from the real addon.
+h = Load("v1", false, false, "carry", nil, {
+	log = { { id = 843, title = "Gann's Reclamation", level = 23, complete = false } },
+})
+dofile("tests/rxp_fixture.lua")(h, nil, nil, "19-25 Elwynn")
+-- The guide's cards are not what the character has already been offered: a level gained then marks them, so one
+-- compact row carries both its "new" badge and the provider's mark, the pair whose anchors must not meet.
+for key in pairs(h.ns.Prefs().seen or {}) do
+	if key:find("^guide:") then
+		h.ns.Prefs().seen[key] = nil
+	end
+end
+h.player.level = 19
+h.fire("PLAYER_LEVEL_UP")
+h.flush()
+h.ns.Invalidate()
+h.flush()
+out.rxp_compact = Panel(h, "rxp_compact")
+
+h = Load("v1", false, true)
+dofile("tests/rxp_fixture.lua")(h, nil, nil, "19-25 Elwynn")
+h.ns.Prefs().previewGroups = { continue = false }
+h.ns.Invalidate()
+h.flush()
+out.rxp_overview = Panel(h, "rxp_overview")
+
+-- Information mode still lists the guide's own journeys; its cards keep RestedXP's mark.
+h.ns.SetSetting("informationOnly", true)
+h.flush()
+out.rxp_information = Panel(h, "rxp_information")
+
+-- A chosen guide with information mode on: the card still names RestedXP, and the Stop control is gone.
+h = Load("v1", false, true)
+dofile("tests/rxp_fixture.lua")(h, 10)
+local informationGuide = assert(h.ns.RestedXP.Journey())
+h.ns.Choose(informationGuide.key, true)
+h.flush()
+h.ns.SetSetting("informationOnly", true)
+h.flush()
+out.rxp_information_chosen = Panel(h, "rxp_information_chosen")
+
+-- The legacy fallback: an older RestedXP with no v2 theme names the 64-square logo its legacy guide window draws.
+h = Load("v1", false, true)
+dofile("tests/rxp_fixture.lua")(h, 10, nil, nil, true)
+local legacyGuide = assert(h.ns.RestedXP.Journey())
+h.ns.Choose(legacyGuide.key, true)
+h.flush()
+out.rxp_legacy = Panel(h, "rxp_legacy")
+
+-- The chosen guide's card tooltip names RestedXP beside its mark.
+h = Load("v1", false, true)
+dofile("tests/rxp_fixture.lua")(h, 10)
+local tooltipGuide = assert(h.ns.RestedXP.Journey())
+h.ns.Choose(tooltipGuide.key, true)
+h.flush()
+h.ns.OpenPanel()
+h.flush()
+local chosenCard = h.Find(function(frame)
+	return frame.IconFrame ~= nil
+		and frame.journey ~= nil
+		and frame.journey.key == tooltipGuide.key
+		and frame:IsVisible()
+end)[1]
+h.Hover(assert(chosenCard, "the chosen guide card is missing"))
+out.rxp_tooltip = { lines = Tooltip(h) }
+
 h = Load("v1", false, true, nil, nil, { skillup = { professions = {} } })
 dofile("tests/rxp_fixture.lua")(h, nil, true)
 local setup = assert(h.G.AdventureGuideForeverGuideSetup)
@@ -465,6 +533,37 @@ for index, entry in ipairs(h.menu.entries) do
 		out.sync_submenu = MenuEntries(entry)
 	end
 end
+
+-- Information mode keeps the map host and falls back to AGF pins without Questie.
+h = Load("v1", true, false, STORY)
+h.ns.SetSetting("informationOnly", true)
+h.flush()
+out.information_only = Panel(h, "information_only")
+h.ns.Pins.Refresh()
+out.information_only.pins = Pins(h)
+local informationRing = assert(h.Pins("AdventureGuideForeverPinTemplate")[HOVERED])
+h.Hover(informationRing)
+out.information_tooltip = {
+	lines = Tooltip(h),
+	pins = Pins(h),
+	hovered = #(h.Pins("AdventureGuideForeverGiverPinTemplate") or {}) + HOVERED,
+}
+informationRing:OnMouseLeave()
+h.call(informationRing.OnMouseClickAction, informationRing, "LeftButton")
+h.flush()
+out.information_fallback = Panel(h, "information_fallback")
+h.ns.Pins.Refresh()
+out.information_fallback.pins = Pins(h)
+h.ns.SetSetting("informationOnly", false)
+h.flush()
+out.information_off = Panel(h, "information_off")
+h.ns.Pins.Refresh()
+out.information_off.pins = Pins(h)
+local plannerRing = assert(h.Pins("AdventureGuideForeverPinTemplate")[HOVERED])
+h.Hover(plannerRing)
+out.information_off.lines = Tooltip(h)
+out.information_off.hovered = #(h.Pins("AdventureGuideForeverGiverPinTemplate") or {}) + HOVERED
+plannerRing:OnMouseLeave()
 
 out.errors = {}
 for _, each in ipairs(loaded) do

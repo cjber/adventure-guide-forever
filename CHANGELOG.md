@@ -12,6 +12,12 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+### Added
+
+- **RestedXP guide cards now carry RestedXP's mark.** The guides you can choose, and the one you follow, show the RestedXP logo at the card's top right, and their tooltips say the steps come from your installed guides rather than from Adventure Guide's own zone stories or Clean up my log, so the two kinds are easy to tell apart. Thanks to lanprite for the report (#713).
+- **Browse journeys without starting a route.** Information only in the Route settings keeps the journey's quest information and your tracked quests. Clicking a stop shows its quests with Questie's existing map pins, or marks the stop on the map when that reveal is unavailable. Thanks to cotijelucie for the idea (#715).
+- **Timed quests go first:** A quest with a live timer moves its objectives and its hand-in ahead in the automatic journey order, and the step says why. Your own saved order and quest dependencies still win, and a failed, expired or missing quest timer never adds urgency. (#709)
+
 ### Fixed
 
 - **A book you have already picked up no longer stays at the top of the Library route.** After you loot a book, the item waits in your bags until you visit the librarian, and the guide could keep pointing at the empty shelf for the rest of the session. It now treats a book you carry, in your bags or your bank, as collected and moves on to the next one. Thanks to InfamousMunky for the report (#767).
