@@ -71,6 +71,8 @@ Credit for the reports and requests behind the addon.
 | InfamousMunky | Daily Delivery no longer offered once handed on | GitHub; #629 |
 | lanprite | The guide's target button kept its own row under the step | Discord; cjber/shortest-path-forever#787 |
 | InfamousMunky | Library books journey | GitHub; #706 |
+| iPulse | Library books card vanishing after a login, and Stop not surviving a reload | CurseForge; #756, #757; thread 8705846 |
+| MrOxiMoron | Keeping the game's own quest markers on the map | CurseForge; #764; thread 8698185 |
 
 ## Inspired by
 

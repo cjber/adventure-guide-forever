@@ -337,7 +337,7 @@ do
 	-- Every row goes in through the secure delegate; none from addon code, which taints the search. The rows are
 	-- grouped into subcategories with a short index page, so no page grows tall.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 32, "27 settings rows and 5 index buttons, all through Settings.RegisterInitializer")
+	equal(#h.settings, 33, "28 settings rows and 5 index buttons, all through Settings.RegisterInitializer")
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
@@ -346,7 +346,11 @@ do
 			.. "titleStartsRoute autoStart autoNextZone npcHighlight polestarAside warnClosing stepSound trainingReminders",
 		"Route holds its rows in order"
 	)
-	equal(table.concat(pages[L.SETTINGS_GROUP_MAP] or {}, " "), "showMapPins showQuestGivers", "Map holds its rows")
+	equal(
+		table.concat(pages[L.SETTINGS_GROUP_MAP] or {}, " "),
+		"showMapPins hideQuestMarkers showQuestGivers",
+		"Map holds its rows"
+	)
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_TRACKER] or {}, " "),
 		"attachTracker lockTracker showTracker trackRouteQuests journeyWatch guideTracksQuests",
@@ -4087,6 +4091,20 @@ do
 	end
 	equal(byText.Quests.kind, "checkbox", "cog: a Quests checkbox")
 	equal(byText.Dungeons.isSelected(), false, "cog: dungeons off")
+	equal(
+		byText[h.ns.L.MENU_HIDE_QUEST_MARKERS].isSelected(),
+		true,
+		"cog: the game's quest markers are hidden at route stops by default"
+	)
+	local order = {}
+	for index, entry in ipairs(menu.entries) do
+		order[entry.text or entry.kind] = index
+	end
+	equal(
+		order[h.ns.L.MENU_HIDE_QUEST_MARKERS],
+		order[h.ns.L.MENU_MAP_PINS] + 1,
+		"cog: the marker setting sits directly under Show map pins"
+	)
 	local before = h.modelCalls.Journeys
 	byText.Dungeons.onClick()
 	h.flush()

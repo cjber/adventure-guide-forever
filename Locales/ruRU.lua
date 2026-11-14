@@ -580,3 +580,7 @@ L["SYNC_AND"] = "и" -- mt
 
 L.LEADERBOARD_METRIC = "Сданные задания" -- mt
 L.LEADERBOARD_TOTAL = "всего" -- mt
+
+L["MENU_HIDE_QUEST_MARKERS"] = "Скрывать игровые метки заданий" -- mt
+L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
+	"Отключите этот параметр, чтобы маркеры заданий и синие области заданий игры оставались на карте рядом с маркерами вашего маршрута." -- mt
