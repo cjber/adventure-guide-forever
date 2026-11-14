@@ -1,23 +1,37 @@
 {
-  "input_digest": "60329a3cfaaa286564ddc46e10195ff108e68319a6bcc3ffe0118c04fad3022a",
-  "runtime_sha256": "60329a3cfaaa286564ddc46e10195ff108e68319a6bcc3ffe0118c04fad3022a",
-  "candidate": "2066763042650c422f73ff5e6248bb123b1203ab7e98fb99a17243bd762b0273",
+  "input_digest": "e34fc000ce264d1e5583994782ec16cdee47cb5d91d0e4fab4280e20173d60af",
+  "runtime_sha256": "e34fc000ce264d1e5583994782ec16cdee47cb5d91d0e4fab4280e20173d60af",
+  "candidate": "61dd33439c711e468b18e7a8e6d357a2d2af54eba5c008b1c3b2c5272c7953b9",
   "client_build": "1.60.1.70938 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "c2759004daed09ec76a754a17729b0639c2ced8e",
+  "source_commit": "997c0d583280ea59938775f4e82db3bccde37664",
   "flows": [
     {
-      "name": "route",
+      "name": "Map settings with the quest marker option",
       "steps": [
-        "/agf"
+        "Install the candidate and /reload",
+        "Open Options, AddOns, Adventure Guide, Map",
+        "Hide game quest markers shows between the route pin and quest giver options, ticked by default, with its label in full"
+      ],
+      "result": "pass"
+    },
+    {
+      "name": "Guide beside the world map",
+      "steps": [
+        "/reload, then open the world map with its quest log and run /agf",
+        "The guide's page opens beside the map; it reports QuestieDB's quests as still loading while the quest list is rebuilt after the update"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/ba5572d7a9b8e1cbd32586f0acf06138/raw/566be5a1e319dde8864bdb2cd562abfb118fc061/1-route.png",
-      "sha256": "0b1e5f410558336595b417978fbf7381e22bf973cc129db2f1be1969d10e7b3c"
+      "url": "https://gist.githubusercontent.com/cjber/ab297bad847c970bf120bb44acefd49f/raw/dfa64242eab5d53956bb4829c30cf3476b94fdb6/1-map-settings-with-the-quest-marker-option.png",
+      "sha256": "6a9e7a57b2abf461006e71863eab88831af020f272286393c733f405141d12bf"
+    },
+    {
+      "url": "https://gist.githubusercontent.com/cjber/ab297bad847c970bf120bb44acefd49f/raw/dfa64242eab5d53956bb4829c30cf3476b94fdb6/2-guide-beside-the-world-map.png",
+      "sha256": "1674bb81bb02c4ecc30d3b2224f2c143f056295477f279b8725df1dbb1f2a7d2"
     }
   ]
 }
