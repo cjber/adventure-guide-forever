@@ -42,3 +42,7 @@ card | zone:1446 | Head to Tanaris | 1 quest near your level | - | map 1446
   step 1 | town:1446:976 | Pick up: Field of Honor: Week 1 | 1446 0.5185,0.2716 | near your level
 card | calling | Your calling | Chapter 2 | A task for your class: Bartleby the Drunk | map 1453
   step 1 | town:1453:0 | Pick up: Bartleby the Drunk | 1453 0.7713,0.5326 | Continues a story you started
+card | chain:12 | The People's Militia | Chapter 1 of 3 | Begins a new story | map 1436
+  step 1 | town:1436:108 | Pick up: The People's Militia | 1436 0.5633,0.4752 | Begins a new story
+card | chain:36 | Westfall Stew | Chapter 1 of 2 | Begins a new story | map 1436
+  step 1 | town:1436:916 | Pick up: Westfall Stew | 1436 0.5992,0.1942 | Begins a new story

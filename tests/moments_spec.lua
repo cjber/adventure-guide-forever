@@ -202,6 +202,15 @@ equal(warning ~= nil, true, "quest visit: the zone is above the character's leve
 equal(Tracker(h), warning, "quest visit: alert keeps the range warning")
 clean(h, "quest visit")
 
+-- A newly eligible alternative is a new offer even when the destination card was already seen.
+do
+	local alternative = Load({ seen = { ["zone:1424"] = true } })
+	LevelUp(alternative, 19)
+	equal(Tracker(alternative), "Ziz Fizziks is now for your level", "new alternative: names its own story")
+	equal(alternative.ns.Moments.IsNew("chain:1483"), true, "new alternative: its card is marked")
+	clean(alternative, "new alternative")
+end
+
 -- An aside no provider gave before: its own line glows, with the pips, and no moment line. One that stops being
 -- given leaves the seen set, so it is new again when it comes back. Hillsbrad, Tirisfal Glades and Moonglade, zones to
 -- head to from level 20, are turned down so the line level 20 brings is the calling's.
@@ -214,6 +223,11 @@ h = Load({
 		["zone:1412"] = "Mulgore",
 	},
 })
+-- These alternative stories become eligible at levels 19 to 21; this case isolates the aside and class calling.
+h.ns.Prefs().seen["chain:1483"] = true
+h.ns.Prefs().seen["chain:878"] = true
+h.ns.Prefs().seen["chain:79007"] = true
+h.ns.Prefs().seen["chain:843"] = true
 local provider = {}
 h.ns.Asides.Register(function()
 	return provider.aside

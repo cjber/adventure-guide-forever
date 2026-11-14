@@ -60,3 +60,13 @@ card | zone:1434 | Head to Stranglethorn Vale | 2 quests near your level | - | m
   step 1 | town:1434:35 | Visit Booty Bay: Pick up 2 | 1434 0.2813,0.7590 | 2 to pick up
 card | zone:1446 | Head to Tanaris | 1 quest near your level | - | map 1446
   step 1 | town:1446:976 | Pick up: Field of Honor: Week 1 | 1446 0.5185,0.2716 | near your level
+card | chain:1010 | Bathran's Hair | Chapter 1 of 5 | Begins a new story | map 1440
+  step 1 | town:1440:413 | Pick up: Bathran's Hair | 1440 0.2644,0.3859 | Begins a new story
+card | chain:1007 | The Ancient Statuette | Chapter 1 of 2 | Begins a new story | map 1440
+  step 1 | town:1440:414 | Pick up: The Ancient Statuette | 1440 0.1479,0.3129 | Begins a new story
+card | chain:1056 | Journey to Stonetalon Peak | Chapter 1 of 3 | Begins a new story | map 1440
+  step 1 | town:1440:415 | Pick up: Journey to Stonetalon Peak | 1440 0.3577,0.4910 | Begins a new story
+card | chain:1070 | On Guard in Stonetalon | Chapter 1 of 3 | Begins a new story | map 1440
+  step 1 | town:1440:415 | Pick up: On Guard in Stonetalon | 1440 0.3489,0.4979 | Begins a new story
+card | chain:1008 | The Zoram Strand | Chapter 1 of 2 | Begins a new story | map 1440
+  step 1 | town:1440:415 | Pick up: The Zoram Strand | 1440 0.3467,0.4884 | Begins a new story

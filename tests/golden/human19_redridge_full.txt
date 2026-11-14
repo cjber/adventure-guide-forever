@@ -44,3 +44,15 @@ card | zone:1434 | Head to Stranglethorn Vale | 2 quests near your level | - | m
   step 1 | town:1434:35 | Pick up: A Special Gift | 1434 0.2813,0.7590 | near your level
 card | zone:1446 | Head to Tanaris | 1 quest near your level | - | map 1446
   step 1 | town:1446:976 | Pick up: Field of Honor: Week 1 | 1446 0.5185,0.2716 | near your level
+card | chain:20 | Blackrock Menace | Chapter 1 | Begins a new story | map 1433
+  step 1 | area:20:4 | Complete objectives · Blackrock Menace | 1433 0.6130,0.5330 | Begins a new story | 100 yd | 20/4
+card | chain:125 | The Lost Tools | Chapter 1 of 3 | Begins a new story | map 1433
+  step 1 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | Begins a new story | 0 yd | 125/4
+card | chain:120 | Messenger to Stormwind | Chapter 1 of 6 | Begins a new story | map 1453
+  step 1 | town:1453:0 | Visit Stormwind City: Turn in 2 | 1453 0.6917,0.8272 | Begins a new story
+card | chain:118 | The Price of Shoes | Chapter 1 of 2 | Begins a new story | map 1429
+  step 1 | town:1429:87 | Turn in: The Price of Shoes | 1429 0.4171,0.6554 | Begins a new story
+card | chain:129 | A Free Lunch | Chapter 1 of 3 | Begins a new story | map 1433
+  step 1 | town:1433:1002 | Turn in: A Free Lunch | 1433 0.1037,0.7126 | Begins a new story
+card | chain:244 | Encroaching Gnolls | Chapter 2 of 2 | Continues a story you started | map 1433
+  step 1 | area:246:1 | Complete objectives · Assessing the Threat | 1433 0.2690,0.8270 | Continues a story you started | 94 yd | 246/1
