@@ -3285,6 +3285,9 @@ function harness.load(options)
 	-- The shared tracker host post-hooks the native layout (Blizzard_ObjectiveTrackerFrame.lua).
 	G.ObjectiveTrackerFrame.UpdateHeaderPosition = function() end
 	G.ObjectiveTrackerFrame.UpdateHeight = function() end
+	-- Core 1.12 post-hooks the container's own AddModule to join and leave the native list.
+	G.ObjectiveTrackerFrame.AddModule = function() end
+	G.ObjectiveTrackerFrame.RemoveModule = function() end
 	G.ObjectiveTrackerManager = setmetatable({}, {
 		__index = function(_, key)
 			error("addon entered native tracker manager: " .. key)
