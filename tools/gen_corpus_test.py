@@ -90,9 +90,11 @@ class CorpusTest(unittest.TestCase):
     def test_the_books_carry_their_object_spawns_and_hand_in(self):
         books = BOOK_FIXTURE.read_text(encoding="utf-8")
         records = re.findall(r"^\t\{.*$", books, re.M)
-        # The library's books (39 with QuestieDB 1.1.0, down from 40 with 1.0.13: 1.1.0 no longer lists item 215824's
-        # object 423901 among its drops, so 79953 is no longer read as a book), every one with the NPC that takes it.
-        self.assertEqual(len(records), 39)
+        # The library's books (40 with QuestieDB 1.1.0: 79953's object 423901 is no longer in item 215824's drops, but
+        # the quest's own start object and collected item still name both, #739), every one with the NPC that takes it.
+        self.assertEqual(len(records), 40)
+        self.assertIn("id = 79953", books)
+        self.assertIn("items = { 215824 }", books)
         for record in records:
             self.assertIn("finish = {", record)
             self.assertIn("spots = {", record)

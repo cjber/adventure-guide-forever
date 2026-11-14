@@ -222,6 +222,27 @@ out.journeys = Panel(h, "journeys")
 h.ns.Pins.Refresh()
 out.journeys.pins = Pins(h)
 
+-- My tracked quests (#772): a fresh character who tracks the two quests in the log, one ready to hand in, so the
+-- card is offered and chosen over the default Quests in your log.
+local tracked = Load("v1", false, true, nil, nil, {
+	setup = function(each)
+		each.watched = { 845, 843 }
+	end,
+})
+tracked.flush()
+tracked.ns.Choose("tracked", true)
+tracked.flush()
+out.tracked = Panel(tracked, "tracked")
+for _, id in ipairs(tracked.ns.Planner.Services.Choices(tracked.ns.Data, tracked.ns.State.Player())) do
+	if tracked.ns.Data.npcs[id].place.map == 1413 then
+		tracked.ns.Prefs().trainerStops[id] = true
+		break
+	end
+end
+tracked.ns.Invalidate()
+tracked.flush()
+out.tracked_trainers = Panel(tracked, "tracked_trainers")
+
 -- Four choices with dungeons enabled, then the same overview in a shorter map sidebar.
 h.ns.Prefs().dungeons = true
 h.ns.NotInterested("zone:1421", h.ns.State.MapName(1421))

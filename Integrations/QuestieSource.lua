@@ -532,10 +532,12 @@ local function Build(lib, zones, bundled, yield)
 		local row = NpcRow(id)
 		return row and row.trains or false
 	end
-	-- The book a quest is, or nil: a librarian's or mage trainer's quest started by a world object that drops the item
-	-- the quest collects. A class quest handed in at a trainer is not a book, since the trainer starts it rather than
-	-- an object. The object IDs and the collected item IDs are returned sorted, so a stop built from them and a book
-	-- the player carries are the same every build.
+	-- The book a quest is, or nil: a librarian's or mage trainer's quest started by a world object and collecting an
+	-- item. A class quest handed in at a trainer is not a book, since the trainer starts it rather than an object.
+	-- QuestieDB's own quest records are authoritative here: its item rows can lose the object's drop link (1.1.0
+	-- dropped object 423901 from item 215824's drops), while the quest still names both its start object and the item
+	-- it collects (#739). The object IDs and the collected item IDs are returned sorted, so a stop built from them and
+	-- a book the player carries are the same every build.
 	---@param v table QuestieDB's raw quest fields
 	---@return integer[]? objects
 	---@return integer[]? items
@@ -550,25 +552,17 @@ local function Build(lib, zones, bundled, yield)
 		end
 		local objects = type(v.startedBy) == "table" and v.startedBy[2]
 		local objectives = type(v.objectives) == "table" and v.objectives[3]
-		local found, ids, collected = {}, {}, {}
+		local ids, collected = {}, {}
 		for _, object in ipairs(type(objects) == "table" and objects or {}) do
 			object = tonumber(object)
 			if object then
-				for _, objective in ipairs(type(objectives) == "table" and objectives or {}) do
-					local item = type(objective) == "table" and tonumber(objective[1])
-					local drops = item and lib.Item.objectDrops(item)
-					for _, drop in ipairs(type(drops) == "table" and drops or {}) do
-						if tonumber(drop) == object then
-							found[object] = true
-							if item then
-								collected[item] = true
-							end
-						end
-					end
-				end
-				if found[object] then
-					ids[#ids + 1] = object
-				end
+				ids[#ids + 1] = object
+			end
+		end
+		for _, objective in ipairs(type(objectives) == "table" and objectives or {}) do
+			local item = type(objective) == "table" and tonumber(objective[1])
+			if item then
+				collected[item] = true
 			end
 		end
 		table.sort(ids)
@@ -577,13 +571,13 @@ local function Build(lib, zones, bundled, yield)
 			items[#items + 1] = item
 		end
 		table.sort(items)
-		return ids[1] and ids or nil, items[1] and items or nil
+		return ids[1] and items[1] and ids or nil, items[1] and items or nil
 	end
 	-- The places a book's objects spawn at, the item it collects and the NPC that takes it. Both places are read from
 	-- QuestieDB rather than from the quest's built start (which names the librarian too and would send every book to
 	-- Stormwind), in map then point order so a book with several spawns always offers the same stop.
 	---@param objects integer[]
-	---@param items integer[]? the items its objects drop and the quest collects
+	---@param items integer[]? the items the quest collects
 	---@param v table
 	---@param id integer
 	---@return AGFBook

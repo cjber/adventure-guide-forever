@@ -29,6 +29,8 @@ ns.Credits = {
 		{ name = "iPulse", what = "Library books card vanishing after a login, and Stop not surviving a reload" },
 		{ name = "MrOxiMoron", what = "Keeping the game's own quest markers on the map" },
 		{ name = "InfamousMunky", what = "A collected book no longer stays the next stop" },
+		{ name = "QuincyO", what = "Start the route from the continent you reach" },
+		{ name = "Kyorri", what = "Choose the quests to route in the best order" },
 	},
 	inspired = {
 		{ name = "Polestar by Fitz", what = "Ideas for many features" },

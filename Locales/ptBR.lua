@@ -130,6 +130,10 @@ L["HUB_PICK_UP"] = "%d para aceitar"
 L["ITEM_LOADING"] = "Carregando item..."
 L["JOURNEY_CALLING"] = "O seu chamado"
 L["JOURNEY_CARRY"] = "Limpar meu registro"
+L["JOURNEY_TRACKED"] = "Minhas missões rastreadas" -- mt
+L["TRACKED_QUESTS"] = "%d missões rastreadas" -- mt
+L["TRACKED_QUESTS_ONE"] = "1 missão rastreada" -- mt
+L["TRACKED_REASON"] = "As missões que você rastreia, na melhor ordem" -- mt
 L["JOURNEY_CHOICES"] = "Escolha uma aventura"
 L["JOURNEY_CHOOSE"] = "Escolha uma jornada em Atividades para começar."
 L["JOURNEY_COMPLETE"] = "Jornada concluída"
@@ -535,3 +539,8 @@ L.LEADERBOARD_TOTAL = "total" -- mt
 L["MENU_HIDE_QUEST_MARKERS"] = "Ocultar marcadores de missão do jogo" -- mt
 L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
 	"Desative esta opção para manter os marcadores de missão e as áreas de missão azuis do jogo no mapa, ao lado dos marcadores da sua rota." -- mt
+
+L["TRAINER_STOPS"] = "Paradas em instrutores" -- mt
+L["VISIT_TRAINER"] = "Visite %s" -- mt
+
+L["CHOSEN_TRAINER"] = "Instrutor escolhido" -- mt

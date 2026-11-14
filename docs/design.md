@@ -31,6 +31,10 @@ abandons quests.
   giver, every objective and the hand-in all stand near a stop the route already makes, the smallest detour first, and
   no more than the free slots, a card's worth of actions less the log's own quests, or three. The route keeps the
   pickups it chose while they stay open, so walking or taking one quest up does not shuffle its head.
+    My tracked quests routes exactly the quests the player tracks, as the log's own steps in the same planner order,
+  ready hand-ins included. A leading journey's own tracked quests do not count, so the card never copies the journey
+  already showing. It adds no pickups. Its menu offers specific class, profession, riding and pet trainers, grouped by zone.
+  An explicitly chosen trainer is a destination even without a quest in that town or spells waiting to train.
     Give each card a reason and only known travel estimates.
 - **2.3 Chapters.** Show a total only for a proven chain. A quest tooltip may name its proven next chapter with its level.
 - **2.4 Search.** Share eligibility checks with the planner. Explain missing requirements; locked
@@ -184,7 +188,9 @@ abandons quests.
   librarian hand-in ends the card, so the route is the next books and their turn-in rather than the whole library.
   Books already completed, books whose collected item the player carries in the bags or the bank, the other
   faction's only spots and class-restricted books outside that class are left out; a book with no spawn shows its
-  name with "Location unknown" and no waypoint. The card's level is the next reward goal's level (78150, 79536,
+  name with "Location unknown" and no waypoint. A book is read from the quest's own record: a librarian's or mage
+  trainer's quest started by a world object that collects an item. The item's drop table is not required, so a book
+  stays when QuestieDB drops that link (#739). The card's level is the next reward goal's level (78150, 79536,
   82208). `Planning/Books.lua` reads `data.books` from QuestieDB at runtime and the territories from
   `Data/Territory.lua`.
 
@@ -230,7 +236,7 @@ follow the shared family voice.
   Objective areas merge only on the same map and for the same activity kind; separate maps keep separate visits. A
   quest a lap picks up joins an area only when every quest picked up for it there comes from the same town. Current objective data does not distinguish floors on the same map.
   The step the tracker shows holds (§2.5): a re-plan from a new place, including a trip to a city to train, keeps it at
-  step 1 and only reorders the stops after it, until the player finishes or skips it. Its key is saved with the
+  step 1 and only reorders the stops after it, until the player finishes or skips it, or reaches another continent. Unknown locations keep the hold. Its key is saved with the
   character, so the first build after a /reload holds the same step. With nothing held yet (a fresh
   journey, or the held step just finished or skipped), an objective area the player stands in takes step 1.
   Rebuild on events;

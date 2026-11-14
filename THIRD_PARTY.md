@@ -74,6 +74,8 @@ Credit for the reports and requests behind the addon.
 | iPulse | Library books card vanishing after a login, and Stop not surviving a reload | CurseForge; #756, #757; thread 8705846 |
 | MrOxiMoron | Keeping the game's own quest markers on the map | CurseForge; #764; thread 8698185 |
 | InfamousMunky | A collected book no longer stays the next stop | GitHub; #767 |
+| QuincyO | Start the route from the continent you reach | GitHub; #773 |
+| Kyorri | Choose the quests to route in the best order | CurseForge; #772; thread 8711750 |
 
 ## Inspired by
 

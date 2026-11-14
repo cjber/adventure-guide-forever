@@ -86,6 +86,7 @@ ns.DEFAULTS = DEFAULTS
 -- Per-character prefs (AGFPrefs). `dungeons` seeds from the account-wide default the first
 -- time this character is seen; every other key is a plain default merged in on load.
 local PREFS_DEFAULTS = {
+	trainerStops = {},
 	plannedDungeons = {},
 	completedStories = {},
 	-- Local engagement records. These stay per-character and are never transmitted by this addon.

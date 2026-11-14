@@ -48,6 +48,8 @@ IMAGES = {
     "spf_minimap.png": ("map", "panel.map"),
     "spf_steps.png": ("steps",),
     "panel.png": ("journeys", "panel.map"),
+    "tracked.png": ("tracked", "panel.map"),
+    "tracked_trainers.png": ("tracked_trainers", "panel.map"),
     "library.png": ("library_card", "panel.map"),
     "library_stops.png": ("library_stops", "panel.map"),
     "library_territory.png": ("library_territory", "panel.map"),

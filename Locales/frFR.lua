@@ -132,6 +132,10 @@ L["HUB_PICK_UP"] = "%d à prendre"
 L["ITEM_LOADING"] = "Chargement de l’objet..."
 L["JOURNEY_CALLING"] = "Votre vocation"
 L["JOURNEY_CARRY"] = "Nettoyer mon journal"
+L["JOURNEY_TRACKED"] = "Mes quêtes suivies" -- mt
+L["TRACKED_QUESTS"] = "%d quêtes suivies" -- mt
+L["TRACKED_QUESTS_ONE"] = "1 quête suivie" -- mt
+L["TRACKED_REASON"] = "Les quêtes que vous suivez, dans le meilleur ordre" -- mt
 L["JOURNEY_CHOICES"] = "Choisissez une aventure"
 L["JOURNEY_CHOOSE"] = "Choisissez un voyage dans Activités pour commencer."
 L["JOURNEY_COMPLETE"] = "Voyage terminé"
@@ -542,3 +546,8 @@ L.LEADERBOARD_TOTAL = "total" -- mt
 L["MENU_HIDE_QUEST_MARKERS"] = "Masquer les marqueurs de quête du jeu" -- mt
 L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
 	"Désactivez cette option pour garder les marqueurs de quête et les zones de quête bleues du jeu sur la carte, à côté des marqueurs de votre itinéraire." -- mt
+
+L["TRAINER_STOPS"] = "Étapes chez les maîtres" -- mt
+L["VISIT_TRAINER"] = "Rendre visite à %s" -- mt
+
+L["CHOSEN_TRAINER"] = "Maître choisi" -- mt

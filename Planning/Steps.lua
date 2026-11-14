@@ -121,6 +121,9 @@ local function Describe(data, log, player, step)
 	local L = ns.L
 	-- A trainer's stop has no quests: its reason is the spells waiting there.
 	if step.kind == "trainer" then
+		if step.chosenTrainer then
+			return
+		end
 		step.reason = Count(L.TRAINER_SPELL, L.TRAINER_SPELLS, player.train.count)
 		step.detail = step.reason
 		return
@@ -608,7 +611,7 @@ end
 ---@param mapName? AGFMapName
 local function Locate(data, step, mapName)
 	step.zone = (mapName and mapName(step.map)) or (data.maps and data.maps[step.map] and data.maps[step.map].name)
-	if step.kind == "trainer" then
+	if step.kind == "trainer" and not step.chosenTrainer then
 		step.title = ns.L.TRAIN_IN:format(Model.TownName(data, step, mapName))
 	elseif step.kind == "turnin" then
 		local quest = data.quests[step.quests[1]]

@@ -153,4 +153,33 @@ do
 	equal(#h.errors, 0, "westfall: no errors\n" .. table.concat(h.errors, "\n"))
 end
 
+-- Across an ocean: a dwarf hunter held at Operation Recombobulation's area in Dun Morogh sails to Darkshore, where
+-- As Water Cascades is ready to hand in. A held step on the continent the player left no longer leads: the route plans
+-- from where they landed. The trip to train above (Orgrimmar, the same continent) still holds.
+do
+	local h = harness.load({
+		spf = "v1",
+		db = { autoStart = false },
+		charDB = { journey = "carry", optimisedRoute = false },
+		player = { level = 19, faction = "Alliance", raceID = 3, classID = 3, map = 1426, x = 0.248, y = 0.428 },
+		log = {
+			{ id = 412, title = "Operation Recombobulation", level = 10, complete = false },
+			{ id = 4812, title = "As Water Cascades", level = 14, complete = true },
+		},
+	})
+	h.flush()
+	local held = h.ns.Route().steps[1]
+	equal(held.key, "area:412:4", "ocean: Operation Recombobulation's area leads in Dun Morogh")
+	h.MovePlayer(1439, 0.463, 0.462) -- Darkshore, off the boat
+	h.ns.Invalidate()
+	h.flush()
+	local route = h.ns.Route()
+	equal(route.steps[1].map, 1439, "ocean: in Darkshore the route leads with a Darkshore stop")
+	equal(step(route, held.key) ~= nil, true, "ocean: the Dun Morogh area stays on the route")
+	h.ns.Invalidate()
+	h.flush()
+	equal(h.ns.Route().steps[1].map, 1439, "ocean: a second rebuild keeps the Darkshore head")
+	equal(#h.errors, 0, "ocean: no errors\n" .. table.concat(h.errors, "\n"))
+end
+
 print(("held_step_spec: %d checks passed"):format(checks))

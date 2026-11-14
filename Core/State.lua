@@ -296,6 +296,32 @@ function State.OwnedBooks()
 	return ownedBooks
 end
 
+-- The quests the player tracks, by ID: the client's own watch list, without what a leading journey added to it.
+-- QuestWatch keeps the player's set on the character while a journey leads, so the tracked journey card routes the
+-- player's list rather than a copy of the journey already showing (#772).
+---@return table<integer, boolean>
+function State.Tracked()
+	local tracked, own = {}, {}
+	local state = ns.Prefs().guideWatch
+	if state then
+		for _, questID in ipairs(state.saved or {}) do
+			own[questID] = true
+			-- Hidden watches still belong to the player; a visible quest they untracked does not.
+			if (state.hidden and state.hidden[questID]) or C_QuestLog.GetQuestWatchType(questID) ~= nil then
+				tracked[questID] = true
+			end
+		end
+	end
+	local added = state and state.added
+	for index = 1, C_QuestLog.GetNumQuestWatches() do
+		local questID = C_QuestLog.GetQuestIDForQuestWatchIndex(index)
+		if questID and not (added and added[questID] and not own[questID]) then
+			tracked[questID] = true
+		end
+	end
+	return tracked
+end
+
 ---@return AGFPlayer
 function State.Player()
 	local englishFaction = UnitFactionGroup("player")
@@ -324,6 +350,7 @@ function State.Player()
 		primaries = primaries,
 		reputation = State.Reputation,
 		battlegrounds = State.Battlegrounds(),
+		tracked = State.Tracked(),
 		notOffered = ns.Prefs().notOffered,
 		party = ns.Party.Quests(),
 		synced = ns.Party.Synced(),
@@ -641,6 +668,7 @@ for _, event in ipairs({
 	"PLAYER_XP_UPDATE",
 	"QUEST_POI_UPDATE",
 	"QUEST_WATCH_UPDATE",
+	"QUEST_WATCH_LIST_CHANGED",
 	"ITEM_COUNT_CHANGED",
 	"BAG_UPDATE_DELAYED",
 	-- The bank can hold a Library book's item (State.OwnedBooks): opening it or moving an item there moves the card.
@@ -651,6 +679,7 @@ for _, event in ipairs({
 end
 -- The events that never move the client's quest points; every other one may.
 local KEEPS_POINTS = {
+	QUEST_WATCH_LIST_CHANGED = true,
 	SKILL_LINES_CHANGED = true,
 	UPDATE_FACTION = true,
 	PLAYER_UPDATE_RESTING = true,

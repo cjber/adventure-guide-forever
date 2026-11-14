@@ -18,6 +18,7 @@ ns.Overview = Overview
 local KIND_ICONS = {
 	guide = "questlog-questtypeicon-story",
 	carry = "questlog-questtypeicon-quest",
+	tracked = "questlog-questtypeicon-quest",
 	story = "questlog-questtypeicon-story",
 	nextzone = "QuestNormal",
 	dungeon = "questlog-questtypeicon-dungeon",

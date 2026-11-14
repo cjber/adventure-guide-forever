@@ -152,6 +152,7 @@
 ---@field notOffered? table<integer, integer> quests marked not offered: quest ID -> the level marked at; one marked at the player's level is unproven, with its own Why line
 ---@field questAvailable? fun(id: integer): boolean
 ---@field ownedBooks? table<integer, boolean> library books whose collected item the player carries, by book quest ID (bags or bank)
+---@field tracked? table<integer, true> the quests the player tracks, by ID, without what a leading journey added to the watch list
 ---@field level integer
 ---@field maxQuestLevelOffset? integer highest recommended quest level relative to the player; defaults to +2
 ---@field maxLevel integer the level cap
@@ -197,6 +198,7 @@
 ---@field npcs table<integer, AGFNpc>
 
 ---@class AGFPrefs
+---@field trainerStops table<integer, true> explicit NPC destinations in My tracked quests
 ---@field polestarTakenFrom? string|true the Polestar guide the player took over from (Polestar.lua); nil once Polestar runs none
 ---@field camps? table<string, table<string, true>> the spots "Next spot" passed over this session, by area step key and Model.SpotKey
 ---@field notOffered table<integer, integer> route pickups their giver's window left out: quest ID -> the player's level then (Offers.lua)
@@ -278,6 +280,7 @@
 ---@field finish? string the town key ("town:<hub>") of the quest's hand-in, when the data has one
 
 ---@class AGFStep
+---@field chosenTrainer? boolean explicitly chosen destination, independent of automatic training suggestions
 ---@field rxpIndex? integer
 ---@field rxpSticky? boolean an ongoing RestedXP objective
 ---@field rxpGuide? string
@@ -327,7 +330,7 @@
 ---@field quests integer[] quest IDs it offers the player now, ascending
 ---@field adds integer[] those a shift-click puts on the route: none orange or red
 
----@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"|"calling"|"battleground"|"guide"
+---@alias AGFJourneyKind "carry"|"tracked"|"story"|"nextzone"|"dungeon"|"calling"|"battleground"|"guide"
 
 -- The overview's quest log header a journey shows under (Overview.GROUPS): its kind at build time, so no title is
 -- guessed from. "continue" holds the story, Quests in your log and your calling.
@@ -470,6 +473,7 @@
 ---@class AGFState
 ---@field Level fun(): integer the player's level: UnitLevel, or PLAYER_LEVEL_UP's level while UnitLevel still lags behind it
 ---@field Player fun(): AGFPlayer
+---@field Tracked fun(): table<integer, boolean> the quests the player tracks, by ID, without a leading journey's own
 ---@field OwnedBooks fun(): table<integer, boolean> the library books whose collected item the player carries, by book quest ID
 ---@field Where fun(): integer?, number?, number? the player's map and point on it; nil where the client places them nowhere
 ---@field Completed fun(): table<integer, boolean>
@@ -818,6 +822,13 @@
 ---@field NEXT_PAGE string
 ---@field JOURNEY_PAGE string
 ---@field JOURNEY_CARRY string
+---@field CHOSEN_TRAINER string explicitly selected trainer stop reason
+---@field TRAINER_STOPS string the tracked journey menu for choosing specific trainers
+---@field VISIT_TRAINER string format: visit the named trainer
+---@field JOURNEY_TRACKED string the My tracked quests card's title
+---@field TRACKED_QUESTS string format: how many quests the player tracks
+---@field TRACKED_QUESTS_ONE string the same for one
+---@field TRACKED_REASON string the My tracked quests card's reason
 ---@field CARRY_EXPLANATION string
 ---@field JOURNEY_STORY string format: zone name
 ---@field JOURNEY_NEXT_ZONE string format: zone name
@@ -1895,6 +1906,8 @@
 
 ---@class AGFPlannerServices
 ---@field Rest fun(data: AGFData, player: AGFPlayer, steps: AGFStep[])
+---@field Choices fun(data: AGFData, player: AGFPlayer): integer[]
+---@field ChosenTrainers fun(data: AGFData, player: AGFPlayer, prefs: AGFPrefs): AGFStep[]
 ---@field TrainerSteps fun(data: AGFData, player: AGFPlayer, prefs: AGFPrefs, key: string): AGFStep[]
 
 ---@class AGFPlannerRouting

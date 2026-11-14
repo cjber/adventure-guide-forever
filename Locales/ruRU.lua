@@ -142,6 +142,10 @@ L["HUB_PICK_UP"] = "Взять: %d"
 L["ITEM_LOADING"] = "Загрузка предмета..."
 L["JOURNEY_CALLING"] = "Ваше призвание"
 L["JOURNEY_CARRY"] = "Очистить журнал"
+L["JOURNEY_TRACKED"] = "Мои отслеживаемые задания" -- mt
+L["TRACKED_QUESTS"] = "%d отслеживаемых заданий" -- mt
+L["TRACKED_QUESTS_ONE"] = "1 отслеживаемое задание" -- mt
+L["TRACKED_REASON"] = "Задания, которые вы отслеживаете, в лучшем порядке" -- mt
 L["JOURNEY_CHOICES"] = "Выберите приключение"
 L["JOURNEY_CHOOSE"] =
 	"Чтобы начать, выберите путешествие в разделе «Занятия»."
@@ -583,3 +587,8 @@ L.LEADERBOARD_TOTAL = "всего" -- mt
 L["MENU_HIDE_QUEST_MARKERS"] = "Скрывать игровые метки заданий" -- mt
 L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
 	"Отключите этот параметр, чтобы маркеры заданий и синие области заданий игры оставались на карте рядом с маркерами вашего маршрута." -- mt
+
+L["TRAINER_STOPS"] = "Остановки у учителей" -- mt
+L["VISIT_TRAINER"] = "Посетите %s" -- mt
+
+L["CHOSEN_TRAINER"] = "Выбранный учитель" -- mt

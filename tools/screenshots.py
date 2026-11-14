@@ -17,7 +17,7 @@ They are cached under ~/.cache/wowmock. The game client is never started or read
 with this environment (pip is not installed on the machine that pinned it, so the freeze is importlib.metadata's,
 limited to what the script imports):
 
-    Python 3.14.7, pillow==12.3.0
+    Python 3.14.7, pillow==13.0.0
     wowmock.py        503b024c0c2aae953044fd2e041691809a9e55109a6b54b31005e32cc52bd57e
     fonts/frizqt__.ttf (fdid 615960)  73de74d5d63690f29c7f97a9225edc8bd6f89e5103806af3714e4d7bfb9474e9
     fonts/arialn.ttf   (fdid 615958)  bd31d0cf2e5a1a3a9074e98ebe4964c641121e9e660f31627614c4acb6c89c1c
@@ -58,7 +58,7 @@ ROOT = Path(__file__).resolve().parent.parent
 FOREVER_CORE = Path(os.environ.get("FOREVER_CORE", ROOT.parent / "forever-core")).expanduser()
 OUT = ROOT / "docs/screenshots"
 GOLDEN = ROOT / "tests/golden/layout.json"
-PILLOW = "12.3.0"
+PILLOW = "13.0.0"
 # Match the owner's 960 px / 800 UI-unit window. FreeType BASIC advances are pixel-hinted:
 # measuring at 2x then shrinking gives different widths and hides client wrapping/truncation.
 SCALE = 1.2
@@ -667,6 +667,8 @@ def render():
             "journeys",
             "journeys_four",
             "journeys_overflow",
+            "tracked",
+            "tracked_trainers",
             "library_card",
             "library_stops",
             "library_territory",
@@ -702,6 +704,12 @@ def render():
         canvas, _ = quest_log(ui, content_ui, data, rects, scene)
         x, y, width, height = rects[scene]["AdventureGuideForeverPanel"]
         images[name] = drawing.wm.scene(ui, [(crop(canvas, x - 6, y - 6, width + 12, height + 12), 0, 0)])
+
+    # My tracked quests (#772): the card chosen for a character who tracked both quests in the log.
+    for scene in ("tracked", "tracked_trainers"):
+        canvas, _ = quest_log(ui, content_ui, data, rects, scene)
+        x, y, width, height = rects[scene]["AdventureGuideForeverPanel"]
+        images[scene] = drawing.wm.scene(ui, [(crop(canvas, x - 6, y - 6, width + 12, height + 12), 0, 0)])
 
     # The Barrens story chosen: lit over its numbered steps, their rings on the map, the others folded above it.
     canvas, _ = quest_log(ui, content_ui, data, rects, "panel", data["panel"]["pins"])

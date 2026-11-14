@@ -188,6 +188,27 @@ function Menu.Journey(owner, journey)
 		if journey.kind == "guide" then
 			GuideEntries(root)
 		end
+		if journey.kind == "tracked" then
+			local choices = root:CreateButton(L.TRAINER_STOPS)
+			choices:SetScrollMode(MENU_EXTENT)
+			local player, prefs = ns.State.Player(), ns.Prefs()
+			local zones = {}
+			for _, id in ipairs(ns.Planner.Services.Choices(ns.Data, player)) do
+				local place = ns.Data.npcs[id].place
+				local zone = zones[place.map]
+				if not zone then
+					zone = choices:CreateButton((C_Map.GetMapInfo(place.map) or {}).name or tostring(place.map))
+					zone:SetScrollMode(MENU_EXTENT)
+					zones[place.map] = zone
+				end
+				zone:CreateCheckbox(place.name, function()
+					return prefs.trainerStops[id] == true
+				end, function()
+					prefs.trainerStops[id] = not prefs.trainerStops[id] or nil
+					ns.Invalidate()
+				end)
+			end
+		end
 		if journey.kind == "library" then
 			LibraryTerritories(root)
 		end

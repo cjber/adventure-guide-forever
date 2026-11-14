@@ -127,6 +127,10 @@ L["HUB_PICK_UP"] = "%d個待接受"
 L["ITEM_LOADING"] = "正在載入物品..."
 L["JOURNEY_CALLING"] = "你的使命"
 L["JOURNEY_CARRY"] = "整理任務日誌"
+L["JOURNEY_TRACKED"] = "我的追蹤任務" -- mt
+L["TRACKED_QUESTS"] = "%d 個追蹤任務" -- mt
+L["TRACKED_QUESTS_ONE"] = "1 個追蹤任務" -- mt
+L["TRACKED_REASON"] = "依最佳順序完成你追蹤的任務" -- mt
 L["JOURNEY_CHOICES"] = "選擇一段冒險"
 L["JOURNEY_CHOOSE"] = "在活動中選擇一段旅程即可開始。"
 L["JOURNEY_COMPLETE"] = "旅程完成"
@@ -527,3 +531,8 @@ L.LEADERBOARD_TOTAL = "總計" -- mt
 L["MENU_HIDE_QUEST_MARKERS"] = "隱藏遊戲的任務標記" -- mt
 L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
 	"關閉此選項後，遊戲自帶的任務標記和藍色任務區域會與路線標記一起顯示在地圖上。" -- mt
+
+L["TRAINER_STOPS"] = "訓練師停靠點" -- mt
+L["VISIT_TRAINER"] = "拜訪%s" -- mt
+
+L["CHOSEN_TRAINER"] = "已選訓練師" -- mt

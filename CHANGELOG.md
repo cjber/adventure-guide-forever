@@ -12,9 +12,18 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- Ships with the same shared code as your other Forever addons, so they keep working together.
+
+### Added
+
+- **Route just the quests you track.** The Continue cards now include My tracked quests: it takes the quests you already track in your quest log, puts them in the same order as the rest of the guide, and includes the ones ready to hand in. Track or untrack a quest to change the route. Its menu also lets you choose specific class, profession, riding or pet trainers to visit along the way. Thanks to Kyorri for the idea on CurseForge (#772).
+
 ### Fixed
 
+- **Routes start on the continent you reach.** Sailing or hearthing across an ocean releases the old held step, so a nearby hand-in can lead again. Trips within a continent still keep the current step, thanks to QuincyO for the report (#773).
+
 - **A book you have already picked up no longer stays at the top of the Library route.** After you loot a book, the item waits in your bags until you visit the librarian, and the guide could keep pointing at the empty shelf for the rest of the session. It now treats a book you carry, in your bags or your bank, as collected and moves on to the next one. Thanks to InfamousMunky for the report (#767).
+- **A Ludite's Guide to Caring for Your Demonic Pet is back in Library books.** QuestieDB 1.1.0 stopped listing the book's shelf among the item's drops, so the card lost it. The guide now reads a book from the quest's own start object and the item it collects, so the missing book returns without a hand-picked exception (#739).
 
 ## [1.9.0] - 2026-11-13
 

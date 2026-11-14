@@ -83,9 +83,6 @@ check(
 
 -- The player tracks one of their own quests by hand while the journey leads: it stays, and the count drops. The
 -- header keeps the journey's whole title on one line, narrowed so the client ellipsises it before the count.
-local journey = h.ns.CurrentJourney()
-local title = journey.title
-journey.title = string.rep("A very long journey title ", 10)
 h.watched[#h.watched + 1] = 850
 h.fire("QUEST_WATCH_LIST_CHANGED", 850, true)
 h.flush()
@@ -97,6 +94,11 @@ h.tracker.Header.scripts.OnEnter(h.tracker.Header)
 local oneLine = table.concat(h.tooltip, "\n")
 check(oneLine:find(h.ns.L.TRACKER_HIDDEN_TOOLTIP_ONE, 1, true) ~= nil, "the tooltip says one quest is hidden")
 check(oneLine:find(h.ns.L.TRACKER_HIDDEN_TOOLTIP:format(1), 1, true) == nil, "not the plural line")
+-- A watch change now replans the tracked card, so set the layout-only title after that rebuild.
+local journey = h.ns.CurrentJourney()
+local title = journey.title
+journey.title = string.rep("A very long journey title ", 10)
+h.fire("CVAR_UPDATE", "questPOI")
 local heading = h.tracker.Header.Text
 equal(heading:GetText(), journey.title, "the full journey title is the header's text")
 equal(heading.wordWrap, false, "the title stays on one line")

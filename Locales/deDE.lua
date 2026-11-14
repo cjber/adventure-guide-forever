@@ -133,6 +133,10 @@ L["HUB_PICK_UP"] = "%d anzunehmen"
 L["ITEM_LOADING"] = "Gegenstand wird geladen..."
 L["JOURNEY_CALLING"] = "Eure Berufung"
 L["JOURNEY_CARRY"] = "Log aufräumen"
+L["JOURNEY_TRACKED"] = "Meine verfolgten Quests" -- mt
+L["TRACKED_QUESTS"] = "%d verfolgte Quests" -- mt
+L["TRACKED_QUESTS_ONE"] = "1 verfolgte Quest" -- mt
+L["TRACKED_REASON"] = "Die Quests, die Ihr verfolgt, in der besten Reihenfolge" -- mt
 L["JOURNEY_CHOICES"] = "Wählt ein Abenteuer"
 L["JOURNEY_CHOOSE"] = "Wählt unter Aktivitäten eine Reise, um zu beginnen."
 L["JOURNEY_COMPLETE"] = "Reise abgeschlossen"
@@ -538,3 +542,8 @@ L.LEADERBOARD_TOTAL = "gesamt" -- mt
 L["MENU_HIDE_QUEST_MARKERS"] = "Questmarkierungen des Spiels ausblenden" -- mt
 L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
 	"Schalte dies aus, damit die Questmarkierungen und blauen Questgebiete des Spiels neben deinen Routenmarkierungen auf der Karte sichtbar bleiben." -- mt
+
+L["TRAINER_STOPS"] = "Lehrerstopps" -- mt
+L["VISIT_TRAINER"] = "%s besuchen" -- mt
+
+L["CHOSEN_TRAINER"] = "Gewählter Lehrer" -- mt

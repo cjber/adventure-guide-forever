@@ -84,6 +84,12 @@ ns.L = {
 	NEXT_PAGE = "Next",
 	JOURNEY_PAGE = "%d / %d",
 	JOURNEY_CARRY = "Clean up my log",
+	-- My tracked quests (#772): exactly the quests the player has tracked, in the route's order, ready hand-ins
+	-- included.
+	JOURNEY_TRACKED = "My tracked quests",
+	TRACKED_QUESTS = "%d tracked quests",
+	TRACKED_QUESTS_ONE = "1 tracked quest",
+	TRACKED_REASON = "The quests you track, in the best order",
 	CARRY_EXPLANATION = "Turn-ins and unfinished objectives from your quest log, "
 		.. "plus quests you added to the route.",
 	JOURNEY_STORY = "%s story",
@@ -439,6 +445,9 @@ ns.L = {
 	-- Trainers: the trainer aside names the nearest trainer's town when the data places one,
 	-- and a chosen journey's route may stop there.
 	TRAINER_IN = "Visit your class trainer in %s",
+	CHOSEN_TRAINER = "Chosen trainer",
+	TRAINER_STOPS = "Trainer stops",
+	VISIT_TRAINER = "Visit %s",
 	TRAIN_IN = "Train in %s",
 	-- Your calling (docs/design.md §2.2): the class quests open now; the trainer only when the data says so.
 	JOURNEY_CALLING = "Your calling",

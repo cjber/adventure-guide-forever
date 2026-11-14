@@ -420,6 +420,49 @@ local function Carry(data, player, completed, log, ready, prefs, mapName, added,
 	}
 end
 
+-- My tracked quests (issue #772): exactly the quests the player tracks, as accepted log steps, in the same route
+-- order as Quests in your log, ready hand-ins included. It offers no pickups of its own.
+-- Explicit trainer choices join its destinations.
+---@param ready table<integer, AGFPlace>
+---@return AGFJourney?
+local function Tracked(data, player, completed, log, ready, prefs, mapName)
+	local tracked = player.tracked
+	if not tracked or not next(tracked) then
+		return nil
+	end
+	local candidates, stops = ns.Planner.Services.ChosenTrainers(data, player, prefs), {}
+	local plan = { areas = {}, anchors = {} }
+	local held = LogSteps(data, player, log, ready, function(id)
+		return tracked[id] == true and not Dropped(id)
+	end, stops, candidates, plan)
+	local steps = State.committedOrders
+			and Laps(data, player, completed, log, candidates, plan, prefs, mapName, nil, nil, "tracked")
+		or Build(data, player, completed, log, candidates, prefs, mapName)
+	if #steps == 0 then
+		return nil
+	end
+	local finished, away, underway = Tally(data, player, log, held, prefs)
+	local quests = finished + away + underway
+	if quests == 0 then
+		return nil
+	end
+	local L = ns.L
+	local subline = Count(L.TRACKED_QUESTS_ONE, L.TRACKED_QUESTS, quests)
+	return {
+		kind = "tracked",
+		section = "continue",
+		key = "tracked",
+		title = L.JOURNEY_TRACKED,
+		subline = subline,
+		count = subline,
+		reason = L.TRACKED_REASON,
+		map = steps[1].map,
+		steps = steps,
+		ready = finished + away,
+		underway = underway,
+	}
+end
+
 -- The finished quests in `ready` join the chosen towns they are handed in at, hand-ins first; none adds a town.
 ---@param ready table<integer, AGFPlace>
 ---@return fun(selected: AGFStep[])
@@ -1043,6 +1086,7 @@ end
 local SECTION_OF_KIND = {
 	guide = "continue",
 	carry = "continue",
+	tracked = "continue",
 	story = "continue",
 	calling = "continue",
 	nextzone = "zones",
@@ -1409,6 +1453,10 @@ function Model.Journeys(
 		return not onStory(quest)
 	end)
 	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, added, eligible)
+	local tracked = Tracked(data, player, completed, log, ready, prefs, mapName)
+	if tracked then
+		journeys[#journeys + 1] = tracked
+	end
 	-- Story and carry routes can exhaust a frame before the alternative zones.
 	Yield()
 	-- Every zone with a useful pickup other than the story's is an option, ranked for the player's level now. That

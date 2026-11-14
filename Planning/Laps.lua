@@ -384,7 +384,7 @@ local function BuildLapAnchors(lap)
 	for _, step in ipairs(others) do
 		-- A trainer only in a town a lap visits anyway (its hub), and once.
 		local anchor
-		if step.kind == "trainer" then
+		if step.kind == "trainer" and not step.chosenTrainer then
 			anchor = not trained and step.hub and anchors["town:" .. step.hub] or nil
 			trained = trained or anchor ~= nil
 		else
@@ -540,7 +540,7 @@ local function WalkLap(lap)
 			for _, stop in ipairs(anchor.stops) do
 				-- A stop with a quest the town's own pickup opens is not a place the route can go yet.
 				if not placed[stop] and Opened(stop) then
-					if stop.kind ~= "trainer" or not schooled then
+					if stop.chosenTrainer or stop.kind ~= "trainer" or not schooled then
 						Consider(lap, walk, choice, stop, anchor, Gap(from, 0, at(stop), stop.r or 0), "stop")
 					end
 				end

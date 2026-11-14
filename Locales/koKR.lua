@@ -135,6 +135,10 @@ L["HUB_PICK_UP"] = "수락 %d개"
 L["ITEM_LOADING"] = "아이템 불러오는 중..."
 L["JOURNEY_CALLING"] = "당신의 소명"
 L["JOURNEY_CARRY"] = "내 퀘스트 목록 정리"
+L["JOURNEY_TRACKED"] = "내가 추적 중인 퀘스트" -- mt
+L["TRACKED_QUESTS"] = "추적 중인 퀘스트 %d개" -- mt
+L["TRACKED_QUESTS_ONE"] = "추적 중인 퀘스트 1개" -- mt
+L["TRACKED_REASON"] = "추적 중인 퀘스트를 최적의 순서로" -- mt
 L["JOURNEY_CHOICES"] = "모험 선택"
 L["JOURNEY_CHOOSE"] = "시작하려면 활동에서 여정을 선택하십시오."
 L["JOURNEY_COMPLETE"] = "여정 완료"
@@ -546,3 +550,8 @@ L.LEADERBOARD_TOTAL = "총" -- mt
 L["MENU_HIDE_QUEST_MARKERS"] = "게임 퀘스트 표시 숨기기" -- mt
 L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
 	"이 옵션을 끄면 게임의 퀘스트 표시와 파란 퀘스트 지역이 경로 표시 옆에 그대로 지도에 나타납니다." -- mt
+
+L["TRAINER_STOPS"] = "상급자 방문" -- mt
+L["VISIT_TRAINER"] = "%s 방문" -- mt
+
+L["CHOSEN_TRAINER"] = "선택한 상급자" -- mt
