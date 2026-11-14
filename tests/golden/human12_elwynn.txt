@@ -37,9 +37,7 @@ card | zone:1411 | Head to Durotar | 1 quest near your level | - | map 1411
 card | zone:1413 | Head to The Barrens | 2 quests near your level | - | map 1413
   step 1 | town:1413:392 | Visit Ratchet: Pick up 2 | 1413 0.6268,0.3623 | 2 to pick up
 card | zone:1434 | Head to Stranglethorn Vale | 2 quests near your level | - | map 1434
-  step 1 | town:1434:35 | Visit Booty Bay: Pick up 2 | 1434 0.2851,0.7580 | 2 to pick up
-card | zone:1446 | Head to Tanaris | 1 quest near your level | - | map 1446
-  step 1 | town:1446:976 | Pick up: Field of Honor: Week 1 | 1446 0.5185,0.2716 | near your level
+  step 1 | town:1434:35 | Visit Booty Bay: Pick up 2 | 1434 0.2851,0.7577 | 2 to pick up
 card | calling | Your calling | Chapter 2 | A task for your class: Bartleby the Drunk | map 1453
   step 1 | town:1453:0 | Pick up: Bartleby the Drunk | 1453 0.7713,0.5326 | Continues a story you started
 card | chain:12 | The People's Militia | Chapter 1 of 3 | Begins a new story | map 1436

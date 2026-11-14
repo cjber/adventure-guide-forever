@@ -164,11 +164,19 @@ local function Keys(route, key)
 end
 
 -- Whether the player stands where step 1 is, which leads whatever the committed order (docs/design.md §4.2): a town
--- with a giver or hand-in within 100 yd, else an open area's ring.
-local function Standing(player, route)
+-- with a pickup or ready hand-in within 60 yd, else an open area's ring.
+local function Standing(player, route, log)
 	local head = route.steps[1]
-	if head and head.kind ~= "area" and head.hub ~= nil and Model.Hub(data, player) == head.hub then
-		return true
+	if head and head.kind ~= "area" and not head.returns then
+		-- A giver can be beside the player across a town overlay boundary.
+		local distance = Model.Yards(data, player, head)
+		local ready = #(head.pickups or {}) > 0
+		for _, id in ipairs(Model.Handins(head)) do
+			ready = ready or (log[id] and log[id].complete) or false
+		end
+		if ready and distance and distance <= 60 then
+			return true
+		end
 	end
 	return head ~= nil and Model.Here(data, player, route.steps) == 1
 end
@@ -199,7 +207,7 @@ local function Stability(where, player, completed, log, held, prefs)
 	end
 	local walked = Model.Plan(data, moved, completed, log, prefs, nil, nil, again)
 	if walked.journey == key and walked.steps[1] then
-		local fronted = Standing(moved, walked)
+		local fronted = Standing(moved, walked, log)
 		check(walked.steps[1].key == head or fronted, where .. ": walked to " .. to.key .. ", step 1 holds")
 		stable.walked, stable.fronted = stable.walked + 1, stable.fronted + (fronted and 1 or 0)
 		Walk(where .. " walked", walked.steps, moved, completed, log, held)
@@ -238,7 +246,7 @@ local function Stability(where, player, completed, log, held, prefs)
 		local added = Model.Plan(data, player, completed, log, prefs, nil, nil, again)
 		if added.journey == key and added.steps[1] then
 			check(
-				added.steps[1].key == head or Standing(player, added),
+				added.steps[1].key == head or Standing(player, added, log),
 				where .. ": took up " .. extra .. ", step 1 holds"
 			)
 			stable.added = stable.added + 1
