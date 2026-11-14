@@ -36,7 +36,9 @@ abandons quests.
   already showing. It adds no pickups. Its menu offers specific class, profession, riding and pet trainers, grouped by zone.
   An explicitly chosen trainer is a destination even without a quest in that town or spells waiting to train.
     Give each card a reason and only known travel estimates.
-- **2.3 Chapters.** Show a total only for a proven chain. A quest tooltip may name its proven next chapter with its level.
+- **2.3 Chapters.** Expand Continue to choose another eligible story in the viewed destination without dismissing the
+  suggested zone. Each chain is offered once, named by its known first quest, with its current chapter. Accepted quests
+  stay on the chosen story; other destinations keep their zone cards. Show a total only for a proven chain. A quest tooltip may name its proven next chapter with its level.
 - **2.4 Search.** Share eligibility checks with the planner. Explain missing requirements; locked
   quests offer no destination. Every word of the query must appear in the title (case and Latin accents folded); the
   best match comes first (the whole title, the title's start, the start of its words, anywhere), then a quest open

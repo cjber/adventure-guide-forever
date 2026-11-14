@@ -222,6 +222,10 @@ out.journeys = Panel(h, "journeys")
 h.ns.Pins.Refresh()
 out.journeys.pins = Pins(h)
 
+-- Story alternatives (#759), shown through the existing expanded Continue group.
+local stories = Load("v1", false, true, nil, nil, { charDB = { previewGroups = { continue = false } } })
+out.story_choices = Panel(stories, "story_choices")
+
 -- My tracked quests (#772): a fresh character who tracks the two quests in the log, one ready to hand in, so the
 -- card is offered and chosen over the default Quests in your log.
 local tracked = Load("v1", false, true, nil, nil, {

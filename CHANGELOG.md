@@ -16,9 +16,13 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ### Added
 
+- **Choose another story without skipping the first.** Expand Continue to pick another available story in the destination you are viewing. Each story keeps its own chapters and accepted quests. Thanks to iPulse for the idea on CurseForge (#759).
+
 - **Route just the quests you track.** The Continue cards now include My tracked quests: it takes the quests you already track in your quest log, puts them in the same order as the rest of the guide, and includes the ones ready to hand in. Track or untrack a quest to change the route. Its menu also lets you choose specific class, profession, riding or pet trainers to visit along the way. Thanks to Kyorri for the idea on CurseForge (#772).
 
 ### Fixed
+
+- **A full quest log still lets the group find you.** Hidden quests no longer prevent Sync with from listing a group member whose visible log is full. Thanks to iPulse for the report on CurseForge (#758).
 
 - **Routes start on the continent you reach.** Sailing or hearthing across an ocean releases the old held step, so a nearby hand-in can lead again. Trips within a continent still keep the current step, thanks to QuincyO for the report (#773).
 

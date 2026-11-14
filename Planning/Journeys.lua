@@ -494,17 +494,35 @@ end
 ---@param key string the journey's key: its trainer stop joins it while it is chosen
 ---@param zone? integer
 ---@param laps? boolean the card is card 1 or the chosen one: its route is laps (Laps), Build's otherwise
-local function Pickups(data, player, completed, log, ready, eligible, belongs, key, prefs, mapName, leadID, zone, laps)
+---@param holdsQuest? fun(id: integer): boolean log quests held by an individual chain
+local function Pickups(
+	data,
+	player,
+	completed,
+	log,
+	ready,
+	eligible,
+	belongs,
+	key,
+	prefs,
+	mapName,
+	leadID,
+	zone,
+	laps,
+	holdsQuest
+)
 	local candidates, stops, quests, lead, held = {}, {}, 0, nil, nil
 	local plan = { areas = {}, anchors = {} }
 	for _, id in ipairs(eligible) do
 		quests = quests + (belongs(data.quests[id]) and 1 or 0)
 	end
 	-- With Quests off the story holds no log quest, so it never stays for the log alone: carry holds them.
-	if zone and prefs.quests then
+	if (zone or holdsQuest) and prefs.quests then
 		held = LogSteps(data, player, log, ready, function(id, place)
-			return not Dropped(id) and OnZone(data, zone, id, place)
+			return not Dropped(id)
+				and ((holdsQuest and holdsQuest(id)) or (not holdsQuest and OnZone(data, zone, id, place)))
 		end, stops, candidates, plan)
+		lead = holdsQuest and leadID and held[leadID] or nil
 	end
 	PickupSteps(data, eligible, belongs, candidates, stops)
 	for _, step in ipairs(TrainerSteps(data, player, prefs, key)) do
@@ -1242,17 +1260,19 @@ local function CallingJourney(data, player, completed, log, ready, eligible, pre
 	return calling
 end
 
--- A chain that leads into an instance, as a story: `into` holds its quests the player can take now, led
--- by its chapter at `step`, and is named after the instance it goes into, by the client when it can.
+-- A selectable chain holds only its own quests. Dungeon stories keep their instance title; outdoor stories
+-- use the known head quest, never the title of an unseen later chapter.
 ---@param into table the chain's Pickups
 ---@param chain AGFStory
 ---@param step? AGFStep the chapter's step, when Build kept it
 ---@param instanceName? fun(id: integer): string?
 ---@return AGFJourney
 local function WayIn(data, into, chain, step, continues, instanceName)
-	local instance = Into(data, chain) --[[@as integer]]
+	local instance = Into(data, chain)
 	into.kind, into.key, into.instance = "story", "chain:" .. chain.members[1], instance
-	into.title = ns.L.JOURNEY_INTO:format(instanceName and instanceName(instance) or data.instances[instance].name)
+	into.title = instance
+			and ns.L.JOURNEY_INTO:format(instanceName and instanceName(instance) or data.instances[instance].name)
+		or data.quests[chain.members[1]].title
 	---@cast into AGFJourney
 	if step then
 		into.reason = Chapter(into, chain, step, continues)
@@ -1559,52 +1579,66 @@ function Model.Journeys(
 			end
 		end
 	end
-	-- A way into an instance: the chain the player can take up that goes inside, when stranded or chosen,
-	-- and not the one the story already leads with.
+	-- Offer each eligible chain once, so choosing another story never requires dismissing the suggested zone.
+	-- The existing folded activity group contains the alternatives. Lead keeps exclusive-group and chapter rules.
 	local chosenHead = tonumber(chosen:match("^chain:(%d+)$"))
-	local chain, leadID, continues
-	if stranded or chosenHead then
-		chain, leadID, continues = Lead(data, completed, pool, function(_, id)
-			local story = Model.Story(data, id)
-			if not story then
-				return false
-			end
-			local head = story.members[1]
-			return (chosenHead == nil or head == chosenHead)
-				and not dismissed["chain:" .. head]
-				and not (told and told.story and told.story.members[1] == head)
-				and Into(data, story) ~= nil
-		end)
+	local storyPool, included = {}, {}
+	for _, id in ipairs(pool) do
+		storyPool[#storyPool + 1], included[id] = id, true
 	end
-	if chain and leadID then
-		local way, members = chain, {}
-		for _, id in ipairs(way.members) do
-			members[data.quests[id]] = true
+	for id in pairs(prefs.quests and log or NONE) do
+		if not included[id] and data.quests[id] and not Dropped(id) then
+			storyPool[#storyPool + 1] = id
 		end
-		local function Member(quest)
-			return members[quest] == true
-		end
-		local key = "chain:" .. way.members[1]
-		Offer("chain", Member, function()
-			local into, _, step = Pickups(
-				data,
-				player,
-				completed,
-				log,
-				ready,
-				pool,
-				Member,
-				key,
-				prefs,
-				mapName,
-				leadID,
-				nil,
-				key == chosen
-			)
-			if into then
-				return WayIn(data, into, way, step, continues, instanceName)
+	end
+	table.sort(storyPool)
+	local heads = {}
+	local inStoryZone = InZone(chosenZone or zone)
+	for _, id in ipairs(storyPool) do
+		local quest = data.quests[id]
+		local way = Model.Story(data, id)
+		local head = way and way.members[1]
+		-- Other destinations already have zone cards. Expand stories for the destination being viewed, plus
+		-- a selected chain wherever the player travels and the stranded character's dungeon preparation.
+		local available = inStoryZone(quest) or chosenHead == head or (stranded and way and Into(data, way) ~= nil)
+		if way and head and available and not heads[head] then
+			heads[head] = true
+			local key, members = "chain:" .. head, {}
+			for _, member in ipairs(way.members) do
+				members[data.quests[member]] = true
 			end
-		end, pool)
+			local function Member(candidate)
+				return members[candidate] == true
+			end
+			local chain, leadID, continues = Lead(data, completed, storyPool, Member)
+			local duplicate = told and told.story and told.story.members[1] == head
+			if chain and leadID and not dismissed[key] and (not duplicate or chosenHead == head) then
+				Offer("chain", Member, function()
+					local into, _, step = Pickups(
+						data,
+						player,
+						completed,
+						log,
+						ready,
+						pool,
+						Member,
+						key,
+						prefs,
+						mapName,
+						leadID,
+						nil,
+						key == chosen,
+						function(questID)
+							return Member(data.quests[questID])
+						end
+					)
+					if into then
+						return WayIn(data, into, chain, step, continues, instanceName)
+					end
+				end, storyPool)
+			end
+			Yield()
+		end
 	end
 	diversions[#diversions + 1] = prefs.battlegrounds and Battleground(data, player, prefs, mapName) or nil
 	-- The libraries are their own section, so they join the cards once every story and diversion is built.
@@ -1632,6 +1666,7 @@ function Model.Journeys(
 	for _, journey in ipairs(journeys) do
 		Summarise(journey --[[@as AGFJourney]])
 		Rest(data, player, journey.steps)
+		Yield()
 	end
 	if journeys[1] then
 		journeys[1].drop = Droppable(data, player, log)
