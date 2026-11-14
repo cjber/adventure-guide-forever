@@ -253,6 +253,49 @@ function State.QuestUpdateChanged(id)
 	return known ~= nil and known ~= Ask(id)
 end
 
+-- The events after which the bags or the bank may hold a book's item, so the set below is read again.
+local OWNED_EVENTS = {
+	ITEM_COUNT_CHANGED = true,
+	BAG_UPDATE_DELAYED = true,
+	BANKFRAME_OPENED = true,
+	PLAYERBANKSLOTS_CHANGED = true,
+	PLAYER_ENTERING_WORLD = true,
+}
+
+---@type table<integer, boolean>
+local ownedBooks = {}
+---@type AGFData?
+local ownedSource
+local ownedStale = true
+
+-- The library books whose collected item the player carries, by book quest ID: in the bags or the bank. A book is
+-- taken by looting its item from the world object, and its quest can stay hidden until the librarian is visited, so
+-- the item is the only proof the stop is done (#767, #756). Kept until an event above says the bags or bank moved, or
+-- the catalogue is replaced; a book with no item the data names is never called collected.
+---@return table<integer, boolean>
+function State.OwnedBooks()
+	if ownedStale or ownedSource ~= ns.Data then
+		local owned = {}
+		for _, book in ipairs((ns.Data and ns.Data.books) or {}) do
+			local items = book.items
+			if items and #items > 0 then
+				local held = true
+				for _, item in ipairs(items) do
+					if (C_Item.GetItemCount(item, true) or 0) == 0 then
+						held = false
+						break
+					end
+				end
+				if held then
+					owned[book.id] = true
+				end
+			end
+		end
+		ownedBooks, ownedSource, ownedStale = owned, ns.Data, false
+	end
+	return ownedBooks
+end
+
 ---@return AGFPlayer
 function State.Player()
 	local englishFaction = UnitFactionGroup("player")
@@ -262,6 +305,7 @@ function State.Player()
 	local rested, xpMax, resting = Rest()
 	return {
 		questAvailable = Available,
+		ownedBooks = State.OwnedBooks(),
 		rested = rested,
 		xpMax = xpMax,
 		resting = resting,
@@ -599,6 +643,9 @@ for _, event in ipairs({
 	"QUEST_WATCH_UPDATE",
 	"ITEM_COUNT_CHANGED",
 	"BAG_UPDATE_DELAYED",
+	-- The bank can hold a Library book's item (State.OwnedBooks): opening it or moving an item there moves the card.
+	"BANKFRAME_OPENED",
+	"PLAYERBANKSLOTS_CHANGED",
 }) do
 	pcall(events.RegisterEvent, events, event)
 end
@@ -611,6 +658,8 @@ local KEEPS_POINTS = {
 	PLAYER_XP_UPDATE = true,
 	ITEM_COUNT_CHANGED = true,
 	BAG_UPDATE_DELAYED = true,
+	BANKFRAME_OPENED = true,
+	PLAYERBANKSLOTS_CHANGED = true,
 }
 -- The completed quests are read whole at every loading screen, and again a moment after a turn-in's quest log
 -- settles: the server can mark a quest done with no QUEST_TURNED_IN (a breadcrumb or a chain's other branch closing),
@@ -674,9 +723,14 @@ local COUNTS_EVENTS = {
 	QUEST_WATCH_UPDATE = true,
 	ITEM_COUNT_CHANGED = true,
 	BAG_UPDATE_DELAYED = true,
+	BANKFRAME_OPENED = true,
+	PLAYERBANKSLOTS_CHANGED = true,
 }
 
 local function OnEvent(_, event, arg)
+	if OWNED_EVENTS[event] then
+		ownedStale = true
+	end
 	if event == "PLAYER_LEVEL_UP" then
 		announced = tonumber(arg) or announced
 	elseif event == "PLAYER_ENTERING_WORLD" then

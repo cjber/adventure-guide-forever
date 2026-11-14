@@ -28,6 +28,7 @@ ns.Credits = {
 		{ name = "InfamousMunky", what = "Library books journey" },
 		{ name = "iPulse", what = "Library books card vanishing after a login, and Stop not surviving a reload" },
 		{ name = "MrOxiMoron", what = "Keeping the game's own quest markers on the map" },
+		{ name = "InfamousMunky", what = "A collected book no longer stays the next stop" },
 	},
 	inspired = {
 		{ name = "Polestar by Fitz", what = "Ideas for many features" },
