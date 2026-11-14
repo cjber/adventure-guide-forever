@@ -1,34 +1,34 @@
 {
-  "input_digest": "844432e2827387168d480aefce118c728afa9628ebe1274f681fe5f3fab5d0fb",
-  "runtime_sha256": "844432e2827387168d480aefce118c728afa9628ebe1274f681fe5f3fab5d0fb",
-  "candidate": "2e71bac2340d451afe2e0da300846fe730aff89d746660aa8a5ac338ca921526",
+  "input_digest": "7203e13d6d55d026d9dec9ff6f2b3c94a73df60c16a92bb9122517e896dbb6d6",
+  "runtime_sha256": "7203e13d6d55d026d9dec9ff6f2b3c94a73df60c16a92bb9122517e896dbb6d6",
+  "candidate": "6bd2cb257f24c00f441554806f6cfe08bbe1df63a28154f346de4309707b04fc",
   "client_build": "1.60.1.70938 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "b6eb2cd79c59a10f3afd1155771eff15c32287c0",
+  "source_commit": "cc17e18979e4bdd46660f74a89474c850439501e",
   "flows": [
     {
-      "name": "prepare update",
+      "name": "guide",
       "steps": [
-        "../../../.cache/agent-scratch/agf-release-prepare.lua"
+        "/agf"
       ],
       "result": "pass"
     },
     {
-      "name": "update line",
+      "name": "books",
       "steps": [
-        "../../../.cache/agent-scratch/agf-release-update-line.lua"
+        "/home/cjber/.cache/agent-scratch/sweep/wow/proof-769/books.lua"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/a94c6a6276eb6476c98fe27c2f17326f/raw/000780e85180d4ff9f199bc8c2edb4213f650790/1-prepare-update.png",
-      "sha256": "8ba169b71b6c28407873059322c5811fc302bbf29bee1b4d9fd0a55fb2c3cda4"
+      "url": "https://gist.githubusercontent.com/cjber/0eb6718699791a76d3abc42dcf369c7e/raw/f02b69caa074345080fadc2cb22a4fd23c2c679d/1-guide.png",
+      "sha256": "f50243bd3de0e538d7f19e27e5e8b32b29b546e9d438d48ec1f029d073d90783"
     },
     {
-      "url": "https://gist.githubusercontent.com/cjber/a94c6a6276eb6476c98fe27c2f17326f/raw/000780e85180d4ff9f199bc8c2edb4213f650790/2-update-line.png",
-      "sha256": "9ac8aecc8964e109525a1d080d79058bd4847e05af9f786336e2a08b2ae297da"
+      "url": "https://gist.githubusercontent.com/cjber/0eb6718699791a76d3abc42dcf369c7e/raw/f02b69caa074345080fadc2cb22a4fd23c2c679d/2-books.png",
+      "sha256": "5058949adcff80465f9f44de9611731c805c600499f529bfd26ebfded021ce99"
     }
   ]
 }
