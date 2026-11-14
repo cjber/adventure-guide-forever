@@ -1,34 +1,37 @@
 {
-  "input_digest": "20eb15a2d8dc9a5740a925d7a98502c0fc7bdaeeb7f53bda71359651bfc03273",
-  "runtime_sha256": "20eb15a2d8dc9a5740a925d7a98502c0fc7bdaeeb7f53bda71359651bfc03273",
-  "candidate": "da9faf6faba9dfdb7300f5e642881fabde908fce9996866458bf0d24d1cb826f",
+  "input_digest": "e34fc000ce264d1e5583994782ec16cdee47cb5d91d0e4fab4280e20173d60af",
+  "runtime_sha256": "e34fc000ce264d1e5583994782ec16cdee47cb5d91d0e4fab4280e20173d60af",
+  "candidate": "61dd33439c711e468b18e7a8e6d357a2d2af54eba5c008b1c3b2c5272c7953b9",
   "client_build": "1.60.1.70938 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "89a31e758b50995bf684a53f61f0ea9e24dfbc38",
+  "source_commit": "997c0d583280ea59938775f4e82db3bccde37664",
   "flows": [
     {
-      "name": "prepare update",
+      "name": "Map settings with the quest marker option",
       "steps": [
-        "../../../.cache/agent-scratch/agf-release-prepare.lua"
+        "Install the candidate and /reload",
+        "Open Options, AddOns, Adventure Guide, Map",
+        "Hide game quest markers shows between the route pin and quest giver options, ticked by default, with its label in full"
       ],
       "result": "pass"
     },
     {
-      "name": "update line",
+      "name": "Guide beside the world map",
       "steps": [
-        "../../../.cache/agent-scratch/agf-release-update-line.lua"
+        "/reload, then open the world map with its quest log and run /agf",
+        "The guide's page opens beside the map; it reports QuestieDB's quests as still loading while the quest list is rebuilt after the update"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/e708925e8c89a483d6dd3810f4e06895/raw/683459f2173f9ee90df51fb71dc053d33db66b53/1-prepare-update.png",
-      "sha256": "026c951f026effbd1c80c8efc0fba0d080ce0a8cd7a568eb9d200d472728d34e"
+      "url": "https://gist.githubusercontent.com/cjber/ab297bad847c970bf120bb44acefd49f/raw/dfa64242eab5d53956bb4829c30cf3476b94fdb6/1-map-settings-with-the-quest-marker-option.png",
+      "sha256": "6a9e7a57b2abf461006e71863eab88831af020f272286393c733f405141d12bf"
     },
     {
-      "url": "https://gist.githubusercontent.com/cjber/e708925e8c89a483d6dd3810f4e06895/raw/683459f2173f9ee90df51fb71dc053d33db66b53/2-update-line.png",
-      "sha256": "f87751b852b688e5fd16e756fea63fcad6938edf2c75216329c19c86a62f0db3"
+      "url": "https://gist.githubusercontent.com/cjber/ab297bad847c970bf120bb44acefd49f/raw/dfa64242eab5d53956bb4829c30cf3476b94fdb6/2-guide-beside-the-world-map.png",
+      "sha256": "1674bb81bb02c4ecc30d3b2224f2c143f056295477f279b8725df1dbb1f2a7d2"
     }
   ]
 }

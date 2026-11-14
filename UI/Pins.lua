@@ -510,6 +510,9 @@ local markedRoute, markedMap, markedRings, markedQuests
 ---@return table<integer, true>
 local function MarkedQuests(mapID)
 	local route, rings = ns.Route(), RingsShown()
+	if not ns.Setting("hideQuestMarkers") then
+		return NONE
+	end
 	if markedRoute == route and markedMap == mapID and markedRings == rings then
 		return markedQuests --[[@as table<integer, true>]]
 	end

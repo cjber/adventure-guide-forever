@@ -538,3 +538,7 @@ L["SYNC_AND"] = "et" -- mt
 
 L.LEADERBOARD_METRIC = "Quêtes rendues" -- mt
 L.LEADERBOARD_TOTAL = "total" -- mt
+
+L["MENU_HIDE_QUEST_MARKERS"] = "Masquer les marqueurs de quête du jeu" -- mt
+L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
+	"Désactivez cette option pour garder les marqueurs de quête et les zones de quête bleues du jeu sur la carte, à côté des marqueurs de votre itinéraire." -- mt

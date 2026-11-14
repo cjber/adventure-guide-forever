@@ -36,6 +36,9 @@ local DEFAULTS = {
 	-- Opt-in: with the Adventure tab closed the map shows no Adventure Guide mark unless the player asks for them.
 	showMapPins = false,
 	showQuestGivers = false,
+	-- The game's own quest markers stay hidden at the route's stops while its pins draw (Pins.lua); turning this off
+	-- shows them beside the route pins.
+	hideQuestMarkers = true,
 	includeDungeonsDefault = false,
 	-- Choosing a journey starts its route too; the key keeps the name it had when only the tracker title did, so a
 	-- saved choice carries over.
@@ -398,6 +401,10 @@ function ns.SetSetting(key, value)
 	end
 	if key == "minimapButtonHidden" then
 		ForeverCore.MinimapButton.Refresh()
+	end
+	-- The game's quest markers at the route's stops are drawn with the route pins, so the map redraws them now.
+	if key == "hideQuestMarkers" then
+		ns.Pins.Refresh()
 	end
 	-- Wandering from now: what Go started stops, as the player's Stop would.
 	if key == "wanderer" and value then

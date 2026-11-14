@@ -26,6 +26,8 @@ ns.Credits = {
 		{ name = "InfamousMunky", what = "Daily Delivery no longer offered once handed on" },
 		{ name = "lanprite", what = "The guide's target button kept its own row under the step" },
 		{ name = "InfamousMunky", what = "Library books journey" },
+		{ name = "iPulse", what = "Library books card vanishing after a login, and Stop not surviving a reload" },
+		{ name = "MrOxiMoron", what = "Keeping the game's own quest markers on the map" },
 	},
 	inspired = {
 		{ name = "Polestar by Fitz", what = "Ideas for many features" },

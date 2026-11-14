@@ -523,3 +523,7 @@ L["SYNC_AND"] = "和" -- mt
 
 L.LEADERBOARD_METRIC = "已交付任务" -- mt
 L.LEADERBOARD_TOTAL = "总计" -- mt
+
+L["MENU_HIDE_QUEST_MARKERS"] = "隐藏游戏的任务标记" -- mt
+L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
+	"关闭此选项后，游戏自带的任务标记和蓝色任务区域会与路线标记一起显示在地图上。" -- mt

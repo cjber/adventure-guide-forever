@@ -46,9 +46,8 @@ local turnedIn = false
 -- A start waiting for the rebuild that has the chosen journey's steps, or for combat's end. Shortest Path refuses every
 -- route in combat, and the rebuild PLAYER_REGEN_ENABLED brings (Core's afterCombat) runs it.
 local pendingStart = false
--- The player pressed Stop: a journey the autoStart (below) would otherwise start itself stays off until they choose one
--- again. Session-scoped, like the route it stops.
-local autoStartBlocked = false
+-- The player pressed Stop: the prefs keep it per character, so a journey the autoStart (below) would otherwise start
+-- itself stays off after a /reload too, until they choose one again.
 
 -- QUEST_TURNED_IN, from State.lua: latched for the ending below, then the chapter-end fanfare.
 ---@param questID integer
@@ -489,6 +488,10 @@ function ns.Choose(key, start)
 		prefs.heldStep = nil
 	end
 	prefs.journey = key
+	-- Choosing a journey, after Stop or any other time, asks for one to run again.
+	if key ~= nil then
+		prefs.autoStartBlocked = nil
+	end
 	-- A wanderer's choice starts nothing (StartRoute), so nothing waits for combat's end either.
 	pendingStart = key ~= nil and start == true and not ns.Setting("wanderer")
 	if was and was ~= key and not pendingStart then
@@ -510,6 +513,8 @@ function ns.StartRoute(step)
 	if not route.journey then
 		return false
 	end
+	-- Go is choosing a journey too, so a Stop before it no longer keeps the route off.
+	prefs.autoStartBlocked = nil
 	if not route.chosen then
 		prefs.journey = route.journey
 		ns.Invalidate()
@@ -575,7 +580,7 @@ end
 -- The player's Stop, from the footer or a step's menu: what the back arrow does while it runs, so no journey is left
 -- chosen with nothing to resume it.
 function ns.Stop()
-	autoStartBlocked = true
+	ns.Prefs().autoStartBlocked = true
 	Guidance.Cancel()
 	ns.Choose(nil)
 end
@@ -693,7 +698,7 @@ local function Restore()
 	restoring = false
 	if
 		ns.Setting("autoStart")
-		and not autoStartBlocked
+		and not prefs.autoStartBlocked
 		and route.journey
 		and not ns.Setting("wanderer")
 		and stopped ~= route.journey

@@ -216,6 +216,7 @@
 ---@field left? integer the map of the zone the story left, which waits behind every other zone the next build offers
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
 ---@field guided? string the key of the chosen journey whose route AGF started, while that guidance should run
+---@field autoStartBlocked? boolean the player pressed Stop, so no journey starts itself until they choose one again
 ---@field focus? integer the quest AGF selected on walking into its area (Focus.lua), while that selection is still AGF's
 ---@field guideWatch? AGFGuideWatchState the tracked quests a leading RestedXP guide or AGF journey took over (QuestWatch.lua)
 
@@ -753,6 +754,7 @@
 ---@field MENU_QUESTS string
 ---@field MENU_DUNGEONS string
 ---@field MENU_MAP_PINS string
+---@field MENU_HIDE_QUEST_MARKERS string
 ---@field MENU_GIVERS string
 ---@field MENU_TRACKER string
 ---@field MENU_MORE_SETTINGS string
@@ -786,6 +788,7 @@
 ---@field SETTING_TRAINING_REMINDERS string
 ---@field SETTING_TRAINING_REMINDERS_TOOLTIP string
 ---@field SETTING_MAP_PINS_TOOLTIP string
+---@field SETTING_HIDE_QUEST_MARKERS_TOOLTIP string
 ---@field SETTING_GIVERS_TOOLTIP string
 ---@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string
 ---@field SETTING_TITLE_ROUTE string
