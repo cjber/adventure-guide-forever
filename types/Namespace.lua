@@ -110,6 +110,7 @@
 ---@field id integer the quest ID
 ---@field spots {map: integer, x: number, y: number, z?: integer, name: string}[] its object's spawns on placed maps, in map then point order; empty when QuestieDB places none
 ---@field finish? {npc?: integer, name: string, map: integer, x: number, y: number, z?: integer} the hand-in NPC and its place
+---@field items? integer[] the items its object drops and the quest collects, ascending: a book the player carries is collected
 
 -- Measures between steps on different maps without travel maths (Travel.lua Cost). World coordinates are yards.
 ---@class AGFMapCentre
@@ -150,6 +151,7 @@
 ---@field synced? AGFPartyMember[] the ticked party members with a completed set heard (Party.lua), by name then key; nil when not synced
 ---@field notOffered? table<integer, integer> quests marked not offered: quest ID -> the level marked at; one marked at the player's level is unproven, with its own Why line
 ---@field questAvailable? fun(id: integer): boolean
+---@field ownedBooks? table<integer, boolean> library books whose collected item the player carries, by book quest ID (bags or bank)
 ---@field level integer
 ---@field maxQuestLevelOffset? integer highest recommended quest level relative to the player; defaults to +2
 ---@field maxLevel integer the level cap
@@ -219,6 +221,7 @@
 ---@field left? integer the map of the zone the story left, which waits behind every other zone the next build offers
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
 ---@field guided? string the key of the chosen journey whose route AGF started, while that guidance should run
+---@field autoStartBlocked? boolean the player pressed Stop, so no journey starts itself until they choose one again
 ---@field focus? integer the quest AGF selected on walking into its area (Focus.lua), while that selection is still AGF's
 ---@field guideWatch? AGFGuideWatchState the tracked quests a leading RestedXP guide or AGF journey took over (QuestWatch.lua)
 
@@ -446,6 +449,7 @@
 ---@field SyncLabel fun(completed: table<integer, boolean>, synced: AGFPartyMember[], ids?: integer[]): string? who a stop is for while synced (#617)
 ---@field NameList fun(names: string[]): string the names as a line of people reads
 ---@field AboveCeiling fun(level: integer, player: AGFPlayer): boolean `level` is past the player's quest level ceiling (maxQuestLevelOffset)
+---@field OwnedShape fun(owned: table<integer, boolean>?): string the carried library books as one comparable string
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
 ---@field Closes fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): integer[] what taking the quest closes for good that the character could still do, ascending
 ---@field GroupNeed fun(data: AGFData, log: table<integer, AGFLogQuest>, questID: integer): AGFGroupNeed?, integer? why a quest wants a group: its raid or dungeon (with the instance), the log's suggested size, or the elite tag
@@ -473,6 +477,7 @@
 ---@class AGFState
 ---@field Level fun(): integer the player's level: UnitLevel, or PLAYER_LEVEL_UP's level while UnitLevel still lags behind it
 ---@field Player fun(): AGFPlayer
+---@field OwnedBooks fun(): table<integer, boolean> the library books whose collected item the player carries, by book quest ID
 ---@field Where fun(): integer?, number?, number? the player's map and point on it; nil where the client places them nowhere
 ---@field Completed fun(): table<integer, boolean>
 ---@field CompletedVersion fun(): integer how many times the completed set has grown, for a cheap "did it move?"
@@ -762,6 +767,7 @@
 ---@field MENU_QUESTS string
 ---@field MENU_DUNGEONS string
 ---@field MENU_MAP_PINS string
+---@field MENU_HIDE_QUEST_MARKERS string
 ---@field MENU_GIVERS string
 ---@field MENU_TRACKER string
 ---@field MENU_MORE_SETTINGS string
@@ -795,6 +801,7 @@
 ---@field SETTING_TRAINING_REMINDERS string
 ---@field SETTING_TRAINING_REMINDERS_TOOLTIP string
 ---@field SETTING_MAP_PINS_TOOLTIP string
+---@field SETTING_HIDE_QUEST_MARKERS_TOOLTIP string
 ---@field SETTING_GIVERS_TOOLTIP string
 ---@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string
 ---@field SETTING_TITLE_ROUTE string
@@ -1518,6 +1525,7 @@
 -- cached route for the views that draw that route (ns.Snapshot). Read-only.
 ---@class AGFSnapshot
 ---@field shape? string the log's Model.LogShape, to tell a counts-only change
+---@field books? string the carried library books' Model.OwnedShape, which a full plan follows
 ---@field player AGFPlayer
 ---@field completed table<integer, boolean>
 ---@field log table<integer, AGFLogQuest>

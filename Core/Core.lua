@@ -36,6 +36,9 @@ local DEFAULTS = {
 	-- Opt-in: with the Adventure tab closed the map shows no Adventure Guide mark unless the player asks for them.
 	showMapPins = false,
 	showQuestGivers = false,
+	-- The game's own quest markers stay hidden at the route's stops while its pins draw (Pins.lua); turning this off
+	-- shows them beside the route pins.
+	hideQuestMarkers = true,
 	includeDungeonsDefault = false,
 	-- Choosing a journey starts its route too; the key keeps the name it had when only the tracker title did, so a
 	-- saved choice carries over.
@@ -403,6 +406,10 @@ function ns.SetSetting(key, value)
 	if key == "minimapButtonHidden" then
 		ForeverCore.MinimapButton.Refresh()
 	end
+	-- The game's quest markers at the route's stops are drawn with the route pins, so the map redraws them now.
+	if key == "hideQuestMarkers" then
+		ns.Pins.Refresh()
+	end
 	-- Wandering from now: what Go started stops, as the player's Stop would.
 	if key == "wanderer" and value then
 		ns.Guidance.Cancel()
@@ -705,8 +712,15 @@ local function BuildRoute()
 	local log, trained = state.Log(), false
 	-- Only the quest log's counts moved since the last build (its shape is the snapshot's): repaint the last route's
 	-- counts (Model.Repaint), every order, hold and choice kept, with no plan owed after it. docs/design.md §4.4.
+	-- A book's item moving in or out of the bags or bank moves the Library books card without touching the log, so
+	-- the carried books are compared too: a different set plans in full.
 	local shape = ns.Model.LogShape(log)
-	local repaint = not combat and not fullDue and snapshot ~= nil and snapshot.shape == shape
+	local books = ns.Model.OwnedShape(player.ownedBooks)
+	local repaint = not combat
+		and not fullDue
+		and snapshot ~= nil
+		and snapshot.shape == shape
+		and snapshot.books == books
 	fullDue = false
 	if combat then
 		afterCombat:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -722,7 +736,7 @@ local function BuildRoute()
 	end
 	player.train = training
 	---@type AGFSnapshot
-	local world = { player = player, completed = state.Completed(), log = log, shape = shape }
+	local world = { player = player, completed = state.Completed(), log = log, shape = shape, books = books }
 	-- The step the tracker shows now, which a re-plan keeps at its head (docs/design.md §4.2): a move, training in a
 	-- city or any rebuild only reorders the stops after it. A RestedXP guide orders its own steps. The first build after
 	-- a /reload has no route in hand, so the key the last build saved stands in for it.
@@ -1027,7 +1041,16 @@ end
 ---@return AGFSnapshot
 function ns.Snapshot()
 	ns.Route()
-	return snapshot or { player = ns.State.Player(), completed = ns.State.Completed(), log = ns.State.Log() }
+	if snapshot then
+		return snapshot
+	end
+	local player = ns.State.Player()
+	return {
+		player = player,
+		completed = ns.State.Completed(),
+		log = ns.State.Log(),
+		books = ns.Model.OwnedShape(player.ownedBooks),
+	}
 end
 
 -- Whether ns.Route() answers from the committed route: false while one is due or being built, when reading it would

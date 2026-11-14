@@ -478,7 +478,7 @@ L["TWEAKS_OUTDATED"] = "Aktualisiert Tweaks Forever, um Dungeoneingänge zu find
 L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
-L["WHATS_NEW"] = "Gruppenmitglieder, die den Leitfaden nutzen, können eine gemeinsame Reise teilen." -- mt
+L["WHATS_NEW"] = "Eine Dungeonkarte zählt jetzt jede Quest für den Dungeon." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"
@@ -542,3 +542,7 @@ L["SETTING_INFORMATION_ONLY"] = "Nur Informationen: keine Routen" -- mt
 L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
 	"Behalte Reisen und Questinformationen, ohne Routen zu starten oder deine verfolgten Quests zu ändern. Ein Klick auf einen Halt zeigt seine Quests auf der Karte. Schalte dies aus, um den Planer wieder zu verwenden." -- mt
 L["CLICK_SHOW_MAP"] = "Klicken, um diesen Halt auf der Karte zu zeigen" -- mt
+
+L["MENU_HIDE_QUEST_MARKERS"] = "Questmarkierungen des Spiels ausblenden" -- mt
+L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
+	"Schalte dies aus, damit die Questmarkierungen und blauen Questgebiete des Spiels neben deinen Routenmarkierungen auf der Karte sichtbar bleiben." -- mt

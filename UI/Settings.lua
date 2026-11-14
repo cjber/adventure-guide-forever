@@ -125,6 +125,12 @@ function ns.RegisterSettings()
 			function(subcategory)
 				for _, initializer in ipairs({
 					Checkbox(subcategory, "showMapPins", ns.L.SETTING_MAP_PINS, ns.L.SETTING_MAP_PINS_TOOLTIP),
+					Checkbox(
+						subcategory,
+						"hideQuestMarkers",
+						ns.L.MENU_HIDE_QUEST_MARKERS,
+						ns.L.SETTING_HIDE_QUEST_MARKERS_TOOLTIP
+					),
 					Checkbox(subcategory, "showQuestGivers", ns.L.SETTING_GIVERS, ns.L.SETTING_GIVERS_TOOLTIP),
 				}) do
 					Settings.RegisterInitializer(subcategory, initializer)

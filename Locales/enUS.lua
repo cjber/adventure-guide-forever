@@ -396,6 +396,7 @@ ns.L = {
 	MENU_QUESTS = "Quests",
 	MENU_DUNGEONS = "Dungeons",
 	MENU_MAP_PINS = "Show map pins",
+	MENU_HIDE_QUEST_MARKERS = "Hide game quest markers",
 	MENU_GIVERS = "Show quest givers",
 	MENU_TRACKER = "Show in objective tracker",
 	-- Sync Together (#617): the cog menu's checklist of party members running the guide, and the stops it labels.
@@ -434,6 +435,8 @@ ns.L = {
 	QUEST_AREAS_TOOLTIP = "The map's blue quest areas show where each objective is done. Questie's Questie and "
 		.. "pfQuest objective types turn them off.",
 	SETTING_MAP_PINS = "Show route pins on the map",
+	SETTING_HIDE_QUEST_MARKERS_TOOLTIP = "Turn this off to keep the game's own quest markers and blue quest areas on "
+		.. "the map beside your route pins.",
 	SETTING_GIVERS = "Show quest givers on the map",
 	SETTING_DUNGEONS_DEFAULT = "Include dungeons by default",
 	SETTING_TRAINING_REMINDERS = "Remind me to train class spells",
@@ -602,7 +605,7 @@ ns.L = {
 	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of the newest
 	-- CHANGELOG entry that has a bold lead, whose version is ns.WHATS_NEW_VERSION; tests/locales_spec.lua checks both.
-	WHATS_NEW = "Party members running the guide can share one journey.",
+	WHATS_NEW = "A dungeon card counts every quest for the dungeon.",
 	DUNGEON_BOSSES_LOOT = "Bosses and loot",
 	DUNGEON_LOOT_INSTALL = "Install AtlasLoot Classic and its Dungeons and Raids module for bosses and loot.",
 	DUNGEON_LOOT_COMBAT = "Boss loot will load after combat.",
@@ -629,7 +632,7 @@ ns.L = {
 
 -- The release whose WHATS_NEW is the newest headline in CHANGELOG.md. A core sync adds a maintenance release above it
 -- with no bold lead, so the game prints nothing new for that version but still remembers it.
-ns.WHATS_NEW_VERSION = "1.8.0"
+ns.WHATS_NEW_VERSION = "1.9.0"
 
 -- The shared out-of-date warning (Core/ForeverRequire.lua) reads ns.L by the English phrase itself, so these keys are
 -- the sentence. A locale translates the same keys.

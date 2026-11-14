@@ -70,10 +70,13 @@ Credit for the reports and requests behind the addon.
 | jixxor | Show of Force held until Encroaching Gnolls is done | Discord; #642 |
 | InfamousMunky | Daily Delivery no longer offered once handed on | GitHub; #629 |
 | InfamousMunky | Library books journey | GitHub; #706 |
+| lanprite | The guide's target button kept its own row under the step | Discord; cjber/shortest-path-forever#787 |
+| iPulse | Library books card vanishing after a login, and Stop not surviving a reload | CurseForge; #756, #757; thread 8705846 |
+| MrOxiMoron | Keeping the game's own quest markers on the map | CurseForge; #764; thread 8698185 |
+| InfamousMunky | A collected book no longer stays the next stop | GitHub; #767 |
 | InfamousMunky | Timed quests lead the automatic journey order | GitHub; #709 |
 | lanprite | RestedXP guide cards marked as RestedXP's | CurseForge; #713 |
 | cotijelucie | Information mode and showing a stop's quests on the map | Discord; #715 |
-| lanprite | The guide's target button kept its own row under the step | Discord; cjber/shortest-path-forever#787 |
 
 ## Inspired by
 

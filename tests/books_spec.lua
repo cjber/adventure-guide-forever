@@ -111,6 +111,40 @@ do
 end
 
 do
+	-- A book the player has already picked up is collected while its quest is neither in the log nor flagged complete:
+	-- the item can sit in the bags or the bank until the librarian is visited (QuestieDB's book quests are hidden
+	-- ones, #767, #756). The card hands in what the player carries and moves on to the next book.
+	local h = Load({ charDB = { journey = "library", booksTerritory = 1 } })
+	local ns = h.ns
+	local book
+	for _, entry in ipairs(ns.Data.books or {}) do
+		if entry.id == 79091 then
+			book = entry
+		end
+	end
+	check(book ~= nil, "carried: the corpus holds Ironforge's book")
+	-- The book's own record names the item its object drops: set that one, so a wrong item cannot pass the spec.
+	local item = book.items and book.items[1] or 203754
+	h.bags[item] = 1
+	h.fire("BAG_UPDATE_DELAYED")
+	h.flush()
+	local journey = Library(h)
+	local step = StepOf(journey, 79091)
+	check(step ~= nil, "carried: the book is still offered as a hand-in")
+	equal(step and step.kind, "bookhandin", "carried: a book in the bags is handed in")
+	equal(journey.steps[1].key ~= "book:79091", true, "carried: the collected book is not the head")
+	equal(book.items and book.items[1], 203754, "carried: the book knows the item its object drops")
+
+	-- The bank counts too, read only when the item count asks for it.
+	h = Load({ charDB = { journey = "library", booksTerritory = 1 }, bank = { [203754] = 1 } })
+	journey = Library(h)
+	step = StepOf(journey, 79091)
+	equal(step and step.kind, "bookhandin", "carried: a book in the bank is handed in")
+	equal(journey.steps[1].key ~= "book:79091", true, "carried: a banked book is not the head")
+	equal(#h.errors, 0, "carried: errors\n" .. table.concat(h.errors, "\n"))
+end
+
+do
 	-- A class-restricted book waits for that class: make Ironforge's mage-only and a shaman sees the next one.
 	local h = Load({ charDB = { journey = "library", booksTerritory = 1 } })
 	local ns = h.ns

@@ -468,7 +468,7 @@ L["TWEAKS_MISSING"] = "安装Tweaks Forever以寻找地下城入口。"
 L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以寻找地下城入口。"
 L["UNLISTED"] = "这片土地有指南尚不知道的故事；请留意任务NPC头上的“!”。"
 L["UPDATED_TO"] = "已更新到%s。%s"
-L["WHATS_NEW"] = "使用指南的队伍成员可以共享同一段旅程。" -- mt
+L["WHATS_NEW"] = "地下城卡片会统计该地下城的所有任务。" -- mt
 L["WHY_ALLIANCE"] = "仅限联盟"
 L["WHY_BREADCRUMB"] = "仅在你接受%s之前"
 L["WHY_CHOSE"] = "你改选了%s"
@@ -531,3 +531,7 @@ L["SETTING_INFORMATION_ONLY"] = "仅信息：不规划路线" -- mt
 L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
 	"保留旅程和任务信息，不启动路线，也不更改你追踪的任务。点击一个站点即可在地图上显示其任务。关闭此选项可重新使用规划器。" -- mt
 L["CLICK_SHOW_MAP"] = "点击在地图上显示此站点" -- mt
+
+L["MENU_HIDE_QUEST_MARKERS"] = "隐藏游戏的任务标记" -- mt
+L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
+	"关闭此选项后，游戏自带的任务标记和蓝色任务区域会与路线标记一起显示在地图上。" -- mt

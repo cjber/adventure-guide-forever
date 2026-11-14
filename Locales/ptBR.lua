@@ -475,7 +475,7 @@ L["TWEAKS_OUTDATED"] = "Atualize o Tweaks Forever para encontrar entradas de mas
 L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
-L["WHATS_NEW"] = "Membros do grupo que usam o guia podem compartilhar uma mesma jornada." -- mt
+L["WHATS_NEW"] = "Um cartão de masmorra conta todas as missões da masmorra." -- mt
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"
@@ -539,3 +539,7 @@ L["SETTING_INFORMATION_ONLY"] = "Somente informações: sem rotas" -- mt
 L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
 	"Mantenha as jornadas e as informações de missão sem iniciar rotas nem alterar as missões rastreadas. Clique em uma parada para mostrar as missões dela no mapa. Desative esta opção para usar o planejador novamente." -- mt
 L["CLICK_SHOW_MAP"] = "Clique para mostrar esta parada no mapa" -- mt
+
+L["MENU_HIDE_QUEST_MARKERS"] = "Ocultar marcadores de missão do jogo" -- mt
+L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
+	"Desative esta opção para manter os marcadores de missão e as áreas de missão azuis do jogo no mapa, ao lado dos marcadores da sua rota." -- mt

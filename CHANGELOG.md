@@ -12,17 +12,26 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
-- **A dungeon card counts every quest for the dungeon.** The number under a dungeon's name now counts every quest filed under it: the ones to pick up now, the ones that open after another step, and the ones you pick up inside. The full guide marks a quest with no giver outside as picked up inside, so The Hall of Thanes now shows An Ancient Grudge (#536).
-- **The tracker's hidden count says "1 quest is hidden", not "1 quests are".** Hovering the guide's tracker header while the journey hides exactly one quest now uses a one-quest line in every language, and two or more keep the plural line (#752).
-- **Russian players no longer see empty boxes between parts of a line.** The guide now separates those parts with a bullet, which the Russian client's font draws, instead of a middle dot it does not. Found from a report by XaksFlaX on GitHub (cjber/shortest-path-forever#838).
+### Added
+
 - **RestedXP guide cards now carry RestedXP's mark.** The guides you can choose, and the one you follow, show the RestedXP logo at the card's top right, and their tooltips say the steps come from your installed guides rather than from Adventure Guide's own zone stories or Clean up my log, so the two kinds are easy to tell apart. Thanks to lanprite for the report (#713).
 - **Browse journeys without starting a route.** Information only in the Route settings keeps the journey's quest information and your tracked quests. Clicking a stop shows its quests with Questie's existing map pins, or marks the stop on the map when that reveal is unavailable. Thanks to cotijelucie for the idea (#715).
 - **Timed quests go first:** A quest with a live timer moves its objectives and its hand-in ahead in the automatic journey order, and the step says why. Your own saved order and quest dependencies still win, and a failed, expired or missing quest timer never adds urgency. (#709)
 
-## [1.8.1] - 2026-11-13
+### Fixed
 
-<!-- forever-core-sync -->
+- **A book you have already picked up no longer stays at the top of the Library route.** After you loot a book, the item waits in your bags until you visit the librarian, and the guide could keep pointing at the empty shelf for the rest of the session. It now treats a book you carry, in your bags or your bank, as collected and moves on to the next one. Thanks to InfamousMunky for the report (#767).
 
+## [1.9.0] - 2026-11-13
+
+<!-- discord-image: docs/screenshots/chosen.png -->
+
+- **A dungeon card counts every quest for the dungeon.** The number under a dungeon's name now counts every quest filed under it: the ones to pick up now, the ones that open after another step, and the ones you pick up inside. The full guide marks a quest with no giver outside as picked up inside, so The Hall of Thanes now shows An Ancient Grudge (#536).
+- **The tracker's hidden count says "1 quest is hidden", not "1 quests are".** Hovering the guide's tracker header while the journey hides exactly one quest now uses a one-quest line in every language, and two or more keep the plural line (#752).
+- **Russian players no longer see empty boxes between parts of a line.** The guide now separates those parts with a bullet, which the Russian client's font draws, instead of a middle dot it does not. Found from a report by XaksFlaX on GitHub (cjber/shortest-path-forever#838).
+- **The Library books card stays after a /reload.** The card appeared on the first login after an update and was gone on every login or /reload after that, for every player. It now stays, and collect steps keep their item colours after a reload too. Thanks to iPulse for the report on CurseForge (#756).
+- **Stop stays stopped after a /reload.** Stop cleared the route for the session only, so a reload started the offered journey again even though the setting's tooltip says Stop clears it until you choose a journey again. The stop is now kept on the character, and choosing a journey, or pressing Go, clears it. Thanks to iPulse for the report on CurseForge (#757).
+- **Keep the game's own quest markers on the map.** A new setting, on by default, hides the game's quest markers at your route's stops, so each quest reads once. Turn it off to keep them, and the map's blue quest areas, beside the route pins, from the guide's cog menu under **Show map pins** or from *Options*, *Map*. Thanks to MrOxiMoron for the request (#764).
 - Ships with the same shared code as your other Forever addons, so they keep working together.
 
 ## [1.8.0] - 2026-11-13

@@ -265,6 +265,7 @@ function Menu.Settings(_, menu)
 	Pref(ns.L.MENU_DUNGEONS, "dungeons")
 	Pref(ns.L.MENU_BATTLEGROUNDS, "battlegrounds")
 	Setting(ns.L.MENU_MAP_PINS, "showMapPins")
+	Setting(ns.L.MENU_HIDE_QUEST_MARKERS, "hideQuestMarkers")
 	-- Givers draw only with map pins on, so the box is grayed until they are (the menu polls a function).
 	Setting(ns.L.MENU_GIVERS, "showQuestGivers"):SetEnabled(function()
 		return ns.Setting("showMapPins")

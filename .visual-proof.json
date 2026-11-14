@@ -1,23 +1,34 @@
 {
-  "input_digest": "60329a3cfaaa286564ddc46e10195ff108e68319a6bcc3ffe0118c04fad3022a",
-  "runtime_sha256": "60329a3cfaaa286564ddc46e10195ff108e68319a6bcc3ffe0118c04fad3022a",
-  "candidate": "2066763042650c422f73ff5e6248bb123b1203ab7e98fb99a17243bd762b0273",
+  "input_digest": "7203e13d6d55d026d9dec9ff6f2b3c94a73df60c16a92bb9122517e896dbb6d6",
+  "runtime_sha256": "7203e13d6d55d026d9dec9ff6f2b3c94a73df60c16a92bb9122517e896dbb6d6",
+  "candidate": "6bd2cb257f24c00f441554806f6cfe08bbe1df63a28154f346de4309707b04fc",
   "client_build": "1.60.1.70938 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "c2759004daed09ec76a754a17729b0639c2ced8e",
+  "source_commit": "cc17e18979e4bdd46660f74a89474c850439501e",
   "flows": [
     {
-      "name": "route",
+      "name": "guide",
       "steps": [
         "/agf"
+      ],
+      "result": "pass"
+    },
+    {
+      "name": "books",
+      "steps": [
+        "/home/cjber/.cache/agent-scratch/sweep/wow/proof-769/books.lua"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/ba5572d7a9b8e1cbd32586f0acf06138/raw/566be5a1e319dde8864bdb2cd562abfb118fc061/1-route.png",
-      "sha256": "0b1e5f410558336595b417978fbf7381e22bf973cc129db2f1be1969d10e7b3c"
+      "url": "https://gist.githubusercontent.com/cjber/0eb6718699791a76d3abc42dcf369c7e/raw/f02b69caa074345080fadc2cb22a4fd23c2c679d/1-guide.png",
+      "sha256": "f50243bd3de0e538d7f19e27e5e8b32b29b546e9d438d48ec1f029d073d90783"
+    },
+    {
+      "url": "https://gist.githubusercontent.com/cjber/0eb6718699791a76d3abc42dcf369c7e/raw/f02b69caa074345080fadc2cb22a4fd23c2c679d/2-books.png",
+      "sha256": "5058949adcff80465f9f44de9611731c805c600499f529bfd26ebfded021ce99"
     }
   ]
 }

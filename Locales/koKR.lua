@@ -486,7 +486,7 @@ L["TWEAKS_OUTDATED"] = "던전 입구를 찾으려면 Tweaks Forever를 업데�
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
-L["WHATS_NEW"] = "가이드를 사용하는 파티원끼리 하나의 여정을 함께할 수 있습니다." -- mt
+L["WHATS_NEW"] = "던전 카드가 해당 던전의 모든 퀘스트를 셉니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"
@@ -550,3 +550,7 @@ L["SETTING_INFORMATION_ONLY"] = "정보만 표시: 경로 없음" -- mt
 L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
 	"경로를 시작하거나 추적 중인 퀘스트를 바꾸지 않고 여정과 퀘스트 정보를 유지합니다. 중간 지점을 클릭하면 해당 퀘스트가 지도에 표시됩니다. 이 설정을 끄면 플래너를 다시 사용합니다." -- mt
 L["CLICK_SHOW_MAP"] = "이 중간 지점을 지도에 표시하려면 클릭" -- mt
+
+L["MENU_HIDE_QUEST_MARKERS"] = "게임 퀘스트 표시 숨기기" -- mt
+L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
+	"이 옵션을 끄면 게임의 퀘스트 표시와 파란 퀘스트 지역이 경로 표시 옆에 그대로 지도에 나타납니다." -- mt

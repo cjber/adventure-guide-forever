@@ -468,7 +468,7 @@ L["TWEAKS_MISSING"] = "安裝Tweaks Forever以尋找地城入口。"
 L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以尋找地城入口。"
 L["UNLISTED"] = "這片土地有指南尚不知道的故事；請留意任務給予者頭上的「!」。"
 L["UPDATED_TO"] = "已更新到%s。%s"
-L["WHATS_NEW"] = "使用指南的隊伍成員可以共享同一段旅程。" -- mt
+L["WHATS_NEW"] = "地城卡片會統計該地城的所有任務。" -- mt
 L["WHY_ALLIANCE"] = "僅限聯盟"
 L["WHY_BREADCRUMB"] = "僅在你接受%s之前"
 L["WHY_CHOSE"] = "你改選了%s"
@@ -531,3 +531,7 @@ L["SETTING_INFORMATION_ONLY"] = "僅資訊：不規劃路線" -- mt
 L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
 	"保留旅程與任務資訊，不啟動路線，也不變更你追蹤的任務。點擊一個站點即可在地圖上顯示其任務。關閉此選項可重新使用規劃器。" -- mt
 L["CLICK_SHOW_MAP"] = "點擊在地圖上顯示此站點" -- mt
+
+L["MENU_HIDE_QUEST_MARKERS"] = "隱藏遊戲的任務標記" -- mt
+L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
+	"關閉此選項後，遊戲自帶的任務標記和藍色任務區域會與路線標記一起顯示在地圖上。" -- mt

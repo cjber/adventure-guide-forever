@@ -477,7 +477,7 @@ L["TWEAKS_OUTDATED"] = "Actualiza Tweaks Forever para encontrar entradas de cala
 L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
-L["WHATS_NEW"] = "Los miembros del grupo que usan la guía pueden compartir un mismo viaje." -- mt
+L["WHATS_NEW"] = "Una tarjeta de calabozo cuenta todas las misiones del calabozo." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
@@ -541,3 +541,7 @@ L["SETTING_INFORMATION_ONLY"] = "Solo información: sin rutas" -- mt
 L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
 	"Conserva los viajes y la información de misiones sin iniciar rutas ni cambiar las misiones que sigues. Al hacer clic en una parada, sus misiones se muestran en el mapa. Desactiva esta opción para volver a usar el planificador." -- mt
 L["CLICK_SHOW_MAP"] = "Haz clic para mostrar esta parada en el mapa" -- mt
+
+L["MENU_HIDE_QUEST_MARKERS"] = "Ocultar marcadores de misión del juego" -- mt
+L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
+	"Desactiva esta opción para que los marcadores de misión y las zonas de misión azules del juego sigan visibles en el mapa junto a los marcadores de tu ruta." -- mt

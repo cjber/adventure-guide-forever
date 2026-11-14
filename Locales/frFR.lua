@@ -481,7 +481,7 @@ L["TWEAKS_OUTDATED"] = "Mettez à jour Tweaks Forever pour trouver les entrées 
 L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
-L["WHATS_NEW"] = "Les membres du groupe qui utilisent le guide peuvent partager un même parcours." -- mt
+L["WHATS_NEW"] = "Une carte de donjon compte toutes les quêtes du donjon." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
@@ -546,3 +546,7 @@ L["SETTING_INFORMATION_ONLY"] = "Informations seulement : sans itinéraires" -- 
 L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
 	"Gardez les voyages et les informations de quête sans lancer d’itinéraires ni modifier les quêtes suivies. Cliquer sur une étape affiche ses quêtes sur la carte. Désactivez cette option pour réutiliser le planificateur." -- mt
 L["CLICK_SHOW_MAP"] = "Cliquer pour afficher cette étape sur la carte" -- mt
+
+L["MENU_HIDE_QUEST_MARKERS"] = "Masquer les marqueurs de quête du jeu" -- mt
+L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
+	"Désactivez cette option pour garder les marqueurs de quête et les zones de quête bleues du jeu sur la carte, à côté des marqueurs de votre itinéraire." -- mt
