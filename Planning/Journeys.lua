@@ -484,6 +484,7 @@ local function Turnins(data, player, completed, log, ready, prefs, mapName)
 	local finished, away = Tally(data, player, log, held, prefs)
 	return {
 		kind = "turnins",
+		section = "continue",
 		key = "turnins",
 		title = ns.L.JOURNEY_TURNINS,
 		subline = ns.L.CARRY_READY:format(finished + away),
