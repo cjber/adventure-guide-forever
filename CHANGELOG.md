@@ -12,28 +12,11 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.9.2] - 2026-11-15
+
+<!-- forever-core-sync -->
+
 - Ships with the same shared code as your other Forever addons, so they keep working together.
-
-### Added
-
-- **Choose another story without skipping the first.** Expand Continue to pick another available story in the destination you are viewing. Each story keeps its own chapters and accepted quests. Thanks to iPulse for the idea on CurseForge (#759).
-
-- **Route just the quests you track.** The Continue cards now include My tracked quests: it takes the quests you already track in your quest log, puts them in the same order as the rest of the guide, and includes the ones ready to hand in. Track or untrack a quest to change the route. Its menu also lets you choose specific class, profession, riding or pet trainers to visit along the way. Thanks to Kyorri for the idea on CurseForge (#772).
-
-- **RestedXP guide cards now carry RestedXP's mark.** The guides you can choose, and the one you follow, show the RestedXP logo at the card's top right, and their tooltips say the steps come from your installed guides rather than from Adventure Guide's own zone stories or Clean up my log, so the two kinds are easy to tell apart. Thanks to lanprite for the report (#713).
-- **Browse journeys without starting a route.** Information only in the Route settings keeps the journey's quest information and your tracked quests. Clicking a stop shows its quests with Questie's existing map pins, or marks the stop on the map when that reveal is unavailable. Thanks to cotijelucie for the idea (#715).
-- **Timed quests go first:** A quest with a live timer moves its objectives and its hand-in ahead in the automatic journey order, and the step says why. Your own saved order and quest dependencies still win, and a failed, expired or missing quest timer never adds urgency. (#709)
-- **RestedXP guides in the Adventure tab.** Read guide instructions and objectives in the map sidebar and tracker, select guides and control their steps. RestedXP handles progression while Shortest Path Forever handles travel. The guide shares existing journey cards, steps and map pins with Adventure Guide recommendations. The map previews ten steps with grouped markers, while the quest tracker shows the current step, the next step and ongoing objectives.
-
-### Fixed
-
-- **An unreadable quest greeting leaves the route alone.** The guide no longer treats a hidden quest count as an empty list and removes a pickup it could not check.
-
-- **A full quest log still lets the group find you.** Hidden quests no longer prevent Sync with from listing a group member whose visible log is full. Thanks to iPulse for the report on CurseForge (#758).
-
-- **Routes start on the continent you reach.** Sailing or hearthing across an ocean releases the old held step, so a nearby hand-in can lead again. Trips within a continent still keep the current step, thanks to QuincyO for the report (#773).
-
-- **A Ludite's Guide to Caring for Your Demonic Pet is back in Library books.** QuestieDB 1.1.0 stopped listing the book's shelf among the item's drops, so the card lost it. The guide now reads a book from the quest's own start object and the item it collects, so the missing book returns without a hand-picked exception (#739).
 
 ## [1.9.1] - 2026-11-15
 
