@@ -85,6 +85,12 @@ function ns.RegisterSettings()
 					Checkbox(subcategory, "autoStart", ns.L.SETTING_AUTO_START, ns.L.SETTING_AUTO_START_TOOLTIP),
 					Checkbox(
 						subcategory,
+						"informationOnly",
+						ns.L.SETTING_INFORMATION_ONLY,
+						ns.L.SETTING_INFORMATION_ONLY_TOOLTIP
+					),
+					Checkbox(
+						subcategory,
 						"autoNextZone",
 						ns.L.SETTING_AUTO_NEXT_ZONE,
 						ns.L.SETTING_AUTO_NEXT_ZONE_TOOLTIP
