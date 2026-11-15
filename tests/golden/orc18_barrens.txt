@@ -14,6 +14,8 @@ card (chosen) | carry | Clean up my log | 1 ready to hand in, 1 in progress | - 
   step 1 | town:1413:380 | Turn in: The Zhevra | 1413 0.5223,0.3101 | Opens the next chapter here
   step 2 | area:843:0 | Complete 3 objectives · Gann's Reclamation | 1413 0.4760,0.8530 | quests in progress | 103 yd | 843/0 843/1 843/4
   step 3 | town:1413:390 | Turn in: Gann's Reclamation | 1413 0.4589,0.7700 | Opens the next chapter here
+card | turnins | Turn-ins only | 1 ready to hand in | Hand in completed quests, without picking up more | map 1413
+  step 1 | town:1413:380 | Turn in: The Zhevra | 1413 0.5223,0.3101 | Opens the next chapter here
 card | zone:1442 | Head to Stonetalon Mountains | 7 quests near your level | - | map 1413
   step 1 | town:1413:1702 | Visit Honor's Stand: Pick up 2 | 1413 0.3526,0.2788 | 2 to pick up
   step 2 | town:1442:2539 | Visit Malaka'jin: Pick up 2 | 1442 0.7325,0.9489 | 2 to pick up

@@ -15,6 +15,11 @@ card (chosen) | carry | Clean up my log | 3 ready to hand in | 1 to hand in acro
   step 2 | turnin:948 | Turn in: Onu | 1439 0.4355,0.7629 | ready to hand in
   step 3 | turnin:967 | Turn in: The Tower of Althalaxx | 1440 0.2620,0.3870 | ready to hand in
   step 4 | turnin:168 | Turn in: Collecting Memories | 1453 0.7031,0.4082 | Hand in when you're in Stormwind City
+card | turnins | Turn-ins only | 4 ready to hand in | Hand in completed quests, without picking up more | map 1439
+  step 1 | turnin:947 | Turn in: Cave Mushrooms | 1439 0.3732,0.4364 | ready to hand in
+  step 2 | turnin:948 | Turn in: Onu | 1439 0.4355,0.7629 | ready to hand in
+  step 3 | turnin:967 | Turn in: The Tower of Althalaxx | 1440 0.2620,0.3870 | ready to hand in
+  step 4 | turnin:168 | Turn in: Collecting Memories | 1453 0.7031,0.4082 | Hand in when you're in Stormwind City
 card | zone:1437 | Head to Wetlands | 10 quests near your level | - | map 1439
   step 1 | town:1439:442 | Pick up: Unrequited Love | 1439 0.3744,0.4184 | near your level
   step 2 | town:1437:150 | Visit Menethil Harbor: Pick up 4 | 1437 0.1090,0.5964 | 4 to pick up
