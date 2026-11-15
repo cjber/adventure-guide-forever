@@ -253,7 +253,8 @@ follow the shared family voice.
   tracker's bar uses) goes first the same way, ordered by its exact cached deadline and then quest ID: its open
   objectives, or its ready hand-in once they are done, with the reason "before the quest timer runs out". A failed,
   expired or missing timer adds no urgency, and the player's saved order (§4.3) and the pickup, objective and hand-in
-  dependencies still win.
+  dependencies still win. Optional pickup objectives stay separate from an accepted urgent area, so their pickup
+  cannot hold that area's timed work behind other stops.
   Group town visits and cross
   the sea at most once. This nearest order is the default; the opt-in `optimisedRoute` beta instead keeps the
   older heuristics (the story's chapter lead, a town's-own look-ahead and the committed order), which the

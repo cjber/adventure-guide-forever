@@ -43,6 +43,42 @@ local Yards = ns.Planner.Travel.Yards
      in town, clear the objective areas out one side of it, come back and hand in. Every other card keeps Build's route,
      so a rebuild stays inside its frame budget. ]]
 
+-- The log quest that makes `step` urgent, or nil (AGF709): a live quest timer (`entry.deadline`) outranks a bag item
+-- that runs out (`entry.expiring`). A complete one it hands in, else an unfinished one whose objectives it works. The
+-- soonest deadline wins; ties keep the earlier reading, so the choice never depends on pairs() order.
+---@param log table<integer, AGFLogQuest>
+---@param step AGFStep
+---@return AGFLogQuest?
+local function Urgent(log, step)
+	local best
+	local function Weigh(entry)
+		if entry.deadline then
+			if
+				not (best and best.deadline)
+				or entry.deadline < best.deadline
+				or (entry.deadline == best.deadline and entry.id < best.id)
+			then
+				best = entry
+			end
+		elseif entry.expiring and not (best and best.deadline) then
+			best = best or entry
+		end
+	end
+	for _, id in ipairs(Model.Handins(step)) do
+		local entry = log[id]
+		if entry and entry.complete then
+			Weigh(entry)
+		end
+	end
+	for _, objective in ipairs(step.objectives or NONE) do
+		local entry = log[objective.id]
+		if entry and not entry.complete then
+			Weigh(entry)
+		end
+	end
+	return best
+end
+
 ---@param standsIn AGFStep
 ---@return AGFStep
 local function LeadingArea(standsIn)
@@ -202,6 +238,10 @@ local function PickLapQuests(lap)
 	-- A new quest's node joins an area only when every quest the route picks up there is its own town's, so an area is
 	-- never worked between two towns' pickups, where the order check would drop one town's work from it.
 	local function Joins(a, b, area)
+		-- Optional pickup work must not add a prerequisite to an accepted urgent objective (AGF709).
+		if Urgent(log, area) then
+			return false
+		end
 		for id in pairs(area.planned or NONE) do
 			if picks[id] ~= picks[owner[b]] then
 				return false
@@ -713,42 +753,6 @@ local function Front(lap, route, leads)
 		moved[#moved + 1] = not leads[step] and step or nil
 	end
 	return Holds(lap, moved) and moved or route
-end
-
--- The log quest that makes `step` urgent, or nil (AGF709): a live quest timer (`entry.deadline`) outranks a bag item
--- that runs out (`entry.expiring`). A complete one it hands in, else an unfinished one whose objectives it works. The
--- soonest deadline wins; ties keep the earlier reading, so the choice never depends on pairs() order.
----@param log table<integer, AGFLogQuest>
----@param step AGFStep
----@return AGFLogQuest?
-local function Urgent(log, step)
-	local best
-	local function Weigh(entry)
-		if entry.deadline then
-			if
-				not (best and best.deadline)
-				or entry.deadline < best.deadline
-				or (entry.deadline == best.deadline and entry.id < best.id)
-			then
-				best = entry
-			end
-		elseif entry.expiring and not (best and best.deadline) then
-			best = best or entry
-		end
-	end
-	for _, id in ipairs(Model.Handins(step)) do
-		local entry = log[id]
-		if entry and entry.complete then
-			Weigh(entry)
-		end
-	end
-	for _, objective in ipairs(step.objectives or NONE) do
-		local entry = log[objective.id]
-		if entry and not entry.complete then
-			Weigh(entry)
-		end
-	end
-	return best
 end
 
 -- Move `steps`' urgent leads to the front: timed leads take the soonest exact deadline, then quest ID, then their

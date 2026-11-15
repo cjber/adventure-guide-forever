@@ -87,6 +87,54 @@ local function Timer(quest, total, elapsed)
 	return quest
 end
 
+-- #709's actual Loch Modan quest: optional work for Twisting the Knife overlaps the boar area. Its pickup must
+-- not hold the accepted timed quest behind unrelated stops, in either order mode.
+for _, planned in ipairs({ false, true }) do
+	local label = planned and "hunter planned" or "hunter nearest"
+	local h = harness.load({
+		planned = planned,
+		db = { autoStart = false },
+		charDB = { journey = "zone:1432", optimisedRoute = planned },
+		completed = { 257 },
+		player = { level = 17, faction = "Alliance", raceID = 4, classID = 4, map = 1432, x = 0.834, y = 0.630 },
+		log = {
+			{
+				id = 385,
+				title = "Crocolisk Hunting",
+				level = 15,
+				complete = false,
+				objectives = { { type = "monster", text = "Crocolisk slain: 0/6", done = false, have = 0, need = 6 } },
+			},
+			Timer({
+				id = 258,
+				title = "A Hunter's Challenge",
+				level = 17,
+				complete = false,
+				objectives = {
+					{ type = "monster", text = "Elder Mountain Boar slain: 0/6", done = false, have = 0, need = 6 },
+				},
+			}, 900, 30),
+		},
+	})
+	h.flush()
+	local first = Head(h)
+	equal(first.key, "area:258:0", label .. ": the accepted timed objective leads")
+	equal(first.hurry, true, label .. ": it stays urgent")
+	equal(first.planned and first.planned[86758], nil, label .. ": unaccepted work has its own area")
+	equal(ByKey(h.ns.Route(), "area:86758:4") ~= nil, true, label .. ": optional work remains later in the route")
+	equal(h.ns.Order.Valid(h.ns.Route().steps, h.player.logMax, h.ns.State.Log()), true, label .. ": legal order")
+	h.ns.Invalidate()
+	h.flush()
+	equal(Head(h).key, first.key, label .. ": the committed rebuild keeps the timed objective first")
+	h.log[2].complete = true
+	h.log[2].objectives[1].done, h.log[2].objectives[1].have = true, 6
+	h.fire("QUEST_LOG_UPDATE")
+	h.flush()
+	equal(Head(h).key, "turnin:258", label .. ": finishing objectives leads straight to Daryl")
+	equal(Head(h).hurry, true, label .. ": the ready hand-in keeps its timer priority")
+	equal(#h.errors, 0, label .. ": no errors\n" .. table.concat(h.errors, "\n"))
+end
+
 -- (a) A timed quest behind nearer ordinary work leads, in both planned and simple order, and says why.
 for _, planned in ipairs({ false, true }) do
 	local label = planned and "planned" or "nearest"
