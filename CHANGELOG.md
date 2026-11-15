@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-11-15
+
 ### Fixed
 
 - **A book you have already picked up no longer stays at the top of the Library route.** After you loot a book, the item waits in your bags until you visit the librarian, and the guide could keep pointing at the empty shelf for the rest of the session. It now treats a book you carry, in your bags or your bank, as collected and moves on to the next one. Thanks to InfamousMunky for the report (#767).
