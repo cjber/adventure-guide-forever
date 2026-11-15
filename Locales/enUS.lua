@@ -84,6 +84,8 @@ ns.L = {
 	NEXT_PAGE = "Next",
 	JOURNEY_PAGE = "%d / %d",
 	JOURNEY_CARRY = "Clean up my log",
+	JOURNEY_TURNINS = "Turn-ins only",
+	TURNINS_REASON = "Hand in completed quests, without picking up more",
 	-- My tracked quests (#772): exactly the quests the player has tracked, in the route's order, ready hand-ins
 	-- included.
 	JOURNEY_TRACKED = "My tracked quests",

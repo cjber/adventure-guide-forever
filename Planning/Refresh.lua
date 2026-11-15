@@ -300,6 +300,7 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 	local journeys, dismissed, zone = {}, prefs.notInterested or {}, nil
 	for _, journey in ipairs(last.journeys) do
 		local kept = journey.kind ~= "carry"
+				and journey.kind ~= "turnins"
 				and not dismissed[journey.key]
 				and Retained(journey, Prune, log, player.logMax)
 			or nil
@@ -325,6 +326,17 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 			carry.steps[index] = Urgency(log, step)
 		end
 		table.insert(journeys, (journeys[1] and journeys[1].kind == "story") and 2 or 1, carry)
+	end
+	-- Rebuild the subset from the live completion and destination facts during combat too.
+	local turnins = ns.Planner.Journeys.Turnins(data, player, completed, log, Ready(data, log), prefs, mapName)
+	if turnins then
+		turnins = Retained(turnins, function(step)
+			return step
+		end, log, player.logMax)
+		if turnins then
+			Summarise(turnins)
+			table.insert(journeys, (journeys[1] and journeys[1].kind == "story") and 3 or (carry and 2 or 1), turnins)
+		end
 	end
 	local route = Route(journeys, prefs)
 	route.stranded, route.orders, route.lead = last.stranded, last.orders, last.lead

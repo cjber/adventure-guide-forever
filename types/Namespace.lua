@@ -335,7 +335,7 @@
 ---@field quests integer[] quest IDs it offers the player now, ascending
 ---@field adds integer[] those a shift-click puts on the route: none orange or red
 
----@alias AGFJourneyKind "carry"|"tracked"|"story"|"nextzone"|"dungeon"|"calling"|"battleground"|"guide"
+---@alias AGFJourneyKind "carry"|"tracked"|"turnins"|"story"|"nextzone"|"dungeon"|"calling"|"battleground"|"guide"
 
 -- The overview's quest log header a journey shows under (Overview.GROUPS): its kind at build time, so no title is
 -- guessed from. "continue" holds the story, Quests in your log and your calling.
@@ -836,6 +836,8 @@
 ---@field CHOSEN_TRAINER string explicitly selected trainer stop reason
 ---@field TRAINER_STOPS string the tracked journey menu for choosing specific trainers
 ---@field VISIT_TRAINER string format: visit the named trainer
+---@field JOURNEY_TURNINS string the completed hand-ins card
+---@field TURNINS_REASON string the completed hand-ins card explanation
 ---@field JOURNEY_TRACKED string the My tracked quests card's title
 ---@field TRACKED_QUESTS string format: how many quests the player tracks
 ---@field TRACKED_QUESTS_ONE string the same for one

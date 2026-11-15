@@ -75,6 +75,7 @@ Credit for the reports and requests behind the addon.
 | MrOxiMoron | Keeping the game's own quest markers on the map | CurseForge; #764; thread 8698185 |
 | InfamousMunky | A collected book no longer stays the next stop | GitHub; #767 |
 | QuincyO | Start the route from the continent you reach | GitHub; #773 |
+| Zerhathos | A journey for completed quest hand-ins only | CurseForge; #772; thread 8723497 |
 | Kyorri | Choose the quests to route in the best order | CurseForge; #772; thread 8711750 |
 | iPulse | Choose another story without skipping the first | CurseForge; #759; thread 8706380 |
 | iPulse | Group sync works with a full quest log | CurseForge; #758; thread 8706380 |

@@ -1797,7 +1797,7 @@ do
 	local keys, cards = {}, ns.Route().journeys
 	for _, journey in ipairs(cards) do
 		for _, step in ipairs(journey.steps) do
-			keys[step.key] = journey.kind
+			keys[step.key] = keys[step.key] or journey.kind
 		end
 	end
 	equal(keys["turnin:843"], "carry", "combat: a quest finished mid-fight is ready to hand in")
@@ -2867,7 +2867,7 @@ do
 		alternatives = alternatives + (journey.key:match("^chain:") and 1 or 0)
 	end
 	equal(alternatives, 13, "guide: all thirteen alternative stories survive")
-	equal(#route.journeys - alternatives, 9, "guide: all nine destination/activity journeys survive")
+	equal(#route.journeys - alternatives, 10, "guide: all ten destination/activity journeys survive")
 	equal(full, 1, "guide: only the chosen card is whole")
 	equal(lit, 1, "guide: and only it stays lit, so it reads as chosen in game")
 	local rows = Shown(h, function(frame)
@@ -3449,7 +3449,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#Overview(), 0, label .. ": the overview gives way")
 	equal(Previews(), "", label .. ": with its steps")
 	equal(Says(L.OVERVIEW_WHERE:format("The Barrens", h.player.level)), 0, label .. ": and the line by the title")
-	equal(Heights(), "86" .. string.rep(" 26", 21), label .. ": the chosen route precedes alternatives")
+	equal(Heights(), "86" .. string.rep(" 26", 22), label .. ": the chosen route precedes alternatives")
 	equal(Cards()[1].journey.key, story.key, label .. ": the chosen card first, over its steps")
 	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
 	local chosenCard = Cards()[1]
@@ -3511,7 +3511,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.ns.Route().journey, key, label .. ": a row chooses its card")
 	equal(Starts(), 2, label .. ": and starts its route in place of the first")
-	equal(Heights(), "86" .. string.rep(" 26", 13), label .. ": still one whole card")
+	equal(Heights(), "86" .. string.rep(" 26", 14), label .. ": still one whole card")
 	equal(Cards()[1].journey.key, key, label .. ": the new choice over the steps")
 
 	-- The chosen card again: nothing changes but the map, which turns to it.
@@ -3546,7 +3546,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(Overview()[2])
 	h.flush()
 	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a row chooses it")
-	equal(Heights(), "86" .. string.rep(" 26", 21), label .. ": alternatives fold below it")
+	equal(Heights(), "86" .. string.rep(" 26", 22), label .. ": alternatives fold below it")
 	equal(Cards()[1].journey.key, second.key, label .. ": lit over its steps")
 	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
 	h.Click(Back())
@@ -3678,17 +3678,17 @@ do
 	equal(#Cards("zones"), 1, label .. ": the header's own toggle still folds")
 	equal(More("zones").Text:GetText(), L.MORE_CARDS:format(6), label .. ": its row is back")
 
-	-- Continue keeps two cards, so its row counts the other fourteen, including the cloned card.
+	-- Continue keeps two cards, so its row counts the other fifteen, including the cloned card.
 	local continuing = h.ns.Model.InSection(route.journeys, "continue")
 	Clone(continuing[#continuing], "continue:more")
 	h.ns.Prefs().previewGroups.continue = true
 	h.ns.OpenPanel()
 	h.flush()
 	equal(#Cards("continue"), 2, label .. ": a folded Continue shows two cards")
-	equal(More("continue").Text:GetText(), L.MORE_CARDS:format(14), label .. ": and its fourteen hidden cards")
+	equal(More("continue").Text:GetText(), L.MORE_CARDS:format(15), label .. ": and its fifteen hidden cards")
 	h.Click(More("continue"))
 	h.flush()
-	equal(#Cards("continue"), 16, label .. ": the row opens it")
+	equal(#Cards("continue"), 17, label .. ": the row opens it")
 	equal(More("continue"), nil, label .. ": and the row goes")
 	clean(h, label)
 end

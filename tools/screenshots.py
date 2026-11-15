@@ -709,6 +709,7 @@ def render():
             "journeys_overflow",
             "tracked",
             "tracked_trainers",
+            "turnins",
             "story_choices",
             "library_card",
             "library_stops",
@@ -765,7 +766,7 @@ def render():
         images[name] = drawing.wm.scene(ui, [(crop(canvas, x - 6, y - 6, width + 12, height + 12), 0, 0)])
 
     # My tracked quests (#772): the card chosen for a character who tracked both quests in the log.
-    for scene in ("tracked", "tracked_trainers", "story_choices"):
+    for scene in ("tracked", "tracked_trainers", "turnins", "story_choices"):
         canvas, _ = quest_log(ui, content_ui, data, rects, scene)
         x, y, width, height = rects[scene]["AdventureGuideForeverPanel"]
         images[scene] = drawing.wm.scene(ui, [(crop(canvas, x - 6, y - 6, width + 12, height + 12), 0, 0)])

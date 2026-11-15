@@ -230,7 +230,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild",
       "size": [
         306.00,
-        1384.00
+        1412.00
       ],
       "type": "Frame"
     },
@@ -255,7 +255,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1]",
       "size": [
         0.00,
-        1384.00
+        1412.00
       ],
       "type": "Frame"
     },
@@ -405,7 +405,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
       "size": [
         0.00,
-        1332.00
+        1360.00
       ],
       "type": "Frame"
     },
@@ -3118,7 +3118,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Stonetalon Mountains",
+      "text": "Turn-ins only",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3188,7 +3188,7 @@
           "y": 0.00
         }
       ],
-      "atlas": "QuestNormal",
+      "atlas": "QuestTurnin",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[14].IconFrame.Icon",
       "size": [
@@ -3258,7 +3258,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Redridge Mountains",
+      "text": "Head to Stonetalon Mountains",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3398,7 +3398,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Silverpine Forest",
+      "text": "Head to Redridge Mountains",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3538,7 +3538,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Ashenvale",
+      "text": "Head to Silverpine Forest",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3678,7 +3678,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Westfall",
+      "text": "Head to Ashenvale",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3818,7 +3818,7 @@
         212.00,
         16.00
       ],
-      "text": "Head to Stranglethorn Vale",
+      "text": "Head to Westfall",
       "type": "FontString",
       "wordWrap": false
     },
@@ -3958,7 +3958,7 @@
         212.00,
         16.00
       ],
-      "text": "Books in Horde territory",
+      "text": "Head to Stranglethorn Vale",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4028,12 +4028,12 @@
           "y": 0.00
         }
       ],
-      "atlas": "minortalents-icon-book",
+      "atlas": "QuestNormal",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[20].IconFrame.Icon",
       "size": [
         16.00,
-        15.20
+        16.00
       ],
       "type": "Texture"
     },
@@ -4098,7 +4098,7 @@
         212.00,
         16.00
       ],
-      "text": "Report to Kadrak",
+      "text": "Books in Horde territory",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4168,12 +4168,12 @@
           "y": 0.00
         }
       ],
-      "atlas": "questlog-questtypeicon-story",
+      "atlas": "minortalents-icon-book",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[21].IconFrame.Icon",
       "size": [
         16.00,
-        16.00
+        15.20
       ],
       "type": "Texture"
     },
@@ -4238,7 +4238,7 @@
         212.00,
         16.00
       ],
-      "text": "Gann's Reclamation",
+      "text": "Report to Kadrak",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4378,7 +4378,7 @@
         212.00,
         16.00
       ],
-      "text": "Lost in Battle",
+      "text": "Gann's Reclamation",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4518,7 +4518,7 @@
         212.00,
         16.00
       ],
-      "text": "Bruised Pride and Lion Hides",
+      "text": "Lost in Battle",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4658,7 +4658,7 @@
         212.00,
         16.00
       ],
-      "text": "Vrang's Game",
+      "text": "Bruised Pride and Lion Hides",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4798,7 +4798,7 @@
         212.00,
         16.00
       ],
-      "text": "The way into Wailing Caverns",
+      "text": "Vrang's Game",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4938,7 +4938,7 @@
         212.00,
         16.00
       ],
-      "text": "Ignition",
+      "text": "The way into Wailing Caverns",
       "type": "FontString",
       "wordWrap": false
     },
@@ -5078,7 +5078,7 @@
         212.00,
         16.00
       ],
-      "text": "Harpy Raiders",
+      "text": "Ignition",
       "type": "FontString",
       "wordWrap": false
     },
@@ -5218,7 +5218,7 @@
         212.00,
         16.00
       ],
-      "text": "Kolkar Leaders",
+      "text": "Harpy Raiders",
       "type": "FontString",
       "wordWrap": false
     },
@@ -5358,7 +5358,7 @@
         212.00,
         16.00
       ],
-      "text": "Fungal Spores",
+      "text": "Kolkar Leaders",
       "type": "FontString",
       "wordWrap": false
     },
@@ -5498,7 +5498,7 @@
         212.00,
         16.00
       ],
-      "text": "The Hunter's Way",
+      "text": "Fungal Spores",
       "type": "FontString",
       "wordWrap": false
     },
@@ -5638,7 +5638,7 @@
         212.00,
         16.00
       ],
-      "text": "Raptor Thieves",
+      "text": "The Hunter's Way",
       "type": "FontString",
       "wordWrap": false
     },
@@ -5778,7 +5778,7 @@
         212.00,
         16.00
       ],
-      "text": "Southsea Freebooters",
+      "text": "Raptor Thieves",
       "type": "FontString",
       "wordWrap": false
     },
@@ -5851,6 +5851,146 @@
       "atlas": "questlog-questtypeicon-story",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33].IconFrame.Icon",
+      "size": [
+        16.00,
+        16.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOP",
+          "relativePoint": "TOP",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
+          "x": 0.00,
+          "y": -1332.00
+        }
+      ],
+      "highlightAtlas": "_options_listexpand_middle",
+      "highlightLocked": false,
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34]",
+      "size": [
+        288.00,
+        26.00
+      ],
+      "stockTemplate": "AlphaHighlightButtonTemplate",
+      "type": "Button"
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34]",
+          "x": 0.00,
+          "y": 0.00
+        },
+        {
+          "point": "BOTTOMRIGHT",
+          "relativePoint": "BOTTOMRIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "_options_listexpand_middle",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].NormalTexture",
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].IconFrame",
+          "x": 6.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontNormalMed2",
+      "justifyH": "LEFT",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].Title",
+      "size": [
+        212.00,
+        16.00
+      ],
+      "text": "Southsea Freebooters",
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "options_listexpand_left",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].Texture[1]",
+      "size": [
+        12.00,
+        26.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "options_listexpand_right",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].Texture[2]",
+      "size": [
+        28.00,
+        26.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34]",
+          "x": 12.00,
+          "y": 0.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].IconFrame",
+      "size": [
+        16.00,
+        16.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "CENTER",
+          "relativePoint": "CENTER",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].IconFrame",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "questlog-questtypeicon-story",
+      "layer": "OVERLAY",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].IconFrame.Icon",
       "size": [
         16.00,
         16.00

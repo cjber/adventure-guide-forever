@@ -247,6 +247,13 @@ tracked.ns.Invalidate()
 tracked.flush()
 out.tracked_trainers = Panel(tracked, "tracked_trainers")
 
+-- The completed subset uses the same log, leaving its unfinished quest for ordinary cleanup.
+local turnins = Load("v1", false, true)
+turnins.flush()
+turnins.ns.Choose("turnins", true)
+turnins.flush()
+out.turnins = Panel(turnins, "turnins")
+
 -- Four choices with dungeons enabled, then the same overview in a shorter map sidebar.
 h.ns.Prefs().dungeons = true
 h.ns.NotInterested("zone:1421", h.ns.State.MapName(1421))

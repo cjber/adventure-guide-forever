@@ -145,7 +145,7 @@ Data comes from [wago.tools](https://wago.tools), [CMaNGOS classic-db](https://g
 
 <!-- forever-credits:start -->
 
-Thanks to InfamousMunky, starkovsky, iPulse, sampconrad, lanprite, VinzNL, fuguer-ai, rhednak, jechten, Gnatz_0815, CodeHoax, eliasbusato, wfournier, methabolic, kragmars, Naburiel, vladsnz, jixxor, MrOxiMoron, QuincyO, Kyorri, cotijelucie and everyone who reported a bug or asked for a feature.
+Thanks to InfamousMunky, starkovsky, iPulse, sampconrad, lanprite, VinzNL, fuguer-ai, rhednak, jechten, Gnatz_0815, CodeHoax, eliasbusato, wfournier, methabolic, kragmars, Naburiel, vladsnz, jixxor, MrOxiMoron, QuincyO, Zerhathos, Kyorri, cotijelucie and everyone who reported a bug or asked for a feature.
 
 <!-- forever-credits:end -->
 

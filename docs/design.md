@@ -37,6 +37,9 @@ abandons quests.
   ready hand-ins included. A leading journey's own tracked quests do not count, so the card never copies the journey
   already showing. It adds no pickups. Its menu offers specific class, profession, riding and pet trainers, grouped by zone.
   An explicitly chosen trainer is a destination even without a quest in that town or spells waiting to train.
+    Turn-ins only is a separate Continue choice: completed log quests with known, valid hand-in points, using the
+  same routing and skips. It adds no objectives, pickups or trainers. Clean up my log keeps its ordinary objective
+  work and pickups on the way. The subset is rebuilt from live completion and destination facts in combat too.
     Give each card a reason and only known travel estimates.
 - **2.3 Chapters.** Expand Continue to choose another eligible story in the viewed destination without dismissing the
   suggested zone. Each chain is offered once, named by its known first quest, with its current chapter. Accepted quests

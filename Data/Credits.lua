@@ -30,6 +30,7 @@ ns.Credits = {
 		{ name = "MrOxiMoron", what = "Keeping the game's own quest markers on the map" },
 		{ name = "InfamousMunky", what = "A collected book no longer stays the next stop" },
 		{ name = "QuincyO", what = "Start the route from the continent you reach" },
+		{ name = "Zerhathos", what = "A journey for completed quest hand-ins only" },
 		{ name = "Kyorri", what = "Choose the quests to route in the best order" },
 		{ name = "iPulse", what = "Choose another story without skipping the first" },
 		{ name = "iPulse", what = "Group sync works with a full quest log" },

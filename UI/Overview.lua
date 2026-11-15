@@ -16,6 +16,7 @@ ns.Overview = Overview
 -- Blizzard's QUEST_TAG_ATLAS icons (Blizzard_FrameXMLBase/Constants.lua:514-527); the next zone gets the map's "!",
 -- the calling the quest log's class icon from the same sheet (CSV:9385).
 local KIND_ICONS = {
+	turnins = "QuestTurnin",
 	guide = "questlog-questtypeicon-story",
 	carry = "questlog-questtypeicon-quest",
 	tracked = "questlog-questtypeicon-quest",

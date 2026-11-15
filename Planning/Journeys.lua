@@ -463,6 +463,38 @@ local function Tracked(data, player, completed, log, ready, prefs, mapName)
 	}
 end
 
+-- Only completed, placed log quests: no objective work, pickups or trainer destinations.
+---@param ready table<integer, AGFPlace>
+---@return AGFJourney?
+local function Turnins(data, player, completed, log, ready, prefs, mapName)
+	if prefs.notInterested and prefs.notInterested.turnins then
+		return nil
+	end
+	local candidates, stops = {}, {}
+	local plan = { areas = {}, anchors = {} }
+	local held = LogSteps(data, player, log, ready, function(id, place)
+		return log[id].complete == true and place ~= nil and not Dropped(id)
+	end, stops, candidates, plan)
+	local steps = State.committedOrders
+			and Laps(data, player, completed, log, candidates, plan, prefs, mapName, nil, nil, "turnins")
+		or Build(data, player, completed, log, candidates, prefs, mapName)
+	if #steps == 0 then
+		return nil
+	end
+	local finished, away = Tally(data, player, log, held, prefs)
+	return {
+		kind = "turnins",
+		key = "turnins",
+		title = ns.L.JOURNEY_TURNINS,
+		subline = ns.L.CARRY_READY:format(finished + away),
+		reason = ns.L.TURNINS_REASON,
+		map = steps[1].map,
+		steps = steps,
+		ready = finished + away,
+		underway = 0,
+	}
+end
+
 -- The finished quests in `ready` join the chosen towns they are handed in at, hand-ins first; none adds a town.
 ---@param ready table<integer, AGFPlace>
 ---@return fun(selected: AGFStep[])
@@ -1105,6 +1137,7 @@ local SECTION_OF_KIND = {
 	guide = "continue",
 	carry = "continue",
 	tracked = "continue",
+	turnins = "continue",
 	story = "continue",
 	calling = "continue",
 	nextzone = "zones",
@@ -1473,6 +1506,7 @@ function Model.Journeys(
 		return not onStory(quest)
 	end)
 	journeys[#journeys + 1] = Carry(data, player, completed, log, ready, prefs, mapName, added, eligible)
+	journeys[#journeys + 1] = Turnins(data, player, completed, log, ready, prefs, mapName)
 	local tracked = Tracked(data, player, completed, log, ready, prefs, mapName)
 	if tracked then
 		journeys[#journeys + 1] = tracked
@@ -1677,5 +1711,6 @@ end
 ns.Planner.Journeys = {
 	Added = Added,
 	Carry = Carry,
+	Turnins = Turnins,
 	Summarise = Summarise,
 }
