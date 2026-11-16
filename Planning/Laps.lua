@@ -50,6 +50,9 @@ local Yards = ns.Planner.Travel.Yards
 ---@param step AGFStep
 ---@return AGFLogQuest?
 local function Urgent(log, step)
+	if next(log) == nil then
+		return nil
+	end
 	local best
 	local function Weigh(entry)
 		if entry.deadline then
