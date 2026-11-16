@@ -14,6 +14,8 @@ L["%s: %s is out of date. Update it to fix this."] =
 	"%s: %s이(가) 오래되었습니다. 이 문제를 해결하려면 업데이트하세요." -- mt
 L["%s: ForeverCore is turned off. Enable it in the AddOns list to fix this."] =
 	"%s: ForeverCore가 비활성화되어 있습니다. 이 문제를 해결하려면 애드온 목록에서 활성화하세요." -- mt
+L["%s: the installed ForeverCore is another addon (%s). Remove it and install ForeverCore from CurseForge."] =
+	"%s: 설치된 ForeverCore는 다른 애드온입니다 (%s). 삭제한 후 CurseForge에서 ForeverCore를 설치하세요." -- mt
 L["AFTER_PICK_UP"] = "수락한 후"
 L["ALL_SUGGESTIONS"] = "모든 제안"
 L["AUDIT_BUILD"] = "데이터 빌드 %s, 클라이언트 빌드 %s.%s"

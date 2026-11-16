@@ -11,6 +11,7 @@ L["%s needs ForeverCore. Install it from CurseForge, or choose Reinstall on Fore
 L["%s: %s are out of date. Update them to fix this."] = "%s: %s are out of date. Update them to fix this."
 L["%s: %s is out of date. Update it to fix this."] = "%s: %s is out of date. Update it to fix this."
 L["%s: ForeverCore is turned off. Enable it in the AddOns list to fix this."] = "%s: ForeverCore is turned off. Enable it in the AddOns list to fix this."
+L["%s: the installed ForeverCore is another addon (%s). Remove it and install ForeverCore from CurseForge."] = "%s: the installed ForeverCore is another addon (%s). Remove it and install ForeverCore from CurseForge."
 L["AFTER_PICK_UP"] = "after you pick it up"
 L["ALL_SUGGESTIONS"] = "All suggestions"
 L["AUDIT_BUILD"] = "data from build %s, client build %s.%s"

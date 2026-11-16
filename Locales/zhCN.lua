@@ -11,6 +11,8 @@ L["%s: %s are out of date. Update them to fix this."] = "%s：%s 已过期。请
 L["%s: %s is out of date. Update it to fix this."] = "%s：%s 已过期。请更新它以解决此问题。" -- mt
 L["%s: ForeverCore is turned off. Enable it in the AddOns list to fix this."] =
 	"%s：ForeverCore 已禁用。请在插件列表中启用它以解决此问题。" -- mt
+L["%s: the installed ForeverCore is another addon (%s). Remove it and install ForeverCore from CurseForge."] =
+	"%s：已安装的 ForeverCore 是另一个插件（%s）。请移除它并从 CurseForge 安装 ForeverCore。" -- mt
 L["AFTER_PICK_UP"] = "接受任务后"
 L["ALL_SUGGESTIONS"] = "所有建议"
 L["AUDIT_BUILD"] = "数据版本%s，客户端版本%s.%s"

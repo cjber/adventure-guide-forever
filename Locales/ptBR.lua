@@ -11,6 +11,8 @@ L["%s: %s are out of date. Update them to fix this."] = "%s: %s estão desatuali
 L["%s: %s is out of date. Update it to fix this."] = "%s: %s está desatualizado. Atualize-o para corrigir isto." -- mt
 L["%s: ForeverCore is turned off. Enable it in the AddOns list to fix this."] =
 	"%s: ForeverCore está desativado. Ative-o na lista de AddOns para corrigir isto." -- mt
+L["%s: the installed ForeverCore is another addon (%s). Remove it and install ForeverCore from CurseForge."] =
+	"%s: o ForeverCore instalado é outro addon (%s). Remova-o e instale ForeverCore pelo CurseForge." -- mt
 L["AFTER_PICK_UP"] = "depois de aceitá-la"
 L["ALL_SUGGESTIONS"] = "Todas as sugestões"
 L["AUDIT_BUILD"] = "dados da versão %s, versão do cliente %s.%s"

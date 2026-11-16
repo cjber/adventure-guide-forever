@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from phrases import HEADER, KEYWORD, keyword_files, phrases, render
+from phrases import HEADER, KEYWORD, keyword_files, main, phrases, render
 
 
 class PhrasesTests(unittest.TestCase):
@@ -33,6 +33,30 @@ class PhrasesTests(unittest.TestCase):
             subprocess.run(["git", "-C", str(root), "add", "."], check=True)
             with patch("phrases.ROOT", root):
                 self.assertEqual(keyword_files(), ["Example.toc", "Runtime.lua"])
+
+    def test_check_rejects_unassigned_wrapped_shared_phrase(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            shared = root / "Shared.lua"
+            shared.write_text(
+                'local function phrase(key, ...) return (ns.L or {})[key] end\nphrase(\n"Missing %s", name)\n'
+            )
+            english = root / "enUS.lua"
+            english.write_text('ns.L = { A = "a" }\n')
+            template = root / "phrases.txt"
+            template.write_text(render(phrases(english.read_text())))
+            with (
+                patch("phrases.ROOT", root),
+                patch("phrases.STRINGS", english),
+                patch("phrases.PHRASES", template),
+                patch("phrases.VENDORED", {"Shared.lua": ()}),
+                patch("phrases.keyword_files", return_value=[]),
+                patch("sys.argv", ["phrases.py", "--check"]),
+            ):
+                self.assertEqual(main(), 1)
+                english.write_text(english.read_text() + 'ns.L["Missing %s"] = "Missing %s"\n')
+                template.write_text(render(phrases(english.read_text())))
+                self.assertEqual(main(), 0)
 
     def test_lines(self):
         source = r"""

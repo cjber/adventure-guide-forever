@@ -11,6 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from check_core_shared import VENDORED
 from forever_tools import pkgmeta
 from gen_quests import lua
 from lint_copy import ns_l_entries, split, unquote
@@ -80,16 +81,40 @@ def keyword_files() -> list[str]:
     ]
 
 
+def missing_shared_phrases(english: str) -> list[str]:
+    """Require explicit English assignments for literal calls to a shared phrase helper."""
+    known = assigned(tokenize(english)[0])
+    missing = []
+    for name in sorted(VENDORED):
+        path = ROOT / name
+        if path.suffix != ".lua" or not path.is_file():
+            continue
+        tokens = tokenize(path.read_text())[0]
+        texts = [token.text for token in tokens]
+        if not any(texts[i : i + 4] == ["local", "function", "phrase", "("] for i in range(len(tokens))):
+            continue
+        for i in range(len(tokens) - 2):
+            if texts[i : i + 2] == ["phrase", "("] and tokens[i + 2].kind == "string":
+                key = unquote(tokens[i + 2].text)
+                if key not in known:
+                    missing.append(f"{name}: missing ns.L assignment in Locales/enUS.lua: {key}")
+    return missing
+
+
 def main() -> int:
     args = argparse.ArgumentParser(description=__doc__)
     args.add_argument("--check", action="store_true", help="fail on a stale phrases.txt or a packager keyword")
-    text = render(phrases(STRINGS.read_text()))
+    english = STRINGS.read_text()
+    text = render(phrases(english))
     if not args.parse_args().check:
         sys.stdout.write(text)
         return 0
     status = 0
     if PHRASES.read_text() != text:
         print(f"{PHRASES.relative_to(ROOT)} is stale: python3 tools/phrases.py > {PHRASES.relative_to(ROOT)}")
+        status = 1
+    for diagnostic in missing_shared_phrases(english):
+        print(diagnostic)
         status = 1
     for name in keyword_files():
         print(f"{name}: {KEYWORD} would fail the release; CurseForge no longer exports translations")

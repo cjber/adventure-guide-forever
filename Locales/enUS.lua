@@ -654,6 +654,8 @@ ns.L["%s: %s are out of date. Update them to fix this."] = "%s: %s are out of da
 ns.L["%s: %s is out of date. Update it to fix this."] = "%s: %s is out of date. Update it to fix this."
 ns.L["%s: ForeverCore is turned off. Enable it in the AddOns list to fix this."] =
 	"%s: ForeverCore is turned off. Enable it in the AddOns list to fix this."
+ns.L["%s: the installed ForeverCore is another addon (%s). Remove it and install ForeverCore from CurseForge."] =
+	"%s: the installed ForeverCore is another addon (%s). Remove it and install ForeverCore from CurseForge."
 
 _G.BINDING_HEADER_ADVENTUREGUIDEFOREVER = "Adventure Guide Forever"
 _G["BINDING_NAME_CLICK AdventureGuideForeverMinimapButton:LeftButton"] = "Open Adventure Guide"
