@@ -13,6 +13,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **Quest data refresh:** QuestieDB 1.1.2 gives Praise in Redridge Mountains a giver, makes Defending the Dead lead into The Broodmother, and stops Bruised Pride and Lion Hides and Vrang's Game from starting stories of their own. Ketharas no longer offers four Moonglade quests, so the guide stops suggesting them, and a few objective spots moved, so some routes change.
+- **This is the last update published on Wago.** Future updates come from CurseForge only. If you installed this addon through Wago or the WowUp Wago source, install it from CurseForge to keep getting updates; your settings stay.
+
 ## [1.10.0] - 2026-11-16
 
 <!-- discord-image: docs/screenshots/turnins.png -->
