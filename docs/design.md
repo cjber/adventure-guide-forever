@@ -265,6 +265,10 @@ follow the shared family voice.
 - **4.2 Laps.** A quest's objectives follow its pickup and its hand-in all of them. Respect quest-log capacity.
   Objective areas merge only on the same map and for the same activity kind; separate maps keep separate visits. A
   quest a lap picks up joins an area only when every quest picked up for it there comes from the same town. Current objective data does not distinguish floors on the same map.
+  A new quest worth less than half of its town's mean XP per yard waits for a later lap, and that mean is taken over
+  every quest the town offers this lap, taken or not. Each is valued against only its town and the other pooled
+  quests' planned nodes, so the cut-off never reads the log. Each pickup's own XP per yard also credits nearby log
+  areas, except those of carried pooled quests, whose planned nodes already count.
   The step the tracker shows holds (§2.5): a re-plan from a new place, including a trip to a city to train, keeps it at
   step 1 and only reorders the stops after it, until the player finishes or skips it, or reaches another continent. Unknown locations keep the hold. Its key is saved with the
   character, so the first build after a /reload holds the same step. With nothing held yet (a fresh

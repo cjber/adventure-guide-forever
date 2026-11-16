@@ -9,10 +9,8 @@ local NONE = {}
 local Cost = ns.Planner.Travel.Cost
 local Docks = ns.Planner.Travel.Docks
 local Dropped = ns.Planner.Eligibility.Dropped
-local Eligible = ns.Planner.Eligibility.Eligible
 local Hard = ns.Model.Hard
 local Position = ns.Planner.Travel.Position
-local SimpleOpen = ns.Planner.Eligibility.SimpleOpen
 local Yards = ns.Planner.Travel.Yards
 
 ---@param quest AGFQuest
@@ -117,11 +115,7 @@ local function Choices(data, player, completed, log, index, prefs, far)
 		candidates = {}
 		for _, id in ipairs(index.sides[player.side] or index.ids) do
 			local quest = data.quests[id]
-			if
-				quest.min <= player.level
-				and (prefs.showOutgrown or not Model.IsGray(quest.level, player.level))
-				and Model.CouldTake(quest, player)
-			then
+			if Model.Shortlisted(quest, player, prefs.showOutgrown) then
 				candidates[#candidates + 1] = id
 			end
 		end
@@ -151,17 +145,10 @@ local function Choices(data, player, completed, log, index, prefs, far)
 	for _, id in ipairs(candidateIDs) do
 		local quest = data.quests[id]
 		local instance = quest.dungeon ~= nil
-		-- The completion first: Eligible would say no to most for it, at more cost.
+		-- The card's kind first, then the quest's own rule, which every build reads again.
 		if
-			not completed[id]
-			and ((instance and (prefs.dungeons or quest.dungeon == chosenDungeon)) or (not instance and prefs.quests))
-			and not Dropped(id)
-			and (prefs.showOutgrown or pinned[id] or not Model.IsGray(quest.level, player.level))
-			and not Hard(quest, player)
-			and (
-				SimpleOpen(quest, player, completed, log, id)
-				or Eligible(data, player, completed, log, id, index.groups)
-			)
+			((instance and (prefs.dungeons or quest.dungeon == chosenDungeon)) or (not instance and prefs.quests))
+			and Model.Choosable(data, player, completed, log, id, pinned, prefs.showOutgrown, index.groups)
 		then
 			eligible[#eligible + 1] = id
 			ranked[#ranked + 1] = id
