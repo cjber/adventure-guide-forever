@@ -7,6 +7,7 @@ end
 local Model = ns.Model
 local State = ns.Planner.State
 local NONE = {}
+local NO_LOG = {} -- a log holding nothing: what a town offers whether or not the player has taken it
 local CLOSE = ns.Planner.Travel.CLOSE
 local Cost = ns.Planner.Travel.Cost
 local Describe = ns.Planner.Steps.Describe
@@ -19,6 +20,7 @@ local HandInOnly = ns.Planner.Routing.HandInOnly
 local Hub = ns.Planner.Steps.Hub
 local Ident = ns.Planner.Routing.Ident
 local Idents = ns.Planner.Routing.Idents
+local Index = ns.Planner.Eligibility.Index
 local Inside = ns.Planner.Steps.Inside
 local Locate = ns.Planner.Steps.Locate
 local Opens = ns.Planner.Steps.Opens
@@ -165,7 +167,7 @@ end
 
 ---@param lap AGFLapState
 local function PickLapQuests(lap)
-	local data, player, log, towns, areas, plan, planned, leadID, pinned, skipped, origin =
+	local data, player, log, towns, areas, plan, planned, leadID, pinned, skipped, origin, completed, showOutgrown =
 		lap.data,
 		lap.player,
 		lap.log,
@@ -176,7 +178,9 @@ local function PickLapQuests(lap)
 		lap.leadID,
 		lap.pinned,
 		lap.skipped,
-		lap.origin
+		lap.origin,
+		lap.completed,
+		lap.showOutgrown
 	local at = lap.at
 	-- The new quests each town hands out, and their objective nodes.
 	local picks, ids, nodes, offered = lap.picks, lap.ids, lap.nodes, lap.offered
@@ -194,38 +198,115 @@ local function PickLapQuests(lap)
 	end
 	table.sort(ids)
 
-	-- Each new quest's worth against its detour: out to each of its nodes from the nearest of its town, the log's areas
-	-- and the other new nodes, and back, with the work there and the talk.
-	local ratio, sums, counts, all, owner = lap.ratio, {}, {}, {}, {}
-	for _, id in ipairs(ids) do
-		for _, node in ipairs(nodes[id]) do
-			all[#all + 1], owner[node] = node, id
+	-- The quests each town offers this lap, taken or not (docs/design.md §4.2): every outdoor quest its givers hand out
+	-- that the zone choices would offer with an empty log (Model.Shortlisted, then Model.Choosable), plus the route's own
+	-- pickups. Both this set and its mean below are computed without the log, so the cut-off never reads the log.
+	---@type AGFIndex
+	local hubIndex = Index(data)
+	local pool, pooled = {}, {}
+	for _, town in ipairs(towns) do
+		local offers = {}
+		pool[town] = offers
+		for _, id in ipairs(town.hub and hubIndex.hubs[town.hub] or NONE) do
+			local quest = data.quests[id]
+			-- The lead and a pinned quest are offered whether or not a lap could plan them, as the pick loop above takes
+			-- them up; every other offer is one a lap plans too.
+			local extra = id == leadID or pinned[id] or false
+			if
+				not (quest.dungeon or quest.raid)
+				and (extra or (Model.Shortlisted(quest, player, showOutgrown) and Pickable(quest)))
+				and Model.Choosable(data, player, completed, NO_LOG, id, pinned, showOutgrown, hubIndex.groups)
+			then
+				offers[#offers + 1], pooled[id] = id, true
+			end
 		end
 	end
+	-- The route's own pickups are offers too, whatever set them apart (a lead or a pinned quest the guide would not
+	-- otherwise offer): they count in their town's mean from this build on.
 	for _, id in ipairs(ids) do
-		local quest, town = data.quests[id], picks[id]
-		local worth = Model.QuestXP(quest, player.level)
-		if worth then
-			local yards = TALK_YARDS
-			for _, node in ipairs(nodes[id]) do
-				local p = at(node)
-				local nearest = Gap(at(town) or origin, 0, p, node.r)
-				for _, area in ipairs(areas) do
-					nearest = math.min(nearest, Gap(at(area), area.r, p, node.r))
-				end
-				-- Nothing is nearer than touching, so the search stops there.
-				for _, near in ipairs(all) do
-					if nearest == 0 then
-						break
-					end
-					nearest = owner[near] ~= id and math.min(nearest, Gap(at(near), near.r, p, node.r)) or nearest
-				end
-				yards = yards
-					+ 2 * nearest
-					+ math.max(1, node.objectives[1].need or 0) * WORK_YARDS * WorkFactor(quest.level, player)
+		if not pooled[id] then
+			local offers = pool[picks[id]]
+			pooled[id], offers[#offers + 1] = true, id
+		end
+	end
+	-- For a pickup's own ratio, carried pooled quests' planned nodes stand in for their log areas; other log areas
+	-- still credit the pickup for work near what the player carries. The town mean uses no log areas.
+	local aside = {} -- log areas of carried pooled quests: their planned nodes stand in for them
+	for _, area in ipairs(areas) do
+		for _, objective in ipairs(area.objectives or NONE) do
+			if pooled[objective.id] and log[objective.id] then
+				aside[area] = true
+				break
 			end
-			ratio[id] = worth / yards
-			sums[town], counts[town] = (sums[town] or 0) + ratio[id], (counts[town] or 0) + 1
+		end
+	end
+	-- Every pooled quest is valued by the work its planned nodes hold, whether the log carries it or not: one node list
+	-- per quest, chosen from the quest and never from the log. A pickup's own nodes are that work, kept as they are so
+	-- the joins below know whose node it is; an outdoor elite's pickup schedules none (it waits for a group), so its
+	-- offer is valued by the work its planned nodes would hold, and taking the elite up does not move the town's mean.
+	---@type table<integer, AGFNode[]>
+	local valueNodes = {}
+	---@param id integer
+	---@return AGFNode[]
+	local function NodesOf(id)
+		local list = valueNodes[id]
+		if not list then
+			list = (not data.quests[id].elite and nodes[id]) or Planned(data.quests[id], id, player.level)
+			valueNodes[id] = list
+		end
+		return list
+	end
+	local ratio, sums, counts, all, owner = lap.ratio, {}, {}, {}, {}
+	for _, town in ipairs(towns) do
+		for _, id in ipairs(pool[town]) do
+			for _, node in ipairs(NodesOf(id)) do
+				all[#all + 1], owner[node] = node, id
+			end
+		end
+	end
+	---@param town AGFStep
+	---@param id integer
+	---@param withLog boolean
+	---@return number?
+	local function Worth(town, id, withLog)
+		local quest = data.quests[id]
+		local worth = Model.QuestXP(quest, player.level)
+		if not worth then
+			return nil
+		end
+		local yards = TALK_YARDS
+		for _, node in ipairs(NodesOf(id)) do
+			local p = at(node)
+			local nearest = Gap(at(town) or origin, 0, p, node.r)
+			if withLog then
+				for _, area in ipairs(areas) do
+					if not aside[area] then
+						nearest = math.min(nearest, Gap(at(area), area.r, p, node.r))
+					end
+				end
+			end
+			-- Nothing is nearer than touching, so the search stops there.
+			for _, near in ipairs(all) do
+				if nearest == 0 then
+					break
+				end
+				nearest = owner[near] ~= id and math.min(nearest, Gap(at(near), near.r, p, node.r)) or nearest
+			end
+			yards = yards
+				+ 2 * nearest
+				+ math.max(1, node.objectives[1].need or 0) * WORK_YARDS * WorkFactor(quest.level, player)
+		end
+		return worth / yards
+	end
+	for _, town in ipairs(towns) do
+		for _, id in ipairs(pool[town]) do
+			local value = Worth(town, id, false)
+			if value then
+				if picks[id] then
+					ratio[id] = Worth(town, id, true)
+				end
+				sums[town], counts[town] = (sums[town] or 0) + value, (counts[town] or 0) + 1
+			end
 		end
 	end
 	local function Touches(a, b)
@@ -1088,13 +1169,15 @@ end
 
 -- The lap route (docs/design.md §4.2), or nil when the player's place is unknown, where Build's route stands. The
 -- card's towns hand out their quests and take the finished ones; each new quest is done in areas of the data's (merged
--- with the log's), and one whose XP per yard falls below KEEP of its town's mean waits. The route is the player's
--- nearest action at every step (docs/design.md §4.1): the nearest town pickup (its open), the nearest area of a quest
--- the town handed out or the player carries, or the nearest ready hand-in. The town the player stands in, a pinned
--- quest and the story's chapter lead where they must, and a stop in the town the route is already in, on its map and
--- within a lap of it, is finished before the route leaves it, so a town's work is not split by a nearer rival while
--- an objective across the zone or the sea is no reason to stay; a stop already placed is never revisited. The
--- preview is cut after ordering and merging visits, so its horizon stays stable across rebuilds. The route is
+-- with the log's), and one whose XP per yard falls below KEEP of its town's mean waits; that mean is taken over every
+-- quest the town offers this lap, taken or not, using only its town and other pooled quests' planned nodes. The cut-off
+-- never reads the log; each pickup's own ratio also credits log areas except those of carried pooled quests. The route
+-- is the player's nearest action at every step (docs/design.md §4.1): the nearest town pickup (its open), the nearest
+-- area of a quest the town handed out or the player carries, or the nearest ready hand-in. The town the player stands
+-- in, a pinned quest and the story's chapter lead where they must, and a stop in the town the route is already in, on
+-- its map and within a lap of it, is finished before the route leaves it, so a town's work is not split by a nearer
+-- rival while an objective across the zone or the sea is no reason to stay; a stop already placed is never revisited.
+-- The preview is cut after ordering and merging visits, so its horizon stays stable across rebuilds. The route is
 -- checked in order: a quest's objectives never before its pickup, its hand-in never before all of them, and the log
 -- never past the client's limit. The card's committed order (`card`, its journey key) keeps the route steady
 -- (Stabilise). The town or open area the player stands in leads (Model.Here). A second visit to a town is keyed
@@ -1180,6 +1263,7 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 		hub = Model.Hub(data, player),
 		origin = origin,
 		planned = planned,
+		showOutgrown = prefs.showOutgrown,
 		rank = rank,
 		ranked = {},
 		skipped = skipped,

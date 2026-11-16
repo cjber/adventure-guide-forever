@@ -445,6 +445,8 @@
 ---@field ValidPlace fun(place?: {map?: integer, x?: number, y?: number}): boolean? true when `place` has a positive map and x, y in 0..1
 ---@field ForCharacter fun(quest: AGFQuest, player: AGFPlayer): boolean its side, race and class fit the character, whatever the data says of its start
 ---@field CouldTake fun(quest: AGFQuest, player: AGFPlayer): boolean the player could ever take it: the side, race and class fit, and the data places its start
+---@field Shortlisted fun(quest: AGFQuest, player: AGFPlayer, showOutgrown?: boolean): boolean the static half of the zone choices' offer rule: its level and colour fit, and the player could ever take it
+---@field Choosable fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, id: integer, pinned: table<integer, boolean>, showOutgrown?: boolean, groups: table<integer, integer[]>): boolean the other half of that rule for one build: not done or ruled out, not past the level ceiling, and open now
 ---@field Hub fun(data: AGFData, place: {map: integer, x: number, y: number}): string? the town `place` stands in, as "map:area"
 ---@field ChainStart fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): integer? a locked quest's earliest prerequisite open now and not orange or red
 ---@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean above the chosen quest level ceiling
@@ -1748,6 +1750,7 @@
 ---@field dungeonsByLevel table<integer, integer[]> dungeon IDs that are open by level
 ---@field choicesByLevel table<integer, table<string, integer[]>> non-grey quest IDs by side, level, race and class
 ---@field starts table<integer, integer[]> quest IDs by pickup map
+---@field hubs table<string, integer[]> quest IDs by pickup town ("map:area")
 ---@field groups table<integer, integer[]>
 ---@field sides table<integer, integer[]> by side, the IDs a player of it could ever take: its own side's or both
 ---sides', with a start the data places, not repeatable (Check's first lines)
@@ -1803,6 +1806,7 @@
 ---@field hub string? the town the player stands in, its areas' own
 ---@field origin AGFPosition
 ---@field planned boolean
+---@field showOutgrown? boolean the player's setting that keeps outgrown quests in the guide
 ---@field rank table<string, integer>
 ---@field ranked table<integer, integer> each quest's first place in the committed order among its work's areas
 ---@field skipped table<string, boolean>
@@ -1815,7 +1819,7 @@
 ---@field areas AGFStep[]
 ---@field picks table<integer, AGFStep>
 ---@field ids integer[]
----@field nodes table<integer, AGFNode[]>
+---@field nodes table<integer, AGFNode[]> the work each new pickup schedules (none for an outdoor elite, whose work waits for a group)
 ---@field offered table<string, integer[]>
 ---@field ratio table<integer, number>
 ---@field anchors table<string, AGFAnchor>

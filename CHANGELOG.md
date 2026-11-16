@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Taking a quest no longer drops another one in the same town.** When the route sent you to pick up several quests at one place, accepting one of them could make another disappear from the route and restart your waypoints. The rest of the town's pickups now stay exactly where they were (#786).
+- **This is the last update published on Wago.** Future updates come from CurseForge only. If you installed this addon through Wago or the WowUp Wago source, install it from CurseForge to keep getting updates; your settings stay.
 ## [1.10.1] - 2026-11-16
 
 <!-- forever-core-sync -->
