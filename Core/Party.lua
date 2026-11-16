@@ -295,13 +295,14 @@ local function Enabled()
 	return InParty() and (ns.Setting("partyQuests") == true or WantsSync())
 end
 
--- The quest IDs in the player's log, ascending.
+-- The visible quest IDs in the player's log, ascending. Hidden client quests do not occupy log slots
+-- and must not make a full visible log exceed the wire format's MAX_LOG limit.
 ---@return integer[]
 local function OwnQuests()
 	local ids = {}
 	for index = 1, C_QuestLog.GetNumQuestLogEntries() do
 		local info = C_QuestLog.GetInfo(index)
-		if info and not info.isHeader and info.questID then
+		if info and not info.isHeader and not info.isHidden and info.questID then
 			ids[#ids + 1] = info.questID
 		end
 	end

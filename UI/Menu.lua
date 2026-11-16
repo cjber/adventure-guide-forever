@@ -106,13 +106,21 @@ end
 function Menu.Step(root, step)
 	root:CreateTitle(step and step.title or ns.TITLE)
 	if step and not ns.Setting("wanderer") then
-		local go = root:CreateButton(L.GO, function()
-			ns.StartRoute(step)
-		end)
-		if ns.Integrations.ReplacesJourney() then
-			go:SetTooltip(function(tooltip)
-				Menu.GoWarning(tooltip, L.GO)
+		if ns.Setting("informationOnly") then
+			root:CreateButton(L.SHOW_ON_MAP, function()
+				C_Timer.After(0, function()
+					ns.Guidance.ShowOnMap(step)
+				end)
 			end)
+		else
+			local go = root:CreateButton(L.GO, function()
+				ns.StartRoute(step)
+			end)
+			if ns.Integrations.ReplacesJourney() then
+				go:SetTooltip(function(tooltip)
+					Menu.GoWarning(tooltip, L.GO)
+				end)
+			end
 		end
 	end
 	-- One clear exit while a journey is chosen, paused or not: ns.Stop drops the choice and whatever route AGF started
@@ -150,7 +158,7 @@ function Menu.Step(root, step)
 	if skipped > 0 then
 		Menu.Skipped(root:CreateButton(L.SKIPPED:format(skipped)))
 	end
-	if step and not ns.Setting("wanderer") then
+	if step and not ns.Setting("wanderer") and not ns.Setting("informationOnly") then
 		ns.Companions.AddMenu(root, "ShortestPathForever")
 	end
 	if ns.OpenPanel then
@@ -187,6 +195,27 @@ function Menu.Journey(owner, journey)
 		root:CreateTitle(journey.title)
 		if journey.kind == "guide" then
 			GuideEntries(root)
+		end
+		if journey.kind == "tracked" then
+			local choices = root:CreateButton(L.TRAINER_STOPS)
+			choices:SetScrollMode(MENU_EXTENT)
+			local player, prefs = ns.State.Player(), ns.Prefs()
+			local zones = {}
+			for _, id in ipairs(ns.Planner.Services.Choices(ns.Data, player)) do
+				local place = ns.Data.npcs[id].place
+				local zone = zones[place.map]
+				if not zone then
+					zone = choices:CreateButton((C_Map.GetMapInfo(place.map) or {}).name or tostring(place.map))
+					zone:SetScrollMode(MENU_EXTENT)
+					zones[place.map] = zone
+				end
+				zone:CreateCheckbox(place.name, function()
+					return prefs.trainerStops[id] == true
+				end, function()
+					prefs.trainerStops[id] = not prefs.trainerStops[id] or nil
+					ns.Invalidate()
+				end)
+			end
 		end
 		if journey.kind == "library" then
 			LibraryTerritories(root)
@@ -225,6 +254,9 @@ end
 
 ---@return string
 function Menu.ClickLine()
+	if ns.Setting("informationOnly") then
+		return L.CLICK_SHOW_MAP
+	end
 	local provider = ns.Integrations.Provider()
 	return provider and L.CLICK_TRAVEL:format(provider) or L.CLICK_WAYPOINT
 end

@@ -43,6 +43,45 @@ local Yards = ns.Planner.Travel.Yards
      in town, clear the objective areas out one side of it, come back and hand in. Every other card keeps Build's route,
      so a rebuild stays inside its frame budget. ]]
 
+-- The log quest that makes `step` urgent, or nil (AGF709): a live quest timer (`entry.deadline`) outranks a bag item
+-- that runs out (`entry.expiring`). A complete one it hands in, else an unfinished one whose objectives it works. The
+-- soonest deadline wins; ties keep the earlier reading, so the choice never depends on pairs() order.
+---@param log table<integer, AGFLogQuest>
+---@param step AGFStep
+---@return AGFLogQuest?
+local function Urgent(log, step)
+	if next(log) == nil then
+		return nil
+	end
+	local best
+	local function Weigh(entry)
+		if entry.deadline then
+			if
+				not (best and best.deadline)
+				or entry.deadline < best.deadline
+				or (entry.deadline == best.deadline and entry.id < best.id)
+			then
+				best = entry
+			end
+		elseif entry.expiring and not (best and best.deadline) then
+			best = best or entry
+		end
+	end
+	for _, id in ipairs(Model.Handins(step)) do
+		local entry = log[id]
+		if entry and entry.complete then
+			Weigh(entry)
+		end
+	end
+	for _, objective in ipairs(step.objectives or NONE) do
+		local entry = log[objective.id]
+		if entry and not entry.complete then
+			Weigh(entry)
+		end
+	end
+	return best
+end
+
 ---@param standsIn AGFStep
 ---@return AGFStep
 local function LeadingArea(standsIn)
@@ -202,6 +241,10 @@ local function PickLapQuests(lap)
 	-- A new quest's node joins an area only when every quest the route picks up there is its own town's, so an area is
 	-- never worked between two towns' pickups, where the order check would drop one town's work from it.
 	local function Joins(a, b, area)
+		-- Optional pickup work must not add a prerequisite to an accepted urgent objective (AGF709).
+		if Urgent(log, area) then
+			return false
+		end
 		for id in pairs(area.planned or NONE) do
 			if picks[id] ~= picks[owner[b]] then
 				return false
@@ -384,7 +427,7 @@ local function BuildLapAnchors(lap)
 	for _, step in ipairs(others) do
 		-- A trainer only in a town a lap visits anyway (its hub), and once.
 		local anchor
-		if step.kind == "trainer" then
+		if step.kind == "trainer" and not step.chosenTrainer then
 			anchor = not trained and step.hub and anchors["town:" .. step.hub] or nil
 			trained = trained or anchor ~= nil
 		else
@@ -540,7 +583,7 @@ local function WalkLap(lap)
 			for _, stop in ipairs(anchor.stops) do
 				-- A stop with a quest the town's own pickup opens is not a place the route can go yet.
 				if not placed[stop] and Opened(stop) then
-					if stop.kind ~= "trainer" or not schooled then
+					if stop.chosenTrainer or stop.kind ~= "trainer" or not schooled then
 						Consider(lap, walk, choice, stop, anchor, Gap(from, 0, at(stop), stop.r or 0), "stop")
 					end
 				end
@@ -715,40 +758,82 @@ local function Front(lap, route, leads)
 	return Holds(lap, moved) and moved or route
 end
 
--- The log quest whose item runs out (docs/design.md §4.1, AGFLogQuest.expiring) that `step` finishes, or nil: a
--- complete one it hands in, else an unfinished one whose objectives it works.
+-- Move `steps`' urgent leads to the front: timed leads take the soonest exact deadline, then quest ID, then their
+-- route order; bag-item leads follow. One lead `valid` refuses never cancels the others: the whole set is tried first,
+-- then each lead alone, farthest deadline first, so the soonest still ends at the head when it can. The order checks
+-- themselves stay the caller's (Holds for a lap, Order.Valid for a cheap refresh).
+---@param steps AGFStep[]
 ---@param log table<integer, AGFLogQuest>
----@param step AGFStep
----@return AGFLogQuest?
-local function Expiring(log, step)
-	for _, id in ipairs(Model.Handins(step)) do
-		local entry = log[id]
-		if entry and entry.expiring and entry.complete then
-			return entry
+---@param valid fun(steps: AGFStep[]): boolean
+---@return AGFStep[]
+local function LeadUrgent(steps, log, valid)
+	local leads = {}
+	for index, step in ipairs(steps) do
+		local entry = Urgent(log, step)
+		if entry then
+			leads[#leads + 1] = {
+				step = step,
+				index = index,
+				deadline = entry.deadline,
+				id = entry.id,
+			}
 		end
 	end
-	for _, objective in ipairs(step.objectives or NONE) do
-		local entry = log[objective.id]
-		if entry and entry.expiring and not entry.complete then
-			return entry
+	if #leads == 0 then
+		return steps
+	end
+	table.sort(leads, function(a, b)
+		if (a.deadline ~= nil) ~= (b.deadline ~= nil) then
+			return a.deadline ~= nil
+		end
+		if a.deadline ~= nil then
+			if a.deadline ~= b.deadline then
+				return a.deadline < b.deadline
+			end
+			if a.id ~= b.id then
+				return a.id < b.id
+			end
+		end
+		return a.index < b.index
+	end)
+	local moved, leading = {}, {}
+	for _, lead in ipairs(leads) do
+		leading[lead.step] = true
+		moved[#moved + 1] = lead.step
+	end
+	for _, step in ipairs(steps) do
+		if not leading[step] then
+			moved[#moved + 1] = step
 		end
 	end
-	return nil
+	if valid(moved) then
+		return moved
+	end
+	local current = steps
+	for index = #leads, 1, -1 do
+		local step = leads[index].step
+		local candidate = { step }
+		for _, other in ipairs(current) do
+			if other ~= step then
+				candidate[#candidate + 1] = other
+			end
+		end
+		if valid(candidate) then
+			current = candidate
+		end
+	end
+	return current
 end
 
--- A quest carrying an item that runs out goes first, ahead even of the area the player stands in: the item won't
--- wait. Front keeps the route when the order check refuses the move.
+-- A quest with a live timer or a bag item that runs out goes first, ahead even of the area the player stands in:
+-- neither will wait.
 ---@param lap AGFLapState
 ---@param route AGFStep[]
 ---@return AGFStep[]
 local function Hurry(lap, route)
-	local leads, any = {}, false
-	for _, step in ipairs(route) do
-		if Expiring(lap.log, step) then
-			leads[step], any = true, true
-		end
-	end
-	return any and Front(lap, route, leads) or route
+	return LeadUrgent(route, lap.log, function(steps)
+		return Holds(lap, steps)
+	end)
 end
 
 ---@param lap AGFLapState
@@ -851,54 +936,8 @@ local function CommitLap(lap)
 	lap.route, lap.order = route, order
 end
 
----@param lap AGFLapState
-local function MergeLapVisits(lap)
-	local route, skipped, order, card, ordered = lap.route, lap.skipped, lap.order, lap.card, lap.ordered
-	local into = {}
-	-- Two visits to one town in a row are one, unless the second hands in what the first handed out.
-	for index = #route, 2, -1 do
-		local a, b = route[index - 1], route[index]
-		if a.kind == "town" and b.kind == "town" and a.key == b.key then
-			local apart = false
-			for _, id in ipairs(b.handins) do
-				apart = apart or a.spots[id] ~= nil
-			end
-			if not apart then
-				local lists = { handins = {}, pickups = {} }
-				for name, merged in pairs(lists) do
-					for _, step in ipairs({ a, b }) do
-						for _, id in ipairs(step[name]) do
-							merged[#merged + 1], a.spots[id] = id, a.spots[id] or step.spots[id]
-						end
-					end
-				end
-				for _, name in ipairs({ "planned", "returns" }) do
-					for id in pairs(b[name] or NONE) do
-						a[name] = a[name] or {}
-						a[name][id] = true
-					end
-				end
-				Trim(a, lists.handins, lists.pickups)
-				into[b] = a
-				table.remove(route, index)
-			end
-		end
-	end
-	local visits = {}
-	for index = 1, #route do
-		local step = route[index]
-		if step.kind == "town" then
-			visits[step.key] = (visits[step.key] or 0) + 1
-			step.key = visits[step.key] > 1 and ("%s:%d"):format(step.key, visits[step.key]) or step.key
-		end
-	end
-	for index = #route, 1, -1 do
-		if skipped[route[index].key] then
-			Skip(route[index].key)
-			table.remove(route, index)
-		end
-	end
-	route = Verify(lap, route)
+-- Shared by merged visits and a producer with no candidates: retain the same order cleanup.
+local function FinishLapOrder(route, skipped, order, card, ordered, into)
 	-- A step the check dropped (its pickups gave way to the log's limit) leaves the order with it, so the next build
 	-- ranks only steps this one holds and a rebuild with nothing changed is the same route. A step past the step limit
 	-- stays in the order.
@@ -949,6 +988,57 @@ local function MergeLapVisits(lap)
 		end
 		State.committedOrders[card] = order
 	end
+end
+
+---@param lap AGFLapState
+local function MergeLapVisits(lap)
+	local route, skipped, order, card, ordered = lap.route, lap.skipped, lap.order, lap.card, lap.ordered
+	local into = {}
+	-- Two visits to one town in a row are one, unless the second hands in what the first handed out.
+	for index = #route, 2, -1 do
+		local a, b = route[index - 1], route[index]
+		if a.kind == "town" and b.kind == "town" and a.key == b.key then
+			local apart = false
+			for _, id in ipairs(b.handins) do
+				apart = apart or a.spots[id] ~= nil
+			end
+			if not apart then
+				local lists = { handins = {}, pickups = {} }
+				for name, merged in pairs(lists) do
+					for _, step in ipairs({ a, b }) do
+						for _, id in ipairs(step[name]) do
+							merged[#merged + 1], a.spots[id] = id, a.spots[id] or step.spots[id]
+						end
+					end
+				end
+				for _, name in ipairs({ "planned", "returns" }) do
+					for id in pairs(b[name] or NONE) do
+						a[name] = a[name] or {}
+						a[name][id] = true
+					end
+				end
+				Trim(a, lists.handins, lists.pickups)
+				into[b] = a
+				table.remove(route, index)
+			end
+		end
+	end
+	local visits = {}
+	for index = 1, #route do
+		local step = route[index]
+		if step.kind == "town" then
+			visits[step.key] = (visits[step.key] or 0) + 1
+			step.key = visits[step.key] > 1 and ("%s:%d"):format(step.key, visits[step.key]) or step.key
+		end
+	end
+	for index = #route, 1, -1 do
+		if skipped[route[index].key] then
+			Skip(route[index].key)
+			table.remove(route, index)
+		end
+	end
+	route = Verify(lap, route)
+	FinishLapOrder(route, skipped, order, card, ordered, into)
 	lap.route = route
 end
 
@@ -979,11 +1069,16 @@ local function DescribeLap(lap)
 				step.detail = step.reason
 			end
 		end
-		local hurry = Expiring(log, step)
-		if hurry then
+		local urgent = Urgent(log, step)
+		if urgent then
+			step.hurryKept = { reason = step.reason, detail = step.detail }
 			step.hurry = true
-			step.reason = hurry.expiringName and ns.L.BEFORE_IT_RUNS_OUT:format(hurry.expiringName)
-				or ns.L.BEFORE_ITEM_RUNS_OUT
+			if urgent.deadline then
+				step.reason = ns.L.BEFORE_TIMER_RUNS_OUT
+			else
+				step.reason = urgent.expiringName and ns.L.BEFORE_IT_RUNS_OUT:format(urgent.expiringName)
+					or ns.L.BEFORE_ITEM_RUNS_OUT
+			end
 			step.detail = step.reason
 		end
 		Locate(data, step, mapName)
@@ -1119,7 +1214,23 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	return lap.route
 end
 
+-- Turn-ins have no other producer once LogSteps leaves no candidates. Keep the lap's position
+-- precondition and commit through its own finalizer, without constructing or walking a lap.
+local function Empty(data, player, prefs, card)
+	local origin = Position(data, player, Docks(data, player.side))
+	if not (origin and origin.known) then
+		return nil
+	end
+	local route = {}
+	local order = prefs.optimisedRoute == true and State.committedOrders and card and Idents(route)
+	FinishLapOrder(route, prefs.skipped, order, card, {}, {})
+	return route
+end
+
 ns.Planner.Laps = {
 	Laps = Laps,
+	Empty = Empty,
+	LeadUrgent = LeadUrgent,
 	Pickable = Pickable,
+	Urgent = Urgent,
 }

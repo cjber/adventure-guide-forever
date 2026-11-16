@@ -28,6 +28,20 @@ local auto = {}
 local source
 local hidden = 0
 
+-- Watch events raised by our own changes must not rewrite the player's saved choices.
+local changing = false
+local function AddWatch(questID)
+	changing = true
+	local added = C_QuestLog.AddQuestWatch(questID)
+	changing = false
+	return added
+end
+local function RemoveWatch(questID)
+	changing = true
+	C_QuestLog.RemoveQuestWatch(questID)
+	changing = false
+end
+
 ---@type fun()[]
 local listeners = {}
 
@@ -76,7 +90,8 @@ end
 local function RestedXPLeader(route)
 	local first = route.steps[1]
 	if
-		ns.RestedXP
+		not ns.Setting("informationOnly")
+		and ns.RestedXP
 		and ns.Setting("guideTracksQuests") == true
 		and ns.RestedXP.Active()
 		and route.chosen
@@ -96,7 +111,8 @@ end
 local function JourneyLeader(route)
 	local first = route.steps[1]
 	if
-		ns.Setting("journeyWatch") == true
+		not ns.Setting("informationOnly")
+		and ns.Setting("journeyWatch") == true
 		and route.chosen
 		and first ~= nil
 		and not first.preview
@@ -181,13 +197,13 @@ end
 local function GiveBack(state)
 	for questID in pairs(state.added) do
 		if Watched(questID) then
-			C_QuestLog.RemoveQuestWatch(questID)
+			RemoveWatch(questID)
 		end
 	end
 	local log = ns.State.Log()
 	for _, questID in ipairs(state.saved) do
 		if log[questID] and not Watched(questID) then
-			C_QuestLog.AddQuestWatch(questID)
+			AddWatch(questID)
 		end
 	end
 end
@@ -230,7 +246,7 @@ function Watch.Sync()
 		for _, questID in ipairs(state.saved) do
 			if not named[questID] then
 				if Watched(questID) then
-					C_QuestLog.RemoveQuestWatch(questID)
+					RemoveWatch(questID)
 				end
 				state.hidden[questID] = true
 			end
@@ -251,7 +267,7 @@ function Watch.Sync()
 			for _, questID in ipairs(state.saved) do
 				if not named[questID] and not state.hidden[questID] then
 					if Watched(questID) then
-						C_QuestLog.RemoveQuestWatch(questID)
+						RemoveWatch(questID)
 					end
 					state.hidden[questID] = true
 				end
@@ -273,7 +289,7 @@ function Watch.Sync()
 		if not named[questID] then
 			state.added[questID] = nil
 			if Watched(questID) then
-				C_QuestLog.RemoveQuestWatch(questID)
+				RemoveWatch(questID)
 			end
 			if saved[questID] then
 				state.hidden[questID] = true
@@ -286,7 +302,7 @@ function Watch.Sync()
 	end
 	-- A quest the leader names anew is tracked once; one the player untracks while it stays named stays untracked.
 	for _, questID in ipairs(order) do
-		if not state.named[questID] and not Watched(questID) and C_QuestLog.AddQuestWatch(questID) then
+		if not state.named[questID] and not Watched(questID) and AddWatch(questID) then
 			state.added[questID] = true
 		end
 	end
@@ -320,6 +336,25 @@ events:SetScript("OnEvent", function(_, event, first, second)
 	end
 	if event == "QUEST_ACCEPTED" or (event == "QUEST_WATCH_UPDATE" and not Watched(questID)) then
 		auto[questID] = GetTime()
+	end
+	-- Keep explicit edits in the saved player set too, so ending or switching a journey cannot undo them.
+	local automatic = auto[questID] and GetTime() - auto[questID] <= AUTO_WINDOW
+	if event == "QUEST_WATCH_LIST_CHANGED" and not changing and not automatic then
+		local state = ns.Prefs().guideWatch
+		if state then
+			for index = #state.saved, 1, -1 do
+				if state.saved[index] == questID then
+					table.remove(state.saved, index)
+				end
+			end
+			if second == true then
+				state.saved[#state.saved + 1] = questID
+			end
+			state.added[questID] = nil
+			if state.hidden then
+				state.hidden[questID] = nil
+			end
+		end
 	end
 	-- A watch change needs a look only for a quest the client may have tracked: the rest are ours or the player's.
 	if event ~= "QUEST_WATCH_UPDATE" and (event ~= "QUEST_WATCH_LIST_CHANGED" or auto[questID]) then

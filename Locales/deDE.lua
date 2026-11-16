@@ -117,6 +117,7 @@ L["HAND_IN_WHEN"] = "Abgeben, wenn Ihr in %s seid"
 L["HAND_IN_WHEN_DONE"] = "sobald sie erledigt ist"
 L["BEFORE_IT_RUNS_OUT"] = "bevor %s abläuft"
 L["BEFORE_ITEM_RUNS_OUT"] = "bevor ein Questgegenstand abläuft"
+L["BEFORE_TIMER_RUNS_OUT"] = "bevor die Questzeit abläuft"
 L["HELP_AUDIT"] = "/agf audit - die Questdaten mit dem Spiel abgleichen"
 L["HELP_DUMP"] = "/agf dump - das Layout des Führers für einen Fehlerbericht speichern"
 L["HELP_OPEN"] = "/agf - den Führer auf der Weltkarte öffnen."
@@ -133,11 +134,19 @@ L["HUB_PICK_UP"] = "%d anzunehmen"
 L["ITEM_LOADING"] = "Gegenstand wird geladen..."
 L["JOURNEY_CALLING"] = "Eure Berufung"
 L["JOURNEY_CARRY"] = "Log aufräumen"
+L["JOURNEY_TURNINS"] = "Nur Questabgaben" -- mt
+L["TURNINS_REASON"] = "Schließt fertige Quests ab, ohne weitere anzunehmen" -- mt
+L["JOURNEY_TRACKED"] = "Meine verfolgten Quests" -- mt
+L["TRACKED_QUESTS"] = "%d verfolgte Quests" -- mt
+L["TRACKED_QUESTS_ONE"] = "1 verfolgte Quest" -- mt
+L["TRACKED_REASON"] = "Die Quests, die Ihr verfolgt, in der besten Reihenfolge" -- mt
 L["JOURNEY_CHOICES"] = "Wählt ein Abenteuer"
 L["JOURNEY_CHOOSE"] = "Wählt unter Aktivitäten eine Reise, um zu beginnen."
 L["JOURNEY_COMPLETE"] = "Reise abgeschlossen"
 L["JOURNEY_INTO"] = "Der Weg nach %s"
 L["JOURNEY_NEXT_ZONE"] = "Auf nach %s"
+L["PROVIDER_CARD_HINT"] =
+	"Schritte aus deinen installierten %s-Guides. Zonen-Geschichten und „Log aufräumen“ sind Adventure Guides eigene."
 L["JOURNEY_PAGE"] = "%d / %d"
 L["JOURNEY_PROGRESS_EMPTY"] = "Eure abgeschlossenen Geschichten erscheinen hier."
 L["JOURNEY_QUESTS"] = "Quests dieser Reise"
@@ -534,7 +543,17 @@ L["SYNC_AND"] = "und" -- mt
 
 L.LEADERBOARD_METRIC = "Abgegebene Quests" -- mt
 L.LEADERBOARD_TOTAL = "gesamt" -- mt
+-- mt: Information only (#715).
+L["SETTING_INFORMATION_ONLY"] = "Nur Informationen: keine Routen" -- mt
+L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
+	"Behalte Reisen und Questinformationen, ohne Routen zu starten oder deine verfolgten Quests zu ändern. Ein Klick auf einen Halt zeigt seine Quests auf der Karte. Schalte dies aus, um den Planer wieder zu verwenden." -- mt
+L["CLICK_SHOW_MAP"] = "Klicken, um diesen Halt auf der Karte zu zeigen" -- mt
 
 L["MENU_HIDE_QUEST_MARKERS"] = "Questmarkierungen des Spiels ausblenden" -- mt
 L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
 	"Schalte dies aus, damit die Questmarkierungen und blauen Questgebiete des Spiels neben deinen Routenmarkierungen auf der Karte sichtbar bleiben." -- mt
+
+L["TRAINER_STOPS"] = "Lehrerstopps" -- mt
+L["VISIT_TRAINER"] = "%s besuchen" -- mt
+
+L["CHOSEN_TRAINER"] = "Gewählter Lehrer" -- mt

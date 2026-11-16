@@ -12,6 +12,10 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Choose Turn-ins only to hand in completed quests.** This journey routes completed quests with known hand-in locations, without adding objectives or new quests. Clean up my log still includes work in progress and pickups along the way. Thanks to Kyorri and Zerhathos for the idea (#772).
+
+- **Timed quests stay ahead of optional pickups.** Nearby work for a quest you have not accepted no longer holds up A Hunter's Challenge or another urgent quest. The guide still takes you back to hand it in while its timer is running. Thanks to InfamousMunky for the report (#709).
+
 ## [1.9.2] - 2026-11-15
 
 <!-- forever-core-sync -->

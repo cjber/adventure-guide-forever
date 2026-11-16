@@ -7,7 +7,7 @@ assert(loadfile("Planning/Focus.lua"))("AdventureGuideForever", ns)
 
 -- The client's super-tracking: selecting a quest makes it the tracked destination; tracking the user waypoint
 -- again raises the waypoint back above it.
-local tracked, quest, kind = false, 0, nil
+local tracked, quest, kind, selections = false, 0, nil, 0
 _G.C_SuperTrack = {
 	IsSuperTrackingUserWaypoint = function()
 		return tracked
@@ -19,6 +19,7 @@ _G.C_SuperTrack = {
 		return kind
 	end,
 	SetSuperTrackedQuestID = function(id)
+		selections = selections + 1
 		quest = id
 		if id ~= 0 then
 			tracked, kind = false, "quest"
@@ -35,10 +36,14 @@ _G.C_SuperTrack = {
 local prefs = {}
 local route
 local waypointAt = false
+local informationOnly = false
 ns.Prefs = function()
 	return prefs
 end
-ns.Setting = function()
+ns.Setting = function(key)
+	if key == "informationOnly" then
+		return informationOnly
+	end
 	return true
 end
 ns.Route = function()
@@ -66,6 +71,7 @@ end
 local function Enter(key, id, wasTracked)
 	prefs.focus = nil
 	tracked, quest, kind = wasTracked, 0, wasTracked and "waypoint" or nil
+	selections = 0
 	route = { chosen = true, steps = { { key = key, here = true, objectives = { { id = id } } } } }
 	ns.Focus.Sync()
 end
@@ -100,6 +106,46 @@ equal(kind, "waypoint", "and still leads")
 Enter("area:301:0", 300, false)
 equal(tracked, false, "no waypoint is super-tracked when there was none")
 equal(kind, "quest", "the selected quest is the destination")
+
+-- Information mode follows nothing (#715): walking into the route's first area selects no quest, and no call reaches
+-- the client's selection.
+informationOnly = true
+Enter("area:400:0", 400, false)
+equal(quest, 0, "information mode selects no quest")
+equal(selections, 0, "and never changes the client's selection")
+equal(prefs.focus, nil, "nothing is recorded as AGF's")
+
+-- AGF's own selection from before the mode is cleared through the same ownership check.
+prefs.focus = 226
+route = { chosen = true, steps = { { key = "area:226:0", here = true, objectives = { { id = 226 } } } } }
+tracked, quest, kind = false, 226, nil
+selections = 0
+ns.Focus.Sync()
+equal(selections, 1, "AGF's own selection is cleared on entering the mode")
+equal(quest, 0, "back to none")
+equal(prefs.focus, nil, "and forgotten")
+
+-- A selection that is not AGF's is preserved, with AGF's stale record dropped and no client call made.
+prefs.focus = 226
+route = { chosen = true, steps = { { key = "area:245:0", here = true, objectives = { { id = 245 } } } } }
+tracked, quest, kind = false, 99, nil
+selections = 0
+ns.Focus.Sync()
+equal(selections, 0, "the player's selection is left alone")
+equal(quest, 99, "still the player's")
+equal(prefs.focus, nil, "AGF forgets its stale selection, not theirs")
+
+-- A super-tracked waypoint also survives entering the mode with a foreign selection.
+prefs.focus = nil
+route = { chosen = true, steps = { { key = "area:300:0", here = true, objectives = { { id = 300 } } } } }
+tracked, quest, kind, waypointAt = true, 99, "waypoint", true
+selections = 0
+ns.Focus.Sync()
+equal(selections, 0, "no selection is made with a waypoint super-tracked")
+equal(quest, 99, "the player's selection stays")
+equal(tracked, true, "the waypoint stays super-tracked")
+equal(kind, "waypoint", "and still leads")
+informationOnly = false
 
 for _, failure in ipairs(failures) do
 	print("  " .. failure)

@@ -92,10 +92,11 @@
 ---@field guideList? table<string, {names_: {name: string, group: string}[]}>
 ---@field guideImporter? {Open: fun(self: table), importCoroutine?: thread, importBufferSize?: integer}
 ---@field settings? {profile: {showEnabled?: boolean, hideGuideWindow?: boolean}, OpenSettings: fun()}
----@field v2? {state?: {guideWindow?: {frame: AGFRXPWindow}}, UpdateGuideWindow?: fun(self: table)}
+---@field v2? {state?: {guideWindow?: {frame: AGFRXPWindow}}, UpdateGuideWindow?: fun(self: table), activeTheme?: {guideWindow?: {logo?: string}}, GetTheme?: fun(self: table): table?}
 ---@field arrowFrame? AGFRXPArrowFrame
 ---@field activeWaypoints? table[]
 ---@field hideArrow? boolean
+---@field GetV1Texture? fun(name: string): string? older RestedXP's themed texture path, e.g. its guide-window logo
 
 ---@type AGFRXPEngine?
 RXP = nil
@@ -141,6 +142,8 @@ RXPCData = nil
 ---@class AGFRestedXPAdapter
 ---@field Enabled fun(): boolean
 ---@field Active fun(): boolean
+---@field Provider fun(): string the name a guide card shows, "RestedXP"
+---@field ProviderIcon fun(): string? RestedXP's own mark, a file icon the card draws
 ---@field Awaits fun(key?: string): boolean `key` is a guide's, guide mode is on and RestedXP has no guide loaded yet
 ---@field Snapshot fun(): AGFRXPSnapshot
 ---@field OnChange fun(callback: fun())

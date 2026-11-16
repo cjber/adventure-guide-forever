@@ -46,7 +46,11 @@ local function Offered(event)
 		if not (GetNumAvailableQuests and GetAvailableTitle) then
 			return nil
 		end
-		for index = 1, ns.Readable(GetNumAvailableQuests()) or 0 do
+		local count = ns.Readable(GetNumAvailableQuests())
+		if type(count) ~= "number" then
+			return nil
+		end
+		for index = 1, count do
 			local title = ns.Readable(GetAvailableTitle(index))
 			if type(title) ~= "string" or title == "" then
 				return nil

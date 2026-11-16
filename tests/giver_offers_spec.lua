@@ -175,6 +175,23 @@ do
 	equal(#h.errors, 0, "listed: errors\n" .. table.concat(h.errors, "\n"))
 end
 
+-- An unreadable greeting count cannot establish that a wanted quest is absent.
+do
+	local h = Load()
+	local id, npc = Pickup(h)
+	h.G.C_QuestLog.GetTitleForQuestID = function(questID)
+		return h.ns.Data.quests[questID] and h.ns.Data.quests[questID].title
+	end
+	h.G.GetNumAvailableQuests = function()
+		return h.Secret()
+	end
+	h.Talk(Creature(npc), "QUEST_GREETING", {})
+	h.flush()
+	equal(h.ns.Prefs().notOffered[id], nil, "unreadable count: not marked")
+	equal(OnRoute(h, id), true, "unreadable count: pickup remains")
+	equal(#h.errors, 0, "unreadable count: no errors")
+end
+
 -- A quest grey for the player is never marked: the window may hide low-level quests.
 do
 	local h = Load()

@@ -73,6 +73,11 @@ local function Hold(route, input)
 	if not (at and at > 1) or route.steps[1].hurry then
 		return
 	end
+	-- Sailing or hearthing to another continent releases the old head. Unknown positions and trips within
+	-- the same continent keep it, including a detour to train.
+	if ns.Planner.Travel.Oversea(input.data, input.player, route.steps[at]) then
+		return
+	end
 	local moved = { route.steps[at] }
 	for index, step in ipairs(route.steps) do
 		if index ~= at then

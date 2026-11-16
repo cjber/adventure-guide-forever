@@ -233,7 +233,7 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, l
 	-- train only where it passes anyway.
 	local near, trained = {}, false
 	local function Open(step)
-		return step.kind ~= "trainer" or (near[step] and not trained)
+		return step.chosenTrainer or step.kind ~= "trainer" or (near[step] and not trained)
 	end
 	for _, step in ipairs(pool) do
 		local cost = Cost(origin, where[step])
@@ -260,6 +260,12 @@ local function Build(data, player, completed, log, candidates, prefs, mapName, l
 	-- The planned mode chooses the story card's chapter first; the nearest mode picks purely by distance.
 	if prefs.optimisedRoute == true and lead and where[lead] then
 		Take(lead)
+	end
+	-- Explicit destinations reserve their place in the step budget; Order still places them by travel cost.
+	for _, step in ipairs(pool) do
+		if step.chosenTrainer and #selected < Model.MAX_STEPS - 1 then
+			Take(step)
+		end
 	end
 	-- Each pick is the nearest step to the player or to any step already picked; Order then keeps the continents.
 	while #selected < Model.MAX_STEPS do

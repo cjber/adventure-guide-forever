@@ -152,6 +152,7 @@
 ---@field notOffered? table<integer, integer> quests marked not offered: quest ID -> the level marked at; one marked at the player's level is unproven, with its own Why line
 ---@field questAvailable? fun(id: integer): boolean
 ---@field ownedBooks? table<integer, boolean> library books whose collected item the player carries, by book quest ID (bags or bank)
+---@field tracked? table<integer, true> the quests the player tracks, by ID, without what a leading journey added to the watch list
 ---@field level integer
 ---@field maxQuestLevelOffset? integer highest recommended quest level relative to the player; defaults to +2
 ---@field maxLevel integer the level cap
@@ -170,6 +171,9 @@
 ---@field id integer
 ---@field title string
 ---@field complete boolean ready to hand in
+---@field failed? boolean the client marks it failed (C_QuestLog.IsFailed); never ready to hand in and never urgent
+---@field deadline? number absolute GetTime() when its live quest timer runs out (C_QuestLog.GetTimeAllowed), cached
+--- per timer; nil when it has none, is expired, failed or was handed in
 ---@field level integer
 ---@field groupSize? integer the group size the quest log suggests, when it is 2 or more (C_QuestLog.GetInfo suggestedGroup)
 ---@field map? integer where to go next, from C_QuestLog.GetNextWaypoint: the live client gives one only once finished
@@ -197,6 +201,7 @@
 ---@field npcs table<integer, AGFNpc>
 
 ---@class AGFPrefs
+---@field trainerStops table<integer, true> explicit NPC destinations in My tracked quests
 ---@field polestarTakenFrom? string|true the Polestar guide the player took over from (Polestar.lua); nil once Polestar runs none
 ---@field camps? table<string, table<string, true>> the spots "Next spot" passed over this session, by area step key and Model.SpotKey
 ---@field notOffered table<integer, integer> route pickups their giver's window left out: quest ID -> the player's level then (Offers.lua)
@@ -272,12 +277,14 @@
 ---@class AGFAreaObjective
 ---@field id integer the quest
 ---@field slot integer the data's need slot
+---@field index? integer the client's 1-based objective index, when its objectives line up with the data's slots
 ---@field have? integer the client's count, when its objectives line up with the data's slots
 ---@field need? integer the count it needs, the client's else the data's
 ---@field text? string the client's words for it, when they line up and it has any
 ---@field finish? string the town key ("town:<hub>") of the quest's hand-in, when the data has one
 
 ---@class AGFStep
+---@field chosenTrainer? boolean explicitly chosen destination, independent of automatic training suggestions
 ---@field rxpIndex? integer
 ---@field rxpSticky? boolean an ongoing RestedXP objective
 ---@field rxpGuide? string
@@ -307,7 +314,8 @@
 ---@field r? number an area's radius in yards, wide enough for all its objectives; 0 for a point
 ---@field planned? table<integer, true> the quests on it the route picks up first, not in the log yet (Laps.lua)
 ---@field returns? table<integer, true> a town's hand-ins the route comes back for once their objectives are done
----@field hurry? boolean it leads because a bag item it needs runs out (Laps Hurry); a held step yields to it
+---@field hurry? boolean it leads because a bag item it needs runs out or its quest timer is live (Laps Urgent); a held step yields to it
+---@field hurryKept? {reason: string?, detail: string?} the step's own reason the urgency line replaced, restored when it ends
 ---@field chapter? string the story card's chapter line, or a dungeon chain's label, on the step that holds its quests
 ---@field unlocated? boolean a library book QuestieDB places nowhere: a row with no waypoint
 ---@field shapes? AGFNode[] an area's objective nodes, each its own ring, merged into it
@@ -327,7 +335,7 @@
 ---@field quests integer[] quest IDs it offers the player now, ascending
 ---@field adds integer[] those a shift-click puts on the route: none orange or red
 
----@alias AGFJourneyKind "carry"|"story"|"nextzone"|"dungeon"|"calling"|"battleground"|"guide"
+---@alias AGFJourneyKind "carry"|"tracked"|"turnins"|"story"|"nextzone"|"dungeon"|"calling"|"battleground"|"guide"
 
 -- The overview's quest log header a journey shows under (Overview.GROUPS): its kind at build time, so no title is
 -- guessed from. "continue" holds the story, Quests in your log and your calling.
@@ -368,6 +376,8 @@
 ---@class AGFJourney
 ---@field rxpGroup? string
 ---@field rxpName? string
+---@field provider? string the installed addon whose guide this card imports, e.g. "RestedXP" (#713)
+---@field providerIcon? string that addon's own square mark, drawn at the card's top right
 ---@field guideLow? integer
 ---@field guideHigh? integer
 ---@field guideStep? integer the running RestedXP guide's current step, from 1
@@ -470,6 +480,7 @@
 ---@class AGFState
 ---@field Level fun(): integer the player's level: UnitLevel, or PLAYER_LEVEL_UP's level while UnitLevel still lags behind it
 ---@field Player fun(): AGFPlayer
+---@field Tracked fun(): table<integer, boolean> the quests the player tracks, by ID, without a leading journey's own
 ---@field OwnedBooks fun(): table<integer, boolean> the library books whose collected item the player carries, by book quest ID
 ---@field Where fun(): integer?, number?, number? the player's map and point on it; nil where the client places them nowhere
 ---@field Completed fun(): table<integer, boolean>
@@ -650,6 +661,7 @@
 ---@field HAND_IN_WHEN string format: zone name; the reason on a turn-in the route leaves for another continent
 ---@field BEFORE_IT_RUNS_OUT string format: expiring quest item name; the reason a route step is hurried
 ---@field BEFORE_ITEM_RUNS_OUT string the fallback reason when the client has not loaded the item name
+---@field BEFORE_TIMER_RUNS_OUT string the reason for prioritizing a quest with an active client timer
 ---@field NO_WAYPOINT string the error Go shows when nothing can guide the player on the step's map
 ---@field GO string the step menu's entry that starts guidance
 ---@field REPLACES_JOURNEY string Go's tooltip line while someone else's Shortest Path journey runs
@@ -738,6 +750,7 @@
 ---@field STARTS_AFTER_COMBAT string the footer while a choice made in combat waits to start its route
 ---@field CLICK_TRAVEL string format: travel addon name
 ---@field CLICK_WAYPOINT string
+---@field CLICK_SHOW_MAP string information mode's stop click: show the stop's quests on the map
 ---@field PIN_RETURN_STORY string a numbered pin's instruction to route from the story's start
 ---@field STEP_NUMBERED string format: route index, step title
 ---@field QUEST_LEVEL string format: quest level, quest title
@@ -799,6 +812,8 @@
 ---@field SETTING_TITLE_ROUTE_TOOLTIP string
 ---@field SETTING_AUTO_START string
 ---@field SETTING_AUTO_START_TOOLTIP string
+---@field SETTING_INFORMATION_ONLY string
+---@field SETTING_INFORMATION_ONLY_TOOLTIP string
 ---@field SETTING_AUTO_NEXT_ZONE string starts the next zone after a zone journey is finished
 ---@field SETTING_AUTO_NEXT_ZONE_TOOLTIP string
 ---@field SETTING_NPC_HIGHLIGHT string highlight the NPC a talk step names
@@ -818,7 +833,17 @@
 ---@field NEXT_PAGE string
 ---@field JOURNEY_PAGE string
 ---@field JOURNEY_CARRY string
+---@field CHOSEN_TRAINER string explicitly selected trainer stop reason
+---@field TRAINER_STOPS string the tracked journey menu for choosing specific trainers
+---@field VISIT_TRAINER string format: visit the named trainer
+---@field JOURNEY_TURNINS string the completed hand-ins card
+---@field TURNINS_REASON string the completed hand-ins card explanation
+---@field JOURNEY_TRACKED string the My tracked quests card's title
+---@field TRACKED_QUESTS string format: how many quests the player tracks
+---@field TRACKED_QUESTS_ONE string the same for one
+---@field TRACKED_REASON string the My tracked quests card's reason
 ---@field CARRY_EXPLANATION string
+---@field PROVIDER_CARD_HINT string
 ---@field JOURNEY_STORY string format: zone name
 ---@field JOURNEY_NEXT_ZONE string format: zone name
 ---@field GROUP_CONTINUE string the overview's quest log header over the story, the log and your calling
@@ -887,13 +912,19 @@
 ---@field Reserve fun(module: AGFTrackerModule, base: number): number add the action rows' height below the tracker section's own blocks
 ---@field Shown fun(): boolean the action rows are on screen, so RestedXP's own item and target windows stay hidden
 
+-- Questie's own visible map icons for information mode (QuestieReveal.lua), feature-detected through QuestieLoader.
+---@class AGFQuestieReveal
+---@field Available fun(): boolean Questie is ready with map icons on and its flash helpers present
+---@field Show fun(step: AGFStep|AGFGiver, quests: integer[], refs: AGFAreaObjective[]?, onFail: fun()?): boolean open the step's map and flash its icons; `onFail` runs if the deferred reveal cannot
 -- The guidance lifecycle (Guidance.lua): the one writer of AGFPrefs.guided and AGFPrefs.waypoint. Choosing, starting
 -- and stopping are ns.Choose, ns.StartRoute and ns.Stop.
 ---@class AGFGuidance
+---@field ModeChanged fun(enabled: boolean) settle owned guidance when information mode changes
 ---@field Status fun(): AGFGuidanceStatus? where the chosen journey's guidance stands, when it is not simply running or absent
 ---@field Owns fun(): boolean Go's guidance is still running: our Shortest Path journey (guided or held), or the waypoint Go set
 ---@field Navigate fun(step: AGFStep|AGFGiver, follow?: boolean): boolean route there with Shortest Path, else (declined or absent) the native waypoint where the map allows one; true when something now guides
 ---@field ShowOnMap fun(step: AGFStep|AGFGiver): boolean route, open its zone and ping the destination
+---@field Reveal fun(step: AGFStep|AGFGiver): boolean information mode's click: Questie's own icons, else AGF's pin
 ---@field Running fun(key: string): boolean the card is chosen and its route is ours, running and not paused
 ---@field Cancel fun() Stop: cancels our Shortest Path journey, and clears the native waypoint only while it is ours
 ---@field Pause fun(): boolean stops the chosen journey's route but keeps the choice, so its card and the tracker title resume it
@@ -929,6 +960,7 @@
 ---@field Model AGFModel
 ---@field State AGFState
 ---@field Integrations AGFIntegrations
+---@field QuestieReveal AGFQuestieReveal
 ---@field Guidance AGFGuidance
 ---@field Focus AGFFocus
 ---@field QuestWatch AGFQuestWatch
@@ -1879,7 +1911,7 @@
 ---@field Hub fun(place: AGFPlace): string
 ---@field Inside fun(yards: number, a: AGFNode, b: AGFNode): boolean
 ---@field Locate fun(data: AGFData, step: AGFStep, mapName?: AGFMapName)
----@field LogSteps fun(data: AGFData, player: AGFPlayer, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, belongs: (fun(id: integer, place?: AGFLocation): boolean), stops: table<string, AGFStep>, steps: AGFStep[], plan: AGFPlanAreas): table<integer, AGFStep|false>
+---@field LogSteps fun(data: AGFData, player: AGFPlayer, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, belongs: (fun(id: integer, place?: AGFLocation): boolean), stops: table<string, AGFStep>, steps: AGFStep[], plan: AGFPlanAreas, admit?: (fun(id: integer): boolean)): table<integer, AGFStep|false>
 ---@field Nodes fun(data: AGFData, entry: AGFLogQuest, level?: integer): AGFNode[]
 ---@field LiveObjectives fun(data: AGFData, log: table<integer, AGFLogQuest>, objectives: AGFAreaObjective[]): AGFAreaObjective[]
 ---@field Opens fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep)
@@ -1895,6 +1927,8 @@
 
 ---@class AGFPlannerServices
 ---@field Rest fun(data: AGFData, player: AGFPlayer, steps: AGFStep[])
+---@field Choices fun(data: AGFData, player: AGFPlayer): integer[]
+---@field ChosenTrainers fun(data: AGFData, player: AGFPlayer, prefs: AGFPrefs): AGFStep[]
 ---@field TrainerSteps fun(data: AGFData, player: AGFPlayer, prefs: AGFPrefs, key: string): AGFStep[]
 
 ---@class AGFPlannerRouting
@@ -1907,12 +1941,16 @@
 ---@field Stabilise fun(route: AGFStep[], plain: AGFStep[], rank: table<string, integer>, holds: (fun(steps: AGFStep[]): boolean), at: (fun(step: AGFStep): AGFPosition?), origin: AGFPosition): AGFStep[]
 
 ---@class AGFPlannerLaps
+---@field Empty fun(data: AGFData, player: AGFPlayer, prefs: AGFPrefs, card: string): AGFStep[]?
 ---@field Laps fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, candidates: AGFStep[], plan: AGFPlanAreas, prefs: AGFPrefs, mapName: AGFMapName?, leadID: integer?, join: (fun(selected: AGFStep[]))?, card: string): AGFStep[]?
 ---@field Pickable fun(quest: AGFQuest): boolean
+---@field Urgent fun(log: table<integer, AGFLogQuest>, step: AGFStep): AGFLogQuest?
+---@field LeadUrgent fun(steps: AGFStep[], log: table<integer, AGFLogQuest>, valid: fun(steps: AGFStep[]): boolean): AGFStep[]
 
 ---@class AGFPlannerJourneys
 ---@field Added fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, prefs: AGFPrefs, elsewhere: (fun(quest: AGFQuest): boolean)): integer[]
 ---@field Carry fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, prefs: AGFPrefs, mapName: AGFMapName?, added: integer[], eligible?: integer[]): AGFJourney?
+---@field Turnins fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, prefs: AGFPrefs, mapName: AGFMapName?): AGFJourney?
 ---@field Summarise fun(journey: AGFJourney)
 
 ---@class AGFBooksModule

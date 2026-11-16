@@ -157,7 +157,7 @@ end
 function PvP.Go(id)
 	for _, bg in ipairs(PvP.Data().battlegrounds) do
 		if bg.id == id and bg.place then
-			return ns.Guidance.Navigate({
+			local step = {
 				kind = "battlemaster",
 				verb = "battlemaster",
 				key = "battlemaster:" .. bg.npc,
@@ -169,7 +169,11 @@ function PvP.Go(id)
 				title = L.BATTLEMASTER_QUEUE:format(bg.name),
 				detail = "",
 				reason = "",
-			})
+			}
+			if ns.Setting("informationOnly") then
+				return ns.Guidance.Reveal(step)
+			end
+			return ns.Guidance.Navigate(step)
 		end
 	end
 	return false

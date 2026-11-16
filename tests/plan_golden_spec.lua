@@ -275,7 +275,11 @@ for _, fixture in ipairs(characters.list) do
 	-- The in-combat rebuild: a quest looted mid-fight brings a carry card the last build lacked, in the story's wake as
 	-- the full build orders them, and a chosen last card keeps its slot (design §2.10).
 	local saved, last = prefs.journey, route.journeys[#route.journeys]
-	local fight = { [168] = { id = 168, title = "Collecting Memories", level = 18, complete = true } }
+	local fight = {}
+	for id, entry in pairs(log) do
+		fight[id] = entry
+	end
+	fight[168] = { id = 168, title = "Collecting Memories", level = 18, complete = true }
 	prefs.journey = last and last.key
 	local refreshed = Model.Refresh(data, player, completed, fight, prefs, route)
 	local full = Model.Plan(data, player, completed, fight, prefs, nil, nil, nil, inputs)

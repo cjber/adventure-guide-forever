@@ -762,8 +762,9 @@ function Model.OwnedShape(owned)
 end
 
 -- The quest log's shape (docs/design.md §4.4): each quest by ID, whether it is complete, whether it carries an item
--- that runs out (`expiring`), its waypoint, and each objective's type and done flag. The counts are left out, so two
--- logs that differ only in a kill or an item count share a shape.
+-- that runs out (`expiring`), whether it failed, the cached absolute deadline of a live quest timer (stable while
+-- elapsed advances, so only a new or restarted timer changes it), its waypoint, and each objective's type and done
+-- flag. The counts are left out, so two logs that differ only in a kill or an item count share a shape.
 ---@param log table<integer, AGFLogQuest>
 ---@return string
 function Model.LogShape(log)
@@ -774,10 +775,12 @@ function Model.LogShape(log)
 	table.sort(ids)
 	for _, id in ipairs(ids) do
 		local entry = log[id]
-		parts[#parts + 1] = ("%d%s%s%s:%.3f:%.3f"):format(
+		parts[#parts + 1] = ("%d%s%s%s%s%s:%.3f:%.3f"):format(
 			id,
 			entry.complete and "+" or "-",
 			entry.expiring and "!" or "",
+			entry.failed and "x" or "",
+			entry.deadline and tostring(entry.deadline) or "",
 			tostring(entry.map),
 			entry.x or 0,
 			entry.y or 0

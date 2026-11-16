@@ -141,12 +141,19 @@ local resumed = api and type(api.Resume) == "function" and api.Resume()
 deferred render. Navigation addons can use it to defer standalone RXP routing and suppress its native arrow while AGF
 owns the guide.
 
+In information-only mode it returns false: Adventure Guide reads the guide without owning its navigation.
+
 `RestedXPNativeUI()` returns true while the display choice is pending or the player chose RestedXP. Navigation addons
 should preserve the native arrow in that case.
+
+It also returns true in information-only mode, when Adventure Guide restores RestedXP's native display.
 
 `ResumeRestedXP()` resumes the active RestedXP guide through Adventure Guide's navigation. It returns `true` when the
 request is accepted, or `false` when integrated RestedXP is unavailable. Use it for an explicit player action after
 selecting another destination.
+
+Information-only mode disables navigation requests through this API as well as the guide's own controls.
+Read methods remain available for browsing journey and quest information.
 
 ## Suggestions
 

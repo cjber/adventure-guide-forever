@@ -90,6 +90,9 @@ jobs:
         id: pr
         uses: peter-evans/create-pull-request@3ffccacd46053766916f087ce41d627c0b8cf2d1 # v8.1.3
         with:
+          # A commit through the API is signed by GitHub, so the main ruleset's signed-commits rule accepts it
+          # (forever-core#577). The default local commit is unsigned and blocks every data PR.
+          sign-commits: true
           branch: data/refresh
           title: "data: refresh game data"
           commit-message: "data: refresh game data (${{ steps.pins.outputs.summary }})"

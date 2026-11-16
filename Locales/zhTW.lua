@@ -112,6 +112,7 @@ L["HAND_IN_WHEN"] = "抵達%s時繳交"
 L["HAND_IN_WHEN_DONE"] = "完成後"
 L["BEFORE_IT_RUNS_OUT"] = "在%s消失之前"
 L["BEFORE_ITEM_RUNS_OUT"] = "在任務物品消失之前"
+L["BEFORE_TIMER_RUNS_OUT"] = "在任務計時結束之前"
 L["HELP_AUDIT"] = "/agf audit - 將任務資料與遊戲核對"
 L["HELP_DUMP"] = "/agf dump - 儲存指南版面配置以提交錯誤回報"
 L["HELP_OPEN"] = "/agf - 在世界地圖上開啟指南。"
@@ -127,11 +128,19 @@ L["HUB_PICK_UP"] = "%d個待接受"
 L["ITEM_LOADING"] = "正在載入物品..."
 L["JOURNEY_CALLING"] = "你的使命"
 L["JOURNEY_CARRY"] = "整理任務日誌"
+L["JOURNEY_TURNINS"] = "僅交任務" -- mt
+L["TURNINS_REASON"] = "交付已完成的任務，不接取新任務" -- mt
+L["JOURNEY_TRACKED"] = "我的追蹤任務" -- mt
+L["TRACKED_QUESTS"] = "%d 個追蹤任務" -- mt
+L["TRACKED_QUESTS_ONE"] = "1 個追蹤任務" -- mt
+L["TRACKED_REASON"] = "依最佳順序完成你追蹤的任務" -- mt
 L["JOURNEY_CHOICES"] = "選擇一段冒險"
 L["JOURNEY_CHOOSE"] = "在活動中選擇一段旅程即可開始。"
 L["JOURNEY_COMPLETE"] = "旅程完成"
 L["JOURNEY_INTO"] = "通往%s之路"
 L["JOURNEY_NEXT_ZONE"] = "前往%s"
+L["PROVIDER_CARD_HINT"] =
+	"來自已安裝的 %s 指南的步驟。區域故事和「整理任務日誌」是 Adventure Guide 自己的功能。"
 L["JOURNEY_PAGE"] = "%d / %d"
 L["JOURNEY_PROGRESS_EMPTY"] = "你完成的故事將顯示在這裡。"
 L["JOURNEY_QUESTS"] = "這段旅程的任務"
@@ -523,7 +532,17 @@ L["SYNC_AND"] = "和" -- mt
 
 L.LEADERBOARD_METRIC = "已繳交任務" -- mt
 L.LEADERBOARD_TOTAL = "總計" -- mt
+-- mt: Information only (#715).
+L["SETTING_INFORMATION_ONLY"] = "僅資訊：不規劃路線" -- mt
+L["SETTING_INFORMATION_ONLY_TOOLTIP"] =
+	"保留旅程與任務資訊，不啟動路線，也不變更你追蹤的任務。點擊一個站點即可在地圖上顯示其任務。關閉此選項可重新使用規劃器。" -- mt
+L["CLICK_SHOW_MAP"] = "點擊在地圖上顯示此站點" -- mt
 
 L["MENU_HIDE_QUEST_MARKERS"] = "隱藏遊戲的任務標記" -- mt
 L["SETTING_HIDE_QUEST_MARKERS_TOOLTIP"] =
 	"關閉此選項後，遊戲自帶的任務標記和藍色任務區域會與路線標記一起顯示在地圖上。" -- mt
+
+L["TRAINER_STOPS"] = "訓練師停靠點" -- mt
+L["VISIT_TRAINER"] = "拜訪%s" -- mt
+
+L["CHOSEN_TRAINER"] = "已選訓練師" -- mt
