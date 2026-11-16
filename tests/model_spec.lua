@@ -1821,6 +1821,9 @@ end
 -- on its own: no total on a chain that touches a dangling `next`, a `preAny` or a multi-`pre`. QuestieDB v1.1.0's
 -- trace-built relations add 146 heads: 77 with a proven total, 69 shown as a chapter only.
 -- QuestieDB v1.1.1 adds The Ancient Hilt (93161) -> Eluvi'ana (97029), with a proven total.
+-- QuestieDB v1.1.2 adds Defending the Dead (96259) -> The Broodmother (96261), with a proven total, and clears
+-- Bruised Pride and Lion Hides (95494) and Vrang's Game (95507) of their `next`, which leaves The Hermit Tanner
+-- (95495) a head shown as a chapter only.
 local quests, named, heads = ns.Data.quests, {}, {}
 for _, q in pairs(quests) do
 	if q.next then
@@ -1879,8 +1882,8 @@ do
 		end
 	end
 	equal(#heads, 1068, "walk: chain heads in the data")
-	equal(totals, 819, "walk: heads whose total the data proves")
-	equal(textOnly, 249, "walk: heads shown as a chapter only")
+	equal(totals, 820, "walk: heads whose total the data proves")
+	equal(textOnly, 248, "walk: heads shown as a chapter only")
 	equal(#heads - totals - textOnly, 0, "walk: heads whose next dangles at once")
 end
 

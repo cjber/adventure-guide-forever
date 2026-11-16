@@ -501,14 +501,27 @@ do
 	equal(h.spf.NavigateRoute, 1, "follow: started once")
 	Moved(h, h.player.map, h.player.x, h.player.y)
 	equal(h.spf.NavigateRoute, 1, "follow: a rebuild that changes nothing sends nothing")
-	-- WANTED: Bruuz and Baron Longshore go in the log: the route already picked them up at Ratchet and worked
-	-- their camps after, so no stop it handed leaves and nothing is sent (a stop leaving is the stale cases above).
+	-- WANTED: Bruuz and Baron Longshore go in the log. The planned order cuts a town pickup below half its mean XP
+	-- per yard, and taking one moves that mean, so whether every stop stays is the data's to say: the guide sends
+	-- again exactly when a handed stop left (the stale cases above).
 	-- Walking into their area does not take step 1: the town hand-in the guidance holds stays (docs/design.md §4.2).
+	local handedKeys = {}
+	for _, step in ipairs(h.ns.Guidance.Guided()) do
+		handedKeys[step.key] = true
+	end
 	h.log[#h.log + 1] = { id = 92706, title = "WANTED: Bruuz", level = 20, complete = false }
 	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()
-	equal(h.spf.NavigateRoute, 1, "follow: quests the route already held, now taken, send nothing")
+	local left = false
+	for _, step in ipairs(h.ns.Route().steps) do
+		handedKeys[step.key] = nil
+	end
+	for _ in pairs(handedKeys) do
+		left = true
+	end
+	equal(h.spf.NavigateRoute, left and 2 or 1, "follow: a handed stop that left sends the route once")
+	local resends = h.spf.NavigateRoute
 	local held = h.ns.Route().steps[1].key
 	Moved(h, 1413, 0.626, 0.498)
 	local head = h.ns.Route().steps[1]
@@ -519,16 +532,16 @@ do
 		area = area or (step.key == "area:895:4" and step or nil)
 	end
 	equal(area ~= nil, true, "follow: the area they stand in keeps its place after the held step")
-	equal(h.spf.NavigateRoute, 2, "follow: the route's later stops settle once")
+	equal(h.spf.NavigateRoute, resends + 1, "follow: the route's later stops settle once")
 	local onward = h.ns.Route().steps
 	equal(#h.spfRoute.stops, #onward, "follow: proximity keeps every stop")
 	equal(h.spfRoute.stops[1].x, onward[1].x, "follow: the held step retains its destination")
 	equal(h.ns.Guidance.Owns(), true, "follow: guidance holds, so Stop still shows")
 	Moved(h, 1413, 0.626, 0.499)
-	equal(h.spf.NavigateRoute, 2, "follow: nothing again while the player is in it")
+	equal(h.spf.NavigateRoute, resends + 1, "follow: nothing again while the player is in it")
 	h.SetCombat(true)
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 2, "follow: nothing in combat")
+	equal(h.spf.NavigateRoute, resends + 1, "follow: nothing in combat")
 	h.SetCombat(false)
 	h.flush()
 	equal(h.ns.Route().steps[1].key, held, "follow: the held step survives the full build after combat")
@@ -537,16 +550,16 @@ do
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: town proximity keeps later stops")
 	h.onTaxi = true
 	Moved(h, 1413, 0.46, 0.79)
-	equal(h.spf.NavigateRoute, 2, "follow: nothing in the air")
+	equal(h.spf.NavigateRoute, resends + 1, "follow: nothing in the air")
 	h.onTaxi = false
 	Moved(h, nil, nil, nil)
-	equal(h.spf.NavigateRoute, 2, "follow: nothing off the map")
+	equal(h.spf.NavigateRoute, resends + 1, "follow: nothing off the map")
 	Moved(h, 1413, 0.5223, 0.3101)
 	Moved(h, 1413, 0.5224, 0.3101)
-	equal(h.spf.NavigateRoute, 2, "follow: near the town, its complete route remains active")
+	equal(h.spf.NavigateRoute, resends + 1, "follow: near the town, its complete route remains active")
 	-- North of the town, so the held step's point stays the one handed.
 	Moved(h, 1413, 0.58, 0.2)
-	equal(h.spf.NavigateRoute, 2, "follow: out of the town, the held step still holds")
+	equal(h.spf.NavigateRoute, resends + 1, "follow: out of the town, the held step still holds")
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: every step")
 	-- Shortest Path moves on stop by stop until it heads for the Crossroads, then the player reaches it.
 	for _, step in ipairs(h.ns.Route().steps) do
@@ -556,11 +569,11 @@ do
 		h.spfAdvance()
 	end
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 2, "follow: the held step holds through the retarget")
+	equal(h.spf.NavigateRoute, resends + 1, "follow: the held step holds through the retarget")
 	h.spfOther()
 	Moved(h, 1413, 0.46, 0.79)
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, 2, "follow: another journey replaced ours: nothing")
+	equal(h.spf.NavigateRoute, resends + 1, "follow: another journey replaced ours: nothing")
 	clean(h, "follow")
 
 	-- The "you're here" head (design §4.2): checked every 2 s only while the player moves. Walking into a later area
@@ -2866,7 +2879,7 @@ do
 	for _, journey in ipairs(route.journeys) do
 		alternatives = alternatives + (journey.key:match("^chain:") and 1 or 0)
 	end
-	equal(alternatives, 13, "guide: all thirteen alternative stories survive")
+	equal(alternatives, 11, "guide: all eleven alternative stories survive")
 	equal(#route.journeys - alternatives, 10, "guide: all ten destination/activity journeys survive")
 	equal(full, 1, "guide: only the chosen card is whole")
 	equal(lit, 1, "guide: and only it stays lit, so it reads as chosen in game")
@@ -3449,7 +3462,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#Overview(), 0, label .. ": the overview gives way")
 	equal(Previews(), "", label .. ": with its steps")
 	equal(Says(L.OVERVIEW_WHERE:format("The Barrens", h.player.level)), 0, label .. ": and the line by the title")
-	equal(Heights(), "86" .. string.rep(" 26", 22), label .. ": the chosen route precedes alternatives")
+	equal(Heights(), "86" .. string.rep(" 26", 20), label .. ": the chosen route precedes alternatives")
 	equal(Cards()[1].journey.key, story.key, label .. ": the chosen card first, over its steps")
 	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
 	local chosenCard = Cards()[1]
@@ -3546,7 +3559,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(Overview()[2])
 	h.flush()
 	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a row chooses it")
-	equal(Heights(), "86" .. string.rep(" 26", 22), label .. ": alternatives fold below it")
+	equal(Heights(), "86" .. string.rep(" 26", 20), label .. ": alternatives fold below it")
 	equal(Cards()[1].journey.key, second.key, label .. ": lit over its steps")
 	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
 	h.Click(Back())
@@ -3678,17 +3691,17 @@ do
 	equal(#Cards("zones"), 1, label .. ": the header's own toggle still folds")
 	equal(More("zones").Text:GetText(), L.MORE_CARDS:format(6), label .. ": its row is back")
 
-	-- Continue keeps two cards, so its row counts the other fifteen, including the cloned card.
+	-- Continue keeps two cards, so its row counts the other thirteen, including the cloned card.
 	local continuing = h.ns.Model.InSection(route.journeys, "continue")
 	Clone(continuing[#continuing], "continue:more")
 	h.ns.Prefs().previewGroups.continue = true
 	h.ns.OpenPanel()
 	h.flush()
 	equal(#Cards("continue"), 2, label .. ": a folded Continue shows two cards")
-	equal(More("continue").Text:GetText(), L.MORE_CARDS:format(15), label .. ": and its fifteen hidden cards")
+	equal(More("continue").Text:GetText(), L.MORE_CARDS:format(13), label .. ": and its thirteen hidden cards")
 	h.Click(More("continue"))
 	h.flush()
-	equal(#Cards("continue"), 17, label .. ": the row opens it")
+	equal(#Cards("continue"), 15, label .. ": the row opens it")
 	equal(More("continue"), nil, label .. ": and the row goes")
 	clean(h, label)
 end
