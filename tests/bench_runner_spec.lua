@@ -1,6 +1,6 @@
 -- Exercise plan_bench's runner with two synthetic ticks, never running the planner or benchmark.
 local D = dofile("tests/bench_diagnostics.lua")
-local function runCase(detailed, uncaught)
+local function runCase(detailed, uncaught, success)
 	local output, diagnostics, ticks = {}, nil, 0
 	local settling = false
 	local sentinel = setmetatable({}, {
@@ -12,7 +12,10 @@ local function runCase(detailed, uncaught)
 		G = { coroutine = coroutine, ShortestPathForever = { API = {} } },
 		counts = { CreateFrame = 0 },
 		errors = {},
+		log = {},
+		fire = function() end,
 		ns = {
+			QuestieStatus = { state = "questie" },
 			OpenPanel = function() end,
 			Route = function()
 				return { steps = {} }
@@ -33,20 +36,37 @@ local function runCase(detailed, uncaught)
 	local invalidations = 0
 	h.ns.Invalidate = function()
 		invalidations = invalidations + 1
-		settling = invalidations > 1
+		settling = success and invalidations == 2 or not success and invalidations > 1
 	end
 	h.tick = function()
+		if success and not settling then
+			return 0
+		end
 		ticks = ticks + 1
 		if ticks == 2 then
-			error(sentinel, 0)
+			if not success then
+				error(sentinel, 0)
+			end
+			settling = false
 		end
 		return 1
 	end
 	local originalCall, originalCoroutine = h.call, h.G.coroutine
+	local finalFailures
 	local env = setmetatable({
+		assert = function(ok, message)
+			if success == true then
+				finalFailures = not ok and message or finalFailures
+				return ok
+			end
+			return assert(ok, message)
+		end,
 		dofile = function(path)
 			if path == "tests/harness.lua" then
 				return {
+					questieMirror = function()
+						return {}
+					end,
 					data = function()
 						return { quests = {} }
 					end,
@@ -91,7 +111,35 @@ local function runCase(detailed, uncaught)
 		runner()
 		error("exceptional runner unexpectedly returned")
 	end
+	local formattedFrames = 0
+	local formats = string
+	local originalFormat = formats.format
+	formats.format = function(pattern, ...) -- luacheck: ignore 122 (count actual formatting, restored after pcall)
+		if pattern:find("frame %s sample=", 1, true) == 1 then
+			formattedFrames = formattedFrames + 1
+		end
+		return originalFormat(pattern, ...)
+	end
 	local ok, err = pcall(runner)
+	formats.format = originalFormat -- luacheck: ignore 122 (restore the test-owned formatter wrapper)
+	if success == "budget" then
+		assert(not ok and err:find("the build was not sliced", 1, true))
+		assert(formattedFrames == 2, "budget failure must format full history")
+		assert(table.concat(output, "\n"):find("frame Alliance 1 sample=1 frame=2", 1, true))
+		return
+	end
+	if success then
+		-- Empty synthetic profiles bypass final workload assertions to exercise normal completion.
+		assert(ok, tostring(err))
+		assert(finalFailures:find("the build was not sliced", 1, true))
+		assert(ticks == 2 and #diagnostics.frames == 2)
+		local emitted = table.concat(output, "\n")
+		assert(formattedFrames == (detailed and 2 or 0), "normal lightweight completion formatted frame history")
+		assert(detailed or not emitted:find("\nframe ", 1, true), "normal lightweight completion emitted frame history")
+		assert(emitted:find("worst rebuild: Alliance 1 sample=1 frame=1", 1, true))
+		assert(emitted:find("cpu=0.000000 wall=0.000000", 1, true))
+		return
+	end
 	assert(not ok and err == sentinel, "runner must rethrow the original error object")
 	assert(ticks == 2 and #diagnostics.frames == 2)
 	local emitted = table.concat(output, "\n")
@@ -104,6 +152,9 @@ end
 if arg[1] == "--exception" then
 	runCase(arg[2] == "detailed", true)
 end
+runCase(false, false, true)
+runCase(true, false, true)
+runCase(false, false, "budget")
 runCase(false)
 runCase(true)
 -- Successful runners emit once and preserve nil-containing return tuples.

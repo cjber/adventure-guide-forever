@@ -72,7 +72,7 @@ function D:tick(h, identity)
 		profile = identity.profile,
 		sample = identity.sample,
 		frame = identity.frame,
-		spans = {},
+		spans = self.detailed and {} or nil,
 		finish = "unavailable",
 	}
 	local call, co = h.call, h.G.coroutine
@@ -113,7 +113,7 @@ end
 function D:run(fn, emit)
 	local values = invoke(fn)
 	local output = emit or print
-	output(self:format())
+	output(self:format(not values[1]))
 	return result(values) -- multi-value: preserve original error values and return tuple
 end
 function D:consider(kind, record, score)
@@ -122,7 +122,7 @@ function D:consider(kind, record, score)
 		self.worst[kind] = { record = record, score = score }
 	end
 end
-function D:format()
+function D:format(exceptional)
 	local lines = {
 		"AGF diagnostics: "
 			.. (self.detailed and "detailed (overhead included)" or "lightweight")
@@ -133,14 +133,20 @@ function D:format()
 		local worst = self.worst[kind]
 		if worst then
 			local r = worst.record
-			lines[#lines + 1] = ("worst %s: %s sample=%d frame=%d score=%.6f"):format(
+			lines[#lines + 1] = ("worst %s: %s sample=%d frame=%d score=%.6f cpu=%.6f wall=%.6f modelled=%.6f"):format(
 				kind,
 				r.profile,
 				r.sample,
 				r.frame,
-				worst.score
+				worst.score,
+				r.cpu,
+				r.wall,
+				r.modelled or 0
 			)
 		end
+	end
+	if not self.detailed and not exceptional then
+		return table.concat(lines, "\n")
 	end
 	for _, r in ipairs(self.frames) do
 		lines[#lines + 1] = (
@@ -158,7 +164,8 @@ function D:format()
 			tostring(r.wallStart),
 			r.error or "none"
 		)
-		for i, s in ipairs(r.spans) do
+		for i = 1, r.spans and #r.spans or 0 do
+			local s = r.spans[i]
 			lines[#lines + 1] = (
 				" span=%d parent=%s kind=%s source=%s:%d cpu=%.6f wall=%.6f"
 				.. " error=%s thread=%s coroutineSource=%s:%s"

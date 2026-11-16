@@ -81,13 +81,24 @@ h.tick = function()
 end
 local light = D.new(clock, false)
 local r = light:tick(h, { profile = "light", sample = 1, frame = 1 })
-assert(r.cpu == 5 and r.wall == 9 and #r.spans == 0)
+assert(r.cpu == 5 and r.wall == 9 and r.spans == nil)
 assert(light:format():find("FinishRebuild=unavailable", 1, true))
 -- Choose the actual maximum, retaining the owning sample/frame rather than the last sample.
 d:consider("rebuild", record, record.cpu)
 d:consider("rebuild", r, r.cpu)
 assert(d.worst.rebuild.record == record)
 assert(d:format():find("worst rebuild: P sample=2 frame=3", 1, true))
+-- Summary identities follow the supplied budget score, even when raw CPU ranks differently.
+local summary = D.new(clock, false)
+local costly = { profile = "CPU", sample = 1, frame = 1, cpu = 9, wall = 12, modelled = 0 }
+local modelled = { profile = "model", sample = 2, frame = 2, cpu = 1, wall = 2, modelled = 4 }
+for _, phase in ipairs({ "rebuild", "travel", "catalogue" }) do
+	summary:consider(phase, costly, costly.cpu / 3 + costly.modelled)
+	summary:consider(phase, modelled, modelled.cpu / 3 + modelled.modelled)
+	assert(summary.worst[phase].record == modelled)
+	assert(summary:format():find("worst " .. phase .. ": model sample=2 frame=2", 1, true))
+end
+assert(summary:format():find("cpu=1.000000 wall=2.000000 modelled=4.000000", 1, true))
 -- Real harness dispatch: two queued timers, a visible OnUpdate and real coroutine resumes.
 local harness = dofile("tests/harness.lua")
 local real = harness.load()

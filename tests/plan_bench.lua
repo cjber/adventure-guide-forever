@@ -330,7 +330,7 @@ local function Profile(profile, level, questiedb, full)
 	)
 end
 
--- Emit every frame before budget assertions, including unexpected profile failures.
+-- Compact normal diagnostics; retain full history for any profile or budget failure.
 -- Speedpatrol #56 retains failure stdout/stderr.
 diagnostics:run(function()
 	for _, level in ipairs({ 1, 10, 20, 30, 40, 50, 60 }) do
@@ -351,28 +351,32 @@ diagnostics:run(function()
 	end
 
 	print(table.concat(lines, "\n"))
-end, print)
-local over = (" with the measured time divided by %d"):format(SLACK)
-check(
-	worstRebuild / SLACK < BUDGET_MS,
-	("rebuild frame max %.3f ms is over %d ms%s"):format(worstRebuild, BUDGET_MS, SLACK > 1 and over or "")
-)
-check(
-	worstTravelBudget < BUDGET_MS,
-	("travel frame max %.3f ms is over %d ms%s"):format(worstTravel, BUDGET_MS, SLACK > 1 and over or "")
-)
-check(
-	worstSlice / SLACK < BUILD_BUDGET_MS,
-	("QuestieDB build slice max %.3f ms is over %d ms%s"):format(worstSlice, BUILD_BUDGET_MS, SLACK > 1 and over or "")
-)
-assert(#failures == 0, table.concat(failures, "\n"))
-print(
-	("plan_bench: %d profiles x %d samples; rebuild %.3f ms, travel %.3f ms, " .. "QuestieDB slice %.3f ms%s"):format(
-		profiles,
-		SAMPLES,
-		worstRebuild,
-		worstTravel,
-		worstSlice,
-		strict and " (budget checked as measured)" or (" (budget checked, measured time / %d)"):format(SLACK)
+	local over = (" with the measured time divided by %d"):format(SLACK)
+	check(
+		worstRebuild / SLACK < BUDGET_MS,
+		("rebuild frame max %.3f ms is over %d ms%s"):format(worstRebuild, BUDGET_MS, SLACK > 1 and over or "")
 	)
-)
+	check(
+		worstTravelBudget < BUDGET_MS,
+		("travel frame max %.3f ms is over %d ms%s"):format(worstTravel, BUDGET_MS, SLACK > 1 and over or "")
+	)
+	check(
+		worstSlice / SLACK < BUILD_BUDGET_MS,
+		("QuestieDB build slice max %.3f ms is over %d ms%s"):format(
+			worstSlice,
+			BUILD_BUDGET_MS,
+			SLACK > 1 and over or ""
+		)
+	)
+	assert(#failures == 0, table.concat(failures, "\n"))
+	print(
+		("plan_bench: %d profiles x %d samples; rebuild %.3f ms, travel %.3f ms, " .. "QuestieDB slice %.3f ms%s"):format(
+			profiles,
+			SAMPLES,
+			worstRebuild,
+			worstTravel,
+			worstSlice,
+			strict and " (budget checked as measured)" or (" (budget checked, measured time / %d)"):format(SLACK)
+		)
+	)
+end, print)
