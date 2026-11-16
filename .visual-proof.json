@@ -1,34 +1,23 @@
 {
-  "input_digest": "5792ea89591fefb8c03ba3cbe1e50c17faec465c52800fdacc24424bcc24a154",
-  "runtime_sha256": "5792ea89591fefb8c03ba3cbe1e50c17faec465c52800fdacc24424bcc24a154",
-  "candidate": "be2606356ab8262938edcbd54ac35c694953d07d54a42128c7375a8a5fdeed36",
+  "input_digest": "b518bd67ad1a6bb41abaa6a2d4d2bc0f3c4adc06c91c5d86094c057f4377107f",
+  "runtime_sha256": "b518bd67ad1a6bb41abaa6a2d4d2bc0f3c4adc06c91c5d86094c057f4377107f",
+  "candidate": "f0755cc9c5e92f4b505dba88681c34c8f0d4da544cb8f72b11ce0435409250a7",
   "client_build": "1.60.1.70938 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "b11ccbdb5f3449f6fa1681b62133a6c36e97f9c2",
+  "source_commit": "6474655641e4a9487a241a518306b0696596edff",
   "flows": [
     {
-      "name": "guide panel",
+      "name": "guide after quest data loads",
       "steps": [
-        "/home/cjber/.cache/agent-scratch/sweep/wow/agf714/guide-panel.lua"
-      ],
-      "result": "pass"
-    },
-    {
-      "name": "RestedXP card chosen",
-      "steps": [
-        "/home/cjber/.cache/agent-scratch/sweep/wow/agf714/provider-card.lua"
+        "/agf"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/2b01577ad3f45c47aeb38fbe2427d3c9/raw/ec9ffb74d20aebe9c34c83bafe3f2d89fcc34a14/1-guide-panel.png",
-      "sha256": "ae786bcfd0e0fdc99896e2f55c5ae8328266ff4a0ab7a87f75209cd3559a3203"
-    },
-    {
-      "url": "https://gist.githubusercontent.com/cjber/2b01577ad3f45c47aeb38fbe2427d3c9/raw/ec9ffb74d20aebe9c34c83bafe3f2d89fcc34a14/2-restedxp-card-chosen.png",
-      "sha256": "b3c62e46c51cb1992922d1ee5996bcb486b78ce9af196b29b93978ba9543d681"
+      "url": "https://gist.githubusercontent.com/cjber/bff34b4839b361df0bfd29b2166d4e3d/raw/0b1c79458ec8fafb245618f930fe06ac1c4e22cc/1-guide-after-quest-data-loads.png",
+      "sha256": "0ef313abfafddcc7af76971022091a476516dbd127f24faf499b4d9f236a63e7"
     }
   ]
 }
