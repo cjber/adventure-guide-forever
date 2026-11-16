@@ -200,8 +200,7 @@ local function PickLapQuests(lap)
 
 	-- The quests each town offers this lap, taken or not (docs/design.md §4.2): every outdoor quest its givers hand out
 	-- that the zone choices would offer with an empty log (Model.Shortlisted, then Model.Choosable), plus the route's own
-	-- pickups. Taking one moves it between the log and the offers without changing this set, so the cut-off its pickups
-	-- are kept by (below) does not follow the log.
+	-- pickups. Both this set and its mean below are computed without the log, so the cut-off never reads the log.
 	---@type AGFIndex
 	local hubIndex = Index(data)
 	local pool, pooled = {}, {}
@@ -230,8 +229,8 @@ local function PickLapQuests(lap)
 			pooled[id], offers[#offers + 1] = true, id
 		end
 	end
-	-- A pooled quest the log carries is one the player has taken: its planned nodes stand in where its log's area
-	-- would, so taking it changes neither the mean's set nor what the others are worth.
+	-- For a pickup's own ratio, carried pooled quests' planned nodes stand in for their log areas; other log areas
+	-- still credit the pickup for work near what the player carries. The town mean uses no log areas.
 	local aside = {} -- log areas of carried pooled quests: their planned nodes stand in for them
 	for _, area in ipairs(areas) do
 		for _, objective in ipairs(area.objectives or NONE) do
@@ -267,8 +266,9 @@ local function PickLapQuests(lap)
 	end
 	---@param town AGFStep
 	---@param id integer
+	---@param withLog boolean
 	---@return number?
-	local function Worth(town, id)
+	local function Worth(town, id, withLog)
 		local quest = data.quests[id]
 		local worth = Model.QuestXP(quest, player.level)
 		if not worth then
@@ -278,9 +278,11 @@ local function PickLapQuests(lap)
 		for _, node in ipairs(NodesOf(id)) do
 			local p = at(node)
 			local nearest = Gap(at(town) or origin, 0, p, node.r)
-			for _, area in ipairs(areas) do
-				if not aside[area] then
-					nearest = math.min(nearest, Gap(at(area), area.r, p, node.r))
+			if withLog then
+				for _, area in ipairs(areas) do
+					if not aside[area] then
+						nearest = math.min(nearest, Gap(at(area), area.r, p, node.r))
+					end
 				end
 			end
 			-- Nothing is nearer than touching, so the search stops there.
@@ -298,10 +300,10 @@ local function PickLapQuests(lap)
 	end
 	for _, town in ipairs(towns) do
 		for _, id in ipairs(pool[town]) do
-			local value = Worth(town, id)
+			local value = Worth(town, id, false)
 			if value then
 				if picks[id] then
-					ratio[id] = value
+					ratio[id] = Worth(town, id, true)
 				end
 				sums[town], counts[town] = (sums[town] or 0) + value, (counts[town] or 0) + 1
 			end
@@ -1168,13 +1170,14 @@ end
 -- The lap route (docs/design.md §4.2), or nil when the player's place is unknown, where Build's route stands. The
 -- card's towns hand out their quests and take the finished ones; each new quest is done in areas of the data's (merged
 -- with the log's), and one whose XP per yard falls below KEEP of its town's mean waits; that mean is taken over every
--- quest the town offers this lap, taken or not, so following the plan never moves the cut-off. The route is the
--- player's nearest action at every step (docs/design.md §4.1): the nearest town pickup (its open), the nearest area
--- of a quest the town handed out or the player carries, or the nearest ready hand-in. The town the player stands in,
--- a pinned quest and the story's chapter lead where they must, and a stop in the town the route is already in, on its
--- map and within a lap of it, is finished before the route leaves it, so a town's work is not split by a nearer rival
--- while an objective across the zone or the sea is no reason to stay; a stop already placed is never revisited. The
--- preview is cut after ordering and merging visits, so its horizon stays stable across rebuilds. The route is
+-- quest the town offers this lap, taken or not, using only its town and other pooled quests' planned nodes. The cut-off
+-- never reads the log; each pickup's own ratio also credits log areas except those of carried pooled quests. The route
+-- is the player's nearest action at every step (docs/design.md §4.1): the nearest town pickup (its open), the nearest
+-- area of a quest the town handed out or the player carries, or the nearest ready hand-in. The town the player stands
+-- in, a pinned quest and the story's chapter lead where they must, and a stop in the town the route is already in, on
+-- its map and within a lap of it, is finished before the route leaves it, so a town's work is not split by a nearer
+-- rival while an objective across the zone or the sea is no reason to stay; a stop already placed is never revisited.
+-- The preview is cut after ordering and merging visits, so its horizon stays stable across rebuilds. The route is
 -- checked in order: a quest's objectives never before its pickup, its hand-in never before all of them, and the log
 -- never past the client's limit. The card's committed order (`card`, its journey key) keeps the route steady
 -- (Stabilise). The town or open area the player stands in leads (Model.Here). A second visit to a town is keyed
