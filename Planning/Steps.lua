@@ -534,14 +534,17 @@ end
 ---@param ready table<integer, AGFPlace>
 ---@param belongs fun(id: integer, place?: table): boolean which log quests the card holds, by where they are done next
 ---@param plan AGFPlanAreas
+---@param admit? fun(id: integer): boolean ID-only membership, before objective and place resolution
 ---@return table<integer, AGFStep|false> held
-local function LogSteps(data, player, log, ready, belongs, stops, steps, plan)
+local function LogSteps(data, player, log, ready, belongs, stops, steps, plan, admit)
 	local ids, held = {}, {}
 	local function Touches(a, b)
 		return Near(data, a, b)
 	end
 	for id in pairs(log) do
-		ids[#ids + 1] = id
+		if not admit or admit(id) then
+			ids[#ids + 1] = id
+		end
 	end
 	table.sort(ids)
 	for _, id in ipairs(ids) do

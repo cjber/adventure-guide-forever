@@ -1911,7 +1911,7 @@
 ---@field Hub fun(place: AGFPlace): string
 ---@field Inside fun(yards: number, a: AGFNode, b: AGFNode): boolean
 ---@field Locate fun(data: AGFData, step: AGFStep, mapName?: AGFMapName)
----@field LogSteps fun(data: AGFData, player: AGFPlayer, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, belongs: (fun(id: integer, place?: AGFLocation): boolean), stops: table<string, AGFStep>, steps: AGFStep[], plan: AGFPlanAreas): table<integer, AGFStep|false>
+---@field LogSteps fun(data: AGFData, player: AGFPlayer, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, belongs: (fun(id: integer, place?: AGFLocation): boolean), stops: table<string, AGFStep>, steps: AGFStep[], plan: AGFPlanAreas, admit?: (fun(id: integer): boolean)): table<integer, AGFStep|false>
 ---@field Nodes fun(data: AGFData, entry: AGFLogQuest, level?: integer): AGFNode[]
 ---@field LiveObjectives fun(data: AGFData, log: table<integer, AGFLogQuest>, objectives: AGFAreaObjective[]): AGFAreaObjective[]
 ---@field Opens fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep)

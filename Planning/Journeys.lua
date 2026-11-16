@@ -432,9 +432,10 @@ local function Tracked(data, player, completed, log, ready, prefs, mapName)
 	end
 	local candidates, stops = ns.Planner.Services.ChosenTrainers(data, player, prefs), {}
 	local plan = { areas = {}, anchors = {} }
-	local held = LogSteps(data, player, log, ready, function(id)
+	local function Holds(id)
 		return tracked[id] == true and not Dropped(id)
-	end, stops, candidates, plan)
+	end
+	local held = LogSteps(data, player, log, ready, Holds, stops, candidates, plan, Holds)
 	local steps = State.committedOrders
 			and Laps(data, player, completed, log, candidates, plan, prefs, mapName, nil, nil, "tracked")
 		or Build(data, player, completed, log, candidates, prefs, mapName)
@@ -472,9 +473,12 @@ local function Turnins(data, player, completed, log, ready, prefs, mapName)
 	end
 	local candidates, stops = {}, {}
 	local plan = { areas = {}, anchors = {} }
+	local function Complete(id)
+		return log[id].complete == true and not Dropped(id)
+	end
 	local held = LogSteps(data, player, log, ready, function(id, place)
-		return log[id].complete == true and place ~= nil and not Dropped(id)
-	end, stops, candidates, plan)
+		return Complete(id) and place ~= nil
+	end, stops, candidates, plan, Complete)
 	local steps = State.committedOrders
 			and Laps(data, player, completed, log, candidates, plan, prefs, mapName, nil, nil, "turnins")
 		or Build(data, player, completed, log, candidates, prefs, mapName)
@@ -551,10 +555,12 @@ local function Pickups(
 	end
 	-- With Quests off the story holds no log quest, so it never stays for the log alone: carry holds them.
 	if (zone or holdsQuest) and prefs.quests then
-		held = LogSteps(data, player, log, ready, function(id, place)
-			return not Dropped(id)
-				and ((holdsQuest and holdsQuest(id)) or (not holdsQuest and OnZone(data, zone, id, place)))
-		end, stops, candidates, plan)
+		local admit = holdsQuest and function(id)
+			return not Dropped(id) and holdsQuest(id)
+		end or nil
+		held = LogSteps(data, player, log, ready, admit or function(id, place)
+			return not Dropped(id) and OnZone(data, zone, id, place)
+		end, stops, candidates, plan, admit)
 		lead = holdsQuest and leadID and held[leadID] or nil
 	end
 	PickupSteps(data, eligible, belongs, candidates, stops)
