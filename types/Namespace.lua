@@ -1748,6 +1748,7 @@
 ---@field dungeonsByLevel table<integer, integer[]> dungeon IDs that are open by level
 ---@field choicesByLevel table<integer, table<string, integer[]>> non-grey quest IDs by side, level, race and class
 ---@field starts table<integer, integer[]> quest IDs by pickup map
+---@field hubs table<string, integer[]> quest IDs by pickup town ("map:area")
 ---@field groups table<integer, integer[]>
 ---@field sides table<integer, integer[]> by side, the IDs a player of it could ever take: its own side's or both
 ---sides', with a start the data places, not repeatable (Check's first lines)
@@ -1803,6 +1804,7 @@
 ---@field hub string? the town the player stands in, its areas' own
 ---@field origin AGFPosition
 ---@field planned boolean
+---@field showOutgrown? boolean the player's setting that keeps outgrown quests in the guide
 ---@field rank table<string, integer>
 ---@field ranked table<integer, integer> each quest's first place in the committed order among its work's areas
 ---@field skipped table<string, boolean>

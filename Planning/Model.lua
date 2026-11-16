@@ -247,6 +247,7 @@ local function Index(data)
 		dungeonsByLevel = {},
 		choicesByLevel = { {}, {} },
 		groups = {},
+		hubs = {},
 		sides = { {}, {} },
 		starts = {},
 	}
@@ -263,6 +264,11 @@ local function Index(data)
 			local mapID = quest.start.map
 			index.starts[mapID] = index.starts[mapID] or {}
 			table.insert(index.starts[mapID], id)
+			local hub = quest.start.hub
+			if hub then
+				index.hubs[hub] = index.hubs[hub] or {}
+				index.hubs[hub][#index.hubs[hub] + 1] = id
+			end
 		end
 		if quest.group and quest.group > 0 then
 			---@type AGFExclusiveGroup
