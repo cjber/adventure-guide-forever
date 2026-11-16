@@ -13,7 +13,6 @@ local Cost = ns.Planner.Travel.Cost
 local Describe = ns.Planner.Steps.Describe
 local Distance = ns.Planner.Travel.Distance
 local Docks = ns.Planner.Travel.Docks
-local Dropped = ns.Planner.Eligibility.Dropped
 local Enter = ns.Planner.Steps.Enter
 local Gap = ns.Planner.Travel.Gap
 local Gather = ns.Planner.Steps.Gather
@@ -148,18 +147,6 @@ local function Pickable(quest)
 	return true
 end
 
--- Whether `area` works quest `id`'s objectives.
----@param area AGFStep
----@param id integer
-local function Works(area, id)
-	for _, objective in ipairs(area.objectives or NONE) do
-		if objective.id == id then
-			return true
-		end
-	end
-	return false
-end
-
 local function Skip(key)
 	if State.skippedSeen then
 		State.skippedSeen[key] = true
@@ -180,7 +167,7 @@ end
 
 ---@param lap AGFLapState
 local function PickLapQuests(lap)
-	local data, player, log, towns, areas, plan, planned, leadID, pinned, skipped, origin, completed =
+	local data, player, log, towns, areas, plan, planned, leadID, pinned, skipped, origin, completed, showOutgrown =
 		lap.data,
 		lap.player,
 		lap.log,
@@ -192,7 +179,8 @@ local function PickLapQuests(lap)
 		lap.pinned,
 		lap.skipped,
 		lap.origin,
-		lap.completed
+		lap.completed,
+		lap.showOutgrown
 	local at = lap.at
 	-- The new quests each town hands out, and their objective nodes.
 	local picks, ids, nodes, offered = lap.picks, lap.ids, lap.nodes, lap.offered
@@ -210,9 +198,10 @@ local function PickLapQuests(lap)
 	end
 	table.sort(ids)
 
-	-- The quests each town offers this lap, taken or not: every outdoor quest its givers hand out that the player could
-	-- take with an empty log. Taking one moves it nowhere in this set, so the cut-off its pickups are kept by (below)
-	-- does not follow the log. Each is valued as a new pickup would be.
+	-- The quests each town offers this lap, taken or not (docs/design.md §4.2): every outdoor quest its givers hand out
+	-- that the zone choices would offer with an empty log (Model.Shortlisted, then Model.Choosable), plus the route's own
+	-- pickups. Taking one moves it between the log and the offers without changing this set, so the cut-off its pickups
+	-- are kept by (below) does not follow the log.
 	---@type AGFIndex
 	local hubIndex = Index(data)
 	local pool, pooled = {}, {}
@@ -221,17 +210,13 @@ local function PickLapQuests(lap)
 		pool[town] = offers
 		for _, id in ipairs(town.hub and hubIndex.hubs[town.hub] or NONE) do
 			local quest = data.quests[id]
+			-- The lead and a pinned quest are offered whether or not a lap could plan them, as the pick loop above takes
+			-- them up; every other offer is one a lap plans too.
+			local extra = id == leadID or pinned[id] or false
 			if
-				not completed[id]
-				and not Dropped(id)
-				and not quest.dungeon
-				and not quest.raid
-				and quest.min <= player.level
-				and Model.CouldTake(quest, player)
-				and not Model.Hard(quest, player)
-				and (lap.showOutgrown or not Model.IsGray(quest.level, player.level))
-				and Pickable(quest)
-				and Model.Eligible(data, player, completed, NO_LOG, id)
+				not (quest.dungeon or quest.raid)
+				and (extra or (Model.Shortlisted(quest, player, showOutgrown) and Pickable(quest)))
+				and Model.Choosable(data, player, completed, NO_LOG, id, pinned, showOutgrown, hubIndex.groups)
 			then
 				offers[#offers + 1], pooled[id] = id, true
 			end
@@ -247,30 +232,28 @@ local function PickLapQuests(lap)
 	end
 	-- A pooled quest the log carries is one the player has taken: its planned nodes stand in where its log's area
 	-- would, so taking it changes neither the mean's set nor what the others are worth.
-	local carried = {}
-	for _, town in ipairs(towns) do
-		for _, id in ipairs(pool[town]) do
-			if log[id] then
-				carried[id] = true
-			end
-		end
-	end
-	local aside = {} -- log areas of carried quests: their planned nodes stand in for them
+	local aside = {} -- log areas of carried pooled quests: their planned nodes stand in for them
 	for _, area in ipairs(areas) do
-		for id in pairs(carried) do
-			if Works(area, id) then
+		for _, objective in ipairs(area.objectives or NONE) do
+			if pooled[objective.id] and log[objective.id] then
 				aside[area] = true
 				break
 			end
 		end
 	end
+	-- Every pooled quest is valued by the work its planned nodes hold, whether the log carries it or not: one node list
+	-- per quest, chosen from the quest and never from the log. A pickup's own nodes are that work, kept as they are so
+	-- the joins below know whose node it is; an outdoor elite's pickup schedules none (it waits for a group), so its
+	-- offer is valued by the work its planned nodes would hold, and taking the elite up does not move the town's mean.
+	---@type table<integer, AGFNode[]>
+	local valueNodes = {}
 	---@param id integer
 	---@return AGFNode[]
 	local function NodesOf(id)
-		local list = nodes[id]
+		local list = valueNodes[id]
 		if not list then
-			list = Planned(data.quests[id], id, player.level)
-			nodes[id] = list
+			list = (not data.quests[id].elite and nodes[id]) or Planned(data.quests[id], id, player.level)
+			valueNodes[id] = list
 		end
 		return list
 	end

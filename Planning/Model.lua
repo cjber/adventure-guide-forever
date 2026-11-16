@@ -1002,6 +1002,41 @@ function Model.Hard(quest, player)
 end
 local Hard = Model.Hard
 
+-- The static half of a zone card's offer rule, the one Zones.Choices caches its shortlist by level, race and class: the
+-- quest's own level and colour fit the player, and the character could ever take it. It reads nothing that moves with
+-- the log, so one build's shortlist serves every build at that level (`showOutgrown` is the player's setting).
+---@param quest AGFQuest
+---@param player AGFPlayer
+---@param showOutgrown? boolean
+---@return boolean
+function Model.Shortlisted(quest, player, showOutgrown)
+	return quest.min <= player.level
+		and (showOutgrown or not Model.IsGray(quest.level, player.level))
+		and Model.CouldTake(quest, player)
+end
+
+-- The other half of that rule, read again for each build: not done, not ruled out, not past the level ceiling, and
+-- open now. A quest the player added keeps its grey (they asked for it); SimpleOpen settles the plain ones and the full
+-- eligibility check the rest. `groups` is Index(data).groups.
+---@param data AGFData
+---@param player AGFPlayer
+---@param completed table<integer, boolean>
+---@param log table<integer, AGFLogQuest>
+---@param id integer
+---@param pinned table<integer, boolean>
+---@param showOutgrown? boolean
+---@param groups table<integer, integer[]>
+---@return boolean
+function Model.Choosable(data, player, completed, log, id, pinned, showOutgrown, groups)
+	local quest = data.quests[id]
+	-- The completion first: Eligible would say no to most for it, at more cost.
+	return not completed[id]
+		and not Dropped(id)
+		and (showOutgrown or pinned[id] or not Model.IsGray(quest.level, player.level))
+		and not Hard(quest, player)
+		and (SimpleOpen(quest, player, completed, log, id) or Eligible(data, player, completed, log, id, groups))
+end
+
 -- Where a locked quest's chain starts for the player (docs/design.md §2.4): the earliest of its prerequisites, deepest
 -- first in the data's order (all-of, then one-of), that is open now and not orange or red. Nil when none is, or when
 -- what locks the quest is no prerequisite (a level, a side, a skill). Never a quest the eligibility rule rejects.
