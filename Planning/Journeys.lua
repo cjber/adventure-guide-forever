@@ -1639,13 +1639,25 @@ function Model.Journeys(
 		end
 	end
 	table.sort(storyPool)
+	-- Admission can come from a later chapter; membership below still comes from the first occurrence.
+	local admitted = {}
+	local inStoryZone = InZone(chosenZone or zone)
+	for _, id in ipairs(storyPool) do
+		local quest = data.quests[id]
+		local way = Model.Story(data, id)
+		local head = way and way.members[1]
+		local available = inStoryZone(quest) or chosenHead == head or (stranded and way and Into(data, way) ~= nil)
+		if way and head and available then
+			admitted[head] = true
+		end
+	end
 	-- Partition the two ordered inputs separately: accepted log quests belong only to storyPool.
 	-- Reverse membership preserves converging tails, whose own Story can be nil or have another head.
 	local chainPools, memberships = {}, {}
 	for _, id in ipairs(storyPool) do
 		local way = Model.Story(data, id)
 		local head = way and way.members[1]
-		if way and head and not chainPools[head] then
+		if way and head and admitted[head] and not chainPools[head] then
 			local entry = { story = {}, eligible = {}, members = {} }
 			chainPools[head] = entry
 			for _, member in ipairs(way.members) do
@@ -1670,7 +1682,6 @@ function Model.Journeys(
 		end
 	end
 	local heads = {}
-	local inStoryZone = InZone(chosenZone or zone)
 	for _, id in ipairs(storyPool) do
 		local quest = data.quests[id]
 		local way = Model.Story(data, id)
