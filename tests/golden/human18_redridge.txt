@@ -5,11 +5,11 @@ card (chosen) | zone:1433 | Redridge Mountains story | Chapter 1 of 6 | A chain 
   step 3 | area:92:4 | Complete objectives · Redridge Goulash | 1433 0.2390,0.7330 | after you pick it up | 100 yd | 92/4
   step 4 | town:1433:1002 | Pick up: Encroaching Gnolls | 1433 0.1037,0.7126 | near your level
   step 5 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | after you pick it up | 0 yd | 125/4
-  step 6 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4890,0.4200 | after you pick it up | 99 yd | 92/6
+  step 6 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4900,0.4180 | after you pick it up | 100 yd | 92/6
   step 7 | area:92:5 | Complete objectives · Redridge Goulash | 1433 0.5470,0.7610 | after you pick it up | 99 yd | 92/5
   step 8 | town:1433:69:2 | Visit Lakeshire: Turn in 3 | 1433 0.2705,0.4864 | Opens the next chapter here
 card | zone:1432 | Head to Loch Modan | 14 quests near your level | - | map 1432
-  step 1 | town:1432:923 | Pick up: Banner of the Fallen | 1432 0.3179,0.8633 | near your level
+  step 1 | town:1432:923 | Pick up: Banner of the Fallen | 1432 0.3178,0.8633 | near your level
   step 2 | town:1432:144 | Visit Thelsamar: Pick up 3 | 1432 0.3263,0.4974 | 3 to pick up
   step 3 | town:1432:838 | Visit North Gate Pass: Pick up 2 | 1432 0.2476,0.1840 | 2 to pick up
   step 4 | town:1432:146 | Pick up: A Dark Threat Looms | 1432 0.4605,0.1361 | near your level
@@ -43,7 +43,7 @@ card | zone:1426 | Head to Dun Morogh | 2 quests near your level | 2 quests will
 card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
   step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
 card | zone:1434 | Head to Stranglethorn Vale | 2 quests near your level | - | map 1434
-  step 1 | town:1434:35 | Visit Booty Bay: Pick up 2 | 1434 0.2851,0.7577 | 2 to pick up
+  step 1 | town:1434:35 | Visit Booty Bay: Pick up 2 | 1434 0.2851,0.7578 | 2 to pick up
 card | dungeon:36 | Deadmines | 6 quests for this dungeon | - | map 1453
   step 1 | town:1453:0 | Visit Stormwind City: Pick up 3 | 1453 0.7031,0.4082 | 3 to pick up
   step 2 | town:1436:108 | Pick up: The Defias Brotherhood | 1436 0.5633,0.4752 | near your level
@@ -51,7 +51,7 @@ card | dungeon:36 | Deadmines | 6 quests for this dungeon | - | map 1453
 card | chain:125 | The Lost Tools | Chapter 1 of 3 | Begins a new story | map 1433
   step 1 | town:1433:69 | Pick up: The Lost Tools | 1433 0.2705,0.4864 | Begins a new story
 card | dungeon:3065 | The Hall of Thanes | 4 quests for this dungeon | - | map 1455
-  step 1 | town:1455:0 | Visit Ironforge: Pick up 2 | 1455 0.3323,0.4800 | 2 to pick up
+  step 1 | town:1455:0 | Visit Ironforge: Pick up 2 | 1455 0.3322,0.4800 | 2 to pick up
 card | chain:118 | The Price of Shoes | Chapter 1 of 2 | Begins a new story | map 1433
   step 1 | town:1433:69 | Pick up: The Price of Shoes | 1433 0.2588,0.4727 | Begins a new story
 card | chain:129 | A Free Lunch | Chapter 1 of 3 | Begins a new story | map 1433
