@@ -252,7 +252,7 @@ local function Has(steps, key)
 end
 equal(route.journey, "carry", "accepted quests are the default route")
 equal(route.chosen, false, "a default recommendation does not count as an explicit choice")
-equal(#route.journeys, 2, "the zone's story and carry")
+equal(#route.journeys, 3, "the zone's story, carry and completed turn-ins")
 do
 	local carry = route.journeys[2]
 	equal(carry.key, "carry", "carry follows the story")
@@ -282,7 +282,7 @@ equal(Model.Plan(data, player, {}, log, options).chosen, false, "and reads as no
 local empty = prefs()
 empty.quests = false
 local carriedOnly = Model.Plan(data, player, {}, log, empty).journeys
-equal(#carriedOnly, 1, "the activity filter leaves only what you carry")
+equal(#carriedOnly, 2, "the activity filter keeps the log and its completed subset")
 equal(carriedOnly[1] and carriedOnly[1].key, "carry", "the carry card stays with both filters off")
 -- F15: a group quest in the log is never hidden by the dungeon filter, finished or under way.
 data.quests[100], data.quests[101] = quest(), quest()
@@ -620,31 +620,35 @@ equal(
 equal(Diverted(Diversions(18, 10, 10), both), "zone:1 zone:2 calling dungeon:36", "diversions: after the zones")
 equal(
 	Diverted(Diversions(18, 10, 10), both, inLog),
-	"zone:1 carry zone:2 calling dungeon:36",
+	"zone:1 carry turnins zone:2 calling dungeon:36",
 	"diversions: carry does not hide other choices"
 )
 equal(
 	Diverted(Diversions(16, 17, 10), both, inLog),
-	"zone:1 carry zone:2 dungeon:36 calling",
+	"zone:1 carry turnins zone:2 dungeon:36 calling",
 	"diversions: a dungeon just opened"
 )
 equal(
 	Diverted(Diversions(16, 17, 18), both, inLog),
-	"zone:1 carry zone:2 calling dungeon:36",
+	"zone:1 carry turnins zone:2 calling dungeon:36",
 	"diversions: a calling just opened"
 )
 local hall = prefs()
 hall.dungeons, hall.journey = true, "dungeon:36"
 equal(
 	Diverted(Diversions(18, 10, 10), hall, inLog),
-	"zone:1 carry zone:2 calling dungeon:36",
+	"zone:1 carry turnins zone:2 calling dungeon:36",
 	"diversions: the chosen one stays"
 )
-equal(Diverted(Diversions(18, 10, 10), prefs(), inLog), "zone:1 carry zone:2 calling", "diversions: dungeons off")
+equal(
+	Diverted(Diversions(18, 10, 10), prefs(), inLog),
+	"zone:1 carry turnins zone:2 calling",
+	"diversions: dungeons off"
+)
 local combat = Model.Plan(Diversions(10, 10, 18), player, {}, {}, both)
 equal(
 	Kinds(Model.Refresh(Diversions(10, 10, 18), player, {}, inLog, both, combat).journeys),
-	"zone:1 carry zone:2 calling dungeon:36",
+	"zone:1 carry turnins zone:2 calling dungeon:36",
 	"diversions: in combat a new carry card preserves other options"
 )
 
@@ -656,7 +660,7 @@ for _, journey in ipairs(Model.Plan(Diversions(18, 10, 10), player, {}, inLog, b
 end
 equal(
 	table.concat(headings, " "),
-	"story=continue carry=continue nextzone=zones calling=continue dungeon=dungeons",
+	"story=continue carry=continue turnins=continue nextzone=zones calling=continue dungeon=dungeons",
 	"overview: every card's group from its kind"
 )
 -- A companion guide's card is not a planner kind: RestedXP's guide journey is built in Integrations/RestedXP.lua
@@ -1342,7 +1346,7 @@ equal(townCard.hub, "Lakeshire, Redridge", "card: the hub line names its first s
 equal(townCard.more, #townCard.steps - 1, "card: and counts the stops after it")
 equal(townCard.group, 1, "card: the elite quest needs a group")
 equal(Has(toured.steps, "turnin:12"), 1, "town: a waypoint 350 yd from the data's finish stays a turn-in")
-equal(#toured.journeys, 2, "town: accepted quests also have their own choice")
+equal(#toured.journeys, 3, "town: accepted quests and completed turn-ins have their own choices")
 equal(townCard.subline, "3 ready to hand in, 4 quests near your level", "town: the story counts every hand-in first")
 -- Skipping the town takes its hand-ins with it, from the route and the count.
 local townSkip = prefs()
@@ -1816,6 +1820,7 @@ end
 -- `next` that no quest's `next` names. The walker recurses where Model.Story loops, and asserts each total rule
 -- on its own: no total on a chain that touches a dangling `next`, a `preAny` or a multi-`pre`. QuestieDB v1.1.0's
 -- trace-built relations add 146 heads: 77 with a proven total, 69 shown as a chapter only.
+-- QuestieDB v1.1.1 adds The Ancient Hilt (93161) -> Eluvi'ana (97029), with a proven total.
 local quests, named, heads = ns.Data.quests, {}, {}
 for _, q in pairs(quests) do
 	if q.next then
@@ -1873,8 +1878,8 @@ do
 			end
 		end
 	end
-	equal(#heads, 1067, "walk: chain heads in the data")
-	equal(totals, 818, "walk: heads whose total the data proves")
+	equal(#heads, 1068, "walk: chain heads in the data")
+	equal(totals, 819, "walk: heads whose total the data proves")
 	equal(textOnly, 249, "walk: heads shown as a chapter only")
 	equal(#heads - totals - textOnly, 0, "walk: heads whose next dangles at once")
 end

@@ -23,6 +23,15 @@ def entry(path, anchors, size=None, **extra):
     return {"path": path, "type": "Frame", "anchors": anchors, "size": size, **extra}
 
 
+class RendererPin(unittest.TestCase):
+    def test_pillow_matches_toolchain(self):
+        import tomllib
+
+        config = tomllib.loads((screenshots.ROOT / "tools/pyproject.toml").read_text())
+        pin = next(value.split("==")[1] for value in config["dependency-groups"]["dev"] if value.startswith("pillow=="))
+        self.assertEqual(screenshots.PILLOW, pin)
+
+
 class Phases(unittest.TestCase):
     def test_every_compared_phase_is_known(self):
         # A recipe comparing `layer` against a misspelt phase would silently draw nothing.

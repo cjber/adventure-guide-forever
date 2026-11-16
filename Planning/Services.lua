@@ -236,7 +236,74 @@ local function TrainerSteps(data, player, prefs, key)
 	return steps
 end
 
+-- Explicit destinations for My tracked quests. Store NPC identities, never copied coordinates: each build
+-- validates the current catalogue's faction and place before making a stop.
+---@param npc? AGFNpc
+local function PlacedTrainer(npc, player)
+	local place = npc and npc.place
+	return npc
+		and (npc.class or npc.skill or npc.pet or npc.riding)
+		and HasBit(npc.side, player.side)
+		and place
+		and place.name
+		and place.map
+		and place.x
+		and place.y
+end
+
+---@return integer[]
+local function Choices(data, player)
+	local ids = {}
+	for id, npc in pairs(data.npcs or NONE) do
+		ids[#ids + 1] = PlacedTrainer(npc, player) and id or nil
+	end
+	table.sort(ids, function(a, b)
+		local left, right = data.npcs[a].place, data.npcs[b].place
+		if left.map ~= right.map then
+			return left.map < right.map
+		end
+		if left.name ~= right.name then
+			return left.name < right.name
+		end
+		return a < b
+	end)
+	return ids
+end
+
+---@return AGFStep[]
+local function ChosenTrainers(data, player, prefs)
+	local steps, ids = {}, {}
+	for id, wanted in pairs(prefs.trainerStops or NONE) do
+		if wanted == true and type(id) == "number" and PlacedTrainer(data.npcs and data.npcs[id], player) then
+			ids[#ids + 1] = id
+		end
+	end
+	table.sort(ids)
+	for _, id in ipairs(ids) do
+		local place = data.npcs[id].place
+		local title = ns.L.VISIT_TRAINER:format(place.name)
+		steps[#steps + 1] = {
+			kind = "trainer",
+			chosenTrainer = true,
+			key = "chosen-trainer:" .. id,
+			hub = place.hub,
+			title = title,
+			detail = ns.L.CHOSEN_TRAINER,
+			reason = ns.L.CHOSEN_TRAINER,
+			quests = {},
+			map = place.map,
+			x = place.x,
+			y = place.y,
+			z = place.z,
+			place = place.name,
+		}
+	end
+	return steps
+end
+
 ns.Planner.Services = {
+	Choices = Choices,
+	ChosenTrainers = ChosenTrainers,
 	Rest = Rest,
 	TrainerSteps = TrainerSteps,
 }

@@ -14,6 +14,8 @@ card (chosen) | carry | Clean up my log | 1 ready to hand in, 1 in progress | - 
   step 1 | town:1413:380 | Turn in: The Zhevra | 1413 0.5223,0.3101 | Opens the next chapter here
   step 2 | area:843:0 | Complete 3 objectives · Gann's Reclamation | 1413 0.4760,0.8530 | quests in progress | 103 yd | 843/0 843/1 843/4
   step 3 | town:1413:390 | Turn in: Gann's Reclamation | 1413 0.4589,0.7700 | Opens the next chapter here
+card | turnins | Turn-ins only | 1 ready to hand in | Hand in completed quests, without picking up more | map 1413
+  step 1 | town:1413:380 | Turn in: The Zhevra | 1413 0.5223,0.3101 | Opens the next chapter here
 card | zone:1442 | Head to Stonetalon Mountains | 7 quests near your level | - | map 1413
   step 1 | town:1413:1702 | Visit Honor's Stand: Pick up 2 | 1413 0.3526,0.2788 | 2 to pick up
   step 2 | town:1442:2539 | Visit Malaka'jin: Pick up 2 | 1442 0.7325,0.9489 | 2 to pick up
@@ -31,5 +33,30 @@ card | zone:1436 | Head to Westfall | 3 quests near your level | Westfall Lighth
   step 1 | town:1436:115 | Visit Westfall Lighthouse: Pick up 3 | 1436 0.3001,0.8602 | 3 to pick up
 card | zone:1434 | Head to Stranglethorn Vale | 2 quests near your level | - | map 1434
   step 1 | town:1434:35 | Visit Booty Bay: Pick up 2 | 1434 0.2813,0.7590 | 2 to pick up
-card | zone:1446 | Head to Tanaris | 1 quest near your level | - | map 1446
-  step 1 | town:1446:976 | Pick up: Field of Honor: Week 1 | 1446 0.5185,0.2716 | near your level
+card | chain:6541 | Report to Kadrak | Chapter 1 of 2 | Begins a new story | map 1413
+  step 1 | town:1413:380 | Visit The Crossroads: Pick up 1, turn in 1 | 1413 0.5223,0.3101 | Begins a new story
+  step 2 | town:1413:1703 | Pick up: The Warsong Reports | 1413 0.4812,0.0542 | near your level
+card | chain:843 | Gann's Reclamation | Chapter 1 of 3 | Begins a new story | map 1413
+  step 1 | area:843:0 | Complete 3 objectives · Gann's Reclamation | 1413 0.4760,0.8530 | Begins a new story | 103 yd | 843/0 843/1 843/4
+card | chain:4921 | Lost in Battle | Chapter 1 of 2 | Begins a new story | map 1413
+  step 1 | town:1413:380 | Visit The Crossroads: Pick up 1, turn in 1 | 1413 0.5223,0.3101 | Begins a new story
+card | chain:95494 | Bruised Pride and Lion Hides | Chapter 1 | Begins a new story | map 1413
+  step 1 | town:1413:383 | Pick up: Bruised Pride and Lion Hides | 1413 0.4380,0.1221 | Begins a new story
+card | chain:95507 | Vrang's Game | Chapter 1 | Begins a new story | map 1413
+  step 1 | town:1413:383 | Pick up: Vrang's Game | 1413 0.4380,0.1221 | Begins a new story
+card | chain:865 | The way into Wailing Caverns | Chapter 1 of 2 | Begins a new story | map 1413
+  step 1 | town:1413:392 | Pick up: Raptor Horns | 1413 0.6237,0.3762 | Begins a new story
+card | chain:858 | Ignition | Chapter 1 of 2 | Begins a new story | map 1413
+  step 1 | town:1413:382 | Pick up: Ignition | 1413 0.5652,0.0745 | Begins a new story
+card | chain:867 | Harpy Raiders | Chapter 1 of 4 | Begins a new story | map 1413
+  step 1 | town:1413:380 | Visit The Crossroads: Pick up 1, turn in 1 | 1413 0.5162,0.3090 | Begins a new story
+card | chain:850 | Kolkar Leaders | Chapter 1 of 4 | Begins a new story | map 1413
+  step 1 | town:1413:386 | Pick up: Kolkar Leaders | 1413 0.4534,0.2841 | Begins a new story
+card | chain:848 | Fungal Spores | Chapter 1 of 2 | Begins a new story | map 1413
+  step 1 | town:1413:380 | Visit The Crossroads: Pick up 1, turn in 1 | 1413 0.5144,0.3015 | Begins a new story
+card | chain:861 | The Hunter's Way | Chapter 4 of 13 | Continues a story you started | map 1413
+  step 1 | town:1413:380 | Turn in: The Zhevra | 1413 0.5223,0.3101 | Continues a story you started
+card | chain:869 | Raptor Thieves | Chapter 1 of 2 | Begins a new story | map 1413
+  step 1 | town:1413:380 | Visit The Crossroads: Pick up 1, turn in 1 | 1413 0.5193,0.3032 | Begins a new story
+card | chain:887 | Southsea Freebooters | Chapter 1 of 4 | Begins a new story | map 1413
+  step 1 | town:1413:392 | Pick up: Southsea Freebooters | 1413 0.6268,0.3623 | Begins a new story

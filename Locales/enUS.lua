@@ -84,6 +84,14 @@ ns.L = {
 	NEXT_PAGE = "Next",
 	JOURNEY_PAGE = "%d / %d",
 	JOURNEY_CARRY = "Clean up my log",
+	JOURNEY_TURNINS = "Turn-ins only",
+	TURNINS_REASON = "Hand in completed quests, without picking up more",
+	-- My tracked quests (#772): exactly the quests the player has tracked, in the route's order, ready hand-ins
+	-- included.
+	JOURNEY_TRACKED = "My tracked quests",
+	TRACKED_QUESTS = "%d tracked quests",
+	TRACKED_QUESTS_ONE = "1 tracked quest",
+	TRACKED_REASON = "The quests you track, in the best order",
 	CARRY_EXPLANATION = "Turn-ins and unfinished objectives from your quest log, "
 		.. "plus quests you added to the route.",
 	JOURNEY_STORY = "%s story",
@@ -100,6 +108,10 @@ ns.L = {
 	BOOKS_UNLOCATED = "Location unknown",
 	BOOKS_TERRITORY_ALLIANCE = "Alliance territory",
 	BOOKS_TERRITORY_HORDE = "Horde territory",
+	-- A guide card fed by an installed guide addon (#713): the player sees where its steps come from, beside the
+	-- guide's own Clean up my log and zone stories.
+	PROVIDER_CARD_HINT = "Steps from your installed %s guides. "
+		.. "Zone stories and Clean up my log are Adventure Guide's own.",
 	-- The overview's quest log headers (docs/design.md §2.2): one per kind of card, in this order. A collapsed one
 	-- shows how many cards it holds.
 	GROUP_CONTINUE = "Continue",
@@ -176,6 +188,9 @@ ns.L = {
 	SETTING_AUTO_START_TOOLTIP = "The guide sends your chosen journey's route to Shortest Path as soon as it is "
 		.. "ready, so the map line is drawn on login and after a reload without pressing Go. Pressing Stop still "
 		.. "clears it until you choose a journey again.",
+	SETTING_INFORMATION_ONLY = "Information only: no routes",
+	SETTING_INFORMATION_ONLY_TOOLTIP = "Keep journeys and quest information without starting routes or changing "
+		.. "your tracked quests. Clicking a stop shows its quests on the map. Turn this off to use the planner again.",
 	SETTING_AUTO_NEXT_ZONE = "Start the next zone when one is finished",
 	SETTING_AUTO_NEXT_ZONE_TOOLTIP = "When a zone journey ends after a quest hand-in, the guide chooses the next "
 		.. "zone for your level from the same list. When that journey was already guiding you, its route starts too. "
@@ -336,6 +351,7 @@ ns.L = {
 	-- A step moved up the route because a quest item in the bags (named) vanishes after a while.
 	BEFORE_IT_RUNS_OUT = "before %s runs out",
 	BEFORE_ITEM_RUNS_OUT = "before a quest item runs out",
+	BEFORE_TIMER_RUNS_OUT = "before the quest timer runs out",
 	AFTER_PICK_UP = "after you pick it up",
 	OPENS_CHAPTER_HERE = "Opens the next chapter here",
 	QUESTS_IN_PROGRESS = "quests in progress",
@@ -359,6 +375,7 @@ ns.L = {
 	STARTS_AFTER_COMBAT = "The route starts when combat ends",
 	CLICK_TRAVEL = "Click to travel with %s",
 	CLICK_WAYPOINT = "Click to set a waypoint",
+	CLICK_SHOW_MAP = "Click to show this stop on the map",
 	-- A numbered route pin past the first: how to get back to the story's start.
 	PIN_RETURN_STORY = "Right-click to route from the story's start",
 	STEP_NUMBERED = "%d. %s",
@@ -439,6 +456,9 @@ ns.L = {
 	-- Trainers: the trainer aside names the nearest trainer's town when the data places one,
 	-- and a chosen journey's route may stop there.
 	TRAINER_IN = "Visit your class trainer in %s",
+	CHOSEN_TRAINER = "Chosen trainer",
+	TRAINER_STOPS = "Trainer stops",
+	VISIT_TRAINER = "Visit %s",
 	TRAIN_IN = "Train in %s",
 	-- Your calling (docs/design.md §2.2): the class quests open now; the trainer only when the data says so.
 	JOURNEY_CALLING = "Your calling",

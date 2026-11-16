@@ -337,13 +337,14 @@ do
 	-- Every row goes in through the secure delegate; none from addon code, which taints the search. The rows are
 	-- grouped into subcategories with a short index page, so no page grows tall.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 33, "28 settings rows and 5 index buttons, all through Settings.RegisterInitializer")
+	equal(#h.settings, 34, "29 settings rows and 5 index buttons, all through Settings.RegisterInitializer")
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
 		"maxQuestLevelOffset restedxpGuide wanderer followQuest partyQuests optimisedRoute "
 			.. "showOutgrown includeDungeonsDefault "
-			.. "titleStartsRoute autoStart autoNextZone npcHighlight polestarAside warnClosing stepSound trainingReminders",
+			.. "titleStartsRoute autoStart informationOnly autoNextZone npcHighlight polestarAside warnClosing "
+			.. "stepSound trainingReminders",
 		"Route holds its rows in order"
 	)
 	equal(
@@ -1265,9 +1266,9 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(ring.levelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
 	h.Hover(ring)
 	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
-	-- Zhevra opens its next chapter, handed in before the town's pickups. QuestieDB v1.1.0 links Lost in Battle to
-	-- Her Name Is Olgra, so the town offers one pick-up less.
-	local expected = { "title: 1. Visit The Crossroads: Pick up 4, turn in 1" }
+	-- Zhevra opens its next chapter, handed in before the town's pickups. QuestieDB v1.1.1 moves the Consumed by
+	-- Hatred camps, leaving room for Lost in Battle in the bounded route and five pickups at this visit.
+	local expected = { "title: 1. Visit The Crossroads: Pick up 5, turn in 1" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
 	expected[#expected + 1] = "highlight: Opens the next chapter here"
 	expected[#expected + 1] = "normal: |cff009919Sergra Darkthorn|r"
@@ -1796,7 +1797,7 @@ do
 	local keys, cards = {}, ns.Route().journeys
 	for _, journey in ipairs(cards) do
 		for _, step in ipairs(journey.steps) do
-			keys[step.key] = journey.kind
+			keys[step.key] = keys[step.key] or journey.kind
 		end
 	end
 	equal(keys["turnin:843"], "carry", "combat: a quest finished mid-fight is ready to hand in")
@@ -2420,9 +2421,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	-- QuestieDB v1.1.0 links Lost in Battle to Her Name Is Olgra: the Barrens story's first visit offers one pick-up
-	-- less, 4 with the one hand-in.
-	local expected = { "1 to hand in, 4 to pick up", "Opens the next chapter here" }
+	-- The refreshed Consumed by Hatred camps leave room for Lost in Battle: five pickups with the one hand-in.
+	local expected = { "1 to hand in, 5 to pick up", "Opens the next chapter here" }
 	for _, giver in ipairs(steps[1].checklist) do
 		expected[#expected + 1] = h.ns.StepStyle.Checklist(steps[1], giver)
 	end
@@ -2593,8 +2593,8 @@ do
 	h.flush()
 	local steps = ns.Route().steps
 	local step = steps[1]
-	equal(step.title, "Visit The Crossroads: Pick up 4, turn in 1", "tracker, town: town and actions")
-	equal(step.detail, "1 to hand in, 4 to pick up", "tracker, town: the hand-in joins the pickups")
+	equal(step.title, "Visit The Crossroads: Pick up 5, turn in 1", "tracker, town: town and actions")
+	equal(step.detail, "1 to hand in, 5 to pick up", "tracker, town: the hand-in joins the pickups")
 	local expected = { step.detail, "Opens the next chapter here" }
 	for _, giver in ipairs(step.checklist) do
 		expected[#expected + 1] = ns.StepStyle.Checklist(step, giver)
@@ -2836,9 +2836,9 @@ do
 	clean(h, "card")
 end
 
--- The guide (F2): ten cards in this fixture, the Library books card among them. Tirisfal Glades left it when
--- QuestieDB v1.0.11 gave The Argent Emissary its level 12, grey at this fixture's level 18; QuestieDB v1.1.0 adds
--- Stranglethorn Vale's A Special Gift and Tanaris's Field of Honor: Week 1, so both zones are offered here too. The
+-- The guide (F2): nine destination/activity cards and thirteen alternative stories in this fixture.
+-- Tirisfal Glades has no near-level quest for this level-18 fixture. Stranglethorn Vale offers A Special Gift;
+-- Tanaris's Field of Honor: Week 1 is level 60 in QuestieDB v1.1.1, so that destination is not offered. The
 -- chosen one is lit, never moved, 288x86 with a 46x46 ring and followed by its steps; the others sit above it as
 -- one-line 288x26 header rows with a 16x16 icon and no ring, in the dumped layout the client's own dump is compared
 -- with.
@@ -2862,7 +2862,12 @@ do
 		end
 	end
 	equal(full + compact, #route.journeys, "guide: a card per journey")
-	equal(#route.journeys, 10, "guide: all ten eligible journeys survive")
+	local alternatives = 0
+	for _, journey in ipairs(route.journeys) do
+		alternatives = alternatives + (journey.key:match("^chain:") and 1 or 0)
+	end
+	equal(alternatives, 13, "guide: all thirteen alternative stories survive")
+	equal(#route.journeys - alternatives, 10, "guide: all ten destination/activity journeys survive")
 	equal(full, 1, "guide: only the chosen card is whole")
 	equal(lit, 1, "guide: and only it stays lit, so it reads as chosen in game")
 	local rows = Shown(h, function(frame)
@@ -3046,15 +3051,25 @@ do
 	equal(#Results(), 0, "search: cleared")
 	clean(h, "guide")
 
-	-- Past the cap with quests and dungeons off, the dungeon card and a way into an instance still show.
+	-- Past the cap with quests and dungeons off, dungeon cards and their alternative preparation chains still show.
 	local capped = harness.load({ planned = true, player = { level = 70 } })
 	capped.ns.Prefs().quests = false
 	capped.ns.Invalidate()
 	capped.ns.OpenPanel()
 	capped.flush()
-	equal(#capped.ns.Route().journeys, 6, "guide: at the cap, the library, dungeon alternatives and a chain remain")
+	equal(#capped.ns.Route().journeys, 12, "guide: at the cap, the library, four dungeons and seven chains remain")
 	equal(Says(capped, "Dire Maul"), 1, "guide: the closest suitable dungeon card, toggle off")
-	equal(Says(capped, capped.ns.L.JOURNEY_INTO:format("Scholomance")), 1, "guide: the way in, as a story")
+	local continueHeader = capped.Find(function(frame)
+		return frame:IsVisible() and frame.key == "continue" and frame.Name ~= nil
+	end)[1]
+	equal(continueHeader ~= nil, true, "guide: alternative dungeon stories have a Continue group")
+	capped.Click(continueHeader)
+	capped.flush()
+	equal(
+		Says(capped, capped.ns.L.JOURNEY_INTO:format("Scholomance")),
+		3,
+		"guide: three distinct ways into Scholomance"
+	)
 	equal(Says(capped, capped.ns.L.NO_JOURNEY), 0, "guide: no empty line")
 	clean(capped, "guide: at the cap")
 
@@ -3087,17 +3102,31 @@ for _, spf in ipairs({ false, "v1" }) do
 	end
 	local navigate, drawn = Spf("Navigate") + Spf("NavigateRoute"), 0
 	for click, index in ipairs({ 2, 3, 1, 2, 3 }) do
-		local estimates, builds = Spf("Estimate") + Spf("EstimateDetail"), h.modelCalls.Journeys
+		local builds = h.modelCalls.Journeys
 		local card = Cards()[index]
 		local journey = card.journey
 		h.Click(card)
 		equal(h.modelCalls.Journeys - builds, 0, label .. ": click " .. click .. " builds nothing in its own frame")
-		h.flush()
+		-- A destination change exposes different alternative cards. Their estimates queue one per frame.
+		local settled = false
+		for _ = 1, 1000 do
+			local estimates = Spf("Estimate") + Spf("EstimateDetail")
+			local ran = h.tick()
+			equal(
+				Spf("Estimate") + Spf("EstimateDetail") - estimates <= 1,
+				true,
+				label .. ": at most one estimate per frame"
+			)
+			if ran == 0 then
+				settled = true
+				break
+			end
+		end
+		equal(settled, true, label .. ": card estimates settle")
 		equal(h.modelCalls.Journeys - builds, 1, label .. ": click " .. click .. " builds once, a frame later")
 		local route = h.ns.Route()
 		equal(route.journey, journey.key, label .. ": click " .. click .. " chooses " .. journey.key)
 		equal(h.map:GetMapID(), journey.map, label .. ": click " .. click .. " turns the map to it")
-		equal(Spf("Estimate") + Spf("EstimateDetail") - estimates <= 1, true, label .. ": at most one estimate")
 		local rings, expected = {}, {}
 		for _, pin in ipairs(h.Pins("AdventureGuideForeverPinTemplate") or {}) do
 			rings[#rings + 1] = pin.step.key
@@ -3420,7 +3449,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#Overview(), 0, label .. ": the overview gives way")
 	equal(Previews(), "", label .. ": with its steps")
 	equal(Says(L.OVERVIEW_WHERE:format("The Barrens", h.player.level)), 0, label .. ": and the line by the title")
-	equal(Heights(), "86 26 26 26 26 26 26 26 26 26", label .. ": the chosen route precedes alternatives")
+	equal(Heights(), "86" .. string.rep(" 26", 22), label .. ": the chosen route precedes alternatives")
 	equal(Cards()[1].journey.key, story.key, label .. ": the chosen card first, over its steps")
 	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
 	local chosenCard = Cards()[1]
@@ -3482,7 +3511,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.ns.Route().journey, key, label .. ": a row chooses its card")
 	equal(Starts(), 2, label .. ": and starts its route in place of the first")
-	equal(Heights(), "86 26 26 26 26 26 26 26 26 26", label .. ": still one whole card")
+	equal(Heights(), "86" .. string.rep(" 26", 14), label .. ": still one whole card")
 	equal(Cards()[1].journey.key, key, label .. ": the new choice over the steps")
 
 	-- The chosen card again: nothing changes but the map, which turns to it.
@@ -3517,7 +3546,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(Overview()[2])
 	h.flush()
 	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a row chooses it")
-	equal(Heights(), "86 26 26 26 26 26 26 26 26 26", label .. ": alternatives fold below it")
+	equal(Heights(), "86" .. string.rep(" 26", 22), label .. ": alternatives fold below it")
 	equal(Cards()[1].journey.key, second.key, label .. ": lit over its steps")
 	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
 	h.Click(Back())
@@ -3571,7 +3600,7 @@ do
 	equal(header.CollapseButton:IsShown(), true, label .. ": more choices can expand")
 	h.Click(header)
 	h.flush()
-	equal(#Cards("zones"), 7, label .. ": expansion shows every zone")
+	equal(#Cards("zones"), 6, label .. ": expansion shows every zone")
 	equal(h.ns.Prefs().previewGroups.zones, false, label .. ": expansion is saved")
 	local card = Cards("zones")[1]
 	local zone = h.ns.Data.zones[card.journey.zone]
@@ -3649,17 +3678,17 @@ do
 	equal(#Cards("zones"), 1, label .. ": the header's own toggle still folds")
 	equal(More("zones").Text:GetText(), L.MORE_CARDS:format(6), label .. ": its row is back")
 
-	-- Continue keeps two cards, so its row counts the third.
+	-- Continue keeps two cards, so its row counts the other fifteen, including the cloned card.
 	local continuing = h.ns.Model.InSection(route.journeys, "continue")
 	Clone(continuing[#continuing], "continue:more")
 	h.ns.Prefs().previewGroups.continue = true
 	h.ns.OpenPanel()
 	h.flush()
 	equal(#Cards("continue"), 2, label .. ": a folded Continue shows two cards")
-	equal(More("continue").Text:GetText(), L.MORE_CARDS:format(1), label .. ": and its one hidden card")
+	equal(More("continue").Text:GetText(), L.MORE_CARDS:format(15), label .. ": and its fifteen hidden cards")
 	h.Click(More("continue"))
 	h.flush()
-	equal(#Cards("continue"), 3, label .. ": the row opens it")
+	equal(#Cards("continue"), 17, label .. ": the row opens it")
 	equal(More("continue"), nil, label .. ": and the row goes")
 	clean(h, label)
 end

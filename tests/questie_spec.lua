@@ -50,6 +50,43 @@ local function Policy(h, available)
 		end,
 	}
 end
+-- #739: QuestieDB 1.1.0 stopped listing object 423901 among item 215824's drops, but the quest's own start object
+-- and collected item still name both. A book is read from those authoritative quest records, not from the item's
+-- drop table, so it does not vanish when that table loses the link.
+do
+	local noDrop = Fake()
+	noDrop.npcs[211033] = { name = "Garion Wendell", spawns = { [12] = { { 49, 42 } } }, zoneID = 12 }
+	noDrop.objects[423901] = { name = "Library Book", spawns = { [12] = { { 50, 50 } } }, zoneID = 12 }
+	noDrop.items[215824] = { name = "A Ludite's Guide to Caring for Your Demonic Pet" }
+	noDrop.quests[900006] = {
+		name = "A Ludite's Guide to Caring for Your Demonic Pet",
+		questLevel = 35,
+		requiredLevel = 1,
+		startedBy = { nil, { 423901 } },
+		finishedBy = { { 211033 } },
+		zoneOrSort = 12,
+		objectives = { nil, nil, { { 215824, nil, 0 } } },
+	}
+	local bookLoad = harness.load({
+		questiedb = noDrop,
+		setup = function(loaded)
+			-- Old code asked the item's drop helper; QuestieDB 1.1.0 answers nil for this item.
+			loaded.G.LibQuestieDB.Item.objectDrops = function()
+				return nil
+			end
+		end,
+	})
+	equal(bookLoad.ns.QuestieStatus.state, "questie", "book without a drop link: provider ready")
+	local found
+	for _, book in ipairs(bookLoad.ns.Data.books or {}) do
+		found = book.id == 900006 and book or found
+	end
+	equal(found ~= nil, true, "book without a drop link: read from its own start object and collected item")
+	equal(found and found.items[1], 215824, "book without a drop link: the collected item")
+	equal(found and found.spots[1] and found.spots[1].map, 1429, "book without a drop link: the start object's spawn")
+	equal(found and found.finish and found.finish.npc, 211033, "book without a drop link: the librarian takes it")
+	equal(#bookLoad.errors, 0, "book without a drop link: errors\n" .. table.concat(bookLoad.errors, "\n"))
+end
 for _, case in ipairs({
 	{ false, "QUESTIE_ABSENT" },
 	{ { contract = 1 }, "QUESTIE_CONTRACT" },

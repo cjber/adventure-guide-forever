@@ -166,10 +166,24 @@ do
 end
 
 do
+	-- QuestieDB 1.1.0 dropped object 423901 from item 215824's drops. Quest 79953 still names the object that starts
+	-- it and the item it collects, so the book stays: reading the item's drop list alone lost it (#739).
+	local h = Load({ charDB = { journey = "library", booksTerritory = 1 } })
+	local ns = h.ns
+	local book
+	for _, entry in ipairs(ns.Data.books or {}) do
+		book = entry.id == 79953 and entry or book
+	end
+	check(book ~= nil, "drop link: the book with no item drop row is still read")
+	equal(book and book.items[1], 215824, "drop link: its collected item")
+	check(book and book.spots[1] ~= nil, "drop link: its start object's spawn")
+	equal(#h.errors, 0, "drop link: errors\n" .. table.concat(h.errors, "\n"))
+end
+
+do
 	-- A book QuestieDB places nowhere is a row that says so instead of a stop: no waypoint, and no hand-in promising a
-	-- book nobody can collect. No book of QuestieDB 1.1.0 has an empty spawn list (1.0.16's 79953 had, but 1.1.0
-	-- stopped listing item 215824's object 423901 among its drops, so 79953 is no longer read as a book at all), so
-	-- the fixture blanks Sanguine Sorcery's (81947) spawns to model one the data cannot place.
+	-- book nobody can collect. No book of QuestieDB 1.1.0 has an empty spawn list, so the fixture blanks Sanguine
+	-- Sorcery's (81947) spawns to model one the data cannot place.
 	local h = Load({ completed = { 844 }, charDB = { journey = "library", booksTerritory = 1 } })
 	local ns = h.ns
 	local only

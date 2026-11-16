@@ -9,6 +9,8 @@
 -- runner is slower and noisier than a player's machine, so the default allows three times the measured time, while the
 -- modelled Shortest Path cost counts in full. AGF_BENCH_STRICT=1 checks the budgets as they are, for a local run.
 local harness = dofile("tests/harness.lua")
+local Diagnostics = dofile("tests/bench_diagnostics.lua")
+local diagnostics = Diagnostics.new(Diagnostics.clock(), os.getenv("AGF_BENCH_TRACE") == "1")
 local MISS_MS, HIT_MS, BUDGET_MS, SLOTS, TTL = 2.45, 0.003, 3, 256, 5
 -- QuestieDB's catalogue is built once a login in 2 ms slices (QuestieSource.lua's SLICE_MS): nothing can be drawn
 -- until it lands, so it trades the 3 ms budget for a tracker that fills in seconds.
@@ -181,10 +183,26 @@ local function Slices(h)
 	h.G.C_Timer.After = function(delay, fn)
 		local source = debug.getinfo(fn, "S").source
 		after(delay, function()
-			local started = os.clock()
+			local started, wall = os.clock(), diagnostics.clock.wall()
 			fn()
 			if source:find("QuestieSource") then
-				worstSlice = math.max(worstSlice, (os.clock() - started) * 1000)
+				local cpu = (os.clock() - started) * 1000
+				local identity = h.benchIdentity or { sample = 0, frame = 0 }
+				local record = {
+					profile = h.benchLabel,
+					sample = identity.sample,
+					frame = identity.frame,
+					phase = identity.sample == 0 and "catalogue-initialization" or "catalogue",
+					cpuStart = started * 1000,
+					wallStart = wall,
+					cpu = cpu,
+					wall = diagnostics.clock.wall() - wall,
+					spans = {},
+					finish = "unavailable",
+				}
+				diagnostics.frames[#diagnostics.frames + 1] = record
+				diagnostics:consider("catalogue", record, cpu / SLACK)
+				worstSlice = math.max(worstSlice, cpu)
 			end
 		end)
 	end
@@ -212,7 +230,10 @@ local function Profile(profile, level, questiedb, full)
 			y = at[3],
 		},
 		questiedb = questiedb,
-		setup = questiedb and Slices,
+		setup = questiedb and function(client)
+			client.benchLabel = label
+			Slices(client)
+		end,
 		log = full and FullLog(profile.side, level) or nil,
 	})
 	-- Core's scheduler uses the client's profiling clock, including profiles without QuestieDB.
@@ -262,15 +283,20 @@ local function Profile(profile, level, questiedb, full)
 		-- The full build is sliced across frames (Core.StepRebuild): drive it to rest, timing every frame. A rebuild
 		-- frame asks Shortest Path nothing; each travel frame asks at most once. Its modelled cost is charged to the
 		-- frame that made the call.
-		local worstFrameRebuild, worstFrameTravel, builtFrames = 0, 0, 0
+		local worstFrameRebuild, worstFrameTravel, builtFrames, frame = 0, 0, 0, 0
 		while h.ns.Settling() do
 			local callsBefore, msBefore = model.calls, model.ms
-			local started = os.clock()
-			local ran = h.tick()
-			local frameMs = (os.clock() - started) * 1000
+			frame = frame + 1
+			h.benchIdentity = { profile = label, sample = sample, frame = frame }
+			local record, ran = diagnostics:tick(h, h.benchIdentity)
+			local frameMs = record.cpu
+			record.modelled = model.ms - msBefore
+			record.phase = model.calls == callsBefore and "rebuild" or "travel"
 			if ran == 0 then
+				record.phase = "idle"
 				break
 			end
+			diagnostics:consider(record.phase, record, frameMs / SLACK + record.modelled)
 			if model.calls == callsBefore then
 				check(
 					model.calls == callsBefore,
@@ -304,45 +330,53 @@ local function Profile(profile, level, questiedb, full)
 	)
 end
 
-for _, level in ipairs({ 1, 10, 20, 30, 40, 50, 60 }) do
-	for _, profile in ipairs(SIDES) do
-		Profile(profile, level)
+-- Compact normal diagnostics; retain full history for any profile or budget failure.
+-- Speedpatrol #56 retains failure stdout/stderr.
+diagnostics:run(function()
+	for _, level in ipairs({ 1, 10, 20, 30, 40, 50, 60 }) do
+		for _, profile in ipairs(SIDES) do
+			Profile(profile, level)
+		end
 	end
-end
--- The same frames with a full log.
-for _, profile in ipairs(SIDES) do
-	Profile(profile, 20, nil, true)
-end
--- The same frames on QuestieDB's quests, converted from a synthetic mirror of the bundled data (the harness's).
-local mirror = harness.questieMirror(data)
-for _, level in ipairs({ 10, 40 }) do
+	-- The same frames with a full log.
 	for _, profile in ipairs(SIDES) do
-		Profile(profile, level, mirror)
+		Profile(profile, 20, nil, true)
 	end
-end
+	-- The same frames on QuestieDB's quests, converted from a synthetic mirror of the bundled data (the harness's).
+	local mirror = harness.questieMirror(data)
+	for _, level in ipairs({ 10, 40 }) do
+		for _, profile in ipairs(SIDES) do
+			Profile(profile, level, mirror)
+		end
+	end
 
-print(table.concat(lines, "\n"))
-local over = (" with the measured time divided by %d"):format(SLACK)
-check(
-	worstRebuild / SLACK < BUDGET_MS,
-	("rebuild frame max %.3f ms is over %d ms%s"):format(worstRebuild, BUDGET_MS, SLACK > 1 and over or "")
-)
-check(
-	worstTravelBudget < BUDGET_MS,
-	("travel frame max %.3f ms is over %d ms%s"):format(worstTravel, BUDGET_MS, SLACK > 1 and over or "")
-)
-check(
-	worstSlice / SLACK < BUILD_BUDGET_MS,
-	("QuestieDB build slice max %.3f ms is over %d ms%s"):format(worstSlice, BUILD_BUDGET_MS, SLACK > 1 and over or "")
-)
-assert(#failures == 0, table.concat(failures, "\n"))
-print(
-	("plan_bench: %d profiles x %d samples; rebuild %.3f ms, travel %.3f ms, " .. "QuestieDB slice %.3f ms%s"):format(
-		profiles,
-		SAMPLES,
-		worstRebuild,
-		worstTravel,
-		worstSlice,
-		strict and " (budget checked as measured)" or (" (budget checked, measured time / %d)"):format(SLACK)
+	print(table.concat(lines, "\n"))
+	local over = (" with the measured time divided by %d"):format(SLACK)
+	check(
+		worstRebuild / SLACK < BUDGET_MS,
+		("rebuild frame max %.3f ms is over %d ms%s"):format(worstRebuild, BUDGET_MS, SLACK > 1 and over or "")
 	)
-)
+	check(
+		worstTravelBudget < BUDGET_MS,
+		("travel frame max %.3f ms is over %d ms%s"):format(worstTravel, BUDGET_MS, SLACK > 1 and over or "")
+	)
+	check(
+		worstSlice / SLACK < BUILD_BUDGET_MS,
+		("QuestieDB build slice max %.3f ms is over %d ms%s"):format(
+			worstSlice,
+			BUILD_BUDGET_MS,
+			SLACK > 1 and over or ""
+		)
+	)
+	assert(#failures == 0, table.concat(failures, "\n"))
+	print(
+		("plan_bench: %d profiles x %d samples; rebuild %.3f ms, travel %.3f ms, " .. "QuestieDB slice %.3f ms%s"):format(
+			profiles,
+			SAMPLES,
+			worstRebuild,
+			worstTravel,
+			worstSlice,
+			strict and " (budget checked as measured)" or (" (budget checked, measured time / %d)"):format(SLACK)
+		)
+	)
+end, print)

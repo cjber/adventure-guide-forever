@@ -16,7 +16,9 @@ abandons quests.
   pages through them. The home view groups its cards under collapsible quest log headers, in order: Continue (Quests in
   your log, the story and your calling), Zones for your level, Dungeons, then Battlegrounds. With no journey chosen the
   route follows Quests in your log, and its card leads; RestedXP guides stay selectable cards and take over only when
-  the player picks one. A group with no card draws no header, each header remembers its open state per character, and
+  the player picks one. A card an installed guide addon feeds carries that provider's own mark at its top right, and
+  its tooltip names the provider and says its steps are not Adventure Guide's own. A group with no card draws no
+  header, each header remembers its open state per character, and
   the header holding the route the guide follows stays open. Prefer useful green/yellow quests; the maximum quest level slider defaults to +2, excluding
   orange/red pickups. The limit applies to recommendations, zone ranking and search recommendation eligibility; higher-level quests remain searchable, and accepted quests keep their steps. A choice shows up to ten route actions,
   followed by upcoming quest entries when fewer actions are available. The active route appears above alternative
@@ -31,8 +33,17 @@ abandons quests.
   giver, every objective and the hand-in all stand near a stop the route already makes, the smallest detour first, and
   no more than the free slots, a card's worth of actions less the log's own quests, or three. The route keeps the
   pickups it chose while they stay open, so walking or taking one quest up does not shuffle its head.
+    My tracked quests routes exactly the quests the player tracks, as the log's own steps in the same planner order,
+  ready hand-ins included. A leading journey's own tracked quests do not count, so the card never copies the journey
+  already showing. It adds no pickups. Its menu offers specific class, profession, riding and pet trainers, grouped by zone.
+  An explicitly chosen trainer is a destination even without a quest in that town or spells waiting to train.
+    Turn-ins only is a separate Continue choice: completed log quests with known, valid hand-in points, using the
+  same routing and skips. It adds no objectives, pickups or trainers. Clean up my log keeps its ordinary objective
+  work and pickups on the way. The subset is rebuilt from live completion and destination facts in combat too.
     Give each card a reason and only known travel estimates.
-- **2.3 Chapters.** Show a total only for a proven chain. A quest tooltip may name its proven next chapter with its level.
+- **2.3 Chapters.** Expand Continue to choose another eligible story in the viewed destination without dismissing the
+  suggested zone. Each chain is offered once, named by its known first quest, with its current chapter. Accepted quests
+  stay on the chosen story; other destinations keep their zone cards. Show a total only for a proven chain. A quest tooltip may name its proven next chapter with its level.
 - **2.4 Search.** Share eligibility checks with the planner. Explain missing requirements; locked
   quests offer no destination. Every word of the query must appear in the title (case and Latin accents folded); the
   best match comes first (the whole title, the title's start, the start of its words, anywhere), then a quest open
@@ -184,11 +195,30 @@ abandons quests.
   librarian hand-in ends the card, so the route is the next books and their turn-in rather than the whole library.
   Books already completed, books whose collected item the player carries in the bags or the bank, the other
   faction's only spots and class-restricted books outside that class are left out; a book with no spawn shows its
-  name with "Location unknown" and no waypoint. The card's level is the next reward goal's level (78150, 79536,
+  name with "Location unknown" and no waypoint. A book is read from the quest's own record: a librarian's or mage
+  trainer's quest started by a world object that collects an item. The item's drop table is not required, so a book
+  stays when QuestieDB drops that link (#739). The card's level is the next reward goal's level (78150, 79536,
   82208). `Planning/Books.lua` reads `data.books` from QuestieDB at runtime and the territories from
   `Data/Territory.lua`.
 
 ### Guide navigation
+
+The Route setting **Information only** keeps journeys available to browse without starting navigation.
+All guidance entry points, including quest givers, asides and battleground suggestions, leave travel to the
+player. Enabling it stops Adventure Guide's own guidance and clears a queued start. The selected journey
+stays selected, and its automatic quest-watch ownership ends so the player's watch list is restored.
+Explicit tracking actions remain available.
+
+An integrated RestedXP guide remains readable. Information mode gives back the windows and quest watches
+Adventure Guide had taken over, and leaves RestedXP's own guide selection and progress to it. Adventure
+Guide does not automatically select a guide, apply saved skips or take over navigation in this mode.
+
+Clicking a stop first asks Questie to show the quests already in the player's log. An objective stop with
+several quests shows their combined objectives when the installed Questie supports that operation.
+The adapter uses Questie's existing map reveal functions without changing its settings or making hidden
+pins visible. Missing, unready or incompatible Questie falls back to Adventure Guide's own map reveal.
+Combat leaves no deferred navigation request. Turning information mode off restores the normal planner
+settings.
 
 The world-map sidebar is the guide. Folded sections show two Continue journeys and one journey per other
 section. Expanding a header reveals the remaining choices. Existing settings from the paged overview do
@@ -222,6 +252,12 @@ follow the shared family voice.
   A quest whose item runs out in the bags (one the client lets last a day or less, ItemSparse DurationInInventory,
   that the quest hands over, needs or collects) goes first while the player carries one, ahead even of the area they
   stand in and of a held step: its hand-in once it is done, else its objectives, with the reason "before <item> runs out".
+  An accepted quest with a live client timer (`C_QuestLog.GetTimeAllowed`, the total and elapsed the objective
+  tracker's bar uses) goes first the same way, ordered by its exact cached deadline and then quest ID: its open
+  objectives, or its ready hand-in once they are done, with the reason "before the quest timer runs out". A failed,
+  expired or missing timer adds no urgency, and the player's saved order (§4.3) and the pickup, objective and hand-in
+  dependencies still win. Optional pickup objectives stay separate from an accepted urgent area, so their pickup
+  cannot hold that area's timed work behind other stops.
   Group town visits and cross
   the sea at most once. This nearest order is the default; the opt-in `optimisedRoute` beta instead keeps the
   older heuristics (the story's chapter lead, a town's-own look-ahead and the committed order), which the
@@ -230,7 +266,7 @@ follow the shared family voice.
   Objective areas merge only on the same map and for the same activity kind; separate maps keep separate visits. A
   quest a lap picks up joins an area only when every quest picked up for it there comes from the same town. Current objective data does not distinguish floors on the same map.
   The step the tracker shows holds (§2.5): a re-plan from a new place, including a trip to a city to train, keeps it at
-  step 1 and only reorders the stops after it, until the player finishes or skips it. Its key is saved with the
+  step 1 and only reorders the stops after it, until the player finishes or skips it, or reaches another continent. Unknown locations keep the hold. Its key is saved with the
   character, so the first build after a /reload holds the same step. With nothing held yet (a fresh
   journey, or the held step just finished or skipped), an objective area the player stands in takes step 1.
   Rebuild on events;
@@ -251,8 +287,9 @@ follow the shared family voice.
   its in-progress quest is selected, its travel line and numbered pin go, and the route stays on it until its
   objectives are done (a merged visit takes only the objectives the player can work on now).
 - **4.3 Committed order.** Preserve the chosen sequence and visit identities across rebuilds.
-- **4.4 Count ticks.** A burst of quest-log events that leaves the log's shape alone (the same quests, complete flags
-  and objective done flags; `Model.LogShape`) only moved counts: the last route is repainted with the live counts
+- **4.4 Count ticks.** A burst of quest-log events that leaves the log's shape alone (the same quests, complete and
+  failed flags, live-timer deadlines and objective done flags; `Model.LogShape`) only moved counts: the last route is
+  repainted with the live counts
   (`Model.Repaint`), every journey, order, `here` hold and choice kept, without a plan. Anything else plans in full.
   An objective whose count reaches its need is done, and a quest whose objectives are all done is complete, even
   while the client's finished and complete flags lag the count (a looted quest item reports it a tick later;
