@@ -1,10 +1,10 @@
 {
-  "input_digest": "42cbf661ef2ede863e67412467f1ca523fd32efa1ff79da92914903ccf4bc989",
-  "runtime_sha256": "42cbf661ef2ede863e67412467f1ca523fd32efa1ff79da92914903ccf4bc989",
-  "candidate": "95db23ebcb2a2ec803698a8adc511be49bc7c3184926a099cadc8cec996610ee",
+  "input_digest": "4454e5837b59302a8579c68fe75f1b4ca1f333db274e8956579f6932419bac95",
+  "runtime_sha256": "4454e5837b59302a8579c68fe75f1b4ca1f333db274e8956579f6932419bac95",
+  "candidate": "6d129e229c148992b5bc2a9ea3138388e34720aa3fb4bb2693390526289f3ff3",
   "client_build": "1.60.1.70938 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "482ed5fb69518c5ae614d318fa38da22b183aeb0",
+  "source_commit": "5a4e78987f25f1806abac8573f000cda1df19669",
   "flows": [
     {
       "name": "guide panel",
@@ -16,8 +16,8 @@
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/4052da88f74ba0a897f6d0e138b95e62/raw/381e3b74e6214c1868fc4b530d2cc20d1c0084af/1-guide-panel.png",
-      "sha256": "c7416b8278665970b41d6634219d7185e0b186444a4b8b212ba435205843a7c4"
+      "url": "https://gist.githubusercontent.com/cjber/83963f7709a92e7e68b8563dbff244cb/raw/395b42336cc229d1414cfe4e302685e3a45cb3dd/1-guide-panel.png",
+      "sha256": "b13b6bfc13029681d1643805d5db5934e19a853dd54f349755c0b878b30df990"
     }
   ]
 }
