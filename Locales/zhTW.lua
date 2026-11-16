@@ -5,8 +5,14 @@ if GetLocale() ~= "zhTW" then
 end
 local L = ns.L
 L["%s could not start. Reinstall %s to fix this."] = "%s 無法啟動。請重新安裝 %s 以解決此問題。" -- mt
+L["%s needs ForeverCore. Install it from CurseForge, or choose Reinstall on ForeverCore in the CurseForge app."] =
+	"%s 需要 ForeverCore。請從 CurseForge 安裝，或在 CurseForge 應用程式中為 ForeverCore 選擇重新安裝。" -- mt
 L["%s: %s are out of date. Update them to fix this."] = "%s：%s 已過期。請更新它們以解決此問題。" -- mt
 L["%s: %s is out of date. Update it to fix this."] = "%s：%s 已過期。請更新它以解決此問題。" -- mt
+L["%s: ForeverCore is turned off. Enable it in the AddOns list to fix this."] =
+	"%s：ForeverCore 已停用。請在插件列表中啟用它以解決此問題。" -- mt
+L["%s: the installed ForeverCore is another addon (%s). Remove it and install ForeverCore from CurseForge."] =
+	"%s：已安裝的 ForeverCore 是另一個插件（%s）。請移除它並從 CurseForge 安裝 ForeverCore。" -- mt
 L["AFTER_PICK_UP"] = "接受任務後"
 L["ALL_SUGGESTIONS"] = "所有建議"
 L["AUDIT_BUILD"] = "資料版本%s，用戶端版本%s.%s"
@@ -474,7 +480,7 @@ L["TWEAKS_MISSING"] = "安裝Tweaks Forever以尋找地城入口。"
 L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以尋找地城入口。"
 L["UNLISTED"] = "這片土地有指南尚不知道的故事；請留意任務給予者頭上的「!」。"
 L["UPDATED_TO"] = "已更新到%s。%s"
-L["WHATS_NEW"] = "選擇「僅交任務」，只交付已完成的任務。" -- mt
+L["WHATS_NEW"] = "接受任務後，同一城鎮的其他任務不再從路線中消失。" -- mt
 L["WHY_ALLIANCE"] = "僅限聯盟"
 L["WHY_BREADCRUMB"] = "僅在你接受%s之前"
 L["WHY_CHOSE"] = "你改選了%s"

@@ -3,7 +3,11 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 annotations=.types/vscode-wow-api
-revision=d0b5b51fac4c52c493371b9b18e66ce604ea4326
+# The annotation checkout and the LuaLS version come from tools/toolchain.json, synced from ForeverCore: the one
+# place either is pinned, and the file CI installs LuaLS from.
+pins=$(python3 -c 'import json; t = json.load(open("tools/toolchain.json"))["tools"]; print(t["annotations"]["commit"], t["luals"]["version"])')
+revision=${pins% *}
+luals=${pins#* }
 if [[ ! -d "$annotations/.git" ]]; then
     mkdir -p "$annotations"
     git -C "$annotations" init --quiet
@@ -16,8 +20,8 @@ if [[ "$(git -C "$annotations" rev-parse HEAD)" != "$revision" ]] ||
     echo "Expected a clean WoW API checkout at $revision in $annotations" >&2
     exit 1
 fi
-if [[ "$(lua-language-server --version)" != 3.19.1 ]]; then
-    echo "Install lua-language-server 3.19.1 to match CI." >&2
+if [[ "$(lua-language-server --version)" != "$luals" ]]; then
+    echo "Install lua-language-server $luals to match CI." >&2
     exit 1
 fi
 

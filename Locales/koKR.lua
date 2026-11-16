@@ -6,10 +6,16 @@ end
 local L = ns.L
 L["%s could not start. Reinstall %s to fix this."] =
 	"%s을(를) 시작할 수 없습니다. 이 문제를 해결하려면 %s을(를) 다시 설치하세요." -- mt
+L["%s needs ForeverCore. Install it from CurseForge, or choose Reinstall on ForeverCore in the CurseForge app."] =
+	"%s에는 ForeverCore가 필요합니다. CurseForge에서 설치하거나 CurseForge 앱에서 ForeverCore의 재설치를 선택하세요." -- mt
 L["%s: %s are out of date. Update them to fix this."] =
 	"%s: %s이(가) 오래되었습니다. 이 문제를 해결하려면 모두 업데이트하세요." -- mt
 L["%s: %s is out of date. Update it to fix this."] =
 	"%s: %s이(가) 오래되었습니다. 이 문제를 해결하려면 업데이트하세요." -- mt
+L["%s: ForeverCore is turned off. Enable it in the AddOns list to fix this."] =
+	"%s: ForeverCore가 비활성화되어 있습니다. 이 문제를 해결하려면 애드온 목록에서 활성화하세요." -- mt
+L["%s: the installed ForeverCore is another addon (%s). Remove it and install ForeverCore from CurseForge."] =
+	"%s: 설치된 ForeverCore는 다른 애드온입니다 (%s). 삭제한 후 CurseForge에서 ForeverCore를 설치하세요." -- mt
 L["AFTER_PICK_UP"] = "수락한 후"
 L["ALL_SUGGESTIONS"] = "모든 제안"
 L["AUDIT_BUILD"] = "데이터 빌드 %s, 클라이언트 빌드 %s.%s"
@@ -492,7 +498,8 @@ L["TWEAKS_OUTDATED"] = "던전 입구를 찾으려면 Tweaks Forever를 업데�
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
-L["WHATS_NEW"] = "'완료한 퀘스트만 반납'을 선택하면 완료한 퀘스트만 반납합니다." -- mt
+L["WHATS_NEW"] =
+	"퀘스트를 수락해도 같은 마을의 다른 퀘스트가 경로에서 사라지지 않습니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"
