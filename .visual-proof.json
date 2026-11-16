@@ -1,13 +1,13 @@
 {
-  "input_digest": "91b797966fc02825e57a47313d444fbe271a99e0a78cc0dc3dd92068c3a4b9b3",
-  "runtime_sha256": "91b797966fc02825e57a47313d444fbe271a99e0a78cc0dc3dd92068c3a4b9b3",
-  "candidate": "4bd2031897aa940e6b84745d8acefbb8e0dec6d27df04b9f3f29e92fed29aa4d",
+  "input_digest": "5baef40e5ec62b66995e9316c4558c2d6317e297ac7e00d14bee2ba0a697bd8f",
+  "runtime_sha256": "5baef40e5ec62b66995e9316c4558c2d6317e297ac7e00d14bee2ba0a697bd8f",
+  "candidate": "ff5825d2b4de932c9abd5e63fdcbca5987e394e7fc1c9bf173c30865da5f3aae",
   "client_build": "1.60.1.70938 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "585fcc675f7fee75bba1ee5d080c3ba0bca67dcc",
+  "source_commit": "403d92cf7ab6c277897802774e317c4c9510fe79",
   "flows": [
     {
-      "name": "guide after quest data loads",
+      "name": "guide panel",
       "steps": [
         "agf-guide-ready.lua sha256:cbe16779b62f43b40d60b377cab383914f96ee478f7bda6706b27698823b46d1"
       ],
@@ -16,8 +16,8 @@
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/d428f1f3fba44002724842f48e38e728/raw/a9116363f5b767c95aa052a00b1bc75df187eaf9/1-guide-after-quest-data-loads.png",
-      "sha256": "0e6a06027ffc20df4ba11ee713dd97a49c6f3d7c8843f5f57aede9acccd21936"
+      "url": "https://gist.githubusercontent.com/cjber/7e633589f2bfafbe5b2a28da4cedbddf/raw/5e8989b29b31bc524cdb4b97396f3e14a82c3d83/1-guide-panel.png",
+      "sha256": "ef7c85ad76b7d7ff20e26e9d20b424589ec6a2376d0322c5f19eb37f9ff66793"
     }
   ]
 }
