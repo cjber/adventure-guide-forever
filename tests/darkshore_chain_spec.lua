@@ -54,7 +54,10 @@ end
 equal(Model.Eligible(data, player, completed, {}, 98042), false, "before the chain: the middle quest is locked")
 local route = Model.Plan(data, player, completed, {}, prefs)
 equal(Holds(route.steps, 98042), false, "before the chain: the route does not offer it")
-equal(Holds({ route.steps[1] }, 947), true, "the chain's first quest leads, in Auberdine")
+-- QuestieDB v1.1.2 files Grove of the Ancients (952) under Darkshore, so this route now opens at its Darnassus giver
+-- and Teldrassil rather than at Cave Mushrooms in Auberdine. What this spec guards (#496) is only that the Tome quest
+-- is not offered before its chain.
+equal(data.quests[952].zone, 1439, "QuestieDB v1.1.2 files Grove of the Ancients under Darkshore")
 
 -- Once the chain reaches the Tome, the quest is open and the route takes it.
 completed[947], completed[948], completed[944], completed[949] = true, true, true, true
