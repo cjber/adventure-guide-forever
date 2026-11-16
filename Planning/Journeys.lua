@@ -479,6 +479,12 @@ local function Turnins(data, player, completed, log, ready, prefs, mapName)
 	local held = LogSteps(data, player, log, ready, function(id, place)
 		return Complete(id) and place ~= nil
 	end, stops, candidates, plan, Complete)
+	if #candidates == 0 then
+		if State.committedOrders then
+			ns.Planner.Laps.Empty(data, player, prefs, "turnins")
+		end
+		return nil
+	end
 	local steps = State.committedOrders
 			and Laps(data, player, completed, log, candidates, plan, prefs, mapName, nil, nil, "turnins")
 		or Build(data, player, completed, log, candidates, prefs, mapName)
@@ -1633,6 +1639,36 @@ function Model.Journeys(
 		end
 	end
 	table.sort(storyPool)
+	-- Partition the two ordered inputs separately: accepted log quests belong only to storyPool.
+	-- Reverse membership preserves converging tails, whose own Story can be nil or have another head.
+	local chainPools, memberships = {}, {}
+	for _, id in ipairs(storyPool) do
+		local way = Model.Story(data, id)
+		local head = way and way.members[1]
+		if head and not chainPools[head] then
+			local entry = { story = {}, eligible = {}, members = {} }
+			chainPools[head] = entry
+			for _, member in ipairs(way.members) do
+				local quest = data.quests[member]
+				if not entry.members[quest] then
+					entry.members[quest] = true
+					local entries = memberships[quest] or {}
+					memberships[quest] = entries
+					entries[#entries + 1] = entry
+				end
+			end
+		end
+	end
+	for _, id in ipairs(storyPool) do
+		for _, entry in ipairs(memberships[data.quests[id]] or NONE) do
+			entry.story[#entry.story + 1] = id
+		end
+	end
+	for _, id in ipairs(pool) do
+		for _, entry in ipairs(memberships[data.quests[id]] or NONE) do
+			entry.eligible[#entry.eligible + 1] = id
+		end
+	end
 	local heads = {}
 	local inStoryZone = InZone(chosenZone or zone)
 	for _, id in ipairs(storyPool) do
@@ -1644,14 +1680,12 @@ function Model.Journeys(
 		local available = inStoryZone(quest) or chosenHead == head or (stranded and way and Into(data, way) ~= nil)
 		if way and head and available and not heads[head] then
 			heads[head] = true
-			local key, members = "chain:" .. head, {}
-			for _, member in ipairs(way.members) do
-				members[data.quests[member]] = true
-			end
+			local chainPool = chainPools[head]
+			local key, members = "chain:" .. head, chainPool.members
 			local function Member(candidate)
 				return members[candidate] == true
 			end
-			local chain, leadID, continues = Lead(data, completed, storyPool, Member)
+			local chain, leadID, continues = Lead(data, completed, chainPool.story, Member)
 			local duplicate = told and told.story and told.story.members[1] == head
 			if chain and leadID and not dismissed[key] and (not duplicate or chosenHead == head) then
 				Offer("chain", Member, function()
@@ -1661,7 +1695,7 @@ function Model.Journeys(
 						completed,
 						log,
 						ready,
-						pool,
+						chainPool.eligible,
 						Member,
 						key,
 						prefs,
@@ -1676,7 +1710,7 @@ function Model.Journeys(
 					if into then
 						return WayIn(data, into, chain, step, continues, instanceName)
 					end
-				end, storyPool)
+				end, chainPool.story)
 			end
 			Yield()
 		end

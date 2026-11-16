@@ -933,54 +933,8 @@ local function CommitLap(lap)
 	lap.route, lap.order = route, order
 end
 
----@param lap AGFLapState
-local function MergeLapVisits(lap)
-	local route, skipped, order, card, ordered = lap.route, lap.skipped, lap.order, lap.card, lap.ordered
-	local into = {}
-	-- Two visits to one town in a row are one, unless the second hands in what the first handed out.
-	for index = #route, 2, -1 do
-		local a, b = route[index - 1], route[index]
-		if a.kind == "town" and b.kind == "town" and a.key == b.key then
-			local apart = false
-			for _, id in ipairs(b.handins) do
-				apart = apart or a.spots[id] ~= nil
-			end
-			if not apart then
-				local lists = { handins = {}, pickups = {} }
-				for name, merged in pairs(lists) do
-					for _, step in ipairs({ a, b }) do
-						for _, id in ipairs(step[name]) do
-							merged[#merged + 1], a.spots[id] = id, a.spots[id] or step.spots[id]
-						end
-					end
-				end
-				for _, name in ipairs({ "planned", "returns" }) do
-					for id in pairs(b[name] or NONE) do
-						a[name] = a[name] or {}
-						a[name][id] = true
-					end
-				end
-				Trim(a, lists.handins, lists.pickups)
-				into[b] = a
-				table.remove(route, index)
-			end
-		end
-	end
-	local visits = {}
-	for index = 1, #route do
-		local step = route[index]
-		if step.kind == "town" then
-			visits[step.key] = (visits[step.key] or 0) + 1
-			step.key = visits[step.key] > 1 and ("%s:%d"):format(step.key, visits[step.key]) or step.key
-		end
-	end
-	for index = #route, 1, -1 do
-		if skipped[route[index].key] then
-			Skip(route[index].key)
-			table.remove(route, index)
-		end
-	end
-	route = Verify(lap, route)
+-- Shared by merged visits and a producer with no candidates: retain the same order cleanup.
+local function FinishLapOrder(route, skipped, order, card, ordered, into)
 	-- A step the check dropped (its pickups gave way to the log's limit) leaves the order with it, so the next build
 	-- ranks only steps this one holds and a rebuild with nothing changed is the same route. A step past the step limit
 	-- stays in the order.
@@ -1031,6 +985,57 @@ local function MergeLapVisits(lap)
 		end
 		State.committedOrders[card] = order
 	end
+end
+
+---@param lap AGFLapState
+local function MergeLapVisits(lap)
+	local route, skipped, order, card, ordered = lap.route, lap.skipped, lap.order, lap.card, lap.ordered
+	local into = {}
+	-- Two visits to one town in a row are one, unless the second hands in what the first handed out.
+	for index = #route, 2, -1 do
+		local a, b = route[index - 1], route[index]
+		if a.kind == "town" and b.kind == "town" and a.key == b.key then
+			local apart = false
+			for _, id in ipairs(b.handins) do
+				apart = apart or a.spots[id] ~= nil
+			end
+			if not apart then
+				local lists = { handins = {}, pickups = {} }
+				for name, merged in pairs(lists) do
+					for _, step in ipairs({ a, b }) do
+						for _, id in ipairs(step[name]) do
+							merged[#merged + 1], a.spots[id] = id, a.spots[id] or step.spots[id]
+						end
+					end
+				end
+				for _, name in ipairs({ "planned", "returns" }) do
+					for id in pairs(b[name] or NONE) do
+						a[name] = a[name] or {}
+						a[name][id] = true
+					end
+				end
+				Trim(a, lists.handins, lists.pickups)
+				into[b] = a
+				table.remove(route, index)
+			end
+		end
+	end
+	local visits = {}
+	for index = 1, #route do
+		local step = route[index]
+		if step.kind == "town" then
+			visits[step.key] = (visits[step.key] or 0) + 1
+			step.key = visits[step.key] > 1 and ("%s:%d"):format(step.key, visits[step.key]) or step.key
+		end
+	end
+	for index = #route, 1, -1 do
+		if skipped[route[index].key] then
+			Skip(route[index].key)
+			table.remove(route, index)
+		end
+	end
+	route = Verify(lap, route)
+	FinishLapOrder(route, skipped, order, card, ordered, into)
 	lap.route = route
 end
 
@@ -1206,8 +1211,22 @@ local function Laps(data, player, completed, log, candidates, plan, prefs, mapNa
 	return lap.route
 end
 
+-- Turn-ins have no other producer once LogSteps leaves no candidates. Keep the lap's position
+-- precondition and commit through its own finalizer, without constructing or walking a lap.
+local function Empty(data, player, prefs, card)
+	local origin = Position(data, player, Docks(data, player.side))
+	if not (origin and origin.known) then
+		return nil
+	end
+	local route = {}
+	local order = prefs.optimisedRoute == true and State.committedOrders and card and Idents(route)
+	FinishLapOrder(route, prefs.skipped, order, card, {}, {})
+	return route
+end
+
 ns.Planner.Laps = {
 	Laps = Laps,
+	Empty = Empty,
 	LeadUrgent = LeadUrgent,
 	Pickable = Pickable,
 	Urgent = Urgent,
