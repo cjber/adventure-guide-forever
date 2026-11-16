@@ -6,10 +6,14 @@ end
 local L = ns.L
 L["%s could not start. Reinstall %s to fix this."] =
 	"%s не удалось запустить. Переустановите %s, чтобы исправить это." -- mt
+L["%s needs ForeverCore. Install it from CurseForge, or choose Reinstall on ForeverCore in the CurseForge app."] =
+	"%s требуется ForeverCore. Установите его с CurseForge или выберите «Переустановить» для ForeverCore в приложении CurseForge." -- mt
 L["%s: %s are out of date. Update them to fix this."] =
 	"%s: %s устарели. Обновите их, чтобы исправить это." -- mt
 L["%s: %s is out of date. Update it to fix this."] =
 	"%s: %s устарел. Обновите его, чтобы исправить это." -- mt
+L["%s: ForeverCore is turned off. Enable it in the AddOns list to fix this."] =
+	"%s: ForeverCore отключен. Включите его в списке модификаций, чтобы исправить это." -- mt
 L["AFTER_PICK_UP"] = "после того как вы его возьмете"
 L["ALL_SUGGESTIONS"] = "Все предложения"
 L["AUDIT_BUILD"] = "данные сборки %s, сборка клиента %s.%s"
@@ -525,7 +529,7 @@ L["UNLISTED"] =
 	"В этих землях есть истории, которых путеводитель пока не знает; ищите «!» над теми, кто дает задания."
 L["UPDATED_TO"] = "обновлено до %s. %s"
 L["WHATS_NEW"] =
-	"Выберите «Только сдача заданий», чтобы сдавать только выполненные задания." -- mt
+	"Принятие задания больше не убирает другое задание из маршрута в том же городе." -- mt
 L["WHY_ALLIANCE"] = "Только для Альянса"
 L["WHY_BREADCRUMB"] = "Только пока вы не возьмете: %s"
 L["WHY_CHOSE"] = "Вместо этого вы выбрали: %s"

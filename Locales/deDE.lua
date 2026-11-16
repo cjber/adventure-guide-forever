@@ -5,8 +5,12 @@ if GetLocale() ~= "deDE" then
 end
 local L = ns.L
 L["%s could not start. Reinstall %s to fix this."] = "%s konnte nicht starten. Installiere %s neu, um das zu beheben." -- mt
+L["%s needs ForeverCore. Install it from CurseForge, or choose Reinstall on ForeverCore in the CurseForge app."] =
+	"%s benötigt ForeverCore. Installiere es von CurseForge oder wähle in der CurseForge-App bei ForeverCore „Neu installieren“." -- mt
 L["%s: %s are out of date. Update them to fix this."] = "%s: %s sind veraltet. Aktualisiere sie, um das zu beheben." -- mt
 L["%s: %s is out of date. Update it to fix this."] = "%s: %s ist veraltet. Aktualisiere es, um das zu beheben." -- mt
+L["%s: ForeverCore is turned off. Enable it in the AddOns list to fix this."] =
+	"%s: ForeverCore ist deaktiviert. Aktiviere es in der AddOns-Liste, um das zu beheben." -- mt
 L["AFTER_PICK_UP"] = "nachdem Ihr sie angenommen habt"
 L["ALL_SUGGESTIONS"] = "Alle Vorschläge"
 L["AUDIT_BUILD"] = "Daten aus Build %s, Client-Build %s.%s"
@@ -484,7 +488,7 @@ L["TWEAKS_OUTDATED"] = "Aktualisiert Tweaks Forever, um Dungeoneingänge zu find
 L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
 L["UPDATED_TO"] = "aktualisiert auf %s. %s"
-L["WHATS_NEW"] = "Wähle „Nur Questabgaben“, um nur abgeschlossene Quests abzugeben." -- mt
+L["WHATS_NEW"] = "Wenn du eine Quest annimmst, verschwindet keine andere Quest im selben Ort mehr aus der Route." -- mt
 L["WHY_ALLIANCE"] = "Nur Allianz"
 L["WHY_BREADCRUMB"] = "Nur bis Ihr %s annehmt"
 L["WHY_CHOSE"] = "Ihr habt stattdessen %s gewählt"

@@ -5,8 +5,12 @@ if GetLocale() ~= "ptBR" then
 end
 local L = ns.L
 L["%s could not start. Reinstall %s to fix this."] = "%s não pôde iniciar. Reinstale %s para corrigir isto." -- mt
+L["%s needs ForeverCore. Install it from CurseForge, or choose Reinstall on ForeverCore in the CurseForge app."] =
+	"%s precisa do ForeverCore. Instale-o pelo CurseForge ou escolha Reinstalar no ForeverCore no aplicativo CurseForge." -- mt
 L["%s: %s are out of date. Update them to fix this."] = "%s: %s estão desatualizados. Atualize-os para corrigir isto." -- mt
 L["%s: %s is out of date. Update it to fix this."] = "%s: %s está desatualizado. Atualize-o para corrigir isto." -- mt
+L["%s: ForeverCore is turned off. Enable it in the AddOns list to fix this."] =
+	"%s: ForeverCore está desativado. Ative-o na lista de AddOns para corrigir isto." -- mt
 L["AFTER_PICK_UP"] = "depois de aceitá-la"
 L["ALL_SUGGESTIONS"] = "Todas as sugestões"
 L["AUDIT_BUILD"] = "dados da versão %s, versão do cliente %s.%s"
@@ -481,7 +485,7 @@ L["TWEAKS_OUTDATED"] = "Atualize o Tweaks Forever para encontrar entradas de mas
 L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
-L["WHATS_NEW"] = 'Escolha "Apenas entregas" para entregar só missões concluídas.' -- mt
+L["WHATS_NEW"] = "Aceitar uma missão não remove mais outra da rota na mesma cidade." -- mt
 L["WHY_ALLIANCE"] = "Só Aliança"
 L["WHY_BREADCRUMB"] = "Só até você aceitar %s"
 L["WHY_CHOSE"] = "Você escolheu %s no lugar"
