@@ -230,7 +230,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild",
       "size": [
         306.00,
-        1412.00
+        1370.00
       ],
       "type": "Frame"
     },
@@ -255,7 +255,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1]",
       "size": [
         0.00,
-        1412.00
+        1370.00
       ],
       "type": "Frame"
     },
@@ -405,7 +405,7 @@
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
       "size": [
         0.00,
-        1360.00
+        1318.00
       ],
       "type": "Frame"
     },
@@ -1030,14 +1030,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -328.00
+          "y": -342.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -328.00
+          "y": -342.00
         }
       ],
       "onUpdate": false,
@@ -1129,7 +1129,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Title",
-      "text": "Complete objectives · |cffffd100WANTED: Bruuz|r",
+      "text": "Complete 2 objectives · |cffffd100Southsea Freebooters|r",
       "type": "FontString",
       "wordWrap": false
     },
@@ -1165,11 +1165,11 @@
           "y": 5.00
         }
       ],
-      "atlas": "QuestObjective",
+      "atlas": "UI-HUD-UnitFrame-Target-HighLevelTarget_Icon",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[3].Kind",
       "size": [
-        16.00,
+        12.52,
         16.00
       ],
       "subLevel": 1.00,
@@ -1242,14 +1242,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -374.00
+          "y": -388.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -374.00
+          "y": -388.00
         }
       ],
       "onUpdate": false,
@@ -1454,14 +1454,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -420.00
+          "y": -434.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -420.00
+          "y": -434.00
         }
       ],
       "onUpdate": false,
@@ -1666,14 +1666,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -466.00
+          "y": -480.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -466.00
+          "y": -480.00
         }
       ],
       "onUpdate": false,
@@ -1878,14 +1878,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -512.00
+          "y": -526.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -512.00
+          "y": -526.00
         }
       ],
       "onUpdate": false,
@@ -2090,14 +2090,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -602.00
+          "y": -616.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -602.00
+          "y": -616.00
         }
       ],
       "onUpdate": false,
@@ -2302,14 +2302,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -648.00
+          "y": -662.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -648.00
+          "y": -662.00
         }
       ],
       "onUpdate": false,
@@ -2514,14 +2514,14 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 6.00,
-          "y": -694.00
+          "y": -708.00
         },
         {
           "point": "TOPRIGHT",
           "relativePoint": "TOPRIGHT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": -6.00,
-          "y": -694.00
+          "y": -708.00
         }
       ],
       "onUpdate": false,
@@ -2924,7 +2924,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -744.00
+          "y": -758.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3064,7 +3064,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -772.00
+          "y": -786.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3204,7 +3204,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -800.00
+          "y": -814.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3344,7 +3344,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -828.00
+          "y": -842.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3484,7 +3484,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -856.00
+          "y": -870.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3624,7 +3624,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -884.00
+          "y": -898.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3764,7 +3764,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -912.00
+          "y": -926.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -3904,7 +3904,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -940.00
+          "y": -954.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -4044,7 +4044,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -968.00
+          "y": -982.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -4184,7 +4184,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -996.00
+          "y": -1010.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -4324,7 +4324,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -1024.00
+          "y": -1038.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -4464,7 +4464,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -1052.00
+          "y": -1066.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -4604,7 +4604,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -1080.00
+          "y": -1094.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -4658,7 +4658,7 @@
         212.00,
         16.00
       ],
-      "text": "Bruised Pride and Lion Hides",
+      "text": "The way into Wailing Caverns",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4744,7 +4744,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -1108.00
+          "y": -1122.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -4798,7 +4798,7 @@
         212.00,
         16.00
       ],
-      "text": "Vrang's Game",
+      "text": "Ignition",
       "type": "FontString",
       "wordWrap": false
     },
@@ -4884,7 +4884,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -1136.00
+          "y": -1150.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -4938,7 +4938,7 @@
         212.00,
         16.00
       ],
-      "text": "The way into Wailing Caverns",
+      "text": "Harpy Raiders",
       "type": "FontString",
       "wordWrap": false
     },
@@ -5024,7 +5024,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -1164.00
+          "y": -1178.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -5078,7 +5078,7 @@
         212.00,
         16.00
       ],
-      "text": "Ignition",
+      "text": "Kolkar Leaders",
       "type": "FontString",
       "wordWrap": false
     },
@@ -5164,7 +5164,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -1192.00
+          "y": -1206.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -5218,7 +5218,7 @@
         212.00,
         16.00
       ],
-      "text": "Harpy Raiders",
+      "text": "The Hunter's Way",
       "type": "FontString",
       "wordWrap": false
     },
@@ -5304,7 +5304,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -1220.00
+          "y": -1234.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -5358,7 +5358,7 @@
         212.00,
         16.00
       ],
-      "text": "Kolkar Leaders",
+      "text": "Fungal Spores",
       "type": "FontString",
       "wordWrap": false
     },
@@ -5444,7 +5444,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -1248.00
+          "y": -1262.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -5498,7 +5498,7 @@
         212.00,
         16.00
       ],
-      "text": "Fungal Spores",
+      "text": "Raptor Thieves",
       "type": "FontString",
       "wordWrap": false
     },
@@ -5584,7 +5584,7 @@
           "relativePoint": "TOP",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 0.00,
-          "y": -1276.00
+          "y": -1290.00
         }
       ],
       "highlightAtlas": "_options_listexpand_middle",
@@ -5638,7 +5638,7 @@
         212.00,
         16.00
       ],
-      "text": "The Hunter's Way",
+      "text": "Southsea Freebooters",
       "type": "FontString",
       "wordWrap": false
     },
@@ -5711,286 +5711,6 @@
       "atlas": "questlog-questtypeicon-story",
       "layer": "OVERLAY",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[32].IconFrame.Icon",
-      "size": [
-        16.00,
-        16.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOP",
-          "relativePoint": "TOP",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
-          "x": 0.00,
-          "y": -1304.00
-        }
-      ],
-      "highlightAtlas": "_options_listexpand_middle",
-      "highlightLocked": false,
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33]",
-      "size": [
-        288.00,
-        26.00
-      ],
-      "stockTemplate": "AlphaHighlightButtonTemplate",
-      "type": "Button"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33]",
-          "x": 0.00,
-          "y": 0.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "_options_listexpand_middle",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33].NormalTexture",
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "LEFT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33].IconFrame",
-          "x": 6.00,
-          "y": 0.00
-        }
-      ],
-      "font": "GameFontNormalMed2",
-      "justifyH": "LEFT",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33].Title",
-      "size": [
-        212.00,
-        16.00
-      ],
-      "text": "Raptor Thieves",
-      "type": "FontString",
-      "wordWrap": false
-    },
-    {
-      "anchors": [
-        {
-          "point": "LEFT",
-          "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "options_listexpand_left",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33].Texture[1]",
-      "size": [
-        12.00,
-        26.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "RIGHT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "options_listexpand_right",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33].Texture[2]",
-      "size": [
-        28.00,
-        26.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "LEFT",
-          "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33]",
-          "x": 12.00,
-          "y": 0.00
-        }
-      ],
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33].IconFrame",
-      "size": [
-        16.00,
-        16.00
-      ],
-      "type": "Frame"
-    },
-    {
-      "anchors": [
-        {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33].IconFrame",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "questlog-questtypeicon-story",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[33].IconFrame.Icon",
-      "size": [
-        16.00,
-        16.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOP",
-          "relativePoint": "TOP",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
-          "x": 0.00,
-          "y": -1332.00
-        }
-      ],
-      "highlightAtlas": "_options_listexpand_middle",
-      "highlightLocked": false,
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34]",
-      "size": [
-        288.00,
-        26.00
-      ],
-      "stockTemplate": "AlphaHighlightButtonTemplate",
-      "type": "Button"
-    },
-    {
-      "anchors": [
-        {
-          "point": "TOPLEFT",
-          "relativePoint": "TOPLEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34]",
-          "x": 0.00,
-          "y": 0.00
-        },
-        {
-          "point": "BOTTOMRIGHT",
-          "relativePoint": "BOTTOMRIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "_options_listexpand_middle",
-      "layer": "ARTWORK",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].NormalTexture",
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "LEFT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].IconFrame",
-          "x": 6.00,
-          "y": 0.00
-        }
-      ],
-      "font": "GameFontNormalMed2",
-      "justifyH": "LEFT",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].Title",
-      "size": [
-        212.00,
-        16.00
-      ],
-      "text": "Southsea Freebooters",
-      "type": "FontString",
-      "wordWrap": false
-    },
-    {
-      "anchors": [
-        {
-          "point": "LEFT",
-          "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "options_listexpand_left",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].Texture[1]",
-      "size": [
-        12.00,
-        26.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "RIGHT",
-          "relativePoint": "RIGHT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34]",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "options_listexpand_right",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].Texture[2]",
-      "size": [
-        28.00,
-        26.00
-      ],
-      "type": "Texture"
-    },
-    {
-      "anchors": [
-        {
-          "point": "LEFT",
-          "relativePoint": "LEFT",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34]",
-          "x": 12.00,
-          "y": 0.00
-        }
-      ],
-      "onUpdate": false,
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].IconFrame",
-      "size": [
-        16.00,
-        16.00
-      ],
-      "type": "Frame"
-    },
-    {
-      "anchors": [
-        {
-          "point": "CENTER",
-          "relativePoint": "CENTER",
-          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].IconFrame",
-          "x": 0.00,
-          "y": 0.00
-        }
-      ],
-      "atlas": "questlog-questtypeicon-story",
-      "layer": "OVERLAY",
-      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Button[34].IconFrame.Icon",
       "size": [
         16.00,
         16.00
@@ -6457,7 +6177,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[19].Text",
-      "text": "WANTED: Pick up 2",
+      "text": "WANTED: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -6591,7 +6311,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[21].Text",
-      "text": "|cff009919Sputtervalve|r: Pick up 1",
+      "text": "|cff009919Gazlowe|r: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -6607,7 +6327,7 @@
           "relativePoint": "TOPLEFT",
           "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
           "x": 46.00,
-          "y": -558.00
+          "y": -326.00
         }
       ],
       "onUpdate": false,
@@ -6658,7 +6378,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[22].Text",
-      "text": "|cff009919Mebok Mizzyrix|r: Turn in 1",
+      "text": "|cff009919Sputtervalve|r: Pick up 1",
       "textColor": [
         0.90,
         0.90,
@@ -6725,7 +6445,7 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[23].Text",
-      "text": "|cff009919Gazlowe|r: Turn in 2",
+      "text": "|cff009919Mebok Mizzyrix|r: Turn in 1",
       "textColor": [
         0.90,
         0.90,
@@ -6792,6 +6512,73 @@
       "justifyH": "LEFT",
       "layer": "ARTWORK",
       "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[24].Text",
+      "text": "|cff009919Gazlowe|r: Turn in 2",
+      "textColor": [
+        0.90,
+        0.90,
+        0.90
+      ],
+      "type": "FontString",
+      "wordWrap": false
+    },
+    {
+      "anchors": [
+        {
+          "point": "TOPLEFT",
+          "relativePoint": "TOPLEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2]",
+          "x": 46.00,
+          "y": -600.00
+        }
+      ],
+      "onUpdate": false,
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[25]",
+      "size": [
+        236.00,
+        14.00
+      ],
+      "type": "Frame"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[25]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "atlas": "UI-QuestTracker-Objective-Nub",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[25].Tick",
+      "size": [
+        12.00,
+        12.00
+      ],
+      "type": "Texture"
+    },
+    {
+      "anchors": [
+        {
+          "point": "LEFT",
+          "relativePoint": "LEFT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[25]",
+          "x": 16.00,
+          "y": 0.00
+        },
+        {
+          "point": "RIGHT",
+          "relativePoint": "RIGHT",
+          "relativeTo": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[25]",
+          "x": 0.00,
+          "y": 0.00
+        }
+      ],
+      "font": "GameFontHighlightSmall",
+      "justifyH": "LEFT",
+      "layer": "ARTWORK",
+      "path": "AdventureGuideForeverPanel.Frame[1].Frame[2].ScrollFrame[1].scrollChild.Frame[1].Frame[2].Frame[25].Text",
       "text": "|cff009919Wrenix the Wretched|r: Turn in 1",
       "textColor": [
         0.90,
