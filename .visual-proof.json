@@ -4,20 +4,20 @@
   "candidate": "4bd2031897aa940e6b84745d8acefbb8e0dec6d27df04b9f3f29e92fed29aa4d",
   "client_build": "1.60.1.70938 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "9a89aab14e86cd55d76585f21b327a09f844cab6",
+  "source_commit": "585fcc675f7fee75bba1ee5d080c3ba0bca67dcc",
   "flows": [
     {
-      "name": "guide panel",
+      "name": "guide after quest data loads",
       "steps": [
-        "guide-panel.lua sha256:cbc298370ba3b35755417a79b979c3ed6d848f136689477632eca5e73bd73708"
+        "agf-guide-ready.lua sha256:cbe16779b62f43b40d60b377cab383914f96ee478f7bda6706b27698823b46d1"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/c1a3bbe35e2bb6cc511fd8cda6fa78a2/raw/0ccb3c305c16a1a9491f0d33858f160d4452987d/1-guide-panel.png",
-      "sha256": "d4e157684fc654cfab3e7c3d62af77289758355920f56c9d05806774e9b380fc"
+      "url": "https://gist.githubusercontent.com/cjber/d428f1f3fba44002724842f48e38e728/raw/a9116363f5b767c95aa052a00b1bc75df187eaf9/1-guide-after-quest-data-loads.png",
+      "sha256": "0e6a06027ffc20df4ba11ee713dd97a49c6f3d7c8843f5f57aede9acccd21936"
     }
   ]
 }
