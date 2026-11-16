@@ -28,7 +28,7 @@ local function Load(core)
 			core = "v1.5.0",
 			deps = { "ForeverCore" },
 		},
-		{ name = "ForeverCore", title = "Forever Core", core = "v1.5.0", project = "1796337", deps = {} },
+		{ name = "ForeverCore", title = "ForeverCore", core = "v1.5.0", project = "1796337", deps = {} },
 	}
 	local function Find(target)
 		if type(target) == "number" then
