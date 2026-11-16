@@ -501,27 +501,15 @@ do
 	equal(h.spf.NavigateRoute, 1, "follow: started once")
 	Moved(h, h.player.map, h.player.x, h.player.y)
 	equal(h.spf.NavigateRoute, 1, "follow: a rebuild that changes nothing sends nothing")
-	-- WANTED: Bruuz and Baron Longshore go in the log. The planned order cuts a town pickup below half its mean XP
-	-- per yard, and taking one moves that mean, so whether every stop stays is the data's to say: the guide sends
-	-- again exactly when a handed stop left (the stale cases above).
+	-- Southsea Freebooters and WANTED: Baron Longshore go in the log: the route already picked them up at Ratchet and
+	-- worked their camps after, so no stop it handed leaves and nothing is sent (a stop leaving is the stale cases
+	-- above). The town's cut-off is over every quest it offers, taken or not, so taking them moves no other pickup.
 	-- Walking into their area does not take step 1: the town hand-in the guidance holds stays (docs/design.md §4.2).
-	local handedKeys = {}
-	for _, step in ipairs(h.ns.Guidance.Guided()) do
-		handedKeys[step.key] = true
-	end
-	h.log[#h.log + 1] = { id = 92706, title = "WANTED: Bruuz", level = 20, complete = false }
+	h.log[#h.log + 1] = { id = 887, title = "Southsea Freebooters", level = 14, complete = false }
 	h.log[#h.log + 1] = { id = 895, title = "WANTED: Baron Longshore", level = 16, complete = false }
 	h.fire("QUEST_LOG_UPDATE")
 	h.flush()
-	local left = false
-	for _, step in ipairs(h.ns.Route().steps) do
-		handedKeys[step.key] = nil
-	end
-	for _ in pairs(handedKeys) do
-		left = true
-	end
-	equal(h.spf.NavigateRoute, left and 2 or 1, "follow: a handed stop that left sends the route once")
-	local resends = h.spf.NavigateRoute
+	equal(h.spf.NavigateRoute, 1, "follow: quests the route already held, now taken, send nothing")
 	local held = h.ns.Route().steps[1].key
 	Moved(h, 1413, 0.626, 0.498)
 	local head = h.ns.Route().steps[1]
@@ -532,16 +520,16 @@ do
 		area = area or (step.key == "area:895:4" and step or nil)
 	end
 	equal(area ~= nil, true, "follow: the area they stand in keeps its place after the held step")
-	equal(h.spf.NavigateRoute, resends + 1, "follow: the route's later stops settle once")
+	equal(h.spf.NavigateRoute, 2, "follow: the route's later stops settle once")
 	local onward = h.ns.Route().steps
 	equal(#h.spfRoute.stops, #onward, "follow: proximity keeps every stop")
 	equal(h.spfRoute.stops[1].x, onward[1].x, "follow: the held step retains its destination")
 	equal(h.ns.Guidance.Owns(), true, "follow: guidance holds, so Stop still shows")
 	Moved(h, 1413, 0.626, 0.499)
-	equal(h.spf.NavigateRoute, resends + 1, "follow: nothing again while the player is in it")
+	equal(h.spf.NavigateRoute, 2, "follow: nothing again while the player is in it")
 	h.SetCombat(true)
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, resends + 1, "follow: nothing in combat")
+	equal(h.spf.NavigateRoute, 2, "follow: nothing in combat")
 	h.SetCombat(false)
 	h.flush()
 	equal(h.ns.Route().steps[1].key, held, "follow: the held step survives the full build after combat")
@@ -550,16 +538,16 @@ do
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: town proximity keeps later stops")
 	h.onTaxi = true
 	Moved(h, 1413, 0.46, 0.79)
-	equal(h.spf.NavigateRoute, resends + 1, "follow: nothing in the air")
+	equal(h.spf.NavigateRoute, 2, "follow: nothing in the air")
 	h.onTaxi = false
 	Moved(h, nil, nil, nil)
-	equal(h.spf.NavigateRoute, resends + 1, "follow: nothing off the map")
+	equal(h.spf.NavigateRoute, 2, "follow: nothing off the map")
 	Moved(h, 1413, 0.5223, 0.3101)
 	Moved(h, 1413, 0.5224, 0.3101)
-	equal(h.spf.NavigateRoute, resends + 1, "follow: near the town, its complete route remains active")
+	equal(h.spf.NavigateRoute, 2, "follow: near the town, its complete route remains active")
 	-- North of the town, so the held step's point stays the one handed.
 	Moved(h, 1413, 0.58, 0.2)
-	equal(h.spf.NavigateRoute, resends + 1, "follow: out of the town, the held step still holds")
+	equal(h.spf.NavigateRoute, 2, "follow: out of the town, the held step still holds")
 	equal(#h.spfRoute.stops, #h.ns.Route().steps, "follow: every step")
 	-- Shortest Path moves on stop by stop until it heads for the Crossroads, then the player reaches it.
 	for _, step in ipairs(h.ns.Route().steps) do
@@ -569,11 +557,11 @@ do
 		h.spfAdvance()
 	end
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, resends + 1, "follow: the held step holds through the retarget")
+	equal(h.spf.NavigateRoute, 2, "follow: the held step holds through the retarget")
 	h.spfOther()
 	Moved(h, 1413, 0.46, 0.79)
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.spf.NavigateRoute, resends + 1, "follow: another journey replaced ours: nothing")
+	equal(h.spf.NavigateRoute, 2, "follow: another journey replaced ours: nothing")
 	clean(h, "follow")
 
 	-- The "you're here" head (design §4.2): checked every 2 s only while the player moves. Walking into a later area
