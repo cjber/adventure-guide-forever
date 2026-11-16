@@ -1941,6 +1941,7 @@
 ---@field Stabilise fun(route: AGFStep[], plain: AGFStep[], rank: table<string, integer>, holds: (fun(steps: AGFStep[]): boolean), at: (fun(step: AGFStep): AGFPosition?), origin: AGFPosition): AGFStep[]
 
 ---@class AGFPlannerLaps
+---@field Empty fun(data: AGFData, player: AGFPlayer, prefs: AGFPrefs, card: string): AGFStep[]?
 ---@field Laps fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, candidates: AGFStep[], plan: AGFPlanAreas, prefs: AGFPrefs, mapName: AGFMapName?, leadID: integer?, join: (fun(selected: AGFStep[]))?, card: string): AGFStep[]?
 ---@field Pickable fun(quest: AGFQuest): boolean
 ---@field Urgent fun(log: table<integer, AGFLogQuest>, step: AGFStep): AGFLogQuest?

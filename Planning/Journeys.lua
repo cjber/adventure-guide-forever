@@ -1645,7 +1645,7 @@ function Model.Journeys(
 	for _, id in ipairs(storyPool) do
 		local way = Model.Story(data, id)
 		local head = way and way.members[1]
-		if head and not chainPools[head] then
+		if way and head and not chainPools[head] then
 			local entry = { story = {}, eligible = {}, members = {} }
 			chainPools[head] = entry
 			for _, member in ipairs(way.members) do
