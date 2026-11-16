@@ -28,7 +28,7 @@ local function Load(core)
 			core = "v1.5.0",
 			deps = { "ForeverCore" },
 		},
-		{ name = "ForeverCore", title = "Forever Core", core = "v1.5.0", deps = {} },
+		{ name = "ForeverCore", title = "ForeverCore", core = "v1.5.0", project = "1796337", deps = {} },
 	}
 	local function Find(target)
 		if type(target) == "number" then
@@ -55,6 +55,9 @@ local function Load(core)
 			end
 			if not addon then
 				return nil
+			end
+			if field == "X-Curse-Project-ID" then
+				return addon.project
 			end
 			return field == "Title" and addon.title or addon.core
 		end,
