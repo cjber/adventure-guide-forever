@@ -13,22 +13,19 @@ optional `### For addon authors` subsection after a version's player bullets.
 ## [Unreleased]
 
 - **Quest data refresh:** QuestieDB 1.1.2 gives Praise in Redridge Mountains a giver, makes Defending the Dead lead into The Broodmother, and stops Bruised Pride and Lion Hides and Vrang's Game from starting stories of their own. Ketharas no longer offers four Moonglade quests, so the guide stops suggesting them, and a few objective spots moved, so some routes change.
+## [1.10.0] - 2026-11-16
+
+<!-- discord-image: docs/screenshots/turnins.png -->
 
 - **Choose Turn-ins only to hand in completed quests.** This journey routes completed quests with known hand-in locations, without adding objectives or new quests. Clean up my log still includes work in progress and pickups along the way. Thanks to Kyorri and Zerhathos for the idea (#772).
 
 - **Timed quests stay ahead of optional pickups.** Nearby work for a quest you have not accepted no longer holds up A Hunter's Challenge or another urgent quest. The guide still takes you back to hand it in while its timer is running. Thanks to InfamousMunky for the report (#709).
 
-## [1.9.2] - 2026-11-15
+- **A book you have already picked up no longer stays at the top of the Library route.** After you loot a book, the item waits in your bags until you visit the librarian, and the guide could keep pointing at the empty shelf for the rest of the session. It now treats a book you carry, in your bags or your bank, as collected and moves on to the next one. Thanks to InfamousMunky for the report (#767).
 
 <!-- forever-core-sync -->
 
 - Ships with the same shared code as your other Forever addons, so they keep working together.
-
-## [1.9.1] - 2026-11-15
-
-### Fixed
-
-- **A book you have already picked up no longer stays at the top of the Library route.** After you loot a book, the item waits in your bags until you visit the librarian, and the guide could keep pointing at the empty shelf for the rest of the session. It now treats a book you carry, in your bags or your bank, as collected and moves on to the next one. Thanks to InfamousMunky for the report (#767).
 
 ## [1.9.0] - 2026-11-13
 
@@ -305,12 +302,6 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [1.1.8] - 2026-11-07
 - **The quest turn-in leaderboard is part of the shared Forever Leaderboards window.** `/agf leaderboard` and `/agf stats` open that window on the Adventure Guide tab, where you can switch between this week's progress and the all-time total, see your own row pinned in place and read the player-reported values without a line of chat. `/agf` and `/flb` open the window too, and the unit tooltip shows the player's overall place across every installed Forever addon. Sharing stays on unless you turn it off, and the window's Share my progress box, `/agf share off` and the settings checkbox all switch it.
-
-## [1.1.7] - 2026-11-07
-- **The addon list now describes the guide as an adventure.** Its tooltip names zone stories, journeys you pick on the map and a route walked to each hand-in, instead of calling it a levelling guide.
-
-## [1.1.6] - 2026-11-06
-- **You appear once on leaderboards with a two-part name.** A Forever name like Hel Io no longer shows twice, once as you and once as a reported player with the same value.
 
 ## [1.1.7] - 2026-11-07
 - **The addon list now describes the guide as an adventure.** Its tooltip names zone stories, journeys you pick on the map and a route walked to each hand-in, instead of calling it a levelling guide.
