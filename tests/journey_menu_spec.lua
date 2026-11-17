@@ -151,6 +151,8 @@ do
 
 	h.OpenTrackerMenu(h.tracker)
 	local expected = h.MenuLines()
+	-- Core offers Hide this section on section targets only.
+	table.remove(expected)
 	h.menu = nil
 	h.tracker:OnBlockHeaderClick(block, "RightButton")
 	check(h.menu ~= nil, "title: a right-click opens a menu")
@@ -166,6 +168,146 @@ do
 		equal(h.menu.entries[1].text, later.title, "title: the menu belongs to that step")
 		equal(#h.errors, 0, "title, later step: errors\n" .. table.concat(h.errors, "\n"))
 	end
+end
+
+-- #794: core owns ordering, dispatch and the target passed for a block title.
+do
+	local h = Load()
+	h.flush()
+	local ns, tracker = h.ns, h.tracker
+	check(tracker.AddHeaderMenuEntries == nil, "contract: no deprecated header builder")
+	check(type(tracker.trackerClick) == "function", "contract: left-click is registered")
+	h.OpenTrackerMenu(tracker)
+	local entries = h.menu.entries
+	equal(entries[1].kind, "title", "order: title first")
+	equal(entries[2].text, ns.L.GO, "order: primary second")
+	equal(entries[#entries - 3].text, ns.L.CHOOSE_JOURNEY, "order: open after actions")
+	equal(entries[#entries - 2].text, ns.L.END_JOURNEY, "order: end last addon action")
+	equal(entries[#entries - 1].kind, "divider", "order: core divider")
+	equal(entries[#entries].text, "Tracker", "order: core settings last")
+	local step = ns.Guidance.CurrentStep()
+	local block = tracker.liveBlocks[step.key]
+	local menu, click = tracker.trackerMenu, tracker.trackerClick
+	local seen
+	tracker.trackerMenu = function(target, builder)
+		seen = target
+		menu(target, builder)
+	end
+	tracker:OnBlockHeaderClick(block, "RightButton")
+	equal(seen.kind, "block", "target: block kind")
+	equal(seen.block, block, "target: actual block")
+	equal(seen.id, step.key, "target: block id")
+	tracker.trackerClick = function(target, button)
+		seen = target
+		return click(target, button)
+	end
+	tracker:OnBlockHeaderClick(block, "LeftButton")
+	equal(seen.block, block, "click: host dispatches actual block")
+	check(tracker.trackerClickHint(seen) ~= nil, "click: core has an action hint")
+	equal(#h.errors, 0, "contract: no errors")
+end
+
+-- Non-step titles also open useful menus, rather than inheriting a current step's Go action.
+do
+	local h = Load()
+	h.flush()
+	local ns, opened = h.ns, 0
+	ns.OpenPanel = function()
+		opened = opened + 1
+	end
+	for _, id in ipairs({ "story-complete", "story-beat", "journey-complete", "moment", "loading", "rxp-ongoing" }) do
+		h.tracker:OnBlockHeaderClick({ id = id }, "RightButton")
+		check(Entry(h.menu, ns.L.GO) == nil, id .. ": no unrelated Go")
+		check(Entry(h.menu, ns.L.END_JOURNEY) ~= nil, id .. ": journey can end")
+		Entry(h.menu, ns.L.CHOOSE_JOURNEY).onClick()
+	end
+	equal(opened, 6, "non-step menus: Open opens the guide")
+	h.tracker:OnBlockHeaderClick({ id = "polestar" }, "RightButton")
+	check(Entry(h.menu, ns.L.TRACKER_TAKE_OVER) ~= nil, "Polestar: explicit take-over action")
+	h.combat = true
+	h.tracker:OnBlockHeaderClick({ id = "quest-areas" }, "RightButton")
+	check(
+		not Entry(h.menu, ns.L.TRACKER_QUEST_AREAS_SHOW):IsEnabled(),
+		"quest areas: blocked action disabled in combat"
+	)
+	check(not Entry(h.menu, ns.L.CHOOSE_JOURNEY):IsEnabled(), "Open: disabled in combat")
+	check(Entry(h.menu, ns.L.SHOW_QUEST) == nil, "combat: no Show quest")
+	h.combat = false
+	h.G.SetCVar("questPOI", "0")
+	h.tracker:OnBlockHeaderClick({ id = "quest-areas" }, "RightButton")
+	Entry(h.menu, ns.L.TRACKER_QUEST_AREAS_SHOW).onClick()
+	equal(h.cvars.questPOI, "1", "quest areas: menu action restores areas")
+	equal(#h.errors, 0, "non-step menus: no errors")
+end
+
+-- Hints describe the actual left-click action, independently of menu labels.
+do
+	local h = Load()
+	h.flush()
+	local ns, tracker = h.ns, h.tracker
+	local function Hint(block)
+		return tracker.trackerClickHint({ kind = "block", block = block, module = tracker })
+	end
+	equal(Hint(nil), nil, "section: no click hint")
+	equal(Hint({ id = "quest-areas" }), "show quest areas", "quest areas hint")
+	equal(Hint({ id = "polestar" }), "take over the route", "take-over hint")
+	ns.SetSetting("informationOnly", true)
+	equal(Hint({ id = "polestar" }), nil, "information only: no take-over hint")
+	for _, id in ipairs({ "journey-complete", "moment" }) do
+		equal(Hint({ id = id }), "open the guide", id .. " hint")
+	end
+	for _, id in ipairs({ "story-complete", "story-beat", "loading", "rxp-ongoing" }) do
+		equal(Hint({ id = id }), nil, id .. ": no click hint")
+	end
+	local step = ns.Guidance.CurrentStep()
+	local block = tracker.liveBlocks[step.key]
+	ns.InLog = function()
+		return true
+	end
+	equal(Hint(block), "show the quest", "logged quest hint")
+	ns.InLog = function()
+		return false
+	end
+	equal(Hint(block), "open the guide", "unlogged quest hint")
+	local aside = {
+		key = "profession:164:2",
+		category = "professions",
+		text = "Learn the next rank",
+		icon = "class",
+		place = { map = 1413, x = 0.5, y = 0.5 },
+	}
+	ns.Asides.Current = function()
+		return aside
+	end
+	equal(Hint({ id = "aside" }), "go there", "aside hint")
+	-- Both surfaces consume the same builder; tracker Go occupies Primary.
+	local shared = ns.Asides.Menu
+	check(type(shared) == "function", "aside: shared entry builder")
+	local calls = 0
+	ns.Asides.Menu = function(...)
+		calls = calls + 1
+		return shared(...)
+	end
+	ns.Asides.Open(tracker, aside)
+	local panel = h.MenuLines()
+	tracker:OnBlockHeaderClick({ id = "aside" }, "RightButton")
+	equal(calls, 2, "aside: panel and tracker share entry builder")
+	local lines = h.MenuLines()
+	for i, line in ipairs(panel) do
+		equal(lines[i], line, "aside shared entry " .. i)
+	end
+	equal(h.menu.entries[2].text, ns.L.GO, "aside: Go is Primary")
+	check(Entry(h.menu, ns.L.SKIP) ~= nil, "aside: Skip")
+	check(Entry(h.menu, ns.L.NOT_INTERESTED) ~= nil, "aside: Not interested")
+	ns.SetSetting("wanderer", true)
+	equal(Hint({ id = "aside" }), nil, "wanderer: no aside hint")
+	tracker:OnBlockHeaderClick({ id = "aside" }, "RightButton")
+	check(Entry(h.menu, ns.L.GO) == nil, "wanderer: no aside Go")
+	ns.SetSetting("wanderer", false)
+	aside.place = nil
+	equal(Hint({ id = "aside" }), nil, "unplaced aside: no hint")
+	tracker:OnBlockHeaderClick({ id = "aside" }, "RightButton")
+	check(Entry(h.menu, ns.L.GO) == nil, "unplaced aside: no Go")
 end
 
 print(("journey_menu_spec: %d checks passed"):format(checks))

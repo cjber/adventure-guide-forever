@@ -12,6 +12,14 @@ local L = ns.L
 local Menu = {}
 ns.Menu = Menu
 
+---@alias AGFMenuButton fun(self: any, text: string, fn?: function): ForeverMenuDescription
+---@alias AGFMenuTitle fun(self: any, text: string): any
+---@alias AGFMenuFn fun(self: any, text: string, fn: fun()): any
+---@alias AGFSubmenu fun(self: any, text: string): ForeverMenuDescription
+---@alias AGFMenuActions { CreateButton: AGFMenuButton }
+---@alias AGFStepMenuRoot { CreateButton: AGFMenuButton, CreateTitle: AGFMenuTitle }
+---@alias AGFStepMenuSlots { Primary: AGFMenuFn, Open: AGFMenuFn, End: AGFMenuFn, Submenu: AGFSubmenu }
+
 -- A submenu built from a list scrolls past 20 rows of 20 px rather than running off the screen (WFA-36).
 local MENU_EXTENT = 400
 
@@ -33,22 +41,22 @@ local function GuideChoices(choose)
 end
 
 -- Guide actions use the same menus as journey cards and step rows.
----@param root ForeverMenuDescription
+---@param root AGFMenuActions
 local function GuideEntries(root)
 	if not ns.RestedXP.Active() then
 		return
 	end
-	root = root:CreateButton(L.RXP_TITLE)
-	GuideChoices(root:CreateButton(L.RXP_SELECT))
-	root:CreateButton(L.RXP_PREVIOUS, function()
+	local submenu = root:CreateButton(L.RXP_TITLE)
+	GuideChoices(submenu:CreateButton(L.RXP_SELECT))
+	submenu:CreateButton(L.RXP_PREVIOUS, function()
 		ns.RestedXP.Move(-1)
 	end)
-	root:CreateButton(L.RXP_NEXT, function()
+	submenu:CreateButton(L.RXP_NEXT, function()
 		ns.RestedXP.Move(1)
 	end)
-	root:CreateButton(L.RXP_IMPORT, ns.RestedXP.OpenImport)
-	root:CreateButton(L.RXP_SETTINGS, ns.RestedXP.OpenSettings)
-	root:CreateButton(L.RXP_ORIGINAL, ns.RestedXP.UseOriginal)
+	submenu:CreateButton(L.RXP_IMPORT, ns.RestedXP.OpenImport)
+	submenu:CreateButton(L.RXP_SETTINGS, ns.RestedXP.OpenSettings)
+	submenu:CreateButton(L.RXP_ORIGINAL, ns.RestedXP.UseOriginal)
 end
 
 -- "Show again: <title>" for each step skipped this session, in the order they were skipped, then each journey this
@@ -74,7 +82,7 @@ end
 
 -- "Not this quest" (docs/design.md §2.18) for a step's quests: one button for a lone quest, else one per quest under
 -- it. A trainer's or battlemaster's stop has none. The quest stays in the log; Show again brings it back.
----@param root ForeverMenuDescription
+---@param root AGFMenuActions
 ---@param step AGFStep
 local function NotThisQuest(root, step)
 	if step.kind == "trainer" or step.kind == "battlemaster" or #step.quests == 0 then
@@ -101,32 +109,32 @@ local function NotThisQuest(root, step)
 	end
 end
 
----@param root ForeverMenuDescription
+---@param root AGFStepMenuRoot
 ---@param step? AGFStep
-function Menu.Step(root, step)
+---@param slots AGFStepMenuSlots
+local function Step(root, step, slots)
 	root:CreateTitle(step and step.title or ns.TITLE)
 	if step and not ns.Setting("wanderer") then
 		if ns.Setting("informationOnly") then
-			root:CreateButton(L.SHOW_ON_MAP, function()
+			slots:Primary(L.SHOW_ON_MAP, function()
 				C_Timer.After(0, function()
 					ns.Guidance.ShowOnMap(step)
 				end)
 			end)
 		else
-			local go = root:CreateButton(L.GO, function()
+			local go = slots:Primary(L.GO, function()
 				ns.StartRoute(step)
 			end)
-			if ns.Integrations.ReplacesJourney() then
+			if go and ns.Integrations.ReplacesJourney() then
 				go:SetTooltip(function(tooltip)
 					Menu.GoWarning(tooltip, L.GO)
 				end)
 			end
 		end
 	end
-	-- One clear exit while a journey is chosen, paused or not: ns.Stop drops the choice and whatever route AGF started
-	-- for it, so a journey left paused by a cleared, replaced or refused route can be ended from here too (#641).
+	-- Core places End last regardless of when it is supplied; panel rows retain their existing menu order.
 	if ns.Prefs().journey then
-		root:CreateButton(L.END_JOURNEY, ns.Stop)
+		slots:End(L.END_JOURNEY, ns.Stop)
 	end
 	-- The quest's map only opens out of combat, so in combat the entry is left out rather than doing nothing.
 	-- MenuUtil runs a responder inside its securecall, where the restricted C_Map.OpenWorldMap is refused (#411); the
@@ -156,16 +164,42 @@ function Menu.Step(root, step)
 	end
 	local skipped = #ns.Skipped()
 	if skipped > 0 then
-		Menu.Skipped(root:CreateButton(L.SKIPPED:format(skipped)))
+		Menu.Skipped(slots:Submenu(L.SKIPPED:format(skipped)))
 	end
 	if step and not ns.Setting("wanderer") and not ns.Setting("informationOnly") then
 		ns.Companions.AddMenu(root, "ShortestPathForever")
 	end
 	if ns.OpenPanel then
-		root:CreateButton(L.CHOOSE_JOURNEY, function()
+		slots:Open(L.CHOOSE_JOURNEY, function()
 			C_Timer.After(0, ns.OpenPanel)
 		end)
 	end
+end
+
+-- Panel rows and tracker slots share the same entry list. Nested descriptions remain ordinary menus.
+---@param root ForeverMenuDescription
+---@param step? AGFStep
+function Menu.Step(root, step)
+	local function Button(_, text, fn)
+		return root:CreateButton(text, fn)
+	end
+	Step(root, step, { Primary = Button, Open = Button, End = Button, Submenu = Button })
+end
+
+---@param menu ForeverTrackerMenuBuilder
+---@param step? AGFStep
+function Menu.TrackerStep(menu, step)
+	---@type AGFStepMenuRoot
+	local root = {
+		CreateTitle = function(_, text)
+			menu:Title(text)
+			return nil
+		end,
+		CreateButton = function(_, text, fn)
+			return menu:Action(text, fn)
+		end,
+	}
+	Step(root, step, menu)
 end
 
 -- The Library books card's territory: Horde or Alliance radio buttons, the player's own faction until they pick one.

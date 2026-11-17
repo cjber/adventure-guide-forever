@@ -237,27 +237,55 @@ function Asides.NextRank(aside)
 	return rank ~= nil and rank >= 2
 end
 
--- The aside's menu, for its line in the guide and in the tracker.
+-- One entry list for the panel and tracker; Go uses the host's primary slot.
+---@param root AGFStepMenuRoot
+---@param aside AGFAside
+---@param primary AGFMenuFn
+function Asides.Menu(root, aside, primary)
+	root:CreateTitle(aside.text)
+	if aside.place and not ns.Setting("wanderer") then
+		primary(root, L.GO, function()
+			Asides.Go(aside)
+		end)
+	end
+	root:CreateButton(L.SKIP, function()
+		Asides.Skip(aside.key)
+	end)
+	root:CreateButton(L.NOT_INTERESTED, function()
+		Asides.Decline(aside)
+	end)
+	if Asides.NextRank(aside) then
+		ns.Companions.AddMenu(root, "SkillUpForever")
+	end
+end
+
 ---@param owner Region
 ---@param aside AGFAside
 function Asides.Open(owner, aside)
 	ForeverCore.ContextMenu(owner, function(_, root)
-		root:CreateTitle(aside.text)
-		if aside.place and not ns.Setting("wanderer") then
-			root:CreateButton(L.GO, function()
-				Asides.Go(aside)
-			end)
-		end
-		root:CreateButton(L.SKIP, function()
-			Asides.Skip(aside.key)
+		Asides.Menu(root, aside, function(_, text, fn)
+			root:CreateButton(text, fn)
 		end)
-		root:CreateButton(L.NOT_INTERESTED, function()
-			Asides.Decline(aside)
-		end)
-		if Asides.NextRank(aside) then
-			ns.Companions.AddMenu(root, "SkillUpForever")
-		end
 	end)
+end
+
+---@param menu ForeverTrackerMenuBuilder
+---@param aside AGFAside
+function Asides.TrackerMenu(menu, aside)
+	Asides.Menu(
+		{
+			CreateTitle = function(_, text)
+				menu:Title(text)
+			end,
+			CreateButton = function(_, text, fn)
+				return menu:Action(text, fn)
+			end,
+		},
+		aside,
+		function(_, text, fn)
+			menu:Primary(text, fn)
+		end
+	)
 end
 
 ---@param owner Region

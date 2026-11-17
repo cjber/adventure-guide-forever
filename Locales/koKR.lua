@@ -533,7 +533,6 @@ L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 L["QUESTIE_TRACKER_RELOAD"] = "Questie의 추적기는 /reload 후에 돌아옵니다." -- mt
 L["QUEST_AREAS_OFF"] = "퀘스트 지역이 숨겨져 있습니다" -- mt
 L["QUEST_AREAS_SHOW"] = "클릭하여 지도에 게임의 파란색 퀘스트 지역 표시" -- mt
-L["QUEST_AREAS_DISMISS"] = "오른쪽 클릭하여 이 안내 숨기기" -- mt
 L["QUEST_AREAS_TOOLTIP"] =
 	"지도의 파란색 퀘스트 지역은 각 목표를 수행하는 곳을 보여 줍니다. Questie의 Questie 및 pfQuest 목표 유형은 이를 끕니다." -- mt
 L["JOURNEY_NEXT"] = "%s(으)로 이동"
@@ -572,3 +571,14 @@ L["TRAINER_STOPS"] = "상급자 방문" -- mt
 L["VISIT_TRAINER"] = "%s 방문" -- mt
 
 L["CHOSEN_TRAINER"] = "선택한 상급자" -- mt
+
+L["TRACKER_QUEST_AREAS_SHOW"] = "퀘스트 지역 표시" -- mt
+L["TRACKER_NOTE_HIDE"] = "이 안내 숨기기" -- mt
+L["TRACKER_NOTE_OPTIONS"] = "오른쪽 클릭으로 옵션 열기" -- mt
+L["TRACKER_TAKE_OVER"] = "경로 제어권 가져오기" -- mt
+
+L["TRACKER_HINT_SHOW_QUEST"] = "퀘스트 보기" -- mt
+L["TRACKER_HINT_OPEN_GUIDE"] = "가이드 열기" -- mt
+L["TRACKER_HINT_GO"] = "그곳으로 이동" -- mt
+L["TRACKER_HINT_QUEST_AREAS"] = "퀘스트 지역 표시" -- mt
+L["TRACKER_HINT_TAKE_OVER"] = "경로 제어권 가져오기" -- mt

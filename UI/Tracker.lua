@@ -94,7 +94,6 @@ end
 ---@field rxpActionsReserved? number the height the RestedXP action rows already added to contentsHeight
 ---@field npcHighlightReserved? number the height the next-NPC target button already added to contentsHeight
 ---@field hiddenText? FontString the grey "%d hidden" count beside the header
----@field AddHeaderMenuEntries? fun(self: AGFTrackerModule, root: ForeverMenuDescription)
 local ModuleMixin = {
 	blockTemplate = "ObjectiveTrackerAnimBlockTemplate",
 }
@@ -110,38 +109,28 @@ end
 
 ---@param block AGFTrackerBlock the header's own block: the aside's goes to its place, the journey's end opens the guide
 ---and the story's does nothing; for the step's, ns.Guidance.CurrentStep() is used since it's always current
----@param mouseButton string
-function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
+---@param module ForeverTrackerModule
+local function ClickBlock(module, block)
 	local aside = ns.Asides.Current()
 	if block.id == ASIDE and aside then
-		ns.Asides.Click(block.HeaderButton or block, mouseButton, aside)
+		ns.Asides.Go(aside)
 		return
 	elseif block.id == QUEST_AREAS then
-		if mouseButton == "RightButton" then
-			ns.SetSetting("questAreasNoteHidden", true)
-		elseif not InCombatLockdown() then
+		if not InCombatLockdown() then
 			SetCVar("questPOI", "1")
 		end
-		self:MarkDirty()
+		module:MarkDirty()
 		return
 	elseif block.id == POLESTAR then
-		if mouseButton ~= "RightButton" and not ns.Setting("informationOnly") then
+		if not ns.Setting("informationOnly") then
 			ns.Polestar.TakeOver()
 			ns.StartRoute()
 		end
 		return
 	elseif NOT_STEP[block.id] then
-		if (block.id == JOURNEY_COMPLETE or block.id == MOMENT) and mouseButton ~= "RightButton" and ns.OpenPanel then
+		if (block.id == JOURNEY_COMPLETE or block.id == MOMENT) and ns.OpenPanel then
 			ns.OpenPanel()
 		end
-		return
-	end
-	if mouseButton == "RightButton" then
-		-- A step's title opens the same step menu as its row in the guide (#641).
-		local step = BlockStep(block)
-		ForeverCore.ContextMenu(block.HeaderButton or block, function(_, root)
-			ns.Menu.Step(root, step)
-		end)
 		return
 	end
 	local step = BlockStep(block)
@@ -155,6 +144,79 @@ function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
 	-- The step's quest when the log has it, the guide otherwise.
 	if not (step and ns.ShowQuest(step)) and ns.OpenPanel then
 		ns.OpenPanel()
+	end
+end
+
+-- The block template calls this method; the host dispatches both clicks through the contract.
+function ModuleMixin:OnBlockHeaderClick(block, mouseButton)
+	ForeverCore.TrackerHost.HandleBlockHeaderClick(self, block, mouseButton)
+end
+
+---@param target ForeverTrackerTarget
+---@param menu ForeverTrackerMenuBuilder
+local function TrackerMenu(target, menu)
+	local block = target.block
+	if not block or not NOT_STEP[block.id] then
+		ns.Menu.TrackerStep(menu, block and BlockStep(block) or ns.Guidance.CurrentStep())
+	else
+		local aside = block.id == ASIDE and ns.Asides.Current()
+		if aside then
+			ns.Asides.TrackerMenu(menu, aside)
+		else
+			menu:Title((block.HeaderText and block.HeaderText:GetText()) or ns.TITLE)
+		end
+		if block.id == QUEST_AREAS then
+			menu:Action(L.TRACKER_QUEST_AREAS_SHOW, function()
+				SetCVar("questPOI", "1")
+				target.module:MarkDirty()
+			end, { combat = true })
+			menu:Action(L.TRACKER_NOTE_HIDE, function()
+				ns.SetSetting("questAreasNoteHidden", true)
+				target.module:MarkDirty()
+			end)
+		elseif block.id == POLESTAR and not ns.Setting("informationOnly") then
+			menu:Primary(L.TRACKER_TAKE_OVER, function()
+				ns.Polestar.TakeOver()
+				ns.StartRoute()
+			end)
+		end
+		if ns.OpenPanel then
+			menu:Open(L.CHOOSE_JOURNEY, ns.OpenPanel)
+		end
+		if ns.Prefs().journey then
+			menu:End(L.END_JOURNEY, ns.Stop)
+		end
+	end
+	if ns.QuestWatch.Hidden() > 0 then
+		menu:Action(L.TRACKER_SHOW_ALL, function()
+			ns.SetSetting("journeyWatch", false)
+		end)
+	end
+end
+
+---@param target ForeverTrackerTarget
+local function ClickHint(target)
+	local block = target.block
+	if not block then
+		return
+	end
+	if block.id == QUEST_AREAS then
+		return L.TRACKER_HINT_QUEST_AREAS
+	end
+	if block.id == POLESTAR then
+		if not ns.Setting("informationOnly") then
+			return L.TRACKER_HINT_TAKE_OVER
+		end
+	elseif block.id == ASIDE then
+		local aside = ns.Asides.Current()
+		if aside and aside.place and not ns.Setting("wanderer") then
+			return L.TRACKER_HINT_GO
+		end
+	elseif not NOT_STEP[block.id] then
+		local step = BlockStep(block)
+		return step and ns.InLog(step) and L.TRACKER_HINT_SHOW_QUEST or L.TRACKER_HINT_OPEN_GUIDE
+	elseif block.id == JOURNEY_COMPLETE or block.id == MOMENT then
+		return L.TRACKER_HINT_OPEN_GUIDE
 	end
 end
 
@@ -439,7 +501,7 @@ function ModuleMixin:LayoutContentsBase()
 		local note = self:GetBlock(QUEST_AREAS)
 		note:SetHeader(L.QUEST_AREAS_OFF)
 		note:AddObjective(1, L.QUEST_AREAS_SHOW)
-		note:AddObjective(2, GRAY_FONT_COLOR:WrapTextInColorCode(L.QUEST_AREAS_DISMISS))
+		note:AddObjective(2, GRAY_FONT_COLOR:WrapTextInColorCode(L.TRACKER_NOTE_OPTIONS))
 		if not self:LayoutBlock(note) then
 			return
 		end
@@ -611,6 +673,15 @@ end
 -- column after them.
 local section = ForeverCore.TrackerSection.Create("AdventureGuideForeverObjectiveTracker", ModuleMixin, {
 	order = UI_ORDER,
+	contract = {
+		menu = TrackerMenu,
+		click = function(target)
+			if target.block then
+				ClickBlock(target.module, target.block)
+			end
+		end,
+		clickHint = ClickHint,
+	},
 	-- Blizzard pairs its fanfare block with this line (Blizzard_ObjectiveTrackerAnimTemplates.xml:3): every used
 	-- line's FadeInAnim is restarted when the block plays its add animation, so the plain line would raise a nil.
 	lineTemplate = "ObjectiveTrackerAnimLineTemplate",
@@ -639,14 +710,6 @@ local section = ForeverCore.TrackerSection.Create("AdventureGuideForeverObjectiv
 local module = section
 if module then
 	---@cast module AGFTrackerModule
-	module.AddHeaderMenuEntries = function(_, root)
-		ns.Menu.Step(root, ns.Guidance.CurrentStep())
-		if ns.QuestWatch.Hidden() > 0 then
-			root:CreateButton(L.TRACKER_SHOW_ALL, function()
-				ns.SetSetting("journeyWatch", false)
-			end)
-		end
-	end
 	ForeverCore.TrackerLine.SetHeaderTooltip(module, BlockTooltip)
 	local header = module.Header
 	if header then

@@ -2986,10 +2986,9 @@ function harness.load(options)
 		end
 		return lines
 	end
-	-- The entries the addon adds to ForeverCore's tracker header menu, without core's own switches.
+	-- Open the real shared header menu, including core's Tracker submenu.
 	function h.OpenTrackerMenu(module)
-		h.menu = Description("root")
-		module.AddHeaderMenuEntries(module, h.menu)
+		module.Header:GetScript("OnMouseUp")(module.Header, "RightButton")
 		return h.menu
 	end
 
