@@ -8,10 +8,10 @@ Free, with nothing locked behind it. If it saves you time, you can [sponsor me o
 
 **Known limitations**
 
-- **Quest data comes from QuestieDB.** Without Questie installed there are no quests to route, and a quest that is new or changed in WoW: Forever can be missing, or have the wrong prerequisites, until Questie's data catches up.
-- **The game does not say what a quest giver offers.** The guide can send you to a giver who has nothing for you. Once you talk to them, it drops that quest from the route.
-- **Some stops have no known place.** A quest or book with no recorded location shows as text, with no waypoint or map pin.
-- **Sync only reaches party members who run the guide.** Anyone else in the group is planned around as if they were not there.
+- **Quest data comes from the QuestieDB addon.** Without QuestieDB installed there are no quests to route, and a quest that is new or changed in WoW: Forever can be missing, or have the wrong prerequisites, until QuestieDB's data catches up.
+- **The game does not tell an addon what a quest giver offers until you talk to them.** The guide can send you to a giver who has nothing for you. Once you talk to them, it drops that quest from the route.
+- **Some stops have no known place.** QuestieDB has no location for some quests and books, so they show as text, with no waypoint or map pin.
+- **Sync only shares quests with party members who run the guide.** For anyone else, the guide sees only the quests in your own log that they also have, not their finished quests or quests you have not taken.
 
 ![The Barrens story chosen: the journey card, its numbered stops and Shortest Path's route from the first](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/spf_map.png)
 
