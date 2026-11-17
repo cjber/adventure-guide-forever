@@ -16,7 +16,8 @@ abandons quests.
   pages through them. The home view groups its cards under collapsible quest log headers, in order: Continue (Quests in
   your log, the story and your calling), Zones for your level, Dungeons, then Battlegrounds. With no journey chosen the
   route follows Quests in your log, and its card leads; RestedXP guides stay selectable cards and take over only when
-  the player picks one. A card an installed guide addon feeds carries that provider's own mark at its top right, and
+  the player picks one. A zone card holds the zone's own quests in the log as well as its new pickups, so a zone whose
+  remaining work is all accepted is still offered. A card an installed guide addon feeds carries that provider's own mark at its top right, and
   its tooltip names the provider and says its steps are not Adventure Guide's own. A group with no card draws no
   header, each header remembers its open state per character, and
   the header holding the route the guide follows stays open. Prefer useful green/yellow quests; the maximum quest level slider defaults to +2, excluding
