@@ -576,6 +576,12 @@ function harness.load(options)
 	function Methods:GetRight()
 		return self.rect and self.rect[1] + self.rect[3]
 	end
+	-- The client answers nil for a frame with no resolved rect, as GetLeft and the others here do.
+	function Methods:GetCenter()
+		if self.rect then
+			return self.rect[1] + self.rect[3] / 2, self.rect[2] + self.rect[4] / 2
+		end
+	end
 	function Methods:GetScale()
 		return self.scale or 1
 	end
@@ -1343,6 +1349,8 @@ function harness.load(options)
 			end
 			frame.scripts.OnLoad = frame.UpdateHighlightForState
 		end,
+		-- The client's tutorial box; ForeverCore's tracker hint uses it for art only, with no Blizzard script.
+		GlowBoxTemplate = noop,
 		QuestLogBorderFrameTemplate = noop,
 		-- Blizzard_FrameXML/SecureTemplates.lua: SecureActionButton_ShouldUseOnKeyDown follows the
 		-- ActionButtonUseKeyDown CVar when the button has no useOnKeyDown attribute, and SecureActionButton_OnClick
@@ -1967,6 +1975,18 @@ function harness.load(options)
 	G.InCombatLockdown = function()
 		return h.combat
 	end
+	-- ForeverCore drives the game's tracker visibility through a state driver; only the fixed "show"/"hide" states
+	-- it registers are modelled.
+	G.RegisterStateDriver = function(frame, attribute, state)
+		if attribute == "visibility" then
+			if state == "hide" then
+				frame:Hide()
+			elseif state == "show" then
+				frame:Show()
+			end
+		end
+	end
+	G.UnregisterStateDriver = function() end
 	G.IsInGroup = function()
 		return h.group == true
 	end

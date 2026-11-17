@@ -151,8 +151,6 @@ do
 
 	h.OpenTrackerMenu(h.tracker)
 	local expected = h.MenuLines()
-	-- Core offers Hide this section on section targets only.
-	table.remove(expected)
 	h.menu = nil
 	h.tracker:OnBlockHeaderClick(block, "RightButton")
 	check(h.menu ~= nil, "title: a right-click opens a menu")
