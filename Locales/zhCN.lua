@@ -1,4 +1,4 @@
--- Machine translated (2026-10-22) where a line ends -- mt; corrections welcome: https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml
+-- Machine translated (2026-10-22); corrections welcome: https://github.com/cjber/adventure-guide-forever/issues/new?template=translation.yml
 local _, ns = ...
 if GetLocale() ~= "zhCN" then
 	return
