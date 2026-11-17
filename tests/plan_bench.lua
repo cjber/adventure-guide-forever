@@ -347,9 +347,9 @@ local function WarmPlan()
 	Plan() -- Populate the planner's caches before measuring warm calls.
 	local samples = {}
 	for sample = 1, SAMPLES do
-		local started = os.clock()
+		local started = diagnostics.clock.cpu()
 		Plan()
-		samples[sample] = (os.clock() - started) * 1000
+		samples[sample] = diagnostics.clock.cpu() - started
 	end
 	local worst = Max(samples)
 	check(
