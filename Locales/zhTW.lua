@@ -500,14 +500,8 @@ L["WHY_REP_BELOW"] = "僅在低於%s時（%s）" -- mt
 L["WHY_REP_MIN"] = "需要%s（%s）" -- mt
 L["WHY_SKILL"] = "需要%s %d" -- mt
 L["YOUR_CHOICE"] = "你的選擇" -- mt
--- mt: Minimap button settings.
-L["SETTING_MINIMAP_BUTTON"] = "小地圖按鈕" -- mt
-L["MINIMAP_BUTTON_TOOLTIP"] =
-	"在小地圖上新增 Adventure Guide 按鈕。沿邊緣拖曳可移動，或在此關閉。" -- mt
-L["MINIMAP_BUTTON_SUBTEXT"] = "點擊以開啟升級指南" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - 透過現成的 GitHub Issue 連結回報錯誤或請求功能" -- mt
-L["MINIMAP_UNAVAILABLE"] = "小地圖不可用，已略過自訂按鈕。"
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "關閉 Questie 的追蹤欄" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"顯示此區塊時，Questie 自己的任務追蹤欄會關閉，你的任務就不會列出兩次。關閉此選項可讓 Questie 恢復它的追蹤欄。" -- mt

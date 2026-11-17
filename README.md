@@ -69,12 +69,6 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 <p align="center">Right-click a dungeon card for its bosses and loot. Hover a drop for the game's item tooltip.</p>
 
-## Minimap button
-
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/minimap-adventure-guide.png" width="640" alt="The Adventure Guide button on the minimap rim"></p>
-
-<p align="center">Open Adventure Guide from its button on the minimap rim, Alt-G or <code>/agf</code>. Drag the button around the rim to move it, or turn it off in Settings > AddOns > Adventure Guide if you prefer the map tab or the addon compartment.</p>
-
 ## Install
 
 Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-forever), or download the zip from [Releases](https://github.com/cjber/adventure-guide-forever/releases). To install the zip by hand, extract it into the WoW: Forever client's `Interface/AddOns/` folder (`_forever_` on the live client, `_classic_beta_` on the beta), so you end up with `AddOns/AdventureGuideForever/AdventureGuideForever.toc`. After an update, `/reload`.
@@ -93,7 +87,7 @@ Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-
 | `/agf audit` | Compare the quest data with the game and report its source |
 | `/agf dump` | Save the drawn layout; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
 
-Open the guide from its world-map tab, its minimap button or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including tracking route quests and detaching the shared Forever tracker. Its Forever addons page lists all five Forever addons, with a box to turn off suggestions.
+Open the guide from its world-map tab, Alt-G, `/agf` or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including tracking route quests and detaching the shared Forever tracker. Its Forever addons page lists all five Forever addons, with a box to turn off suggestions.
 
 ## Where the quests come from
 

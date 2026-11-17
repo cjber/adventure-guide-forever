@@ -519,14 +519,8 @@ L["WHY_REP_BELOW"] = "%s 미만일 때만 (%s)"
 L["WHY_REP_MIN"] = "%s 필요 (%s)"
 L["WHY_SKILL"] = "%s %d 필요"
 L["YOUR_CHOICE"] = "선택"
--- mt: Minimap button settings.
-L["SETTING_MINIMAP_BUTTON"] = "미니맵 버튼" -- mt
-L["MINIMAP_BUTTON_TOOLTIP"] =
-	"미니맵에 Adventure Guide 버튼을 추가합니다. 테두리를 따라 끌어 이동하거나 여기에서 끄세요." -- mt
-L["MINIMAP_BUTTON_SUBTEXT"] = "레벨링 안내서를 열려면 클릭하세요" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - GitHub 이슈 링크와 함께 오류를 보고하거나 기능을 요청합니다" -- mt
-L["MINIMAP_UNAVAILABLE"] = "미니맵을 사용할 수 없어 사용자 지정 버튼을 건너뜁니다." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Questie 추적기 끄기" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"이 구역이 표시되는 동안 Questie의 퀘스트 추적기는 꺼져 있어 퀘스트가 두 번 표시되지 않습니다. 이 옵션을 끄면 Questie의 추적기가 돌아옵니다." -- mt

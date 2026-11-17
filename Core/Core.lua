@@ -74,8 +74,6 @@ local DEFAULTS = {
 	polestarAside = true,
 	-- In a party, steps for quests the party shares count as nearer, and the quest IDs go to the party (Party.lua).
 	partyQuests = true,
-	-- The Adventure Guide button on the minimap rim is there unless the player hides it (ForeverCore.MinimapButton).
-	minimapButtonHidden = false,
 	-- Before a giver's window offers a quest that closes another for good, say which in chat (Closes.lua).
 	warnClosing = true,
 	-- The green arrow on a quest reward choice that beats what you wear in its slot (Upgrades.lua).
@@ -153,13 +151,9 @@ end
 
 local function LoadDB()
 	local loaded = type(AdventureGuideForeverDB) == "table" and AdventureGuideForeverDB or {}
-	-- The micro menu button became the minimap button (#416): a player who turned the old button off keeps the
-	-- new one off, and the old placement choice has no meaning on the rim. Removed keys stay removed after the
-	-- first login, so showing the new button later is not undone by the old setting.
-	if loaded.microButton == false and loaded.minimapButtonHidden == nil then
-		loaded.minimapButtonHidden = true
-	end
+	-- The micro menu and minimap buttons are gone; their saved keys mean nothing now.
 	loaded.microButton, loaded.microButtonPlacement, loaded.replaceMicroButton = nil, nil, nil
+	loaded.minimapButtonHidden, loaded.minimapButtonAngle = nil, nil
 	-- "Stop tracking other quests" became "Track only the journey's quests", on unless the player turns it off. A
 	-- saved true carries over; a saved false leaves the new default on.
 	if loaded.untrackOthers ~= nil then
@@ -403,9 +397,6 @@ function ns.SetSetting(key, value)
 	end
 	if key == "markUpgrades" then
 		ns.Upgrades.Update()
-	end
-	if key == "minimapButtonHidden" then
-		ForeverCore.MinimapButton.Refresh()
 	end
 	-- The game's quest markers at the route's stops are drawn with the route pins, so the map redraws them now.
 	if key == "hideQuestMarkers" then
@@ -1322,23 +1313,13 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	end)
 	ns.RegisterSettings()
 	EventUtil.ContinueAfterAllEvents(ns.WhatsNew, "PLAYER_LOGIN")
-	EventUtil.ContinueAfterAllEvents(function()
-		ForeverCore.MinimapButton.Create({
-			name = "AdventureGuideForeverMinimapButton",
-			icon = ns.Icon,
-			title = ns.L.TITLE,
-			binding = "Alt-G",
-			subtext = ns.L.MINIMAP_BUTTON_SUBTEXT,
-			settings = db,
-			host = ns,
-			safeCall = ns.core.SafeCall,
-			onClick = function()
-				if ns.OpenPanel then
-					ns.OpenPanel()
-				end
-			end,
-		})
-	end, "PLAYER_LOGIN")
+	-- Alt-G clicks this button through Bindings.xml.
+	ns.openButton = CreateFrame("Button", "AdventureGuideForeverOpenButton")
+	ns.openButton:SetScript("OnClick", function()
+		if ns.OpenPanel then
+			ns.OpenPanel()
+		end
+	end)
 end)
 
 -- After an update, one chat line says what changed. Never on a first install (no version seen yet, which is also
