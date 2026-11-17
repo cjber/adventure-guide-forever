@@ -1,6 +1,6 @@
 -- Run from the repository root: luajit tests/queston_tabs_spec.lua
 -- Queston Forever (CurseForge 1785839) adds its own page and side tab to the world map's quest log without using
--- Forever Core's shared tabs. Choosing either addon's tab must close the other's page, so the map opens on one
+-- ForeverCore's shared tabs. Choosing either addon's tab must close the other's page, so the map opens on one
 -- choice instead of the last-loaded page. The stub mirrors Queston's ChronicleView: one guide tab, a panel under
 -- QuestMapFrame, and Show(false) putting the map's own content back.
 local harness = dofile("tests/harness.lua")

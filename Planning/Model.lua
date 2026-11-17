@@ -892,7 +892,7 @@ local SEARCH_MAX = 10
 -- QuestieDB quest, so a short query never asks it about hundreds.
 local SEARCH_ASKED = 30
 
--- Search folds text with the suite's one fold and ranks a match with its one ranking, both in Forever Core's
+-- Search folds text with the suite's one fold and ranks a match with its one ranking, both in ForeverCore's
 -- Core/Text.lua (`ForeverCore.Text.Fold` and `ForeverCore.Text.Rank`), so "dun garok" finds "Dûn Garok" here exactly as
 -- it does in Shortest Path and Hoard.
 
