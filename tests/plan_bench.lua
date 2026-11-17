@@ -330,9 +330,39 @@ local function Profile(profile, level, questiedb, full)
 	)
 end
 
+-- Keep the synchronous full-data Plan budget alongside the sliced rebuild budgets.
+local function WarmPlan()
+	local ns = { Data = data }
+	local Model = harness.model(ns)
+	local player = { level = 18, maxLevel = 60, side = 2, raceBit = 2, classBit = 64, map = 1413, x = 0.52, y = 0.3 }
+	local function Plan()
+		return Model.Plan(
+			data,
+			player,
+			{},
+			{},
+			{ quests = true, dungeons = false, skipped = {}, optimisedRoute = true }
+		)
+	end
+	Plan() -- Populate the planner's caches before measuring warm calls.
+	local samples = {}
+	for sample = 1, SAMPLES do
+		local started = diagnostics.clock.cpu()
+		Plan()
+		samples[sample] = diagnostics.clock.cpu() - started
+	end
+	local worst = Max(samples)
+	check(
+		worst / SLACK < BUDGET_MS,
+		("warm full-data Plan max %.3f ms is over %d ms (measured time / %d)"):format(worst, BUDGET_MS, SLACK)
+	)
+	print(("warm full-data Plan %.3f / %.3f ms (median / max)"):format(Median(samples), worst))
+end
+
 -- Compact normal diagnostics; retain full history for any profile or budget failure.
 -- Speedpatrol #56 retains failure stdout/stderr.
 diagnostics:run(function()
+	WarmPlan()
 	for _, level in ipairs({ 1, 10, 20, 30, 40, 50, 60 }) do
 		for _, profile in ipairs(SIDES) do
 			Profile(profile, level)

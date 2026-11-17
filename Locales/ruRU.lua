@@ -569,8 +569,6 @@ L["QUESTIE_TRACKER_RELOAD"] = "Трекер Questie вернётся после 
 L["QUEST_AREAS_OFF"] = "Области заданий скрыты" -- mt
 L["QUEST_AREAS_SHOW"] =
 	"Щелкните, чтобы показать на карте синие области заданий игры" -- mt
-L["QUEST_AREAS_DISMISS"] =
-	"Щелкните правой кнопкой, чтобы скрыть эту подсказку" -- mt
 L["QUEST_AREAS_TOOLTIP"] =
 	"Синие области заданий на карте показывают, где выполняется каждая цель. Типы целей Questie и pfQuest в Questie их отключают." -- mt
 L["JOURNEY_NEXT"] = "Дальше в %s"
@@ -609,3 +607,14 @@ L["TRAINER_STOPS"] = "Остановки у учителей" -- mt
 L["VISIT_TRAINER"] = "Посетите %s" -- mt
 
 L["CHOSEN_TRAINER"] = "Выбранный учитель" -- mt
+
+L["TRACKER_QUEST_AREAS_SHOW"] = "Показать области заданий" -- mt
+L["TRACKER_NOTE_HIDE"] = "Скрыть эту заметку" -- mt
+L["TRACKER_NOTE_OPTIONS"] = "Щёлкните правой кнопкой для настроек" -- mt
+L["TRACKER_TAKE_OVER"] = "Перехватить управление маршрутом" -- mt
+
+L["TRACKER_HINT_SHOW_QUEST"] = "показать задание" -- mt
+L["TRACKER_HINT_OPEN_GUIDE"] = "открыть путеводитель" -- mt
+L["TRACKER_HINT_GO"] = "отправиться туда" -- mt
+L["TRACKER_HINT_QUEST_AREAS"] = "показать области заданий" -- mt
+L["TRACKER_HINT_TAKE_OVER"] = "перехватить управление маршрутом" -- mt

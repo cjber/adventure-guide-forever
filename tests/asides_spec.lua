@@ -116,7 +116,7 @@ do
 	-- Not interested, from the tracker's menu: kept for this character.
 	h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks.aside, "RightButton")
 	same(
-		h.MenuLines(),
+		{ unpack(h.MenuLines(), 1, 3) },
 		{ "title: " .. B.text, "button: Skip for now", "button: Not interested" },
 		"menu: no Go without a place"
 	)

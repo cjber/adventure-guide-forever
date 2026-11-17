@@ -514,7 +514,6 @@ L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 L["QUESTIE_TRACKER_RELOAD"] = "Questie 的追踪栏会在 /reload 后恢复。" -- mt
 L["QUEST_AREAS_OFF"] = "任务区域已隐藏" -- mt
 L["QUEST_AREAS_SHOW"] = "点击在地图上显示游戏的蓝色任务区域" -- mt
-L["QUEST_AREAS_DISMISS"] = "右键点击隐藏此提示" -- mt
 L["QUEST_AREAS_TOOLTIP"] =
 	"地图上的蓝色任务区域显示每个目标的完成地点。Questie 的 Questie 和 pfQuest 目标类型会关闭它们。" -- mt
 L["JOURNEY_NEXT"] = "前往%s" -- mt
@@ -552,3 +551,14 @@ L["TRAINER_STOPS"] = "训练师停靠点" -- mt
 L["VISIT_TRAINER"] = "拜访%s" -- mt
 
 L["CHOSEN_TRAINER"] = "已选训练师" -- mt
+
+L["TRACKER_QUEST_AREAS_SHOW"] = "显示任务区域" -- mt
+L["TRACKER_NOTE_HIDE"] = "隐藏此提示" -- mt
+L["TRACKER_NOTE_OPTIONS"] = "右键点击查看选项" -- mt
+L["TRACKER_TAKE_OVER"] = "接管路线" -- mt
+
+L["TRACKER_HINT_SHOW_QUEST"] = "显示任务" -- mt
+L["TRACKER_HINT_OPEN_GUIDE"] = "打开指南" -- mt
+L["TRACKER_HINT_GO"] = "前往那里" -- mt
+L["TRACKER_HINT_QUEST_AREAS"] = "显示任务区域" -- mt
+L["TRACKER_HINT_TAKE_OVER"] = "接管路线" -- mt

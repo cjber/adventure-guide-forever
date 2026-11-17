@@ -521,7 +521,6 @@ L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 L["QUESTIE_TRACKER_RELOAD"] = "O rastreador do Questie volta depois de um /reload." -- mt
 L["QUEST_AREAS_OFF"] = "As áreas de missão estão ocultas" -- mt
 L["QUEST_AREAS_SHOW"] = "Clique para mostrar no mapa as áreas de missão azuis do jogo" -- mt
-L["QUEST_AREAS_DISMISS"] = "Clique com o botão direito para ocultar esta nota" -- mt
 L["QUEST_AREAS_TOOLTIP"] =
 	"As áreas de missão azuis do mapa mostram onde cada objetivo é feito. Os tipos de objetivo Questie e pfQuest do Questie as desativam." -- mt
 L["JOURNEY_NEXT"] = "Seguindo para %s"
@@ -560,3 +559,14 @@ L["TRAINER_STOPS"] = "Paradas em instrutores" -- mt
 L["VISIT_TRAINER"] = "Visite %s" -- mt
 
 L["CHOSEN_TRAINER"] = "Instrutor escolhido" -- mt
+
+L["TRACKER_QUEST_AREAS_SHOW"] = "Mostrar áreas de missão" -- mt
+L["TRACKER_NOTE_HIDE"] = "Ocultar esta nota" -- mt
+L["TRACKER_NOTE_OPTIONS"] = "Clique direito para ver opções" -- mt
+L["TRACKER_TAKE_OVER"] = "Assumir o controle da rota" -- mt
+
+L["TRACKER_HINT_SHOW_QUEST"] = "mostrar a missão" -- mt
+L["TRACKER_HINT_OPEN_GUIDE"] = "abrir o guia" -- mt
+L["TRACKER_HINT_GO"] = "ir até lá" -- mt
+L["TRACKER_HINT_QUEST_AREAS"] = "mostrar áreas de missão" -- mt
+L["TRACKER_HINT_TAKE_OVER"] = "assumir o controle da rota" -- mt

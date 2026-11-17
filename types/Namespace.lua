@@ -1119,6 +1119,8 @@
 ---@field Go fun(aside: AGFAside): boolean to its place, as Guidance.Navigate; false without one
 ---@field Click fun(owner: Region, mouseButton: string, aside: AGFAside?)
 ---@field Enter fun(owner: Region, aside: AGFAside?)
+---@field Menu fun(root: AGFStepMenuRoot, aside: AGFAside, primary: AGFMenuFn)
+---@field TrackerMenu fun(menu: ForeverTrackerMenuBuilder, aside: AGFAside)
 ---@field Open fun(owner: Region, aside: AGFAside) its menu: Go with a place, Skip, Not interested
 
 ---@class AGFNamespace
@@ -1668,7 +1670,7 @@
 ---@class AGFCompanions
 ---@field Line fun(addon: string): string?, boolean? the line for a companion that isn't running, and whether it suggests installing it
 ---@field AddLine fun(tooltip: GameTooltip, addon: string) the line at a tooltip's foot: a suggestion grey, an "Enable" line as an instruction
----@field AddMenu fun(root: ForeverMenuDescription, addon: string) the grey entry that shows a missing companion's address
+---@field AddMenu fun(root: AGFMenuActions, addon: string) the grey entry that shows a missing companion's address
 
 ---@class AGFNamespace
 ---@field WhatsNew fun() on login: print WHATS_NEW once if the version changed since the last one seen
@@ -2176,7 +2178,15 @@ AdventureGuideForever = nil
 ---@field QUESTIE_TRACKER_RELOAD string
 ---@field QUEST_AREAS_OFF string
 ---@field QUEST_AREAS_SHOW string
----@field QUEST_AREAS_DISMISS string
+---@field TRACKER_QUEST_AREAS_SHOW string
+---@field TRACKER_NOTE_HIDE string
+---@field TRACKER_NOTE_OPTIONS string
+---@field TRACKER_TAKE_OVER string
+---@field TRACKER_HINT_SHOW_QUEST string
+---@field TRACKER_HINT_OPEN_GUIDE string
+---@field TRACKER_HINT_GO string
+---@field TRACKER_HINT_QUEST_AREAS string
+---@field TRACKER_HINT_TAKE_OVER string
 ---@field QUEST_AREAS_TOOLTIP string
 
 ---@class AGFNamespace

@@ -82,6 +82,18 @@ local function WithNotThisQuest(ns, family, step, lines, combat)
 	return out
 end
 
+-- Header assertions cover addon actions; journey_menu_spec checks core's divider and Tracker submenu.
+local function TrackerActions(h)
+	local lines = {}
+	for _, line in ipairs(h.MenuLines()) do
+		if line == "divider" then
+			break
+		end
+		lines[#lines + 1] = line
+	end
+	return lines
+end
+
 local function clean(h, label)
 	equal(#h.errors, 0, label .. ": errors\n" .. table.concat(h.errors, "\n"))
 end
@@ -1381,15 +1393,16 @@ for _, spf in ipairs({ false, "v1" }) do
 		"button: Skip for now",
 		"button: Choose another journey",
 	}
-	same(h.MenuLines(), WithNotThisQuest(ns, h.G.ForeverCore.Family, head, menu), label .. ": tracker menu")
+	same(TrackerActions(h), WithNotThisQuest(ns, h.G.ForeverCore.Family, head, menu), label .. ": tracker menu")
 	ns.Prefs().journey = ns.Route().journey
 	ns.Guidance.Navigate(head)
 	h.SetCombat(true)
 	h.OpenTrackerMenu(h.tracker)
 	h.SetCombat(false)
-	menu[3] = "button: " .. ns.L.END_JOURNEY
+	table.remove(menu, 3)
+	menu[#menu + 1] = "button: " .. ns.L.END_JOURNEY
 	same(
-		h.MenuLines(),
+		TrackerActions(h),
 		WithNotThisQuest(ns, h.G.ForeverCore.Family, head, menu, true),
 		label .. ": tracker menu while Go guides, in combat"
 	)
@@ -1895,6 +1908,8 @@ end
 -- F13: while someone else's Shortest Path journey runs, each way to start the route warns once before replacing it:
 -- a card another click would choose (while choosing starts the route), the step menu's Go and the tracker title (the
 -- same setting). Our own journey, or a Shortest Path without Active, warns of nothing.
+-- Core's Primary slot exposes no description to attach a tooltip to (forever-core#718).
+-- The panel row and tracker-title hover retain the replacement warning.
 local function Warnings(h)
 	local warning, counts = "instruction: " .. h.ns.L.REPLACES_JOURNEY, {}
 	local function Count()
@@ -1928,10 +1943,10 @@ for _, spf in ipairs({ "v1", "v1+" }) do
 	h.flush()
 	equal(Warnings(h), "0 0 0", spf .. ": no journey, no warning")
 	h.G.ShortestPathForever.API.Navigate("OtherAddon", 1413, 0.5, 0.5)
-	equal(Warnings(h), spf == "v1+" and "1 1 1" or "0 0 0", spf .. ": another addon's journey")
+	equal(Warnings(h), spf == "v1+" and "1 0 1" or "0 0 0", spf .. ": another addon's journey")
 	ns.SetSetting("titleStartsRoute", false)
 	h.flush()
-	equal(Warnings(h), spf == "v1+" and "0 1 0" or "0 0 0", spf .. ": a choice that doesn't start the route")
+	equal(Warnings(h), "0 0 0", spf .. ": a choice that doesn't start the route")
 	ns.Guidance.Navigate(ns.Route().steps[1])
 	equal(Warnings(h), "0 0 0", spf .. ": our own journey")
 	clean(h, spf .. ": replace warning")
