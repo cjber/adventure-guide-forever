@@ -305,7 +305,7 @@
     },
     {
       "source": "UI/Tracker.lua",
-      "sha256": "61725e5433a358eea7a4f16cc3488b4f43712dc4850cb97be10e8c7e8d275dae",
+      "sha256": "15f267f4c681fad3762b29384368956b6eb56f21aec685c4b28f9d59b1deadab",
       "review": "Read module construction, LayoutContentsBase, GuideSection, Preview, TravelLines, StoryBeat, HiddenString, UpdateHidden and Refresh. HiddenString explicitly creates GameFontDisableSmall, with no later override; UpdateHidden sends TRACKER_HIDDEN_COUNT to that widget. Reviewed ForeverCore UI/TrackerSection.lua Create and pinned Blizzard_ObjectiveTrackerModule.xml, Block.xml, Shared.xml and AnimTemplates.xml: module header uses ObjectiveTrackerHeaderFont; anim block HeaderText and anim line Text inherit ObjectiveTrackerLineFont. Excluded those template text paths because Blizzard_ObjectiveTrackerManager.lua SetTextSize later calls SetFontObject on both FontObjects, so their final font is outside this review. Also excluded tooltips, menus, chat, dynamic data, helper output and companion fonts.",
       "bindings": [
         {
@@ -358,7 +358,7 @@
     },
     {
       "source": "UI/Settings.lua",
-      "sha256": "4eaeb28097449cd1830015dabaddd38dc4e7524a01c5e8f45cf469458a5053eb",
+      "sha256": "c7e5ceace3e8609dfb1e419f8515a8974c08a5cf2064e3ad52890d0771a147a9",
       "review": "Read RegisterSettings, all groups, Checkbox and IndexButton. Localized labels and descriptions delegate to secure Blizzard settings initializers and ForeverCore.Family, without an explicit local FontObject. Excluded these consumer-owned fonts, tooltip descriptions and dynamic family names rather than assuming a settings font.",
       "bindings": []
     },

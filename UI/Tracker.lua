@@ -198,10 +198,6 @@ local function TrackerMenu(target, menu)
 	if target.kind == "section" and questList and not questList.Provided() then
 		local on = questList.Enabled()
 		local entry = menu:Action(on and L.QUEST_LIST_TURN_OFF or L.QUEST_LIST_TURN_ON, function()
-			local reason = questList.Reason()
-			if reason and not on then
-				return false, reason
-			end
 			questList.SetEnabled(not on)
 		end)
 		local reason = not on and questList.Reason()

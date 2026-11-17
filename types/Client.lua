@@ -352,8 +352,9 @@ InputUtil = nil
 ---@field SetNeedsFanfare fun(self: ObjectiveTrackerModuleTemplate, key: string)
 
 -- Blizzard_SharedXML/Mainline/SoundKitConstants.lua:125 (UI_SCENARIO_STAGE_END = 31757), and the character
--- frame's open, close and tab sounds the Adventure Guide window plays (839, 840, 841).
----@type {UI_SCENARIO_STAGE_END: integer, IG_ABILITY_PAGE_TURN: integer, IG_CHARACTER_INFO_OPEN: integer, IG_CHARACTER_INFO_CLOSE: integer, IG_CHARACTER_INFO_TAB: integer}
+-- frame's open, close and tab sounds the Adventure Guide window plays (839, 840, 841), and the quest tracker's
+-- objective-complete roll the Forever quest list plays.
+---@type {UI_SCENARIO_STAGE_END: integer, IG_ABILITY_PAGE_TURN: integer, IG_CHARACTER_INFO_OPEN: integer, IG_CHARACTER_INFO_CLOSE: integer, IG_CHARACTER_INFO_TAB: integer, UI_QUEST_ROLLING_FORWARD_01: integer}
 SOUNDKIT = nil
 
 -- Blizzard_SharedXML/Mainline/SharedUIPanelTemplates.lua: a frame's PanelTabButtonTemplate tabs, anchored in a row
@@ -476,3 +477,62 @@ function QuestInfo_Display(template, parentFrame, acceptButton, material, mapVie
 -- The shared tab's icon is the addon's own art slot, which core's declaration leaves out.
 ---@class ForeverQuestLogTab : Button
 ---@field Icon Texture
+
+-- The client's quest tracker, item button and chat helpers the Forever quest list (UI/QuestList.lua) reuses so it
+-- behaves like the game's own list. Each is guarded at its call site where an older client may lack it.
+---@class ForeverQuestObjectiveTrackerMixin
+---@field OnFreeBlock? fun(self: any, block: any)
+
+---@type {OnLayout: fun(self: any)}
+ObjectiveTrackerAnimBlockMixin = nil
+
+---@type {Present: integer, Adding: integer, Completing: integer, Completed: integer, Fading: integer, Faded: integer}
+ObjectiveTrackerAnimLineState = nil
+
+---@class AGFChatFrameUtil
+---@field InsertLink? fun(link: string): boolean
+---@field OpenChat? fun(text: string)
+---@field TryInsertQuestLinkForQuestID? fun(questID: integer): boolean
+---@type AGFChatFrameUtil?
+ChatFrameUtil = nil
+
+---@param frame Frame
+---@param attribute string
+---@param value string
+function RegisterStateDriver(frame, attribute, value) end
+
+---@param frame Frame
+---@param attribute string
+function UnregisterStateDriver(frame, attribute) end
+
+---@param frameType string
+---@param parent? Frame
+---@param template? string
+---@return {Acquire: fun(self: any): any, Release: fun(self: any, frame: any)}
+function CreateFramePool(frameType, parent, template) end
+
+---@param cooldown Frame
+---@param start number
+---@param duration number
+---@param enable boolean|number
+function CooldownFrame_Set(cooldown, start, duration, enable) end
+
+---@param button Frame
+---@param count? integer
+function SetItemButtonCount(button, count) end
+
+---@param button Frame
+---@param texture string|integer
+function SetItemButtonTexture(button, texture) end
+
+---@param button Frame
+---@param r number
+---@param g number
+---@param b number
+function SetItemButtonTextureVertexColor(button, r, g, b) end
+
+---@param questID integer
+function QuestMapFrame_OpenToQuestDetails(questID) end
+
+---@param questID integer
+function QuestMapQuestOptions_AbandonQuest(questID) end

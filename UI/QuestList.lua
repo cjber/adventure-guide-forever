@@ -91,11 +91,10 @@ local QuestList = {
 }
 ns.QuestList = QuestList
 
-if Provided() or not ObjectiveTrackerFrame then
+local host = ForeverCore.TrackerHost
+if Provided() or not ObjectiveTrackerFrame or not host then
 	return
 end
-
-local host = ForeverCore.TrackerHost
 
 local hidNativeTracker = false
 local coreMutedNative = false
@@ -701,6 +700,8 @@ local ITEM_ART = "UI-QuestTrackerButton-QuestItem-Frame"
 local ITEM_GLOW_ART = "UI-QuestTrackerButton-QuestItem-Frame-Glow"
 local ITEM_HIGHLIGHT = "Interface\\Buttons\\ButtonHilight-Square"
 local ITEM_RANGE_DELAY = rawget(_G, "TOOLTIP_UPDATE_TIME") or 0.2
+-- The client's own out-of-range dot, as ItemButtonTemplate shows it.
+local ITEM_RANGE_MARK = rawget(_G, "RANGE_INDICATOR")
 
 -- The client's quest item look and behavior on a secure button. The secure template performs the click, so no
 -- script here calls UseQuestLogSpecialItem, which the client refuses from addon code.
@@ -843,7 +844,7 @@ local function CreateItemButton(parent, index)
 	hotKey:SetJustifyH("LEFT")
 	hotKey:SetSize(29, 10)
 	hotKey:SetPoint("TOPRIGHT", 16, -2)
-	hotKey:SetText(rawget(_G, "RANGE_INDICATOR") or "")
+	hotKey:SetText(ITEM_RANGE_MARK)
 	button.HotKey = hotKey
 
 	local icon = button:CreateTexture(nil, "BORDER")
