@@ -96,14 +96,18 @@ for _, fixture in ipairs(characters.list) do
 				equal(takeable, true, label .. ": " .. step.key .. " quest " .. id .. " is eligible or in the log")
 			end
 		end
-		-- The next-zone rule: a zone the player hasn't outgrown, with at least one quest they can take now.
+		-- The next-zone rule: a zone the player hasn't outgrown, with at least one quest they can take now or have in
+		-- the log (#820).
 		if journey.kind == "nextzone" then
 			local map, quests = journey.zone, 0
 			for id, quest in pairs(data.quests) do
 				if
 					(quest.zone or (quest.start and quest.start.map)) == map
-					and Model.Eligible(data, player, completed, log, id)
-					and not Model.IsGray(quest.level, player.level)
+					and (
+						log[id] ~= nil
+						or Model.Eligible(data, player, completed, log, id)
+							and not Model.IsGray(quest.level, player.level)
+					)
 				then
 					quests = quests + 1
 				end
@@ -249,6 +253,17 @@ for _, fixture in ipairs(characters.list) do
 		-- Onu and Cave Mushrooms: The Tower of Althalaxx is the Ashenvale story's.
 		equal(carry.subline, "3 ready to hand in", "ne21_crosszone: ready counts this continent only")
 		equal(carry.reason, "1 to hand in across the sea", "ne21_crosszone: the far one apart")
+		-- #820: Darkshore has no new pickup, only its two log quests to hand in, and still gets its zone card with them.
+		local darkshore
+		for _, journey in ipairs(route.journeys) do
+			darkshore = journey.key == "zone:1439" and journey or darkshore
+		end
+		equal(darkshore and darkshore.kind, "nextzone", "ne21_crosszone: a zone with only log quests is offered")
+		equal(
+			darkshore and #darkshore.steps == 2 and darkshore.steps[1].key .. " " .. darkshore.steps[2].key,
+			"turnin:947 turnin:948",
+			"ne21_crosszone: and holds them"
+		)
 		equal(
 			Model.Plan(data, player, completed, log, prefs, function()
 				return "Hurlevent"
