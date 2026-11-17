@@ -126,8 +126,8 @@
     },
     {
       "source": "UI/GuideSetup.lua",
-      "sha256": "04be6341cade29e11287890dad5c8b22387372f765aa56f32c2689c6a6120025",
-      "review": "Read Ensure, its local Text and Row helpers, every call and popup show/hide handlers. Each Text call has an explicit font argument; Row titles use GameFontNormal and all Row lines GameFontHighlightSmall. No returned FontString escapes or receives a later font override. Excluded ns.TITLE alias from Core/Core.lua and conditional external family state, which inserts no text of its own.",
+      "sha256": "f496e910046c0cb51f60e6265ee8e471b1a44ecb1558b9fb170f3d4b96e61f0b",
+      "review": "Read Ensure, its local Text and Row helpers, every call and popup show/hide handlers. Each Text call has an explicit font argument; Row titles use GameFontNormal and all Row lines GameFontHighlightSmall. No returned FontString escapes or receives a later font override. Excluded ns.TITLE alias from Core/Core.lua and conditional external addon state (ns.AddOnState), which inserts no text of its own.",
       "bindings": [
         {
           "font": "GameFontNormal",
@@ -188,7 +188,7 @@
     },
     {
       "source": "UI/Overview.lua",
-      "sha256": "11082713993dd96f9e775e742da2d5db4c054805f38a9c95843e29a2d31cb71f",
+      "sha256": "c90e7d84d85da65ea615759aba07fc3f4d0d5f29869f73d665875063efcb3e8f",
       "review": "Read GROUPS/LABELS, HubLine, DropLine, CleanupLine, Progress, Stops, Levels and VisitWarning, their exports and Panel.lua consumers. LayoutGroup sends group.label to Game15Font_Shadow header.Name. Hub/drop/cleanup/warning formats reach card.Reason (GameFontHighlightSmall in both Panel.xml and CreateOverviewCard). Progress and Stops reach overview card.Foot (GameFontDisableSmall); Levels reaches card.Level (GameFontNormal). No consumer changes these fonts. Checklist text, arbitrary helper arguments, Counts output without a confirmed rendering caller, tooltip/menu-only phrases, dynamic game data and group notes sent to runtime-rebound tracker fonts are excluded.",
       "bindings": [
         {
@@ -358,8 +358,8 @@
     },
     {
       "source": "UI/Settings.lua",
-      "sha256": "4eaeb28097449cd1830015dabaddd38dc4e7524a01c5e8f45cf469458a5053eb",
-      "review": "Read RegisterSettings, all groups, Checkbox and IndexButton. Localized labels and descriptions delegate to secure Blizzard settings initializers and ForeverCore.Family, without an explicit local FontObject. Excluded these consumer-owned fonts, tooltip descriptions and dynamic family names rather than assuming a settings font.",
+      "sha256": "f2711a4bab70cc317d84c0ac1f97265a212087844e36357c120e50f686045f17",
+      "review": "Read RegisterSettings, Heading, Rows and Checkbox. Localized labels, headings and descriptions delegate to secure Blizzard settings initializers, without an explicit local FontObject. Excluded these consumer-owned fonts and tooltip descriptions rather than assuming a settings font.",
       "bindings": []
     },
     {
