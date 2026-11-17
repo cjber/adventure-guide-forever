@@ -73,6 +73,9 @@ local function runCase(detailed, uncaught, success)
 					load = function()
 						return h
 					end,
+					model = function()
+						return { Plan = function() end }
+					end,
 				}
 			end
 			assert(path == "tests/bench_diagnostics.lua")

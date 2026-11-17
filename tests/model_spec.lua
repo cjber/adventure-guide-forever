@@ -2374,26 +2374,8 @@ local signature = {}
 for _, step in ipairs(baseline.steps) do
 	signature[#signature + 1] = step.key
 end
--- The game runs plain Lua 5.1, so this times the planner, not LuaJIT's code cache: Ubuntu's LuaJIT
--- keeps 512 KB of machine code, too little for the whole spec, and flushes every few Plans once full; its
--- default 1000 traces is likewise too few: the QuestieDB v1.0.5 corpus compiles 1,185 here (v1.0.4's, 991), and
--- past the cap the warm loop flushes and recompiles dozens of times.
--- plan_bench's -joff run is the frame budget.
-jit.opt.start("maxmcode=4096", "maxtrace=4000")
-jit.flush()
-for _ = 1, 100 do
-	Model.Plan(ns.Data, player, {}, {}, prefs())
-end
-local started = os.clock()
-for _ = 1, 1000 do
-	Model.Plan(ns.Data, player, {}, {}, prefs())
-end
-local milliseconds = (os.clock() - started)
 local rebuilt = Model.Plan(ns.Data, player, {}, {}, prefs())
 for i, key in ipairs(signature) do
 	equal(rebuilt.steps[i].key, key, "deterministic rebuild " .. i)
 end
-print(
-	string.format("model_spec: %d checks passed; %d quests; warm Plan %.3f ms (1000 runs)", checks, count, milliseconds)
-)
-assert(milliseconds < 3, "warm full-data Plan exceeds 3 ms")
+print(string.format("model_spec: %d checks passed; %d quests", checks, count))
