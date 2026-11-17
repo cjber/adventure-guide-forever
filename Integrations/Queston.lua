@@ -6,7 +6,7 @@ if ns.broken then
 end
 
 -- Queston Forever (CurseForge 1785839) draws its own page in the world map's quest log and adds its own side tab,
--- without joining Forever Core's shared tabs. Each addon used to leave its page shown when the other's was chosen,
+-- without joining ForeverCore's shared tabs. Each addon used to leave its page shown when the other's was chosen,
 -- so both pages stayed under the map and the one built last covered the other. This module is the handshake, done
 -- only through Queston's published view and its own Show: the guide closes Queston's page when the guide shows, and
 -- Queston's page, whenever it opens, puts the guide away. Nothing is written to Queston's settings or to the map.
