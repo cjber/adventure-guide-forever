@@ -12,6 +12,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [Unreleased]
 
+- **Clearer Chinese warnings when ForeverCore needs attention.** Thanks to moshoutegong for the Simplified and Traditional Chinese corrections (#801, #802).
+
 ## [1.10.3] - 2026-11-17
 
 <!-- forever-core-sync -->

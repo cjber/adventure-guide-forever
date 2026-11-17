@@ -1,8 +1,10 @@
 """What the translation template holds: literal lines under their keys, never a GlobalString the client translates."""
 
+import io
 import subprocess
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
@@ -38,6 +40,7 @@ class PhrasesTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             shared = root / "Shared.lua"
+            (root / "Example.toc").write_text("## Interface: 16001\nenUS.lua\nShared.lua\n")
             shared.write_text(
                 'local function phrase(key, ...) return (ns.L or {})[key] end\nphrase(\n"Missing %s", name)\n'
             )
@@ -49,11 +52,13 @@ class PhrasesTests(unittest.TestCase):
                 patch("phrases.ROOT", root),
                 patch("phrases.STRINGS", english),
                 patch("phrases.PHRASES", template),
-                patch("phrases.VENDORED", {"Shared.lua": ()}),
                 patch("phrases.keyword_files", return_value=[]),
                 patch("sys.argv", ["phrases.py", "--check"]),
             ):
-                self.assertEqual(main(), 1)
+                output = io.StringIO()
+                with redirect_stdout(output):
+                    self.assertEqual(main(), 1)
+                self.assertIn("Shared.lua: missing ns.L assignment in Locales/enUS.lua: Missing %s", output.getvalue())
                 english.write_text(english.read_text() + 'ns.L["Missing %s"] = "Missing %s"\n')
                 template.write_text(render(phrases(english.read_text())))
                 self.assertEqual(main(), 0)

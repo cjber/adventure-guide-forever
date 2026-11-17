@@ -49,6 +49,8 @@ Credit for the reports and requests behind the addon.
 
 | Who | What | Notes |
 |---|---|---|
+| [moshoutegong](https://github.com/moshoutegong) | Simplified Chinese corrections | GitHub; #801 |
+| [moshoutegong](https://github.com/moshoutegong) | Traditional Chinese corrections | GitHub; #802 |
 | VinzNL | Battlegrounds left out of suggestions | GitHub; #62 |
 | fuguer-ai | Read-only API for the current stop | GitHub; #79 |
 | rhednak | Fixed the overflow that broke Skyborne guides | CurseForge; 0.8.0 |
