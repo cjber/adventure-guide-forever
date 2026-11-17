@@ -16,6 +16,13 @@ Each zone's quests read as chapters, the map offers journeys worth taking, and S
 
 Questie draws the quest markers; the guide adds route rings. With RestedXP installed, a one-time prompt lets you keep its display or follow its guides in Adventure Guide.
 
+## Known limitations
+
+- **Quest data comes from QuestieDB.** Without Questie installed there are no quests to route, and a quest that is new or changed in WoW: Forever can be missing, or have the wrong prerequisites, until Questie's data catches up.
+- **The game does not say what a quest giver offers.** The guide can send you to a giver who has nothing for you. Once you talk to them, it drops that quest from the route.
+- **Some stops have no known place.** A quest or book with no recorded location shows as text, with no waypoint or map pin.
+- **Sync only reaches party members who run the guide.** Anyone else in the group is planned around as if they were not there.
+
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/spf_map.png" width="640" alt="The Barrens story chosen: the journey card, its numbered stops and Shortest Path's route from the first"></p>
 
 <p align="center">The Barrens story chosen: the card names the chapter, every stop is numbered, and Shortest Path's route runs from the first.</p>

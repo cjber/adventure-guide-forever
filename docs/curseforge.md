@@ -6,6 +6,13 @@ Free, with nothing locked behind it. If it saves you time, you can [sponsor me o
 
 [![Join me on Discord](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/discord-button.png)](https://discord.gg/FpHugGxRJY) [![Sponsor me on GitHub](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/github-sponsors-button.png)](https://github.com/sponsors/cjber) [![Support me on Ko-fi](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/kofi-button.png)](https://ko-fi.com/cjber)
 
+**Known limitations**
+
+- **Quest data comes from QuestieDB.** Without Questie installed there are no quests to route, and a quest that is new or changed in WoW: Forever can be missing, or have the wrong prerequisites, until Questie's data catches up.
+- **The game does not say what a quest giver offers.** The guide can send you to a giver who has nothing for you. Once you talk to them, it drops that quest from the route.
+- **Some stops have no known place.** A quest or book with no recorded location shows as text, with no waypoint or map pin.
+- **Sync only reaches party members who run the guide.** Anyone else in the group is planned around as if they were not there.
+
 ![The Barrens story chosen: the journey card, its numbered stops and Shortest Path's route from the first](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/spf_map.png)
 
 The Barrens story chosen: the card names the chapter, every stop is numbered, and Shortest Path's route runs from the first.
