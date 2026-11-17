@@ -69,7 +69,6 @@ Core\API.lua
 Core\Offers.lua
 Core\Closes.lua
 Core\Report.lua
-Integrations\Companions.lua
 Integrations\Providers.lua
 Integrations\QuestieObjectives.lua
 Integrations\QuestieTowns.lua

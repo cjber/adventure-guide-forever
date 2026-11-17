@@ -11,10 +11,6 @@ ns.L = {
 	MINIMAP_BUTTON_TOOLTIP = "Adds an Adventure Guide button to the minimap. Drag it around the rim to move it, "
 		.. "or turn it off here.",
 	MINIMAP_BUTTON_SUBTEXT = "Click to open the levelling guide",
-	SETTING_STATS_SHARE = "Share activity with guild and groups",
-	SETTING_STATS_SHARE_TOOLTIP = "On unless you turn it off. Shares cumulative quest turn-ins with addon users in "
-		.. "your guild, party, raid or instance and puts you on Forever Leaderboards. Turn it off to keep records "
-		.. "on this character only. Shared records are player-reported, not verified.",
 	LEADERBOARD_SHARING_ON = "Sharing is on. Turn it off with /agf share off or in Settings > AddOns > Adventure Guide.",
 	LEADERBOARD_SHARING_OFF = "Sharing is off: nothing is sent or shown. Turn it on with /agf share on.",
 	LEADERBOARD_METRIC = "Quests turned in",
@@ -176,8 +172,6 @@ ns.L = {
 	SEARCH_NONE = "No quests match your search.",
 	SETTING_MAP_PINS_TOOLTIP = "The route's numbered steps on the world map while their zone is shown, and quest "
 		.. "givers when those are on too. The open guide previews its route either way.",
-	SETTING_DUNGEONS_DEFAULT_TOOLTIP = "Suggest dungeon quests on a character from the first time you log in on it "
-		.. "with the guide installed. Change it any time from the guide's settings menu.",
 	SETTING_GIVERS_TOOLTIP = 'A "!" on the world map over everyone with a quest you can take now. '
 		.. "Needs route pins on the map as well.",
 	SETTING_TITLE_ROUTE = "Journeys start the route",
@@ -202,13 +196,11 @@ ns.L = {
 	SETTING_TRACK_ROUTE = "Tracker title tracks quests",
 	SETTING_TRACK_ROUTE_TOOLTIP = "Clicking the guide's title in the objective tracker adds every quest on the "
 		.. "route that's in your log, up to the tracker's limit.",
-	SETTING_GUIDE_TRACKS = "Track only the RestedXP guide's quests",
-	SETTING_GUIDE_TRACKS_TOOLTIP = "While you follow a RestedXP guide, the objective tracker shows only the quests its "
-		.. "current and ongoing steps name. The quests you tracked yourself come back when you stop following it.",
 	SETTING_JOURNEY_WATCH = "Track only the journey's quests",
 	SETTING_JOURNEY_WATCH_TOOLTIP = "While a journey leads, the objective tracker shows only the quests it works on "
 		.. "and every other quest leaves it. The quests you tracked yourself stay on the character and come back when "
-		.. "the journey stops leading, you choose another, or you turn this off.",
+		.. "the journey stops leading, you choose another, or you turn this off. "
+		.. "The same goes while you follow a RestedXP guide.",
 	-- Why-not (docs/design.md §2.4): what the data says a quest needs, one line per requirement.
 	WHY_NO_START = "The guide can't tell where this starts",
 	WHY_DONE = "You've done this",
@@ -423,11 +415,7 @@ ns.L = {
 	SETTINGS_GROUP_MAP = "Map",
 	SETTINGS_GROUP_TRACKER = "Objective tracker",
 	SETTINGS_GROUP_INTERFACE = "Interface",
-	SETTINGS_OPEN = "Open",
 	SETTING_TRACKER = "Show tracker section",
-	SETTING_TRACKER_BACKGROUND = "Tracker background",
-	SETTING_ATTACH_TRACKER = "Attach to quest tracker",
-	SETTING_ATTACH_TRACKER_TOOLTIP = "Turn this off to drag the shared Forever tracker anywhere on screen.",
 	SETTING_LOCK_TRACKER = "Lock the tracker",
 	SETTING_LOCK_TRACKER_TOOLTIP = "Keeps the shared Forever tracker where you put it. The grip at its top no "
 		.. "longer drags it.",
@@ -454,7 +442,6 @@ ns.L = {
 	SETTING_HIDE_QUEST_MARKERS_TOOLTIP = "Turn this off to keep the game's own quest markers and blue quest areas on "
 		.. "the map beside your route pins.",
 	SETTING_GIVERS = "Show quest givers on the map",
-	SETTING_DUNGEONS_DEFAULT = "Include dungeons by default",
 	SETTING_TRAINING_REMINDERS = "Remind me to train class spells",
 	SETTING_TRAINING_REMINDERS_TOOLTIP = "Suggest class trainer visits and add spell training to journeys. "
 		.. "You can choose which spells to learn; buying every spell is optional.",
@@ -561,9 +548,7 @@ ns.L = {
 
 	TAB_PVP = "PvP",
 	GO_TO_ENTRANCE = "Go to entrance",
-	TWEAKS_MISSING = "Install Tweaks Forever to find dungeon entrances.",
 	TWEAKS_OUTDATED = "Update Tweaks Forever to find dungeon entrances.",
-	TWEAKS_DISABLED = "Enable Tweaks Forever to find dungeon entrances.",
 	ENTRANCE_UNKNOWN = "The entrance location is unknown.",
 	-- Legacy Forever's own words for items it can't check yet, with its hint when one category holds them all.
 	PVP_RANK = "Rank %d",
@@ -614,14 +599,6 @@ ns.L = {
 	UPDATED_TO = "updated to %s. %s",
 	SETTING_WHATS_NEW = "What's new after an update",
 	SETTING_WHATS_NEW_TOOLTIP = "One line in chat the first time you log in after the guide updates.",
-	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded. The
-	-- Forever addons page itself and its setting are ForeverCore.Family's, shared by all five addons.
-	SPF_FAMILY_MENU = "Walked routes and boat times: Shortest Path Forever",
-	SKILLUP_FAMILY = "SkillUp Forever plans the cheapest route to your next profession rank.",
-	SKILLUP_FAMILY_MENU = "Cheapest route to your next rank: SkillUp Forever",
-	TWEAKS_FAMILY_MENU = "Find dungeon entrances: Tweaks Forever",
-	SPF_MISSING = "Install Shortest Path Forever for walked routes and boat times.",
-	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of the newest
 	-- CHANGELOG entry that has a bold lead, whose version is ns.WHATS_NEW_VERSION; tests/locales_spec.lua checks both.
 	WHATS_NEW = "Taking a quest no longer drops another one in the same town.",

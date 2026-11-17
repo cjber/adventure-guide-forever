@@ -3161,6 +3161,10 @@ function harness.load(options)
 			h.openedSettingsElement = element
 		end,
 	}
+	-- A heading row: ForeverCore.SettingsSections.Register passes this through the secure delegate.
+	function G.CreateSettingsListSectionHeaderInitializer(name, tooltip)
+		return { kind = "header", name = name, tooltip = tooltip }
+	end
 	function G.CreateSettingsButtonInitializer(name, tooltip, onClick, _, addSearchTags)
 		return { kind = "button", name = name, tooltip = tooltip, onClick = onClick, addSearchTags = addSearchTags }
 	end

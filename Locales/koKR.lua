@@ -323,28 +323,18 @@ L["SETTINGS_GROUP_INTERFACE"] = "인터페이스"
 L["SETTINGS_GROUP_MAP"] = "지도"
 L["SETTINGS_GROUP_ROUTE"] = "경로"
 L["SETTINGS_GROUP_TRACKER"] = "목표 추적기"
-L["SETTINGS_OPEN"] = "열기"
-L["SETTING_ATTACH_TRACKER"] = "퀘스트 추적기에 붙이기"
-L["SETTING_ATTACH_TRACKER_TOOLTIP"] =
-	"끄면 공유 Forever 추적기를 화면 어디로든 끌어 옮길 수 있습니다."
 L["SETTING_AUTO_START"] = "경로 자동 시작"
 L["SETTING_AUTO_START_TOOLTIP"] =
 	"선택한 여정의 경로가 준비되면 바로 Shortest Path로 보내므로, 접속하거나 /reload한 후 출발을 누르지 않아도 지도에 선이 그려집니다. 중지를 누르면 여정을 다시 선택할 때까지 지워집니다."
-L["SETTING_DUNGEONS_DEFAULT"] = "기본적으로 던전 포함"
-L["SETTING_DUNGEONS_DEFAULT_TOOLTIP"] =
-	"안내서를 설치한 채 캐릭터로 처음 접속할 때부터 던전 퀘스트를 제안합니다. 안내서의 설정 메뉴에서 언제든 바꿀 수 있습니다."
 L["SETTING_FOLLOW_QUEST"] = "현재 퀘스트 따라가기"
 L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 	"경로가 안내하는 퀘스트의 지역에 들어가면 안내서가 그 퀘스트를 선택해 지도에 해당 지역을 표시합니다. 직접 선택한 퀘스트는 바꾸지 않습니다."
 L["SETTING_GIVERS"] = "지도에 퀘스트 NPC 표시"
 L["SETTING_GIVERS_TOOLTIP"] =
 	'지금 수락할 수 있는 퀘스트가 있는 모든 NPC 위에 세계 지도의 "!"를 표시합니다. 지도의 경로 핀도 켜야 합니다.'
-L["SETTING_GUIDE_TRACKS"] = "RestedXP 가이드의 퀘스트만 추적" -- mt
-L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
-	"RestedXP 가이드를 따라가는 동안 목표 추적기에는 현재 단계와 진행 중인 단계가 지정한 퀘스트만 표시됩니다. 직접 추적하던 퀘스트는 가이드를 그만 따라가면 돌아옵니다." -- mt
 L["SETTING_JOURNEY_WATCH"] = "여정의 퀘스트만 추적" -- mt
 L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
-	"여정이 이끄는 동안 목표 추적기는 그 여정이 다루는 퀘스트만 표시하고 나머지 퀘스트는 빠집니다. 직접 추적한 퀘스트는 캐릭터에 남아 있으며 여정이 더 이상 이끌지 않거나 다른 여정을 고르거나 이 설정을 끄면 돌아옵니다." -- mt
+	"여정이 이끄는 동안 목표 추적기는 그 여정이 다루는 퀘스트만 표시하고 나머지 퀘스트는 빠집니다. 직접 추적한 퀘스트는 캐릭터에 남아 있으며 여정이 더 이상 이끌지 않거나 다른 여정을 고르거나 이 설정을 끄면 돌아옵니다. RestedXP 가이드를 따르는 동안에도 마찬가지입니다." -- mt
 L["SETTING_LOCK_TRACKER"] = "추적기 잠금"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] =
 	"공유 Forever 추적기를 놓은 자리에 유지합니다. 위쪽 손잡이로 더 이상 끌 수 없습니다."
@@ -370,16 +360,12 @@ L["SETTING_OUTGROWN_TOOLTIP"] = "퀘스트가 회색인 지역과 던전을 선�
 L["SETTING_RXP"] = "RestedXP 가이드 사용"
 L["SETTING_RXP_TOOLTIP"] =
 	"현재 RestedXP 가이드를 여정 카드, 지도, 추적기에 추가합니다. RestedXP는 가이드 단계를 진행하고, Shortest Path Forever는 이동을 맡습니다. RestedXP는 설치된 채로 가이드 진행을 관리합니다."
-L["SETTING_STATS_SHARE"] = "길드 및 파티와 활동 공유"
-L["SETTING_STATS_SHARE_TOOLTIP"] =
-	"기본으로 켜져 있습니다. 길드, 파티, 공격대 또는 인스턴스의 애드온 사용자와 누적 활동 기록을 공유합니다. 끄면 이 캐릭터에만 기록을 보관합니다. 공유 기록은 플레이어가 보고한 내용이며 검증되지 않습니다."
 L["SETTING_STEP_SOUND"] = "단계 완료 시 소리"
 L["SETTING_STEP_SOUND_TOOLTIP"] = "경로 단계를 마치면 짧은 소리를 한 번 재생합니다."
 L["SETTING_TITLE_ROUTE"] = "여정으로 경로 시작"
 L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"안내서에서 여정을 선택하거나 목표 추적기에서 현재 단계의 제목을 클릭하면 경로를 따라 출발합니다. Shortest Path Forever를 불러왔으면 그것을, 아니면 지도의 이동 지점을 사용합니다. 선택한 여정을 다시 클릭하면 중지합니다."
 L["SETTING_TRACKER"] = "추적기 영역 표시"
-L["SETTING_TRACKER_BACKGROUND"] = "추적기 배경"
 L["SETTING_TRACKER_TOOLTIP"] =
 	'목표 추적기의 퀘스트 위에 현재 단계를 위한 짧은 "Adventure Guide" 영역을 표시합니다.'
 L["SETTING_TRACK_ROUTE"] = "추적기 제목으로 퀘스트 추적"
@@ -413,8 +399,6 @@ L["SIDEBAR_COLLAPSED"] =
 	"안내서는 세계 지도 옆의 퀘스트 로그에서 열립니다. 지도 오른쪽 아래의 화살표를 눌러 퀘스트 로그를 표시하세요."
 L["SIDEBAR_MAXIMIZED"] =
 	"안내서는 세계 지도 옆의 퀘스트 로그에서 열립니다. 지도 닫기 표시 옆의 버튼을 눌러 지도를 줄이고 퀘스트 로그를 표시하세요."
-L["SKILLUP_FAMILY"] = "SkillUp Forever는 다음 전문 기술 등급까지 가장 저렴한 경로를 계획합니다."
-L["SKILLUP_FAMILY_MENU"] = "다음 등급까지 가장 저렴한 경로: SkillUp Forever"
 L["SKILLUP_NONE"] =
 	"올릴 제작 전문 기술이 없습니다. 상급자에게서 하나를 배우면 여기에 표시됩니다."
 L["SKILLUP_OUTDATED"] =
@@ -422,9 +406,6 @@ L["SKILLUP_OUTDATED"] =
 L["SKIP"] = "지금은 건너뛰기"
 L["SKIPPED"] = "건너뜀 (%d)"
 L["SKIP_STEP"] = "지금은 이 단계 건너뛰기"
-L["SPF_DISABLED"] = "걷는 경로와 배 시간을 보려면 Shortest Path Forever를 켜십시오."
-L["SPF_FAMILY_MENU"] = "걷는 경로와 배 시간: Shortest Path Forever"
-L["SPF_MISSING"] = "걷는 경로와 배 시간을 보려면 Shortest Path Forever를 설치하십시오."
 L["STARTS_AFTER_COMBAT"] = "전투가 끝나면 경로가 시작됩니다"
 L["STARTS_WITH"] = "시작: %s"
 L["START_ADVENTURE"] = "시작"
@@ -491,9 +472,6 @@ L["TRAVEL_WAIT"] = " · %d분 대기"
 L["TRAVEL_WALK"] = "%s까지 걷기"
 L["TRAVEL_ZEPPELIN"] = "%s행 비행선"
 L["TURN_IN"] = "제출: %s"
-L["TWEAKS_DISABLED"] = "던전 입구를 찾으려면 Tweaks Forever를 켜십시오."
-L["TWEAKS_FAMILY_MENU"] = "던전 입구 찾기: Tweaks Forever"
-L["TWEAKS_MISSING"] = "던전 입구를 찾으려면 Tweaks Forever를 설치하십시오."
 L["TWEAKS_OUTDATED"] = "던전 입구를 찾으려면 Tweaks Forever를 업데이트하십시오."
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'

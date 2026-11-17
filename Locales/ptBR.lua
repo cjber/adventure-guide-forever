@@ -317,28 +317,18 @@ L["SETTINGS_GROUP_INTERFACE"] = "Interface"
 L["SETTINGS_GROUP_MAP"] = "Mapa"
 L["SETTINGS_GROUP_ROUTE"] = "Rota"
 L["SETTINGS_GROUP_TRACKER"] = "Rastreador de objetivos"
-L["SETTINGS_OPEN"] = "Abrir"
-L["SETTING_ATTACH_TRACKER"] = "Prender ao rastreador de missões"
-L["SETTING_ATTACH_TRACKER_TOOLTIP"] =
-	"Desative para arrastar o Rastreador Forever compartilhado para qualquer lugar da tela."
 L["SETTING_AUTO_START"] = "Iniciar a rota automaticamente"
 L["SETTING_AUTO_START_TOOLTIP"] =
 	"O guia envia a rota da jornada escolhida ao Shortest Path assim que ela fica pronta, então a linha do mapa aparece ao entrar no jogo e depois de um /reload sem clicar em Ir. Clicar em Parar ainda a apaga até você escolher uma jornada de novo."
-L["SETTING_DUNGEONS_DEFAULT"] = "Incluir masmorras por padrão"
-L["SETTING_DUNGEONS_DEFAULT_TOOLTIP"] =
-	"Sugere missões de masmorra a um personagem desde a primeira vez que você entra com ele com o guia instalado. Mude quando quiser no menu de configurações do guia."
 L["SETTING_FOLLOW_QUEST"] = "Seguir a sua missão atual"
 L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 	"Quando você entra na área da missão para onde a rota leva, o guia seleciona essa missão para que o mapa mostre a área dela. Ele nunca muda uma missão que você mesmo selecionou."
 L["SETTING_GIVERS"] = "Mostrar recrutadores de missões no mapa"
 L["SETTING_GIVERS_TOOLTIP"] =
 	'Um "!" no mapa-múndi sobre todos que têm uma missão que você pode aceitar agora. Também precisa dos marcadores de rota no mapa.'
-L["SETTING_GUIDE_TRACKS"] = "Rastrear só as missões do guia RestedXP" -- mt
-L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
-	"Enquanto você segue um guia RestedXP, o rastreador de objetivos mostra só as missões que as etapas atuais e em andamento citam. As missões que você rastreava voltam quando você para de segui-lo." -- mt
 L["SETTING_JOURNEY_WATCH"] = "Rastrear só as missões da jornada" -- mt
 L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
-	"Enquanto uma jornada guia, o rastreador de objetivos mostra só as missões em que ela trabalha e todas as outras saem dele. As missões que você rastreava ficam no personagem e voltam quando a jornada deixa de guiar, você escolhe outra ou desativa isto." -- mt
+	"Enquanto uma jornada guia, o rastreador de objetivos mostra só as missões em que ela trabalha e todas as outras saem dele. As missões que você rastreava ficam no personagem e voltam quando a jornada deixa de guiar, você escolhe outra ou desativa isto. O mesmo vale enquanto você segue um guia RestedXP." -- mt
 L["SETTING_LOCK_TRACKER"] = "Travar o rastreador"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] =
 	"Mantém o rastreador Forever compartilhado onde você o colocou. A alça no topo não o arrasta mais."
@@ -364,16 +354,12 @@ L["SETTING_OUTGROWN_TOOLTIP"] = "Manter nas opções as zonas e masmorras cujas 
 L["SETTING_RXP"] = "Usar guias do RestedXP"
 L["SETTING_RXP_TOOLTIP"] =
 	"Adiciona o guia atual do RestedXP aos seus cartões de jornada, ao mapa e ao rastreador. O RestedXP avança os passos do guia; o Shortest Path Forever cuida da viagem. O RestedXP continua instalado e controla o progresso do guia."
-L["SETTING_STATS_SHARE"] = "Compartilhar atividade com guilda e grupos"
-L["SETTING_STATS_SHARE_TOOLTIP"] =
-	"Ativado por padrão. Compartilha registros de atividade acumulados com usuários do addon na sua guilda, grupo, raide ou instância. Desative para manter os registros apenas neste personagem. Os registros compartilhados são informados pelos jogadores e não são verificados."
 L["SETTING_STEP_SOUND"] = "Som ao concluir um passo"
 L["SETTING_STEP_SOUND_TOOLTIP"] = "Toca um som curto uma vez quando você conclui um passo da rota."
 L["SETTING_TITLE_ROUTE"] = "Jornadas iniciam a rota"
 L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"Escolher uma jornada no guia, ou clicar no título do passo atual no rastreador de objetivos, inicia a rota, com o Shortest Path Forever quando estiver carregado e com um ponto de rota no mapa caso contrário. Clicar de novo na jornada escolhida a interrompe."
 L["SETTING_TRACKER"] = "Mostrar seção no rastreador"
-L["SETTING_TRACKER_BACKGROUND"] = "Fundo do rastreador"
 L["SETTING_TRACKER_TOOLTIP"] =
 	'Uma seção curta "Adventure Guide" acima das suas missões no rastreador de objetivos, para o passo atual.'
 L["SETTING_TRACK_ROUTE"] = "Título do rastreador rastreia missões"
@@ -407,16 +393,11 @@ L["SIDEBAR_COLLAPSED"] =
 	"O guia abre no registro de missões ao lado do mapa do mundo. Clique na seta no canto inferior direito do mapa para mostrar o registro de missões."
 L["SIDEBAR_MAXIMIZED"] =
 	"O guia abre no registro de missões ao lado do mapa do mundo. Clique no botão ao lado do X de fechar do mapa para reduzi-lo e mostrar o registro de missões."
-L["SKILLUP_FAMILY"] = "O SkillUp Forever planeja o caminho mais barato até o seu próximo grau de profissão."
-L["SKILLUP_FAMILY_MENU"] = "Caminho mais barato até o próximo grau: SkillUp Forever"
 L["SKILLUP_NONE"] = "Nenhuma profissão de produção para evoluir. Aprenda uma com um instrutor e ela aparece aqui."
 L["SKILLUP_OUTDATED"] = "Seus próximos pontos de perícia vêm do SkillUp Forever. Atualize-o e eles aparecem aqui."
 L["SKIP"] = "Pular por enquanto"
 L["SKIPPED"] = "Puladas (%d)"
 L["SKIP_STEP"] = "Pular este passo por enquanto"
-L["SPF_DISABLED"] = "Ative o Shortest Path Forever para rotas a pé e horários de barcos."
-L["SPF_FAMILY_MENU"] = "Rotas a pé e horários de barcos: Shortest Path Forever"
-L["SPF_MISSING"] = "Instale o Shortest Path Forever para rotas a pé e horários de barcos."
 L["STARTS_AFTER_COMBAT"] = "A rota começa quando o combate acabar"
 L["STARTS_WITH"] = "Começa com %s"
 L["START_ADVENTURE"] = "Começar"
@@ -480,9 +461,6 @@ L["TRAVEL_WAIT"] = " · %d min de espera"
 L["TRAVEL_WALK"] = "Caminhar até %s"
 L["TRAVEL_ZEPPELIN"] = "Zepelim para %s"
 L["TURN_IN"] = "Entregar: %s"
-L["TWEAKS_DISABLED"] = "Ative o Tweaks Forever para encontrar entradas de masmorras."
-L["TWEAKS_FAMILY_MENU"] = "Encontrar entradas de masmorras: Tweaks Forever"
-L["TWEAKS_MISSING"] = "Instale o Tweaks Forever para encontrar entradas de masmorras."
 L["TWEAKS_OUTDATED"] = "Atualize o Tweaks Forever para encontrar entradas de masmorras."
 L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'

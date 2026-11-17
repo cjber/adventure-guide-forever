@@ -75,8 +75,10 @@ h.G.C_Map.OpenWorldMap = function(...)
 end
 -- Every open also runs through the shared opener's securecallfunction (Core/OpenMap.lua). A caller that ran the
 -- native itself would lift `restricted` alone, so the two counts stay level.
+-- The settings headings also go through a secure delegate at load; count from there.
+local loadSecureCalls = h.counts.secureCalls
 local function SecureCalls()
-	return h.counts.secureCalls
+	return h.counts.secureCalls - loadSecureCalls
 end
 local function Opened()
 	return h.counts.OpenWorldMap

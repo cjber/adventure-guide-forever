@@ -46,16 +46,10 @@ local function Places(route)
 end
 
 -- A step menu's lines with "Not this quest" (design §2.18) after "Skip for now": one button for a lone quest, else
--- one per quest under it, titled as the log titles it. `combat`: the menu opened in combat.
-local function WithNotThisQuest(ns, family, step, lines, combat)
+-- one per quest under it, titled as the log titles it.
+local function WithNotThisQuest(ns, step, lines)
 	local out = {}
-	-- Without Shortest Path installed, a step's menu ends with its grey suggestion before Choose another journey; never
-	-- in combat, where its window can't open.
-	local suggests = family.State("ShortestPathForever") == "missing" and not ns.Setting("wanderer") and not combat
 	for _, line in ipairs(lines) do
-		if suggests and line == "button: " .. ns.L.CHOOSE_JOURNEY then
-			out[#out + 1] = "button: " .. "|cff7f7f7f" .. ns.L.SPF_FAMILY_MENU .. "|r"
-		end
 		out[#out + 1] = line
 		if line == "button: Skip for now" and #step.quests == 1 then
 			out[#out + 1] = "button: " .. ns.L.NOT_THIS_QUEST
@@ -337,113 +331,71 @@ do
 	equal(unset.spf.NavigateRoute, 0, "the route setting off: and starts nothing")
 	equal(table.concat(h.watched, " "), "99", "the tracking setting off: the tracked quests are untouched")
 
-	local byKey, pages = {}, {}
+	local byKey, pages, headings, heading = {}, {}, {}, nil
 	for _, entry in ipairs(h.settings) do
-		if entry.key then
+		if entry.kind == "header" then
+			heading = entry.name
+			headings[#headings + 1] = heading
+			pages[heading] = {}
+		elseif entry.key then
 			byKey[entry.key] = entry
-			local group = pages[entry.category] or {}
-			pages[entry.category] = group
+			local group = assert(pages[heading], "a row comes after a heading")
 			group[#group + 1] = entry.key
 		end
 	end
-	-- Every row goes in through the secure delegate; none from addon code, which taints the search. The rows are
-	-- grouped into subcategories with a short index page, so no page grows tall.
+	-- Every row goes in through the secure delegate; none from addon code, which taints the search. One page under
+	-- four short headings, no subpages and no Forever addons page.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 34, "29 settings rows and 5 index buttons, all through Settings.RegisterInitializer")
+	equal(#h.settings, 4 + 26, "4 headings and 26 settings rows, all through Settings.RegisterInitializer")
 	local L = h.ns.L
+	same(
+		headings,
+		{ L.SETTINGS_GROUP_ROUTE, L.SETTINGS_GROUP_MAP, L.SETTINGS_GROUP_TRACKER, L.SETTINGS_GROUP_INTERFACE },
+		"the headings come in order"
+	)
+	equal(#h.subcategories, 0, "no subpages")
+	equal(next(h.canvasPages), nil, "no Forever addons page")
 	equal(
-		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
-		"maxQuestLevelOffset restedxpGuide wanderer followQuest partyQuests optimisedRoute "
-			.. "showOutgrown includeDungeonsDefault "
-			.. "titleStartsRoute autoStart informationOnly autoNextZone npcHighlight polestarAside warnClosing "
-			.. "stepSound trainingReminders",
+		table.concat(pages[L.SETTINGS_GROUP_ROUTE], " "),
+		"maxQuestLevelOffset restedxpGuide wanderer informationOnly titleStartsRoute autoStart autoNextZone "
+			.. "followQuest partyQuests optimisedRoute showOutgrown trainingReminders npcHighlight polestarAside",
 		"Route holds its rows in order"
 	)
 	equal(
-		table.concat(pages[L.SETTINGS_GROUP_MAP] or {}, " "),
+		table.concat(pages[L.SETTINGS_GROUP_MAP], " "),
 		"showMapPins hideQuestMarkers showQuestGivers",
 		"Map holds its rows"
 	)
 	equal(
-		table.concat(pages[L.SETTINGS_GROUP_TRACKER] or {}, " "),
-		"attachTracker lockTracker showTracker trackRouteQuests journeyWatch guideTracksQuests",
+		table.concat(pages[L.SETTINGS_GROUP_TRACKER], " "),
+		"showTracker lockTracker journeyWatch trackRouteQuests",
 		"the objective tracker rows sit together, the parent first"
 	)
 	equal(
-		table.concat(pages[L.SETTINGS_GROUP_INTERFACE] or {}, " "),
-		"whatsNew markUpgrades minimapButton",
-		"Interface holds the update rows; the suggestions setting is on the Forever addons page"
+		table.concat(pages[L.SETTINGS_GROUP_INTERFACE], " "),
+		"markUpgrades warnClosing stepSound whatsNew minimapButton",
+		"Interface holds the rest"
 	)
-	-- The index page's buttons are on the addon's own category, one per group, in index order, and open its subpage.
-	local buttons = {}
 	for _, entry in ipairs(h.settings) do
-		if entry.kind == "button" then
-			buttons[#buttons + 1] = entry
-		end
+		equal(entry.category, h.ns.TITLE, "every row and heading sits on the addon's own page")
+		equal(entry.kind ~= "button", true, "no index buttons")
 	end
-	equal(#buttons, 5, "one index button per group, then the Forever addons page")
-	local familyButton = table.remove(buttons)
-	local familyName = "Forever addons"
-	local familyPage = assert(h.canvasPages[familyName], "the Forever addons page is registered")
-	equal(familyButton.name, familyName, "the last index button is the Forever addons page's")
-	equal(familyButton.addSearchTags, false, "the Forever addons button stays out of search")
-	equal(familyPage.parent.name, h.ns.TITLE, "the Forever addons page hangs off the addon's page")
-	familyButton.onClick()
-	equal(h.openedSettings, familyPage.GetID(), "the Forever addons button opens its page")
-	equal(familyPage.frame ~= nil, true, "the page is the shared module's panel")
-	equal(
-		buttons[1].name .. " " .. buttons[2].name .. " " .. buttons[3].name .. " " .. buttons[4].name,
-		L.SETTINGS_GROUP_ROUTE
-			.. " "
-			.. L.SETTINGS_GROUP_MAP
-			.. " "
-			.. L.SETTINGS_GROUP_TRACKER
-			.. " "
-			.. L.SETTINGS_GROUP_INTERFACE,
-		"the index lists every group in order"
-	)
-	for index, button in ipairs(buttons) do
-		equal(button.category, h.ns.TITLE, "index button " .. index .. " stays on the addon's page")
-		equal(button.addSearchTags, false, "index button " .. index .. " stays out of search")
-		equal(button.tooltip, L.SETTINGS_OPEN, "index button " .. index .. " is the Open button")
-		button.onClick()
-		equal(h.openedSettings, h.subcategories[index].GetID(), "index button " .. index .. " opens its own subpage")
-		equal(h.subcategories[index].name, button.name, "index button " .. index .. " names its subpage")
-		equal(h.subcategories[index].parent.name, h.ns.TITLE, "and the subpage hangs off the addon's page")
+	for _, gone in ipairs({ "attachTracker", "guideTracksQuests", "includeDungeonsDefault" }) do
+		equal(byKey[gone], nil, gone .. " has no row")
 	end
 	-- Every settings open goes through the shared secure opener (Core/OpenSettings.lua): Blizzard's Lua wrapper runs
 	-- the restricted C_SettingsUtil.OpenSettingsPanel in the addon's taint, which the client refuses and blames the
 	-- addon (cjber/forever-core#333).
-	equal(h.openedSettingsRestricted, 0, "no index button calls Blizzard's restricted opener")
-	equal(h.openedSettingsElement, nil, "an index button asks for no row to scroll to")
 	h.ns.OpenSettings()
-	equal(h.openedSettings, familyPage.parent.GetID(), "More settings opens the addon's own page")
+	equal(h.openedSettings ~= nil, true, "More settings opens the addon's own page")
 	equal(h.openedSettingsRestricted, 0, "More settings calls the shared opener, not Blizzard's wrapper")
 	equal(byKey.journeyWatch.indented, nil, "journey watching is its own row, not under the title click")
 	equal(byKey.journeyWatch.tooltip, L.SETTING_JOURNEY_WATCH_TOOLTIP, "and says what happens to the player's quests")
-	local attachSetting
-	for _, setting in ipairs(h.addonSettings) do
-		if setting.key == "attachTracker" then
-			attachSetting = setting
-		end
-	end
-	equal(attachSetting ~= nil, true, "shared tracker setting is registered")
-	equal(attachSetting.GetValue(), true, "shared tracker defaults attached")
-	h.trackerHostSettings.attached = false
-	equal(h.G.ForeverCore.TrackerHost.GetSettings().attached, false, "ForeverCore's host state retains saved false")
-	local malformed = Load("v1", nil, nil, nil, nil, nil, { trackerHost = "bad" })
-	equal(
-		malformed.G.ForeverCore.TrackerHost.GetSettings().attached,
-		true,
-		"ForeverCore's host state normalizes malformed value"
-	)
-	h.trackerHostSettings.attached = false
-	equal(attachSetting.GetValue(), false, "shared tracker reads the host owner state")
-	h.trackerHostSettings.attached = true
-	attachSetting:SetValue(false)
-	equal(h.trackerHostSettings.attached, false, "shared tracker setting writes shared host state")
-	attachSetting:SetValue(true)
-	equal(attachSetting.GetValue(), true, "shared tracker setting round trips attached")
+	-- One row covers a journey and a RestedXP guide.
+	h.ns.SetSetting("journeyWatch", false)
+	equal(h.ns.Setting("guideTracksQuests"), false, "the journey row also sets the RestedXP guide's watch")
+	h.ns.SetSetting("journeyWatch", true)
+	equal(h.ns.Setting("guideTracksQuests"), true, "and back")
 	-- The client re-sorts its watches by distance on every zone change (Blizzard_ObjectiveTracker.lua
 	-- SortQuestWatches), so the tooltip promises no order it cannot keep.
 	equal(byKey.trackRouteQuests.tooltip:find("order") ~= nil, false, "the tracking tooltip promises no order")
@@ -1393,7 +1345,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		"button: Skip for now",
 		"button: Choose another journey",
 	}
-	same(TrackerActions(h), WithNotThisQuest(ns, h.G.ForeverCore.Family, head, menu), label .. ": tracker menu")
+	same(TrackerActions(h), WithNotThisQuest(ns, head, menu), label .. ": tracker menu")
 	ns.Prefs().journey = ns.Route().journey
 	ns.Guidance.Navigate(head)
 	h.SetCombat(true)
@@ -1401,11 +1353,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.SetCombat(false)
 	table.remove(menu, 3)
 	menu[#menu + 1] = "button: " .. ns.L.END_JOURNEY
-	same(
-		TrackerActions(h),
-		WithNotThisQuest(ns, h.G.ForeverCore.Family, head, menu, true),
-		label .. ": tracker menu while Go guides, in combat"
-	)
+	same(TrackerActions(h), WithNotThisQuest(ns, head, menu), label .. ": tracker menu while Go guides, in combat")
 	ns.Guidance.Cancel()
 	clean(h, label .. ": pins")
 end
@@ -2099,7 +2047,7 @@ do
 	h.Click(Rows()[1], "RightButton")
 	same(
 		h.MenuLines(),
-		WithNotThisQuest(ns, h.G.ForeverCore.Family, first, {
+		WithNotThisQuest(ns, first, {
 			"title: " .. first.title,
 			"button: Go",
 			"button: " .. ns.L.END_JOURNEY,
@@ -2145,7 +2093,7 @@ do
 	local submenu = { "  button: Show again: " .. first.title, "  button: Show again: " .. second.title }
 	same(
 		h.MenuLines(),
-		WithNotThisQuest(ns, h.G.ForeverCore.Family, ns.Route().steps[1], {
+		WithNotThisQuest(ns, ns.Route().steps[1], {
 			"title: " .. ns.Route().steps[1].title,
 			"button: Go",
 			"button: " .. ns.L.END_JOURNEY,
@@ -2544,11 +2492,8 @@ do
 	equal(lines[4], "colored: |A:questturnin:14:14|a [13] The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
 	equal(lines[6], "colored: |A:questnormal:14:14|a [13] Raptor Thieves", "hub tooltip: a pickup has its level")
 	local quests, npcs = 0, 0
-	-- Without Shortest Path the last line is its grey suggestion, not a quest.
-	equal(lines[#lines], "colored: " .. ns.L.SPF_MISSING, "hub tooltip: the Shortest Path suggestion last")
-	same(colors[#lines], { 0.5, 0.5, 0.5 }, "hub tooltip: and grey")
 	for index, line in ipairs(lines) do
-		if line:find("^colored: ") and index < #lines then
+		if line:find("^colored: ") then
 			quests = quests + 1
 			-- A quest with no level (A Sealed Crate) shows none and takes the normal font colour.
 			local level = tonumber(line:match("%[(%d+)%]"))
@@ -2559,8 +2504,8 @@ do
 	end
 	equal(quests, 8, "hub tooltip: 8 quest lines")
 	equal(npcs, 7, "hub tooltip: one line per NPC shown")
-	equal(lines[#lines - 2], "highlight: And 1 more", "hub tooltip: the rest counted")
-	equal(lines[#lines - 1], "instruction: " .. ns.L.ORDER_DRAG, "hub tooltip: then how to reorder")
+	equal(lines[#lines - 1], "highlight: And 1 more", "hub tooltip: the rest counted")
+	equal(lines[#lines], "instruction: " .. ns.L.ORDER_DRAG, "hub tooltip: then how to reorder")
 	local over
 	for index, line in ipairs(lines) do
 		over = tonumber(line:match("%[(%d+)%]")) == 20 and index or over

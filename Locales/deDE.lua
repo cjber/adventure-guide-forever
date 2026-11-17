@@ -319,28 +319,18 @@ L["SETTINGS_GROUP_INTERFACE"] = "Interface"
 L["SETTINGS_GROUP_MAP"] = "Karte"
 L["SETTINGS_GROUP_ROUTE"] = "Route"
 L["SETTINGS_GROUP_TRACKER"] = "Questzielverfolgung"
-L["SETTINGS_OPEN"] = "Öffnen"
-L["SETTING_ATTACH_TRACKER"] = "An die Questverfolgung anheften"
-L["SETTING_ATTACH_TRACKER_TOOLTIP"] =
-	"Schaltet dies aus, um die gemeinsame Forever-Verfolgung frei auf dem Bildschirm zu verschieben."
 L["SETTING_AUTO_START"] = "Route automatisch starten"
 L["SETTING_AUTO_START_TOOLTIP"] =
 	"Der Führer schickt die Route Eurer gewählten Reise an Shortest Path, sobald sie bereit ist, sodass die Linie auf der Karte nach dem Einloggen und nach /reload ohne „Los“ erscheint. „Stopp“ entfernt sie weiterhin, bis Ihr wieder eine Reise wählt."
-L["SETTING_DUNGEONS_DEFAULT"] = "Dungeons standardmäßig einbeziehen"
-L["SETTING_DUNGEONS_DEFAULT_TOOLTIP"] =
-	"Schlägt Dungeonquests für einen Charakter vor, sobald Ihr Euch zum ersten Mal mit installiertem Führer mit ihm einloggt. Jederzeit im Einstellungsmenü des Führers änderbar."
 L["SETTING_FOLLOW_QUEST"] = "Eurer aktuellen Quest folgen"
 L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 	"Wenn Ihr das Gebiet der Quest betretet, zu der die Route führt, wählt der Führer diese Quest aus, damit die Karte ihr Gebiet zeigt. Eine Quest, die Ihr selbst ausgewählt habt, ändert er nie."
 L["SETTING_GIVERS"] = "Questgeber auf der Karte anzeigen"
 L["SETTING_GIVERS_TOOLTIP"] =
 	"Ein „!“ auf der Weltkarte über allen, die jetzt eine Quest für Euch haben. Braucht auch die Routenmarkierungen auf der Karte."
-L["SETTING_GUIDE_TRACKS"] = "Nur die Quests des RestedXP-Guides verfolgen" -- mt
-L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
-	"Während Ihr einem RestedXP-Guide folgt, zeigt die Zielverfolgung nur die Quests, die seine aktuellen und laufenden Schritte nennen. Die Quests, die Ihr selbst verfolgt habt, kehren zurück, wenn Ihr ihm nicht mehr folgt." -- mt
 L["SETTING_JOURNEY_WATCH"] = "Nur die Quests der Reise verfolgen" -- mt
 L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
-	"Während eine Reise führt, zeigt die Zielverfolgung nur die Quests, an denen sie arbeitet, und jede andere Quest verlässt sie. Eure eigenen verfolgten Quests bleiben am Charakter und kehren zurück, wenn die Reise nicht mehr führt, Ihr eine andere wählt oder dies ausschaltet." -- mt
+	"Während eine Reise führt, zeigt die Zielverfolgung nur die Quests, an denen sie arbeitet, und jede andere Quest verlässt sie. Eure eigenen verfolgten Quests bleiben am Charakter und kehren zurück, wenn die Reise nicht mehr führt, Ihr eine andere wählt oder dies ausschaltet. Dasselbe gilt, während Ihr einem RestedXP-Guide folgt." -- mt
 L["SETTING_LOCK_TRACKER"] = "Verfolgung sperren"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] =
 	"Hält die gemeinsame Forever-Verfolgung dort, wo Ihr sie hingelegt habt. Der Griff oben zieht sie nicht mehr."
@@ -366,16 +356,12 @@ L["SETTING_OUTGROWN_TOOLTIP"] = "Zonen und Dungeons, deren Quests grau sind, in 
 L["SETTING_RXP"] = "RestedXP-Guides nutzen"
 L["SETTING_RXP_TOOLTIP"] =
 	"Fügt den aktuellen RestedXP-Guide Euren Reisekarten, der Karte und der Verfolgung hinzu. RestedXP schaltet die Guide-Schritte weiter; Shortest Path Forever übernimmt das Reisen. RestedXP bleibt installiert und steuert den Guide-Fortschritt."
-L["SETTING_STATS_SHARE"] = "Aktivität mit Gilde und Gruppen teilen"
-L["SETTING_STATS_SHARE_TOOLTIP"] =
-	"Standardmäßig an. Teilt kumulierte Aktivitätsdaten mit Addon-Nutzern in Gilde, Gruppe, Schlachtzug oder Instanz. Ausschalten, um Aufzeichnungen nur auf diesem Charakter zu behalten. Geteilte Daten werden von Spielern gemeldet und nicht überprüft."
 L["SETTING_STEP_SOUND"] = "Ton, wenn ein Schritt erledigt ist"
 L["SETTING_STEP_SOUND_TOOLTIP"] = "Spielt einmal einen kurzen Ton, wenn Ihr einen Routenschritt abschließt."
 L["SETTING_TITLE_ROUTE"] = "Reisen starten die Route"
 L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"Wenn Ihr im Führer eine Reise wählt oder in der Questzielverfolgung auf den Titel des aktuellen Schritts klickt, geht es entlang der Route los, mit Shortest Path Forever, wenn es geladen ist, sonst mit einem Wegpunkt auf der Karte. Ein erneuter Klick auf die gewählte Reise beendet sie."
 L["SETTING_TRACKER"] = "Abschnitt in der Verfolgung zeigen"
-L["SETTING_TRACKER_BACKGROUND"] = "Hintergrund der Verfolgung"
 L["SETTING_TRACKER_TOOLTIP"] =
 	"Ein kurzer Abschnitt „Adventure Guide“ über Euren Quests in der Questzielverfolgung, für den aktuellen Schritt."
 L["SETTING_TRACK_ROUTE"] = "Titel der Verfolgung verfolgt Quests"
@@ -409,17 +395,12 @@ L["SIDEBAR_COLLAPSED"] =
 	"Der Führer öffnet sich im Questlog neben der Weltkarte. Klickt auf den Pfeil unten rechts auf der Karte, um den Questlog einzublenden."
 L["SIDEBAR_MAXIMIZED"] =
 	"Der Führer öffnet sich im Questlog neben der Weltkarte. Klickt auf die Schaltfläche neben dem Schließen-Kreuz der Karte, um sie zu verkleinern und den Questlog einzublenden."
-L["SKILLUP_FAMILY"] = "SkillUp Forever plant den günstigsten Weg zu Eurem nächsten Berufsrang."
-L["SKILLUP_FAMILY_MENU"] = "Günstigster Weg zum nächsten Rang: SkillUp Forever"
 L["SKILLUP_NONE"] = "Keine Herstellungsberufe zu verbessern. Erlernt einen bei einem Lehrer, dann erscheint er hier."
 L["SKILLUP_OUTDATED"] =
 	"Eure nächsten Fertigkeitspunkte kommen von SkillUp Forever. Aktualisiert es, dann erscheinen sie hier."
 L["SKIP"] = "Vorerst überspringen"
 L["SKIPPED"] = "Übersprungen (%d)"
 L["SKIP_STEP"] = "Diesen Schritt vorerst überspringen"
-L["SPF_DISABLED"] = "Aktiviert Shortest Path Forever für Laufwege und Schiffszeiten."
-L["SPF_FAMILY_MENU"] = "Laufwege und Schiffszeiten: Shortest Path Forever"
-L["SPF_MISSING"] = "Installiert Shortest Path Forever für Laufwege und Schiffszeiten."
 L["STARTS_AFTER_COMBAT"] = "Die Route startet nach dem Kampf"
 L["STARTS_WITH"] = "Beginnt mit %s"
 L["START_ADVENTURE"] = "Starten"
@@ -483,9 +464,6 @@ L["TRAVEL_WAIT"] = " · %d Min. Wartezeit"
 L["TRAVEL_WALK"] = "Zu Fuß nach %s"
 L["TRAVEL_ZEPPELIN"] = "Zeppelin nach %s"
 L["TURN_IN"] = "Abgeben: %s"
-L["TWEAKS_DISABLED"] = "Aktiviert Tweaks Forever, um Dungeoneingänge zu finden."
-L["TWEAKS_FAMILY_MENU"] = "Dungeoneingänge finden: Tweaks Forever"
-L["TWEAKS_MISSING"] = "Installiert Tweaks Forever, um Dungeoneingänge zu finden."
 L["TWEAKS_OUTDATED"] = "Aktualisiert Tweaks Forever, um Dungeoneingänge zu finden."
 L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."

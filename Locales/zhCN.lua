@@ -313,27 +313,18 @@ L["SETTINGS_GROUP_INTERFACE"] = "界面" -- mt
 L["SETTINGS_GROUP_MAP"] = "地图" -- mt
 L["SETTINGS_GROUP_ROUTE"] = "路线" -- mt
 L["SETTINGS_GROUP_TRACKER"] = "目标追踪栏" -- mt
-L["SETTINGS_OPEN"] = "打开" -- mt
-L["SETTING_ATTACH_TRACKER"] = "附着于任务追踪栏" -- mt
-L["SETTING_ATTACH_TRACKER_TOOLTIP"] = "关闭后可将共享的Forever追踪栏拖动到屏幕任意位置。" -- mt
 L["SETTING_AUTO_START"] = "自动开始路线" -- mt
 L["SETTING_AUTO_START_TOOLTIP"] =
 	"路线一准备好，指南就会把所选旅程的路线发送给Shortest Path，因此登录和/reload后无需点击出发，地图上就会画出路线。点击停止仍会清除它，直到你再次选择旅程。" -- mt
-L["SETTING_DUNGEONS_DEFAULT"] = "默认包含地下城" -- mt
-L["SETTING_DUNGEONS_DEFAULT_TOOLTIP"] =
-	"从你安装指南后首次登录某个角色起，就为其推荐地下城任务。可随时在指南的设置菜单中更改。" -- mt
 L["SETTING_FOLLOW_QUEST"] = "跟随当前任务" -- mt
 L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 	"当你走进路线所指任务的区域时，指南会选中该任务，让地图显示其区域。它绝不会更改你自己选中的任务。" -- mt
 L["SETTING_GIVERS"] = "在地图上显示任务NPC" -- mt
 L["SETTING_GIVERS_TOOLTIP"] =
 	"在世界地图上，为每个有你现在可接任务的人显示“!”。还需要开启地图上的路线标记。" -- mt
-L["SETTING_GUIDE_TRACKS"] = "只追踪RestedXP指南的任务" -- mt
-L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
-	"跟随RestedXP指南时，目标追踪器只显示其当前和进行中步骤提到的任务。停止跟随后，你自己追踪的任务会恢复。" -- mt
 L["SETTING_JOURNEY_WATCH"] = "只追踪旅程的任务" -- mt
 L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
-	"旅程引导时，目标追踪器只显示它正在处理的任务，其他任务会离开追踪器。你自己追踪的任务会留在角色上，并在旅程不再引导、你选择其他旅程或关闭此设置时回来。" -- mt
+	"旅程引导时，目标追踪器只显示它正在处理的任务，其他任务会离开追踪器。你自己追踪的任务会留在角色上，并在旅程不再引导、你选择其他旅程或关闭此设置时回来。跟随RestedXP指南时也一样。" -- mt
 L["SETTING_LOCK_TRACKER"] = "锁定追踪器" -- mt
 L["SETTING_LOCK_TRACKER_TOOLTIP"] =
 	"将共享的 Forever 追踪器保持在您放置的位置。顶部的拖拽手柄不再移动它。" -- mt
@@ -359,16 +350,12 @@ L["SETTING_OUTGROWN_TOOLTIP"] = "在选项中保留任务为灰色的区域和�
 L["SETTING_RXP"] = "使用RestedXP指南" -- mt
 L["SETTING_RXP_TOOLTIP"] =
 	"将当前的RestedXP指南添加到你的旅程卡片、地图和追踪栏。RestedXP推进指南步骤；Shortest Path Forever负责出行。RestedXP保持安装并控制指南进度。" -- mt
-L["SETTING_STATS_SHARE"] = "与公会和队伍分享活动" -- mt
-L["SETTING_STATS_SHARE_TOOLTIP"] =
-	"默认开启。与公会、队伍、团队或副本中的插件用户分享累计活动记录。关闭后，记录仅保存在此角色上。分享的记录由玩家报告，未经验证。" -- mt
 L["SETTING_STEP_SOUND"] = "完成步骤时播放声音" -- mt
 L["SETTING_STEP_SOUND_TOOLTIP"] = "完成一个路线步骤时播放一次短促的声音。" -- mt
 L["SETTING_TITLE_ROUTE"] = "旅程开始路线" -- mt
 L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"在指南中选择旅程，或点击目标追踪栏中当前步骤的标题，即沿路线出发：已加载Shortest Path Forever时使用它，否则使用地图路径点。再次点击所选旅程即可停止。" -- mt
 L["SETTING_TRACKER"] = "显示追踪栏区块" -- mt
-L["SETTING_TRACKER_BACKGROUND"] = "追踪器背景" -- mt
 L["SETTING_TRACKER_TOOLTIP"] =
 	"在目标追踪栏中你的任务上方显示一个简短的“Adventure Guide”区块，用于当前步骤。" -- mt
 L["SETTING_TRACK_ROUTE"] = "追踪栏标题追踪任务" -- mt
@@ -401,16 +388,11 @@ L["SIDEBAR_COLLAPSED"] =
 	"指南在世界地图旁的任务日志中打开。点击地图右下角的箭头即可显示任务日志。" -- mt
 L["SIDEBAR_MAXIMIZED"] =
 	"指南在世界地图旁的任务日志中打开。点击地图关闭按钮旁的按钮缩小地图，即可显示任务日志。" -- mt
-L["SKILLUP_FAMILY"] = "SkillUp Forever规划升到下一专业等级最省钱的路线。" -- mt
-L["SKILLUP_FAMILY_MENU"] = "升到下一等级最省钱的路线：SkillUp Forever" -- mt
 L["SKILLUP_NONE"] = "没有可提升的制造专业。在训练师处学会一个后，它会显示在这里。" -- mt
 L["SKILLUP_OUTDATED"] = "你的下一次技能提升来自SkillUp Forever。更新它后会显示在这里。" -- mt
 L["SKIP"] = "暂时跳过" -- mt
 L["SKIPPED"] = "已跳过（%d）" -- mt
 L["SKIP_STEP"] = "暂时跳过此步骤" -- mt
-L["SPF_DISABLED"] = "启用Shortest Path Forever以获得步行路线和船只时刻。" -- mt
-L["SPF_FAMILY_MENU"] = "步行路线和船只时刻：Shortest Path Forever" -- mt
-L["SPF_MISSING"] = "安装Shortest Path Forever以获得步行路线和船只时刻。" -- mt
 L["STARTS_AFTER_COMBAT"] = "战斗结束后路线开始" -- mt
 L["STARTS_WITH"] = "始于%s" -- mt
 L["START_ADVENTURE"] = "开始" -- mt
@@ -474,9 +456,6 @@ L["TRAVEL_WAIT"] = " · 等待%d分钟" -- mt
 L["TRAVEL_WALK"] = "步行前往%s" -- mt
 L["TRAVEL_ZEPPELIN"] = "前往%s的飞艇" -- mt
 L["TURN_IN"] = "交还：%s" -- mt
-L["TWEAKS_DISABLED"] = "启用Tweaks Forever以寻找地下城入口。" -- mt
-L["TWEAKS_FAMILY_MENU"] = "寻找地下城入口：Tweaks Forever" -- mt
-L["TWEAKS_MISSING"] = "安装Tweaks Forever以寻找地下城入口。" -- mt
 L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以寻找地下城入口。" -- mt
 L["UNLISTED"] = "这片土地有指南尚不知道的故事；请留意任务NPC头上的“!”。" -- mt
 L["UPDATED_TO"] = "已更新到%s。%s" -- mt

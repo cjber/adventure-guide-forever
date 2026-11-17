@@ -790,16 +790,12 @@
 ---@field SETTINGS_GROUP_MAP string
 ---@field SETTINGS_GROUP_TRACKER string
 ---@field SETTINGS_GROUP_INTERFACE string
----@field SETTINGS_OPEN string
 ---@field SETTING_TRACKER string
 ---@field SETTING_TRACKER_TOOLTIP string
----@field SETTING_ATTACH_TRACKER string
----@field SETTING_ATTACH_TRACKER_TOOLTIP string
 ---@field SETTING_LOCK_TRACKER string
 ---@field SETTING_LOCK_TRACKER_TOOLTIP string
 ---@field SETTING_MAP_PINS string
 ---@field SETTING_GIVERS string
----@field SETTING_DUNGEONS_DEFAULT string
 ---@field SETTING_QUEST_LEVEL string
 ---@field SETTING_QUEST_LEVEL_VALUE string
 ---@field SETTING_QUEST_LEVEL_ONE string
@@ -809,7 +805,6 @@
 ---@field SETTING_MAP_PINS_TOOLTIP string
 ---@field SETTING_HIDE_QUEST_MARKERS_TOOLTIP string
 ---@field SETTING_GIVERS_TOOLTIP string
----@field SETTING_DUNGEONS_DEFAULT_TOOLTIP string
 ---@field SETTING_TITLE_ROUTE string
 ---@field SETTING_TITLE_ROUTE_TOOLTIP string
 ---@field SETTING_AUTO_START string
@@ -822,8 +817,6 @@
 ---@field SETTING_NPC_HIGHLIGHT_TOOLTIP string
 ---@field SETTING_TRACK_ROUTE string
 ---@field SETTING_TRACK_ROUTE_TOOLTIP string
----@field SETTING_GUIDE_TRACKS string
----@field SETTING_GUIDE_TRACKS_TOOLTIP string
 ---@field SETTING_JOURNEY_WATCH string
 ---@field SETTING_JOURNEY_WATCH_TOOLTIP string
 ---@field TRACKER_HIDDEN_COUNT string
@@ -1602,9 +1595,7 @@
 ---@class AGFStrings
 ---@field TAB_PVP string
 ---@field GO_TO_ENTRANCE string
----@field TWEAKS_MISSING string
 ---@field TWEAKS_OUTDATED string
----@field TWEAKS_DISABLED string a dungeon card with Tweaks Forever installed but not enabled
 ---@field ENTRANCE_UNKNOWN string
 ---@field PVP_RANK string
 ---@field PVP_RANK_POINTS string
@@ -1644,8 +1635,6 @@
 ---@field MINIMAP_BUTTON_SUBTEXT string
 ---@field MINIMAP_BUTTON_TOOLTIP string
 ---@field SETTING_MINIMAP_BUTTON string
----@field SETTING_STATS_SHARE string
----@field SETTING_STATS_SHARE_TOOLTIP string
 ---@field SETTING_STEP_SOUND string
 ---@field SETTING_STEP_SOUND_TOOLTIP string
 ---@field STEP_PICKUP string
@@ -1660,22 +1649,10 @@
 ---@field WHATS_NEW string the newest release's headline, printed once after an update
 ---@field SETTING_WHATS_NEW string
 ---@field SETTING_WHATS_NEW_TOOLTIP string
----@field SPF_FAMILY_MENU string a step's menu entry without Shortest Path Forever installed
----@field SKILLUP_FAMILY string a profession trainer's tooltip without SkillUp Forever installed
----@field SKILLUP_FAMILY_MENU string a profession trainer's menu entry without SkillUp Forever installed
----@field TWEAKS_FAMILY_MENU string a dungeon card's menu entry without Tweaks Forever installed, when its entrance is unknown
----@field SPF_MISSING string a route step's tooltip without Shortest Path Forever installed
----@field SPF_DISABLED string a route step's tooltip with Shortest Path Forever installed but not enabled
-
----@class AGFCompanions
----@field Line fun(addon: string): string?, boolean? the line for a companion that isn't running, and whether it suggests installing it
----@field AddLine fun(tooltip: GameTooltip, addon: string) the line at a tooltip's foot: a suggestion grey, an "Enable" line as an instruction
----@field AddMenu fun(root: AGFMenuActions, addon: string) the grey entry that shows a missing companion's address
 
 ---@class AGFNamespace
 ---@field WhatsNew fun() on login: print WHATS_NEW once if the version changed since the last one seen
----@field Companions AGFCompanions
----@field FamilyDB fun(): ForeverFamilyDB? the account-wide saved variables its page and hints use
+---@field AddOnState fun(folder: string): "on"|"off"|"missing" whether an addon runs, is installed but not running, or is not installed
 
 ---@class AGFModel
 ---@field ObjectiveDone fun(data: AGFData, entry?: AGFLogQuest, slot: integer): boolean

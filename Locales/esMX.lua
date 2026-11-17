@@ -319,28 +319,18 @@ L["SETTINGS_GROUP_INTERFACE"] = "Interfaz"
 L["SETTINGS_GROUP_MAP"] = "Mapa"
 L["SETTINGS_GROUP_ROUTE"] = "Ruta"
 L["SETTINGS_GROUP_TRACKER"] = "Rastreador de objetivos"
-L["SETTINGS_OPEN"] = "Abrir"
-L["SETTING_ATTACH_TRACKER"] = "Unir al rastreador de misiones"
-L["SETTING_ATTACH_TRACKER_TOOLTIP"] =
-	"Desactívalo para arrastrar el Rastreador Forever compartido a cualquier parte de la pantalla."
 L["SETTING_AUTO_START"] = "Iniciar la ruta automáticamente"
 L["SETTING_AUTO_START_TOOLTIP"] =
 	"La guía envía la ruta del viaje elegido a Shortest Path en cuanto está lista, así que la línea del mapa aparece al conectarte y tras un /reload sin pulsar Ir. Pulsar Detener la sigue borrando hasta que vuelvas a elegir un viaje."
-L["SETTING_DUNGEONS_DEFAULT"] = "Incluir calabozos por defecto"
-L["SETTING_DUNGEONS_DEFAULT_TOOLTIP"] =
-	"Sugiere misiones de calabozo a un personaje desde la primera vez que te conectas con él con la guía instalada. Cámbialo cuando quieras desde el menú de opciones de la guía."
 L["SETTING_FOLLOW_QUEST"] = "Seguir tu misión actual"
 L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 	"Cuando entras en la zona de la misión a la que lleva la ruta, la guía selecciona esa misión para que el mapa muestre su zona. Nunca cambia una misión que hayas seleccionado tú."
 L["SETTING_GIVERS"] = "Mostrar asignadores de misiones en el mapa"
 L["SETTING_GIVERS_TOOLTIP"] =
 	"Un «!» en el mapa del mundo sobre todos los que tienen una misión que puedes aceptar ya. Necesita también las marcas de ruta en el mapa."
-L["SETTING_GUIDE_TRACKS"] = "Seguir solo las misiones de la guía de RestedXP" -- mt
-L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
-	"Mientras sigues una guía de RestedXP, el rastreador de objetivos muestra solo las misiones que nombran sus pasos actuales y en curso. Las misiones que seguías tú vuelven cuando dejas de seguirla." -- mt
 L["SETTING_JOURNEY_WATCH"] = "Seguir solo las misiones del viaje" -- mt
 L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
-	"Mientras un viaje guía, el rastreador de objetivos muestra solo las misiones en las que trabaja y las demás lo abandonan. Tus misiones seguidas se quedan en el personaje y vuelven cuando el viaje deja de guiar, eliges otro o desactivas esto." -- mt
+	"Mientras un viaje guía, el rastreador de objetivos muestra solo las misiones en las que trabaja y las demás lo abandonan. Tus misiones seguidas se quedan en el personaje y vuelven cuando el viaje deja de guiar, eliges otro o desactivas esto. Lo mismo ocurre mientras sigues una guía de RestedXP." -- mt
 L["SETTING_LOCK_TRACKER"] = "Bloquear el rastreador"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] =
 	"Mantiene el rastreador compartido Forever donde lo pones. El tirador de arriba ya no lo arrastra."
@@ -366,16 +356,12 @@ L["SETTING_OUTGROWN_TOOLTIP"] = "Mantener en las opciones las zonas y mazmorras 
 L["SETTING_RXP"] = "Usar guías de RestedXP"
 L["SETTING_RXP_TOOLTIP"] =
 	"Añade la guía actual de RestedXP a tus tarjetas de viaje, el mapa y el rastreador. RestedXP avanza los pasos de la guía; Shortest Path Forever se encarga de los desplazamientos. RestedXP sigue instalado y controla el progreso de la guía."
-L["SETTING_STATS_SHARE"] = "Compartir actividad con hermandad y grupos"
-L["SETTING_STATS_SHARE_TOOLTIP"] =
-	"Activado de forma predeterminada. Comparte los registros acumulados de actividad con usuarios del addon en tu hermandad, grupo, banda o instancia. Desactívalo para guardar los registros solo en este personaje. Los registros compartidos los reportan los jugadores; no se verifican."
 L["SETTING_STEP_SOUND"] = "Sonido al completar un paso"
 L["SETTING_STEP_SOUND_TOOLTIP"] = "Reproduce un sonido corto una vez al terminar un paso de la ruta."
 L["SETTING_TITLE_ROUTE"] = "Los viajes inician la ruta"
 L["SETTING_TITLE_ROUTE_TOOLTIP"] =
 	"Elegir un viaje en la guía, o hacer clic en el título del paso actual en el rastreador de objetivos, inicia la ruta, con Shortest Path Forever si está cargado y si no con un punto de ruta en el mapa. Volver a hacer clic en el viaje elegido lo detiene."
 L["SETTING_TRACKER"] = "Mostrar sección en el rastreador"
-L["SETTING_TRACKER_BACKGROUND"] = "Fondo del rastreador"
 L["SETTING_TRACKER_TOOLTIP"] =
 	"Una sección corta «Adventure Guide» sobre tus misiones en el rastreador de objetivos, para el paso actual."
 L["SETTING_TRACK_ROUTE"] = "El título del rastreador sigue misiones"
@@ -408,17 +394,12 @@ L["SIDEBAR_COLLAPSED"] =
 	"La guía se abre en el registro de misiones junto al mapa del mundo. Haz clic en la flecha de la esquina inferior derecha del mapa para mostrar el registro de misiones."
 L["SIDEBAR_MAXIMIZED"] =
 	"La guía se abre en el registro de misiones junto al mapa del mundo. Haz clic en el botón junto a la cruz de cerrar del mapa para reducirlo y mostrar el registro de misiones."
-L["SKILLUP_FAMILY"] = "SkillUp Forever planea la ruta más barata hasta tu siguiente rango de profesión."
-L["SKILLUP_FAMILY_MENU"] = "La ruta más barata a tu siguiente rango: SkillUp Forever"
 L["SKILLUP_NONE"] = "No tienes profesiones de fabricación que subir. Aprende una con un instructor y aparecerá aquí."
 L["SKILLUP_OUTDATED"] =
 	"Tus próximas subidas de habilidad vienen de SkillUp Forever. Actualízalo y aparecerán aquí."
 L["SKIP"] = "Saltar por ahora"
 L["SKIPPED"] = "Saltadas (%d)"
 L["SKIP_STEP"] = "Saltar este paso por ahora"
-L["SPF_DISABLED"] = "Activa Shortest Path Forever para rutas a pie y horarios de barcos."
-L["SPF_FAMILY_MENU"] = "Rutas a pie y horarios de barcos: Shortest Path Forever"
-L["SPF_MISSING"] = "Instala Shortest Path Forever para rutas a pie y horarios de barcos."
 L["STARTS_AFTER_COMBAT"] = "La ruta empieza cuando acabe el combate"
 L["STARTS_WITH"] = "Empieza con %s"
 L["START_ADVENTURE"] = "Empezar"
@@ -482,9 +463,6 @@ L["TRAVEL_WAIT"] = " · %d min de espera"
 L["TRAVEL_WALK"] = "Caminar hasta %s"
 L["TRAVEL_ZEPPELIN"] = "Zepelín a %s"
 L["TURN_IN"] = "Entregar: %s"
-L["TWEAKS_DISABLED"] = "Activa Tweaks Forever para encontrar entradas de calabozos."
-L["TWEAKS_FAMILY_MENU"] = "Encontrar entradas de calabozos: Tweaks Forever"
-L["TWEAKS_MISSING"] = "Instala Tweaks Forever para encontrar entradas de calabozos."
 L["TWEAKS_OUTDATED"] = "Actualiza Tweaks Forever para encontrar entradas de calabozos."
 L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."

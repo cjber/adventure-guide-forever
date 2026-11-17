@@ -174,12 +174,8 @@ local function LoadDB()
 		end
 	end
 	loaded.window, loaded.floatWindow = nil, nil
-	-- "Suggest companion addons" became the Forever addons page's "Suggest my other Forever addons"
-	-- (ForeverCore.Family, `suggestFamily`, on unless false): a player who had turned it off keeps it off.
-	if loaded.suggestCompanions == false and loaded.suggestFamily == nil then
-		loaded.suggestFamily = false
-	end
-	loaded.suggestCompanions = nil
+	-- The companion addon suggestions and their saved keys are gone.
+	loaded.suggestCompanions, loaded.suggestFamily, loaded.familyDismissed = nil, nil, nil
 	-- The shared error journal and debug log live in this saved table, under ForeverCore's own keys, so the report
 	-- lists earlier sessions' errors after a /reload. They are records, not settings: no row on the AddOns page reads
 	-- them.
@@ -188,11 +184,17 @@ local function LoadDB()
 	db = loaded
 end
 
--- The account-wide saved variables the Forever addons page and its hints read and write (ForeverCore.Family);
--- nil before they load.
----@return ForeverFamilyDB?
-function ns.FamilyDB()
-	return db
+-- Where an installed addon stands: "on" while it runs, "off" when it is on disk but not running (switched off, out of
+-- date or failed to load) and "missing" when it is not installed. An answer the client will not give reads as "off".
+---@param folder string
+---@return "on"|"off"|"missing"
+function ns.AddOnState(folder)
+	local ok, loaded = pcall(C_AddOns.IsAddOnLoaded, folder)
+	if ok and loaded then
+		return "on"
+	end
+	local found, exists = pcall(C_AddOns.DoesAddOnExist, folder)
+	return found and exists == false and "missing" or "off"
 end
 
 local function LoadCharDB()
@@ -384,6 +386,10 @@ function ns.SetSetting(key, value)
 		db.restedxpChoiceMade = true
 		ns.GuideSetup.Hide()
 		ns.RestedXP.Refresh()
+	end
+	-- One row covers both: a journey and a RestedXP guide each leave only their own quests in the tracker.
+	if key == "journeyWatch" then
+		db.guideTracksQuests = value
 	end
 	if key == "guideTracksQuests" or key == "journeyWatch" then
 		ns.QuestWatch.Sync()

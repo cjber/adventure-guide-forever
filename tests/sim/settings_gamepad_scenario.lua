@@ -1,9 +1,9 @@
 -- luacheck: read globals scenario ADDON
--- With the gamepad interface on, the Forever addons page is the client's own vertical rows, so the Options
--- navigation can enter it (cjber/tweaks-forever#382).
+-- With the gamepad interface on, the settings page is the client's own vertical rows under its headings, so the
+-- Options navigation can enter it (cjber/tweaks-forever#382).
 local core = dofile("tests/sim/forever_core.lua")
 
-scenario("the Forever addons settings page can be entered with a gamepad", { addons = core }, function(sim)
+scenario("the settings page can be entered with a gamepad", { addons = core }, function(sim)
 	local G = sim.G
 	-- The client opens the panel itself: a C function that calls SettingsPanel:OpenToCategory.
 	sim.impl["C_SettingsUtil.OpenSettingsPanel"] = function(categoryID, scrollTo)
@@ -25,22 +25,13 @@ scenario("the Forever addons settings page can be entered with a gamepad", { add
 		end
 	end
 	assert(category, ns.TITLE .. " is under Options > AddOns")
-	local sub
-	for _, s in ipairs(category:GetSubcategories()) do
-		if s:GetName() == "Forever addons" then
-			sub = s
-		end
-	end
-	assert(sub, "Forever addons is one of its subpages")
+	assert(#category:GetSubcategories() == 0, "one page, no subpages")
 	assert(
-		G.SettingsPanel:GetLayout(sub):IsVerticalLayout(),
-		"Forever addons is a canvas page, which the gamepad cursor cannot enter (cjber/tweaks-forever#382)"
+		G.SettingsPanel:GetLayout(category):IsVerticalLayout(),
+		"the page is a vertical list, which the gamepad cursor can enter (cjber/tweaks-forever#382)"
 	)
 	sim:input(function()
 		G.Settings.OpenToCategory(category:GetID())
-	end)
-	sim:input(function()
-		G.SettingsPanel:SelectCategory(sub)
 	end)
 	sim:advance(0.1)
 	local first = G.SettingsPanel:GetFirstSmartNavFocusableSettingFrame()
