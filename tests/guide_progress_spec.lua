@@ -86,10 +86,16 @@ h.combat = false
 h.tracker:OnBlockHeaderClick(note, "LeftButton")
 check(h.cvars.questPOI == "1", "a click shows the quest areas")
 check(not h.tracker.liveBlocks["quest-areas"].used, "and the note goes")
--- Right-click hides the note for good, with the areas still off.
+-- Right-click opens options; hiding the note is an explicit action.
 h.G.SetCVar("questPOI", "0")
 h.tracker:OnBlockHeaderClick(h.tracker.liveBlocks["quest-areas"], "RightButton")
 check(h.cvars.questPOI == "0", "a right-click leaves the CVar alone")
+check(h.tracker.liveBlocks["quest-areas"].used, "opening the menu keeps the note")
+for _, entry in ipairs(h.menu.entries) do
+	if entry.text == h.ns.L.TRACKER_NOTE_HIDE then
+		entry.onClick()
+	end
+end
 check(not h.tracker.liveBlocks["quest-areas"].used, "and hides the note")
 h.G.SetCVar("questPOI", "1")
 h.G.SetCVar("questPOI", "0")

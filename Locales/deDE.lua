@@ -524,7 +524,6 @@ L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 L["QUESTIE_TRACKER_RELOAD"] = "Questies Tracker kommt nach einem /reload zurück." -- mt
 L["QUEST_AREAS_OFF"] = "Questgebiete sind ausgeblendet" -- mt
 L["QUEST_AREAS_SHOW"] = "Klicken, um die blauen Questgebiete des Spiels auf der Karte zu zeigen" -- mt
-L["QUEST_AREAS_DISMISS"] = "Rechtsklick, um diesen Hinweis auszublenden" -- mt
 L["QUEST_AREAS_TOOLTIP"] =
 	"Die blauen Questgebiete der Karte zeigen, wo jedes Ziel erledigt wird. Questies Zieltypen Questie und pfQuest schalten sie aus." -- mt
 L["JOURNEY_NEXT"] = "Weiter nach %s"
@@ -563,3 +562,14 @@ L["TRAINER_STOPS"] = "Lehrerstopps" -- mt
 L["VISIT_TRAINER"] = "%s besuchen" -- mt
 
 L["CHOSEN_TRAINER"] = "Gewählter Lehrer" -- mt
+
+L["TRACKER_QUEST_AREAS_SHOW"] = "Questgebiete anzeigen" -- mt
+L["TRACKER_NOTE_HIDE"] = "Diesen Hinweis ausblenden" -- mt
+L["TRACKER_NOTE_OPTIONS"] = "Rechtsklick für Optionen" -- mt
+L["TRACKER_TAKE_OVER"] = "Route übernehmen" -- mt
+
+L["TRACKER_HINT_SHOW_QUEST"] = "die Quest anzeigen" -- mt
+L["TRACKER_HINT_OPEN_GUIDE"] = "den Guide öffnen" -- mt
+L["TRACKER_HINT_GO"] = "dorthin gehen" -- mt
+L["TRACKER_HINT_QUEST_AREAS"] = "Questgebiete anzeigen" -- mt
+L["TRACKER_HINT_TAKE_OVER"] = "die Route übernehmen" -- mt

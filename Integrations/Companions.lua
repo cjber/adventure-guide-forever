@@ -72,7 +72,7 @@ end
 -- The grey menu entry for `addon`, while its hint may show: it opens the window with the addon's address, which also
 -- offers "Don't suggest this again". The window never opens in combat, so in combat the entry is left out rather than
 -- doing nothing.
----@param root ForeverMenuDescription
+---@param root AGFMenuActions
 ---@param addon string a key of HINTS with a menu entry
 function Companions.AddMenu(root, addon)
 	local hint, db = HINTS[addon], ns.FamilyDB()
