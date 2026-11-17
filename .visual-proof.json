@@ -1,23 +1,23 @@
 {
-  "input_digest": "d390fa92b463ca9f54f909919eae1361ad2acfd4d818d0ea854d55a21a56dead",
-  "runtime_sha256": "d390fa92b463ca9f54f909919eae1361ad2acfd4d818d0ea854d55a21a56dead",
-  "candidate": "c7d08db28fb17539da884e53f2827c394c6cb63cba980310ca089b078c060654",
+  "input_digest": "cdd3ce62387e527bf65f1c8fb4e0f0d069c6183fcb9e7b52b37a1a948182858d",
+  "runtime_sha256": "cdd3ce62387e527bf65f1c8fb4e0f0d069c6183fcb9e7b52b37a1a948182858d",
+  "candidate": "e1232143bca5c142e2dbc7387e803a1f6b5599f8e6b28eba54dcbaedc1a93286",
   "client_build": "1.60.1.70938 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "a8a9cdc819dc5d3926cf8fb3e1b4f83f0816213c",
+  "source_commit": "0fbe7bdfed6cc8781ef2eaae2028650204da55b2",
   "flows": [
     {
-      "name": "guide panel",
+      "name": "guide window",
       "steps": [
-        "agf-guide-ready.lua sha256:cbe16779b62f43b40d60b377cab383914f96ee478f7bda6706b27698823b46d1"
+        "/agf"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/fa4893a2f9b18a3a11a0e35cc98cf802/raw/08d36d4a5393a0e9d85ddf6559e82ee4a5bd260a/1-guide-panel.png",
-      "sha256": "7917bb865d884af1e1e3ceab0c0acc54761cab3fdaf48dded8fdba4068e2c7c2"
+      "url": "https://gist.githubusercontent.com/cjber/fd521dffe1f2a5c1f1b189c794322b0f/raw/131836bcdbbf9c6f3da129818334fa016452e540/1-guide-window.png",
+      "sha256": "00a31a4e807457fc3605ada9eb4013553a21d0ab23e86824f659c8729df22dfb"
     }
   ]
 }
