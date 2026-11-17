@@ -1,34 +1,23 @@
 {
-  "input_digest": "073dcb2469b894dd1b73cc290268855ebd8e84ee5599b6413c4c7a19462d43e7",
-  "runtime_sha256": "073dcb2469b894dd1b73cc290268855ebd8e84ee5599b6413c4c7a19462d43e7",
-  "candidate": "974232e692f77b47444596a75fccf0bf8b2a56cf570a5f1d4d2be180da7e2ee9",
+  "input_digest": "1b8c2210c1bde412cd3b27a9f62ccf5c9433055605a339eec374de196ebd753e",
+  "runtime_sha256": "1b8c2210c1bde412cd3b27a9f62ccf5c9433055605a339eec374de196ebd753e",
+  "candidate": "2369a7070e6e3f40a6a775428848072a4ff569d0df7b2b6105b61761e4469c6b",
   "client_build": "1.60.1.70938 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "ad4dbd56ab62df7dadbf096dc22145b91ba0ba2c",
+  "source_commit": "9474f3f3e80ff9a0149d146dca80442a684e748d",
   "flows": [
     {
-      "name": "journey-header-menu",
+      "name": "guide",
       "steps": [
-        "sha256:aec68986b7d8126257fc3db4034927f8f170f036d07deec44da3f46c7bc71944 flow-header.lua"
-      ],
-      "result": "pass"
-    },
-    {
-      "name": "journey-block-menu",
-      "steps": [
-        "sha256:d13e1970889eb6f9604eb4ed72dd8ca8b7134fa5a9cead07f902f8487063d808 flow-block.lua"
+        "/agf"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/0a16b477a559117a1596790061e8e6c0/raw/3a354c406873b2a6ad5121258ad4ef81ee238662/1-journey-header-menu.png",
-      "sha256": "92b03315b07c1511c4a35a9a2d6f2465daba03d546fe5b00bc7131f92b3fe36b"
-    },
-    {
-      "url": "https://gist.githubusercontent.com/cjber/0a16b477a559117a1596790061e8e6c0/raw/3a354c406873b2a6ad5121258ad4ef81ee238662/2-journey-block-menu.png",
-      "sha256": "74f7729a1e4286fb8c98b393d462ed51b4306cc6ed84f6604a2825f749c5a80c"
+      "url": "https://gist.githubusercontent.com/cjber/4b540cc5f7fefaa0a2bf54a4c7bba91e/raw/e0af7db48e6ce0a7a59086b415bd7fd7b2e1cdd3/1-guide.png",
+      "sha256": "e88621bb65737515f83226ea29ca33de14da6b73e3065c3d032a6755b1e14c24"
     }
   ]
 }

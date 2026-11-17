@@ -4,6 +4,8 @@ local _, ns = ...
 
 ns.Credits = {
 	players = {
+		{ name = "moshoutegong", what = "Simplified Chinese corrections" },
+		{ name = "moshoutegong", what = "Traditional Chinese corrections" },
 		{ name = "VinzNL", what = "Battlegrounds left out of suggestions" },
 		{ name = "fuguer-ai", what = "Read-only API for the current stop" },
 		{ name = "rhednak", what = "Fixed the overflow that broke Skyborne guides" },

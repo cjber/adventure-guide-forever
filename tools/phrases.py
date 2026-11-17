@@ -11,8 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from check_core_shared import VENDORED
-from forever_tools import pkgmeta
+from forever_tools import pkgmeta, toc
 from gen_quests import lua
 from lint_copy import ns_l_entries, split, unquote
 from lint_multivalue import Token, tokenize
@@ -83,10 +82,10 @@ def keyword_files() -> list[str]:
 
 def missing_shared_phrases(english: str) -> list[str]:
     """Require explicit English assignments for literal calls to a shared phrase helper."""
-    known = assigned(tokenize(english)[0])
+    known = phrases(english)
     missing = []
-    for name in sorted(VENDORED):
-        path = ROOT / name
+    for path in toc.runtime_files(ROOT):
+        name = path.relative_to(ROOT).as_posix()
         if path.suffix != ".lua" or not path.is_file():
             continue
         tokens = tokenize(path.read_text())[0]
