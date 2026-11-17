@@ -600,6 +600,9 @@ function harness.load(options)
 	end
 
 	-- Frames.
+	function Methods:IsProtected()
+		return false, false
+	end
 	function Methods:SetScript(scriptType, fn)
 		self.scripts[scriptType] = fn
 	end
@@ -934,6 +937,13 @@ function harness.load(options)
 
 	-- ObjectiveTrackerAnimBlockMixin (Blizzard_ObjectiveTrackerAnimTemplates.lua:95-155): a fanfare block plays
 	-- AddAnim from OnLayout, and the animation restarts each used line's FadeInAnim.
+	G.ObjectiveTrackerAnimBlockMixin = {
+		OnLayout = function(self)
+			if self.parentModule:NeedsFanfare(self.id) then
+				self:TryPlayAnim(self.AddAnim)
+			end
+		end,
+	}
 	local function AnimBlock(block)
 		block.AddAnim = AnimationGroup()
 		block.activeAnim = nil
@@ -973,16 +983,18 @@ function harness.load(options)
 				end
 			end
 		end
-		function block:OnLayout()
-			if self.parentModule:NeedsFanfare(self.id) then
-				self:TryPlayAnim(self.AddAnim)
-			end
-		end
+		block.OnLayout = G.ObjectiveTrackerAnimBlockMixin.OnLayout
 	end
 
 	-- The tracker module's block stubs: a block records its header and objective lines, and each objective line is
 	-- acquired from the module's lineTemplate, as ObjectiveTrackerBlockMixin:GetLine does
 	-- (Blizzard_ObjectiveTrackerBlock.lua:79).
+	-- Normal fixture quests have no special quest tag appended to their title.
+	G.QuestObjectiveTrackerMixin = {
+		GetQuestTagText = noop,
+		lineTemplate = "QuestObjectiveLineTemplate",
+		blockTemplate = "ObjectiveTrackerQuestPOIBlockTemplate",
+	}
 	local function TrackerModule(module)
 		module.liveBlocks, module.layoutOrder = {}, {}
 		module.blockTemplate = module.blockTemplate or "ObjectiveTrackerBlockTemplate"
@@ -1010,6 +1022,7 @@ function harness.load(options)
 			local block = self.liveBlocks[id]
 			if not block then
 				block = {
+					childFrames = {},
 					id = id,
 					parentModule = module,
 					template = self.blockTemplate,
@@ -1021,11 +1034,36 @@ function harness.load(options)
 					styles = {},
 					height = 0,
 				}
-				if block.template == "ObjectiveTrackerAnimBlockTemplate" then
+				-- Native blocks are frames, including parent visibility for their POI buttons.
+				local frame = NewRegion("Frame", nil, module)
+				for key, value in pairs(block) do
+					frame[key] = value
+				end
+				block = frame
+				if
+					block.template == "ObjectiveTrackerAnimBlockTemplate"
+					or block.template == "ObjectiveTrackerQuestPOIBlockTemplate"
+				then
 					AnimBlock(block)
 				end
 				block.SetHeader = function(this, text)
 					this.header, this.height = text, 14
+				end
+				block.GetExistingLine = function(this, key)
+					return this.frames[key]
+				end
+				block.SetPOIInfo = function(this, questID, complete, superTracked, worldQuest)
+					this.poiQuestID, this.poiIsComplete = questID, complete
+					this.poiIsSuperTracked, this.poiIsWorldQuest = superTracked, worldQuest
+				end
+				block.SetExtraAddAnimation = function(this, anim)
+					this.extraAddAnim = anim
+				end
+				block.AddPOIButton = function(this)
+					local style = this.poiIsComplete and 3 or 2 -- POIButtonUtil.Style
+					local button = this:GetPOIButton(style)
+					button:SetPoint("TOPRIGHT", this.HeaderText, "TOPLEFT", -7, 5)
+					button:SetPingWorldMap(nil)
 				end
 				block.AddObjective = function(this, key, text, lineTemplate, useFullHeight, dashStyle, colorStyle)
 					if not this.lines[key] then
@@ -1447,6 +1485,7 @@ function harness.load(options)
 			Internal("Texture", frame, "Icon"):Hide()
 		end,
 		ObjectiveTrackerModuleTemplate = TrackerModule,
+		ObjectiveTrackerPOIButtonTemplate = noop,
 		-- Mainline/SharedUIPanelTemplates.xml:566-662: the portrait's container is a real child (level 400) so a dump
 		-- has the portrait the addon sets and what it adds there; the title and close button are stock innards.
 		PortraitFrameTemplate = function(frame)
@@ -2313,7 +2352,47 @@ function harness.load(options)
 		return 0
 	end
 	h.selectedQuests = {}
+	G.GetNumQuestLeaderBoards = function(index)
+		local entry = log[index]
+		return entry and #(entry.objectives or {}) or 0
+	end
+	G.GetQuestLogLeaderBoard = function(objectiveIndex, index)
+		local entry = log[index]
+		local objective = entry and entry.objectives and entry.objectives[objectiveIndex]
+		if objective then
+			return objective.text or "", objective.type, objective.done
+		end
+	end
+	G.GetQuestLogCompletionText = function(index)
+		local entry = log[index]
+		return entry and entry.completionText
+	end
+	-- Ordinary fixture quests have neither sequenced objectives nor a folded tracker entry.
+	G.IsQuestSequenced = function()
+		return false
+	end
+	G.IsQuestFolded = function()
+		return false
+	end
+	-- The harness has no quest-level or difficulty-colour CVars enabled.
+	G.SetQuestTitleLevelAndDifficultyColor = function(_, title)
+		return title
+	end
+	G.C_QuestInfoSystem = {
+		GetQuestClassification = function()
+			return G.Enum.QuestClassification.Normal
+		end,
+	}
 	G.C_QuestLog = {
+		GetNextWaypointText = noop,
+		-- No distance is available for the harness's quest locations.
+		GetDistanceSqToQuest = noop,
+		ReadyForTurnIn = function(questID)
+			return G.C_QuestLog.IsComplete(questID)
+		end,
+		IsQuestDisabledForSession = function()
+			return false
+		end,
 		SetSelectedQuest = function(id)
 			h.selectedQuests[#h.selectedQuests + 1] = id
 		end,
@@ -2732,7 +2811,7 @@ function harness.load(options)
 		G.GameTooltip:Hide()
 	end
 	-- Unit tooltips: TooltipDataProcessor's post calls, run by h.HoverUnit on the unit's GUID (UnitGUID).
-	G.Enum = { TooltipDataType = { Unit = 2 } }
+	G.Enum = { TooltipDataType = { Unit = 2 }, QuestClassification = { Normal = 0, Campaign = 2 } }
 	G.Lerp = function(a, b, t)
 		return a + (b - a) * t
 	end
@@ -3273,8 +3352,12 @@ function harness.load(options)
 	end
 	-- Blizzard's own details view, opened by the player; the addon never calls it.
 	h.questDetails = {}
+	G.QuestMapFrame_GetFocusedQuestID = function()
+		return questMap.DetailsFrame.questID
+	end
 	G.QuestMapFrame_ShowQuestDetails = function(questID)
 		h.questDetails[#h.questDetails + 1] = questID
+		questMap.DetailsFrame.questID = questID
 	end
 
 	-- Sounds are recorded by kit ID (Blizzard_SharedXML/Mainline/SoundKitConstants.lua:125).
@@ -3318,6 +3401,38 @@ function harness.load(options)
 		return {
 			GetOrCreatePool = function()
 				error("pooled native blocks require the shared tracker host")
+			end,
+		}
+	end
+	G.CreateFramePool = function(frameType, parent, template)
+		-- CreateFrame accepts case-insensitive type names; the region model uses canonical spelling.
+		if frameType:upper() == "BUTTON" then
+			frameType = "Button"
+		end
+		local unused = {}
+		return {
+			Acquire = function()
+				local frame = table.remove(unused) or G.CreateFrame(frameType, nil, parent, template)
+				frame.AddAnim = frame.AddAnim or AnimationGroup()
+				frame.SetQuestID = function(self, id)
+					self.questID = id
+				end
+				frame.SetStyle = function(self, style)
+					self.style = style
+				end
+				frame.SetSelected = function(self, selected)
+					self.selected = selected
+				end
+				frame.SetPingWorldMap = function(self, ping)
+					self.pingWorldMap = ping
+				end
+				frame.UpdateButtonStyle = noop
+				return frame
+			end,
+			Release = function(_, frame)
+				frame:Hide()
+				frame:ClearAllPoints()
+				unused[#unused + 1] = frame
 			end,
 		}
 	end
