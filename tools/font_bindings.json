@@ -358,7 +358,7 @@
     },
     {
       "source": "UI/Settings.lua",
-      "sha256": "4eaeb28097449cd1830015dabaddd38dc4e7524a01c5e8f45cf469458a5053eb",
+      "sha256": "e0b78268187123dced6922b3fac2ecdb4a74960f8501470248b676ae91f359f3",
       "review": "Read RegisterSettings, all groups, Checkbox and IndexButton. Localized labels and descriptions delegate to secure Blizzard settings initializers and ForeverCore.Family, without an explicit local FontObject. Excluded these consumer-owned fonts, tooltip descriptions and dynamic family names rather than assuming a settings font.",
       "bindings": []
     },
