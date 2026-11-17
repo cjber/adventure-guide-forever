@@ -1908,8 +1908,6 @@ end
 -- F13: while someone else's Shortest Path journey runs, each way to start the route warns once before replacing it:
 -- a card another click would choose (while choosing starts the route), the step menu's Go and the tracker title (the
 -- same setting). Our own journey, or a Shortest Path without Active, warns of nothing.
--- Core's Primary slot exposes no description to attach a tooltip to (forever-core#718).
--- The panel row and tracker-title hover retain the replacement warning.
 local function Warnings(h)
 	local warning, counts = "instruction: " .. h.ns.L.REPLACES_JOURNEY, {}
 	local function Count()
@@ -1943,10 +1941,11 @@ for _, spf in ipairs({ "v1", "v1+" }) do
 	h.flush()
 	equal(Warnings(h), "0 0 0", spf .. ": no journey, no warning")
 	h.G.ShortestPathForever.API.Navigate("OtherAddon", 1413, 0.5, 0.5)
-	equal(Warnings(h), spf == "v1+" and "1 0 1" or "0 0 0", spf .. ": another addon's journey")
+	equal(Warnings(h), spf == "v1+" and "1 1 1" or "0 0 0", spf .. ": another addon's journey")
 	ns.SetSetting("titleStartsRoute", false)
 	h.flush()
-	equal(Warnings(h), "0 0 0", spf .. ": a choice that doesn't start the route")
+	-- Go always starts the route, so its warning does not follow the title setting.
+	equal(Warnings(h), spf == "v1+" and "0 1 0" or "0 0 0", spf .. ": a choice that doesn't start the route")
 	ns.Guidance.Navigate(ns.Route().steps[1])
 	equal(Warnings(h), "0 0 0", spf .. ": our own journey")
 	clean(h, spf .. ": replace warning")
