@@ -261,3 +261,43 @@ end
 -- LeaderboardsData.lua: the guild roster's classFileName behind a peer row's missing class.
 read_globals[#read_globals + 1] = "GetGuildRosterInfo"
 read_globals[#read_globals + 1] = "GetNumGuildMembers"
+
+-- The Forever quest list (UI/QuestList.lua): the game's quest tracker mixins, quest item and objective calls, and the
+-- secure visibility driver that hides the native tracker.
+for _, name in ipairs({
+	"C_QuestInfoSystem",
+	"CampaignQuestObjectiveTrackerMixin",
+	"ChatFrameUtil",
+	"CooldownFrame_Set",
+	"CreateFramePool",
+	"FAILED",
+	"GetNumQuestLeaderBoards",
+	"GetQuestLink",
+	"GetQuestLogCompletionText",
+	"GetQuestLogLeaderBoard",
+	"GetQuestLogSpecialItemCooldown",
+	"GetQuestLogSpecialItemInfo",
+	"IsModifiedClick",
+	"IsQuestLogSpecialItemInRange",
+	"IsQuestSequenced",
+	"OBJECTIVE_DASH_STYLE_HIDE",
+	"ObjectiveTrackerAnimBlockMixin",
+	"ObjectiveTrackerAnimLineState",
+	"QUEST_WATCH_CLICK_TO_COMPLETE",
+	"QUEST_WATCH_QUEST_COMPLETE",
+	"QUEST_WATCH_QUEST_READY",
+	"QuestMapFrame_GetFocusedQuestID",
+	"QuestMapFrame_OpenToQuestDetails",
+	"QuestMapQuestOptions_AbandonQuest",
+	"QuestObjectiveTrackerMixin",
+	"RegisterStateDriver",
+	"SetItemButtonCount",
+	"SetItemButtonTexture",
+	"SetItemButtonTextureVertexColor",
+	"SetQuestTitleLevelAndDifficultyColor",
+	"TRACKER_HEADER_QUESTS",
+	"UnregisterStateDriver",
+	"WAYPOINT_OBJECTIVE_FORMAT_OPTIONAL",
+}) do
+	read_globals[#read_globals + 1] = name
+end

@@ -2210,3 +2210,99 @@ AdventureGuideForever = nil
 -- Integrations/QuestieOptions.lua: Questie's objective type and tracker options the guide sets through Questie.
 ---@class AGFNamespace
 ---@field QuestieOptions AGFQuestieOptions
+
+-- The Forever quest list (UI/QuestOrder.lua, UI/QuestList.lua), an option off until the player turns it on.
+
+---@class AGFQuestListRecord
+---@field questID number
+---@field title string?
+---@field zone string?
+---@field ready boolean?
+---@field onMap boolean?
+---@field distanceSq number?
+
+---@class AGFQuestListGroup
+---@field title string
+---@field quests AGFQuestListRecord[]
+
+---@class AGFQuestListAPI
+---@field Provided fun(): boolean ForeverCore still ships its own quest list, so this one never builds
+---@field Owner fun(): string? the other tracker that owns the quest list, by name
+---@field Reason fun(): string? why the option cannot be used now, in one line
+---@field Enabled fun(): boolean
+---@field SetEnabled fun(value: boolean)
+
+---@class AGFQuestListModule : ForeverTrackerModule
+---@field MarkDirty fun(self: AGFQuestListModule)
+---@field SetHeader fun(self: AGFQuestListModule, text: string)
+---@field GetBlock fun(self: AGFQuestListModule, id: any, template?: string): any, boolean
+---@field LayoutBlock fun(self: AGFQuestListModule, block: any): boolean
+---@field DoQuestObjectives fun(self: AGFQuestListModule, block: any, questCompleted: boolean, questSequenced: boolean, isExistingBlock: boolean, useFullHeight: boolean): boolean
+---@field GetQuestTagText fun(self: AGFQuestListModule, questID: number): string?
+---@field ShouldDisplayQuest fun(self: AGFQuestListModule, quest: any): boolean
+---@field Records fun(self: AGFQuestListModule): AGFQuestListRecord[]
+---@field UpdateQuest fun(self: AGFQuestListModule, record: AGFQuestListRecord): boolean
+---@field thinBarPool? any[]
+---@field activeThinBars? any[]
+---@field itemButtons? AGFQuestListItemButton[]
+---@field combatChangeQueued? boolean
+
+-- The list's secure quest item button, the client's item look on SecureActionButtonTemplate.
+---@class AGFQuestListItemButton : Button
+---@field foreverIndex integer
+---@field questLogIndex? number
+---@field charges? number
+---@field rangeTimer? number
+---@field foreverBlock? any
+---@field Glow Texture
+---@field HotKey FontString
+---@field icon Texture
+---@field Count FontString
+---@field Cooldown Cooldown
+---@field SetUp fun(self: AGFQuestListItemButton, questLogIndex: number)
+
+---@class AGFPrefs
+---@field questListFoldedQuests table<number, true> the Forever quest list's folded quests
+---@field questListFoldedZones table<string, true> the Forever quest list's folded zones
+
+---@class AGFNamespace
+---@field QuestList AGFQuestListAPI the Forever quest list option (UI/QuestList.lua)
+---@field QuestOrder fun(records: AGFQuestListRecord[]): AGFQuestListGroup[] the list's grouping and order (UI/QuestOrder.lua)
+
+---@class AGFStrings
+---@field QUEST_LIST_READY string the Forever quest list's first group: quests ready to turn in
+---@field SETTING_QUEST_LIST string
+---@field SETTING_QUEST_LIST_TOOLTIP string
+---@field QUEST_LIST_PROVIDED string the option's reason while ForeverCore still ships its own list
+---@field QUEST_LIST_OWNED string format: the other tracker that shows the quests
+---@field QUEST_LIST_TURN_ON string the tracker header menu's entry that shows the list
+---@field QUEST_LIST_TURN_OFF string the tracker header menu's entry that hides the list
+---@field QUEST_LIST_EXPAND string
+---@field QUEST_LIST_COLLAPSE string
+---@field QUEST_LIST_QUEST string a quest menu's title when the quest has no name yet
+---@field QUEST_LIST_FOCUS string
+---@field QUEST_LIST_STOP_FOCUS string
+---@field QUEST_LIST_OPEN_MAP string
+---@field QUEST_LIST_UNTRACK string
+---@field QUEST_LIST_SHARE string
+---@field QUEST_LIST_SHARE_CHAT string
+---@field QUEST_LIST_HIDE_DETAILS string
+---@field QUEST_LIST_OPEN_DETAILS string
+---@field QUEST_LIST_ABANDON string
+---@field QUEST_LIST_UNFOLD_ZONE string a zone heading's click hint
+---@field QUEST_LIST_FOLD_ZONE string a zone heading's click hint
+---@field QUEST_LIST_FOCUS_HINT string a quest title's click hint
+---@field QUEST_LIST_YARDS string format: yards to the quest
+---@field QUEST_LIST_HEADER string format: the Quests heading, tracked count, quest log count
+---@field QUEST_LIST_QUESTS string
+---@field QUEST_LIST_FOLDED_ZONE string format: a folded zone and its quest count
+---@field QUEST_LIST_OBJECTIVES string
+---@field QUEST_LIST_ROUTE string
+---@field QUEST_LIST_NO_SPF string
+---@field QUEST_LIST_COMBAT string
+---@field QUEST_LIST_NO_PIN string
+---@field QUEST_LIST_NO_ROUTE string
+---@field QUEST_LIST_NO_MAP string
+---@field QUEST_LIST_NO_LOG string
+---@field QUEST_LIST_NO_LINK string
+---@field QUEST_LIST_NO_ABANDON string

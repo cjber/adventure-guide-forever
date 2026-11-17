@@ -192,6 +192,27 @@ local function TrackerMenu(target, menu)
 			ns.SetSetting("journeyWatch", false)
 		end)
 	end
+	-- The header's switch for the Forever quest list (QuestList.lua), offered once this addon owns it. While another
+	-- tracker shows the quests, the entry is greyed out and says which.
+	local questList = ns.QuestList
+	if target.kind == "section" and questList and not questList.Provided() then
+		local on = questList.Enabled()
+		local entry = menu:Action(on and L.QUEST_LIST_TURN_OFF or L.QUEST_LIST_TURN_ON, function()
+			local reason = questList.Reason()
+			if reason and not on then
+				return false, reason
+			end
+			questList.SetEnabled(not on)
+		end)
+		local reason = not on and questList.Reason()
+		if entry and reason then
+			entry:SetEnabled(false)
+			entry:SetTooltip(function(tooltip)
+				tooltip:SetText(L.QUEST_LIST_TURN_ON, 1, 1, 1)
+				tooltip:AddLine(reason, nil, nil, nil, true)
+			end)
+		end
+	end
 end
 
 ---@param target ForeverTrackerTarget

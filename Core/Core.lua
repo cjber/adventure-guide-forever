@@ -84,6 +84,10 @@ local DEFAULTS = {
 	hideQuestieTracker = true,
 	-- A record, not a setting: the player hid the note that the game's quest areas are off (Tracker.lua).
 	questAreasNoteHidden = false,
+	-- Opt-in: the Forever quest list in the tracker column, in place of the game's quest tracker (QuestList.lua).
+	questList = false,
+	-- A record, not a setting: ForeverCore's own quest list choice has been carried over once (LoadDB).
+	questListMigrated = false,
 }
 ns.DEFAULTS = DEFAULTS
 
@@ -111,6 +115,9 @@ local PREFS_DEFAULTS = {
 	guideSkips = {},
 	-- Party members ticked under Sync with (Party.lua), by "Name-Realm"; a member who leaves is unticked.
 	sync = {},
+	-- The Forever quest list's folds (QuestList.lua): quest ID -> true, and zone name -> true.
+	questListFoldedQuests = {},
+	questListFoldedZones = {},
 }
 
 ---@type table<string, any>?
@@ -167,6 +174,16 @@ local function LoadDB()
 			loaded.journeyWatch = true
 		end
 		loaded.untrackOthers = nil
+	end
+	-- The Forever quest list moved here from ForeverCore (#818). A player who had turned it on there keeps it on, once;
+	-- nil or false there means off here. A core that still ships its own list keeps that choice, so the copy waits
+	-- until a core without it loads, and reads the choice as it stands then.
+	if loaded.questListMigrated ~= true and ForeverCore.TrackerQuests == nil then
+		local coreDB = rawget(_G, "ForeverCoreDB")
+		if type(coreDB) == "table" and coreDB.questList == true then
+			loaded.questList = true
+		end
+		loaded.questListMigrated = true
 	end
 	for key, value in pairs(DEFAULTS) do
 		if type(loaded[key]) ~= type(value) then

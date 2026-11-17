@@ -3411,6 +3411,21 @@ function harness.load(options)
 	-- Core 1.12 post-hooks the container's own AddModule to join and leave the native list.
 	G.ObjectiveTrackerFrame.AddModule = function() end
 	G.ObjectiveTrackerFrame.RemoveModule = function() end
+	-- The secure visibility driver (SecureStateDriver.lua): h.stateDrivers[frame] holds its last value, nil once
+	-- unregistered, and the driver shows or hides the frame as the client's does.
+	h.stateDrivers = {}
+	G.RegisterStateDriver = function(frame, attribute, value)
+		assert(attribute == "visibility", "only the visibility driver is stubbed")
+		h.stateDrivers[frame] = value
+		if value == "hide" then
+			frame:Hide()
+		elseif value == "show" then
+			frame:Show()
+		end
+	end
+	G.UnregisterStateDriver = function(frame)
+		h.stateDrivers[frame] = nil
+	end
 	G.ObjectiveTrackerManager = setmetatable({}, {
 		__index = function(_, key)
 			error("addon entered native tracker manager: " .. key)
@@ -3883,6 +3898,12 @@ function harness.load(options)
 	-- real shared modules, never a fake, so a change in core reaches them.
 	G.ForeverCoreDB = options.coreDB or {}
 	local coreNamespace = ForeverCore.load(G, nil, RegisterTemplate)
+	-- `coreQuestList = false` stands in for a ForeverCore that no longer ships its own quest list
+	-- (cjber/forever-core#793): the facade loses TrackerQuests, so the addon's own list is the one that builds. The
+	-- checkout's own list still loads, so a spec using this also sets coreDB.questList = false to keep it inert.
+	if options.coreQuestList == false then
+		G.ForeverCore.TrackerQuests = nil
+	end
 	h.fire("ADDON_LOADED", "ForeverCore")
 	-- Frames made so far belong to ForeverCore; the addon's own start at the next index.
 	h.coreFrameCount = #h.frames

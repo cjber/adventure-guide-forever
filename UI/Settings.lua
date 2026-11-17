@@ -214,6 +214,31 @@ function ns.RegisterSettings()
 				end
 				Settings.RegisterInitializer(subcategory, track)
 				Settings.RegisterInitializer(subcategory, journey)
+				-- The Forever quest list (QuestList.lua). It is greyed out with the reason while ForeverCore still ships
+				-- its own list or another tracker shows the quests; the tooltip reads the reason when it opens.
+				local questList = ns.QuestList
+				local listSetting = Settings.RegisterProxySetting(
+					subcategory,
+					"AdventureGuideForever_questList",
+					Settings.VarType.Boolean,
+					ns.L.SETTING_QUEST_LIST,
+					false,
+					function()
+						return not questList.Provided() and questList.Enabled()
+					end,
+					function(value)
+						questList.SetEnabled(value == true)
+					end
+				)
+				local list = Settings.CreateCheckboxInitializer(listSetting, nil, function()
+					local reason = questList.Reason()
+					return reason and ns.L.SETTING_QUEST_LIST_TOOLTIP .. "\n\n" .. reason
+						or ns.L.SETTING_QUEST_LIST_TOOLTIP
+				end)
+				list:AddModifyPredicate(function()
+					return questList.Reason() == nil
+				end)
+				Settings.RegisterInitializer(subcategory, list)
 				Settings.RegisterInitializer(
 					subcategory,
 					Checkbox(

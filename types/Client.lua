@@ -299,7 +299,7 @@ MinimalSliderWithSteppersMixin = nil
 ---@field NotifyUpdate fun(variable: string)
 ---@field CreateSliderOptions fun(minimum: number, maximum: number, step: number): AGFSliderOptions
 ---@field CreateSliderInitializer fun(setting: AGFSettingsSetting|table, options: AGFSliderOptions, tooltip?: string): AGFSettingsInitializer
----@field CreateCheckboxInitializer fun(setting: AGFSettingsSetting|table, options?: table, tooltip?: string): AGFSettingsInitializer
+---@field CreateCheckboxInitializer fun(setting: AGFSettingsSetting|table, options?: table, tooltip?: string|fun(): string): AGFSettingsInitializer
 ---@field CreateControlTextContainer fun(): AGFControlTextContainer
 ---@field CreateDropdownInitializer fun(setting: AGFSettingsSetting|table, getData: fun(): table[]): AGFSettingsInitializer
 ---@field CreateElementInitializer fun(template: string, data?: table): AGFSettingsInitializer

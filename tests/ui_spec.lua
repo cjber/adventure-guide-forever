@@ -349,7 +349,7 @@ do
 	-- Every row goes in through the secure delegate; none from addon code, which taints the search. The rows are
 	-- grouped into subcategories with a short index page, so no page grows tall.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 34, "29 settings rows and 5 index buttons, all through Settings.RegisterInitializer")
+	equal(#h.settings, 35, "30 settings rows and 5 index buttons, all through Settings.RegisterInitializer")
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
@@ -366,7 +366,7 @@ do
 	)
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_TRACKER] or {}, " "),
-		"attachTracker lockTracker showTracker trackRouteQuests journeyWatch guideTracksQuests",
+		"attachTracker lockTracker showTracker trackRouteQuests journeyWatch questList guideTracksQuests",
 		"the objective tracker rows sit together, the parent first"
 	)
 	equal(
