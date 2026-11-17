@@ -6,6 +6,13 @@ Free, with nothing locked behind it. If it saves you time, you can [sponsor me o
 
 [![Join me on Discord](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/discord-button.png)](https://discord.gg/FpHugGxRJY) [![Sponsor me on GitHub](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/github-sponsors-button.png)](https://github.com/sponsors/cjber) [![Support me on Ko-fi](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/kofi-button.png)](https://ko-fi.com/cjber)
 
+**Known limitations**
+
+- **Quest data comes from the QuestieDB addon.** Without QuestieDB installed there are no quests to route, and a quest that is new or changed in WoW: Forever can be missing, or have the wrong prerequisites, until QuestieDB's data catches up.
+- **The game does not tell an addon what a quest giver offers until you talk to them.** The guide can send you to a giver who has nothing for you. Once you talk to them, it drops that quest from the route.
+- **Some stops have no known place.** QuestieDB has no location for some quests and books, so they show as text, with no waypoint or map pin.
+- **Sync only shares quests with party members who run the guide.** For anyone else, the guide sees only the quests in your own log that they also have, not their finished quests or quests you have not taken.
+
 ![The Barrens story chosen: the journey card, its numbered stops and Shortest Path's route from the first](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/spf_map.png)
 
 The Barrens story chosen: the card names the chapter, every stop is numbered, and Shortest Path's route runs from the first.
@@ -43,7 +50,7 @@ Forever's new quests are only considered once they are in your log, and a missin
 
 ## Usage
 
-`/agf`, `/adventureguide`, the minimap button or the addon compartment opens the guide on the world map. Options are in the guide's cog and Settings > AddOns > Adventure Guide, one page under four headings.
+`/agf`, `/adventureguide`, Alt-G or the addon compartment opens the guide on the world map. Options are in the guide's cog and Settings > AddOns > Adventure Guide, one page under four headings.
 
 For a bug report, paste `/agf report`. For a wrong stop, `/agf where`; for a missing quest, add `/agf audit`. `/agf issue` opens a ready-made GitHub issue link.
 

@@ -1526,10 +1526,10 @@ function Model.Journeys(
 	end
 	-- Story and carry routes can exhaust a frame before the alternative zones.
 	Yield()
-	-- Every zone with a useful pickup other than the story's is an option, ranked for the player's level now. That
-	-- includes the zone the player stands in when the lead kept the story elsewhere: standing there is not the story,
-	-- so it still earns a card (#552). The current story already has a card, so it is never offered twice; chosen
-	-- zones stay while they have a step; NextZone returns nil for a zone with no useful pickup.
+	-- Every zone with a useful pickup or a log quest other than the story's is an option, ranked for the player's level
+	-- now. That includes the zone the player stands in when the lead kept the story elsewhere: standing there is not the
+	-- story, so it still earns a card (#552). The current story already has a card, so it is never offered twice; chosen
+	-- zones stay while they have a step; NextZone returns nil for a zone with neither a useful pickup nor a log quest.
 	local headed = chosenZone ~= zone and chosenZone or nil
 	local function NextZone(map)
 		local key = "zone:" .. map
@@ -1546,9 +1546,10 @@ function Model.Journeys(
 			prefs,
 			mapName,
 			nil,
-			-- The chosen zone holds its log quests, as the story does: a build that recommends no new pickup there
+			-- Every zone card holds its log quests, as the story does (#820): the ranking counts them, so a zone whose
+			-- remaining work is all accepted is still offered, and a chosen zone whose build recommends no new pickup
 			-- (Questie's live policy not in yet, say) still has the steps the player's choice stands on.
-			mine and map or nil,
+			map,
 			mine
 		)
 		if not nextZone then

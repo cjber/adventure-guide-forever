@@ -27,7 +27,7 @@ card | turnins | Turn-ins only | 5 ready to hand in | Hand in completed quests, 
   step 2 | town:1429:87 | Turn in: The Price of Shoes | 1429 0.4171,0.6554 | Opens the next chapter here
   step 3 | town:1453:0 | Visit Stormwind City: Turn in 2 | 1453 0.6917,0.8272 | Opens the next chapter here
   step 4 | town:1436:108 | Turn in: The Defias Brotherhood | 1436 0.5633,0.4752 | Opens the next chapter here
-card | zone:1436 | Head to Westfall | 9 quests near your level | - | map 1436
+card | zone:1436 | Head to Westfall | 1 ready to hand in, 9 quests near your level | - | map 1436
   step 1 | town:1436:916 | Pick up: Poor Old Blanchy | 1436 0.5992,0.1942 | near your level
   step 2 | town:1436:108 | Visit Sentinel Hill: Pick up 1, turn in 1 | 1436 0.5633,0.4752 | Opens the next chapter here
 card | zone:1439 | Head to Darkshore | 16 quests near your level | - | map 1453

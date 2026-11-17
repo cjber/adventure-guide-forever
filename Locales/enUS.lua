@@ -6,11 +6,6 @@ local _, ns = ...
 -- has, so a line nobody has translated yet stays in English. Format strings keep their specifiers.
 ---@type AGFStrings
 ns.L = {
-	MINIMAP_UNAVAILABLE = "Minimap unavailable; skipping custom button.",
-	SETTING_MINIMAP_BUTTON = "Minimap button",
-	MINIMAP_BUTTON_TOOLTIP = "Adds an Adventure Guide button to the minimap. Drag it around the rim to move it, "
-		.. "or turn it off here.",
-	MINIMAP_BUTTON_SUBTEXT = "Click to open the levelling guide",
 	LEADERBOARD_SHARING_ON = "Sharing is on. Turn it off with /agf share off or in Settings > AddOns > Adventure Guide.",
 	LEADERBOARD_SHARING_OFF = "Sharing is off: nothing is sent or shown. Turn it on with /agf share on.",
 	LEADERBOARD_METRIC = "Quests turned in",
@@ -643,7 +638,7 @@ ns.L["%s: the installed ForeverCore is another addon (%s). Remove it and install
 	"%s: the installed ForeverCore is another addon (%s). Remove it and install ForeverCore from CurseForge."
 
 _G.BINDING_HEADER_ADVENTUREGUIDEFOREVER = "Adventure Guide Forever"
-_G["BINDING_NAME_CLICK AdventureGuideForeverMinimapButton:LeftButton"] = "Open Adventure Guide"
+_G["BINDING_NAME_CLICK AdventureGuideForeverOpenButton:LeftButton"] = "Open Adventure Guide"
 _G["BINDING_NAME_CLICK AdventureGuideForeverItem1:LeftButton"] = "Use step item 1"
 _G["BINDING_NAME_CLICK AdventureGuideForeverItem2:LeftButton"] = "Use step item 2"
 _G["BINDING_NAME_CLICK AdventureGuideForeverItem3:LeftButton"] = "Use step item 3"

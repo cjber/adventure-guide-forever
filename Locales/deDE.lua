@@ -488,14 +488,8 @@ L["WHY_REP_BELOW"] = "Nur solange unter %s bei %s"
 L["WHY_REP_MIN"] = "Benötigt %s bei %s"
 L["WHY_SKILL"] = "Benötigt %s %d"
 L["YOUR_CHOICE"] = "Eure Wahl"
--- mt: Minimap button settings.
-L["SETTING_MINIMAP_BUTTON"] = "Minimap-Schaltfläche" -- mt
-L["MINIMAP_BUTTON_TOOLTIP"] =
-	"Fügt dem Minimap eine Adventure Guide-Schaltfläche hinzu. Ziehe sie um den Rand, um sie zu verschieben, oder schalte sie hier aus." -- mt
-L["MINIMAP_BUTTON_SUBTEXT"] = "Klicken, um den Leveling-Guide zu öffnen" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - einen Fehler melden oder eine Funktion wünschen, mit einem fertigen GitHub-Issue-Link" -- mt
-L["MINIMAP_UNAVAILABLE"] = "Minimap nicht verfügbar; eigene Schaltfläche wird übersprungen." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Questies Tracker ausschalten" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"Solange dieser Abschnitt angezeigt wird, ist Questies eigener Quest-Tracker aus, damit deine Quests nicht doppelt erscheinen. Schalte dies aus, um Questie seinen Tracker zurückzugeben." -- mt

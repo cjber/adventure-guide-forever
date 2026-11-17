@@ -525,16 +525,9 @@ L["WHY_REP_BELOW"] = "Только пока ниже «%s» у: %s"
 L["WHY_REP_MIN"] = "Требуется «%s» у: %s"
 L["WHY_SKILL"] = "Требуется %s %d"
 L["YOUR_CHOICE"] = "Ваш выбор"
--- mt: Minimap button settings.
-L["SETTING_MINIMAP_BUTTON"] = "Кнопка на миникарте" -- mt
-L["MINIMAP_BUTTON_TOOLTIP"] =
-	"Добавляет кнопку Adventure Guide на миникарту. Перетащите её по краю, чтобы переместить, или отключите здесь." -- mt
-L["MINIMAP_BUTTON_SUBTEXT"] = "Нажмите, чтобы открыть руководство прокачки" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] =
 	"/agf issue - сообщить об ошибке или предложить функцию с готовой ссылкой на issue GitHub" -- mt
-L["MINIMAP_UNAVAILABLE"] =
-	"Миникарта недоступна; пользовательская кнопка пропущена." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Отключить трекер Questie" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"Пока этот раздел показан, собственный трекер заданий Questie отключён, чтобы задания не показывались дважды. Отключите этот параметр, чтобы вернуть Questie его трекер." -- mt

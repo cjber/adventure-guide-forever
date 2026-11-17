@@ -139,25 +139,6 @@ function ns.RegisterSettings()
 		Checkbox("stepSound", ns.L.SETTING_STEP_SOUND, ns.L.SETTING_STEP_SOUND_TOOLTIP),
 		Checkbox("whatsNew", ns.L.SETTING_WHATS_NEW, ns.L.SETTING_WHATS_NEW_TOOLTIP),
 	})
-	-- Shown unless hidden: the checkbox reads the shown state, while the saved key holds the hide flag
-	-- Core/MinimapButton.lua reads (Core.lua's migration carries an old micro menu choice over).
-	local minimap = Settings.RegisterProxySetting(
-		category,
-		"AdventureGuideForever_minimapButton",
-		Settings.VarType.Boolean,
-		ns.L.SETTING_MINIMAP_BUTTON,
-		true,
-		function()
-			return ns.Setting("minimapButtonHidden") ~= true
-		end,
-		function(value)
-			ns.SetSetting("minimapButtonHidden", value ~= true)
-		end
-	)
-	Settings.RegisterInitializer(
-		category,
-		Settings.CreateCheckboxInitializer(minimap, nil, ns.L.MINIMAP_BUTTON_TOOLTIP)
-	)
 
 	Settings.RegisterAddOnCategory(category)
 	function ns.OpenSettings()

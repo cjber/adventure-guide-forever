@@ -3,7 +3,7 @@
 Adventure Guide Forever is a WoW: Forever addon (Interface 16001) that suggests a short, player-steered
 route of next steps from your level, finished quests and quest log. It requires ForeverCore (`## Dependencies:
 ForeverCore`, `required-dependencies` in `.pkgmeta`), the standalone addon every Forever addon needs: the tracker
-column, the report window, leaderboards, the error journal and debug log, the minimap button, the context menu, the
+column, the report window, leaderboards, the error journal and debug log, the context menu, the
 settings chrome and the family page are core's alone. Players install the zip the BigWigs packager builds on a `v*`
 tag, and the stores install ForeverCore with it.
 
@@ -35,7 +35,7 @@ THIRD_PARTY.md ship with README's `## Credits` and THIRD_PARTY's `## Players` (W
 smoke spec passes on the packaged files.
 
 Every version needs a `CHANGELOG.md` entry (prose, bold-lead bullets) before its `v*` tag: the release publishes
-it as the notes on GitHub, CurseForge and Wago. A change's player-facing notes go in `changes/<issue>.md` as bold-lead bullets, with an optional `### For addon
+it as the notes on GitHub and CurseForge. A change's player-facing notes go in `changes/<issue>.md` as bold-lead bullets, with an optional `### For addon
 authors` section after them. The release commit gathers them with `python3 tools/changelog.py release X.Y.Z`; no
 other pull request edits `CHANGELOG.md`, and CI's `--check --base` fails one that does.
 
@@ -91,7 +91,7 @@ straight after it merges: on main, and on every other branch, a stale image fail
   (`Locales/README.md`). After changing copy, `python3 tools/phrases.py > Locales/phrases.txt`.
 - `UI/Dump.lua`: `/agf dump` saves the drawn layout to the saved variables for `tests/dump_diff.lua`.
 - `UI/Panel.lua`: registers the guide's panel with `ForeverCore.QuestLogTabs` and opens through its `Select("guide")`.
-- `docs/curseforge.md`: the store description, pasted into CurseForge and Wago by hand.
+- `docs/curseforge.md`: the store description, pasted into CurseForge by hand.
 - `docs/design.md`: the brief contracts referenced by the source and headless specs.
 
 ## Data refresh

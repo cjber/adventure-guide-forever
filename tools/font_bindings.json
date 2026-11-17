@@ -358,7 +358,7 @@
     },
     {
       "source": "UI/Settings.lua",
-      "sha256": "f2711a4bab70cc317d84c0ac1f97265a212087844e36357c120e50f686045f17",
+      "sha256": "837488644718d84394a25e3f1b8b7f53a9829e73b8281acd29aec4f6b03ecefa",
       "review": "Read RegisterSettings, Heading, Rows and Checkbox. Localized labels, headings and descriptions delegate to secure Blizzard settings initializers, without an explicit local FontObject. Excluded these consumer-owned fonts and tooltip descriptions rather than assuming a settings font.",
       "bindings": []
     },

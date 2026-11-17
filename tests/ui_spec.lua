@@ -346,7 +346,7 @@ do
 	-- Every row goes in through the secure delegate; none from addon code, which taints the search. One page under
 	-- four short headings, no subpages and no Forever addons page.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 4 + 26, "4 headings and 26 settings rows, all through Settings.RegisterInitializer")
+	equal(#h.settings, 4 + 25, "4 headings and 25 settings rows, all through Settings.RegisterInitializer")
 	local L = h.ns.L
 	same(
 		headings,
@@ -373,7 +373,7 @@ do
 	)
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_INTERFACE], " "),
-		"markUpgrades warnClosing stepSound whatsNew minimapButton",
+		"markUpgrades warnClosing stepSound whatsNew",
 		"Interface holds the rest"
 	)
 	for _, entry in ipairs(h.settings) do

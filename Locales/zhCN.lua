@@ -479,14 +479,8 @@ L["WHY_REP_BELOW"] = "仅在低于%s时（%s）" -- mt
 L["WHY_REP_MIN"] = "需要%s（%s）" -- mt
 L["WHY_SKILL"] = "需要%s %d" -- mt
 L["YOUR_CHOICE"] = "你的选择" -- mt
--- mt: Minimap button settings.
-L["SETTING_MINIMAP_BUTTON"] = "小地图按钮" -- mt
-L["MINIMAP_BUTTON_TOOLTIP"] =
-	"在小地图上添加 Adventure Guide 按钮。沿边缘拖动可移动，或在此关闭。" -- mt
-L["MINIMAP_BUTTON_SUBTEXT"] = "点击打开升级指南" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - 通过现成的 GitHub Issue 链接报告错误或请求功能" -- mt
-L["MINIMAP_UNAVAILABLE"] = "小地图不可用，已跳过自定义按钮。"
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "关闭 Questie 的追踪栏" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"显示此区块时，Questie 自己的任务追踪栏会关闭，你的任务就不会列出两次。关闭此选项可让 Questie 恢复它的追踪栏。" -- mt
