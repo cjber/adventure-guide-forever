@@ -1,0 +1,372 @@
+{
+  "policy": "Only explicit, reviewed phrase-to-widget FontObjects are checked. Source digests pin the entire producer, aliases, callbacks and font overrides; review source and callers before refreshing a digest. Empty bindings pin reviewed dependencies or exclusions, not glyph coverage. Tooltips, menus, chat, dynamic game data, uncertain fonts and unlisted producers have no coverage claim. Format-string bindings do not cover substituted values.",
+  "producers": [
+    {
+      "source": "UI/Panel.lua",
+      "sha256": "ee20b8a7362991b17286fc779eb2d4f67ae89618adce18fb668f1dadf127820c",
+      "review": "Read the full panel builders, refresh paths and callers in Overview, Widgets and GuideOutline. Explicit CreateFontString templates fix Tag, order tag, emptyText, unlistedText, queuedText, subtitle and fold-row fonts, with no later font override. Journey-card Travel inherits GameFontHighlightSmall from Panel.xml. SearchBoxTemplate inherits InputBoxInstructionsTemplate in pinned client Blizzard_SharedXML/Shared/InputBox/InputBoxTemplates.xml; Instructions uses GameFontDisableSmall, and its scripts change visibility/color/text, not fonts. SharedButtonSmallTemplate in Shared/Button/ThreeSliceButtonTemplate.xml supplies all three Stop button font states. Reset and Skipped buttons explicitly set normal and highlight fonts and have no disabling caller. Bound each confirmed button state. Excluded tooltips, menus, chat, search input, dynamic journey/step/provider titles, sync member strings and data/helper output not separately reviewed. Formatted bindings cover the locale format only, not substituted game data.",
+      "bindings": [
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "CreateRow row.Tag",
+          "phrase": "OPTIONAL"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "BuildJourneys orderLine tag",
+          "phrase": "ORDER_CUSTOM"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "BuildJourneys / LayoutJourneys unlistedText",
+          "phrase": "UNLISTED"
+        },
+        {
+          "font": "GameFontDisable",
+          "widget": "Refresh emptyText",
+          "phrase": "LOADING"
+        },
+        {
+          "font": "GameFontDisable",
+          "widget": "Refresh emptyText",
+          "phrase": "SEARCH_NONE"
+        },
+        {
+          "font": "GameFontDisable",
+          "widget": "Refresh emptyText",
+          "phrase": "NO_JOURNEY"
+        },
+        {
+          "font": "GameFontNormalSmall",
+          "widget": "Refresh queuedText",
+          "phrase": "STARTS_AFTER_COMBAT"
+        },
+        {
+          "font": "GameFontNormalSmall",
+          "widget": "Refresh queuedText",
+          "phrase": "ROUTE_PAUSED"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RefreshHeader subtitle",
+          "phrase": "SYNC_SUBTITLE"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RefreshHeader subtitle",
+          "phrase": "OVERVIEW_WHERE"
+        },
+        {
+          "font": "GameFontNormalSmall",
+          "widget": "LayoutGroup more.Text",
+          "phrase": "MORE_CARDS"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RefreshCard card.Travel via Panel.xml",
+          "phrase": "CARD_BY_BOAT"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RefreshCard card.Travel via Panel.xml",
+          "phrase": "CARD_BY_ZEPPELIN"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "RefreshCard card.Travel via Panel.xml",
+          "phrase": "CARD_MINUTES"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "BuildTopBar searchBox.Instructions via SearchBoxTemplate",
+          "phrase": "SEARCH_QUESTS"
+        },
+        {
+          "font": "GameFontNormalSmall",
+          "widget": "BuildJourneys reset / skippedButton normal state",
+          "phrase": "ORDER_RESET"
+        },
+        {
+          "font": "GameFontNormalSmall",
+          "widget": "BuildJourneys reset / skippedButton normal state",
+          "phrase": "SKIPPED"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "BuildJourneys reset / skippedButton highlight state",
+          "phrase": "ORDER_RESET"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "BuildJourneys reset / skippedButton highlight state",
+          "phrase": "SKIPPED"
+        },
+        {
+          "font": "GameFontNormal",
+          "widget": "BuildFooter stopButton normal state",
+          "phrase": "STOP"
+        },
+        {
+          "font": "GameFontHighlight",
+          "widget": "BuildFooter stopButton highlight state",
+          "phrase": "STOP"
+        },
+        {
+          "font": "GameFontDisable",
+          "widget": "BuildFooter stopButton disabled state",
+          "phrase": "STOP"
+        }
+      ]
+    },
+    {
+      "source": "UI/Panel.xml",
+      "sha256": "fb020ac44de3fb550e9a27dbcc44abf6e2d57474a4f6bbb0fc9c064d038199e8",
+      "review": "Read all templates and Panel.lua CreateJourneyCard / RefreshCard. Journey-card Title uses GameFontNormalMed2; Subline, Travel and Reason use GameFontHighlightSmall. No font overrides occur in the Lua caller. This XML declares no locale text; empty bindings pin the templates governing Panel.lua and Overview.lua bindings. Pin templates contain textures only.",
+      "bindings": []
+    },
+    {
+      "source": "UI/GuideSetup.lua",
+      "sha256": "04be6341cade29e11287890dad5c8b22387372f765aa56f32c2689c6a6120025",
+      "review": "Read Ensure, its local Text and Row helpers, every call and popup show/hide handlers. Each Text call has an explicit font argument; Row titles use GameFontNormal and all Row lines GameFontHighlightSmall. No returned FontString escapes or receives a later font override. Excluded ns.TITLE alias from Core/Core.lua and conditional external family state, which inserts no text of its own.",
+      "bindings": [
+        {
+          "font": "GameFontNormal",
+          "widget": "Ensure Text heading / Row native title",
+          "phrase": "RXP_SETUP_TITLE"
+        },
+        {
+          "font": "GameFontNormal",
+          "widget": "Ensure Text heading / Row native title",
+          "phrase": "RXP_SETUP_NATIVE_TITLE"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "Ensure Text prompt / Row lines / SkillUp line",
+          "phrase": "RXP_SETUP_PROMPT"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "Ensure Text prompt / Row lines / SkillUp line",
+          "phrase": "RXP_SETUP_AGF"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "Ensure Text prompt / Row lines / SkillUp line",
+          "phrase": "RXP_SETUP_SPF"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "Ensure Text prompt / Row lines / SkillUp line",
+          "phrase": "RXP_SETUP_HIDDEN_SPF"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "Ensure Text prompt / Row lines / SkillUp line",
+          "phrase": "RXP_SETUP_HIDDEN"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "Ensure Text prompt / Row lines / SkillUp line",
+          "phrase": "RXP_SETUP_NATIVE"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "Ensure Text prompt / Row lines / SkillUp line",
+          "phrase": "RXP_SETUP_SKILLUP_SPF"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "Ensure Text prompt / Row lines / SkillUp line",
+          "phrase": "RXP_SETUP_SKILLUP"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Ensure Text settings footer",
+          "phrase": "RXP_SETUP_SETTINGS"
+        }
+      ]
+    },
+    {
+      "source": "UI/Overview.lua",
+      "sha256": "11082713993dd96f9e775e742da2d5db4c054805f38a9c95843e29a2d31cb71f",
+      "review": "Read GROUPS/LABELS, HubLine, DropLine, CleanupLine, Progress, Stops, Levels and VisitWarning, their exports and Panel.lua consumers. LayoutGroup sends group.label to Game15Font_Shadow header.Name. Hub/drop/cleanup/warning formats reach card.Reason (GameFontHighlightSmall in both Panel.xml and CreateOverviewCard). Progress and Stops reach overview card.Foot (GameFontDisableSmall); Levels reaches card.Level (GameFontNormal). No consumer changes these fonts. Checklist text, arbitrary helper arguments, Counts output without a confirmed rendering caller, tooltip/menu-only phrases, dynamic game data and group notes sent to runtime-rebound tracker fonts are excluded.",
+      "bindings": [
+        {
+          "font": "Game15Font_Shadow",
+          "widget": "GROUPS via Panel.LayoutGroup header.Name",
+          "phrase": "GROUP_CONTINUE"
+        },
+        {
+          "font": "Game15Font_Shadow",
+          "widget": "GROUPS via Panel.LayoutGroup header.Name",
+          "phrase": "GROUP_ZONES"
+        },
+        {
+          "font": "Game15Font_Shadow",
+          "widget": "GROUPS via Panel.LayoutGroup header.Name",
+          "phrase": "GROUP_LIBRARY"
+        },
+        {
+          "font": "Game15Font_Shadow",
+          "widget": "GROUPS via Panel.LayoutGroup header.Name",
+          "phrase": "GROUP_DUNGEONS"
+        },
+        {
+          "font": "Game15Font_Shadow",
+          "widget": "GROUPS via Panel.LayoutGroup header.Name",
+          "phrase": "GROUP_BATTLEGROUNDS"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "HubLine / DropLine / CleanupLine / VisitWarning via Panel card.Reason",
+          "phrase": "HUB_MORE"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "HubLine / DropLine / CleanupLine / VisitWarning via Panel card.Reason",
+          "phrase": "HUB_MORE_ONE"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "HubLine / DropLine / CleanupLine / VisitWarning via Panel card.Reason",
+          "phrase": "LOG_FULL_ONE"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "HubLine / DropLine / CleanupLine / VisitWarning via Panel card.Reason",
+          "phrase": "LOG_FULL"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "HubLine / DropLine / CleanupLine / VisitWarning via Panel card.Reason",
+          "phrase": "CLEANUP_READY"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "HubLine / DropLine / CleanupLine / VisitWarning via Panel card.Reason",
+          "phrase": "CLEANUP_GREY"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "HubLine / DropLine / CleanupLine / VisitWarning via Panel card.Reason",
+          "phrase": "CLEANUP_ELSEWHERE"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "HubLine / DropLine / CleanupLine / VisitWarning via Panel card.Reason",
+          "phrase": "CLEANUP"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "HubLine / DropLine / CleanupLine / VisitWarning via Panel card.Reason",
+          "phrase": "LIST_SEPARATOR"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "HubLine / DropLine / CleanupLine / VisitWarning via Panel card.Reason",
+          "phrase": "QUEST_VISIT_WARNING"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Progress / Stops via Panel.RefreshOverviewCard card.Foot",
+          "phrase": "CHAPTERS_DONE"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Progress / Stops via Panel.RefreshOverviewCard card.Foot",
+          "phrase": "READY_OF"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Progress / Stops via Panel.RefreshOverviewCard card.Foot",
+          "phrase": "RXP_SELECT"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Progress / Stops via Panel.RefreshOverviewCard card.Foot",
+          "phrase": "STOPS_ONE"
+        },
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "Progress / Stops via Panel.RefreshOverviewCard card.Foot",
+          "phrase": "STOPS"
+        },
+        {
+          "font": "GameFontNormal",
+          "widget": "Levels via Panel.RefreshOverviewCard card.Level",
+          "phrase": "LEVELS_FROM"
+        },
+        {
+          "font": "GameFontNormal",
+          "widget": "Levels via Panel.RefreshOverviewCard card.Level",
+          "phrase": "LEVELS"
+        }
+      ]
+    },
+    {
+      "source": "UI/Tracker.lua",
+      "sha256": "5662d025ee3ecb3f96b12eae4bdd4bb9dc5e4e9156ee5c93fbb5dad88574e160",
+      "review": "Read module construction, LayoutContentsBase, GuideSection, Preview, TravelLines, StoryBeat, HiddenString, UpdateHidden and Refresh. HiddenString explicitly creates GameFontDisableSmall, with no later override; UpdateHidden sends TRACKER_HIDDEN_COUNT to that widget. Reviewed ForeverCore UI/TrackerSection.lua Create and pinned Blizzard_ObjectiveTrackerModule.xml, Block.xml, Shared.xml and AnimTemplates.xml: module header uses ObjectiveTrackerHeaderFont; anim block HeaderText and anim line Text inherit ObjectiveTrackerLineFont. Excluded those template text paths because Blizzard_ObjectiveTrackerManager.lua SetTextSize later calls SetFontObject on both FontObjects, so their final font is outside this review. Also excluded tooltips, menus, chat, dynamic data, helper output and companion fonts.",
+      "bindings": [
+        {
+          "font": "GameFontDisableSmall",
+          "widget": "UpdateHidden notice via HiddenString",
+          "phrase": "TRACKER_HIDDEN_COUNT"
+        }
+      ]
+    },
+    {
+      "source": "UI/StoryCompletion.lua",
+      "sha256": "f5fa001e16b857ad22e3723f2bb4d5524bc1fb2b217954445672060c02701fa4",
+      "review": "Read SetUp, System, Record and pinned Blizzard_FrameXML/Mainline/AlertFrameSystems.xml AchievementAlertFrameTemplate, inheriting AlertFrameTemplate. Unlocked explicitly inherits GameFontBlackTiny; this custom queued subsystem invokes its own SetUp, which sets text and anchors without changing fonts. Name uses GameFontHighlight but displays a dynamic quest title and is excluded. Alert scripts do not replace the heading font.",
+      "bindings": [
+        {
+          "font": "GameFontBlackTiny",
+          "widget": "SetUp frame.Unlocked via AchievementAlertFrameTemplate",
+          "phrase": "STORY_COMPLETE"
+        }
+      ]
+    },
+    {
+      "source": "UI/Widgets.lua",
+      "sha256": "6152da7fb72223c332f21c7d897f66216c406dbdd51334dcc59f130b2552d7d5",
+      "review": "Read RowText, CreateStepRow, SetStepRow and Panel.lua laterRows callers. CreateStepRow fixes Title to GameFontNormalMed3 and Detail to GameFontHighlightSmall. SetStepRow accepts arbitrary caller text, so this helper has no direct phrase bindings; GuideOutline.lua binds its confirmed Detail outputs separately. No later font override in Panel.lua; title colors change only.",
+      "bindings": []
+    },
+    {
+      "source": "UI/GuideOutline.lua",
+      "sha256": "d3b92db1ceec4eca27fea4431087e6e75ec5dc982b2eac385a84573d9036488d",
+      "review": "Read GuideOutline and OutlineDetail and Panel.lua LayoutRows calls to Widgets.SetStepRow. Both local phrase returns go to the row.Detail created by Widgets.RowText as GameFontHighlightSmall; no font override follows. Quest titles, eligibility data and tooltips are excluded.",
+      "bindings": [
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "OutlineDetail via Panel.LayoutRows / Widgets.SetStepRow row.Detail",
+          "phrase": "GUIDE_OUTLINE_INSIDE"
+        },
+        {
+          "font": "GameFontHighlightSmall",
+          "widget": "OutlineDetail via Panel.LayoutRows / Widgets.SetStepRow row.Detail",
+          "phrase": "GUIDE_OUTLINE"
+        }
+      ]
+    },
+    {
+      "source": "UI/PanelSearch.lua",
+      "sha256": "f046fbde4e190c8b719a78e348a2ee2cdb4ee612459c9e55cd8ce1c4ed660bb0",
+      "review": "Read CreateResult, RefreshResult, Build and Layout. Title and Zone show dynamic game data. Requirement Lines are initially GameFontRedSmall but RefreshResult later calls SetFontObject with GameFontDisableSmall or GameFontRedSmall according to entry.met. Excluded those changing-font helper outputs, all tooltips and dynamic names; no locale phrase has a fixed reviewed font here.",
+      "bindings": []
+    },
+    {
+      "source": "UI/Settings.lua",
+      "sha256": "4eaeb28097449cd1830015dabaddd38dc4e7524a01c5e8f45cf469458a5053eb",
+      "review": "Read RegisterSettings, all groups, Checkbox and IndexButton. Localized labels and descriptions delegate to secure Blizzard settings initializers and ForeverCore.Family, without an explicit local FontObject. Excluded these consumer-owned fonts, tooltip descriptions and dynamic family names rather than assuming a settings font.",
+      "bindings": []
+    },
+    {
+      "source": "UI/ActionButton.lua",
+      "sha256": "159c7d7c66cc5c08a1be7046c6ecb5ff01f127553a35aac8afc4e377938b04e9",
+      "review": "Read Chrome, SetKeybind, Create and SetTarget and RXPActions/NpcHighlight callers. NumberFontNormal Count displays item counts; NumberFontNormalSmallGray Range and Binding display client RANGE_INDICATOR and dynamic key bindings. No localized addon phrase is displayed by these FontStrings. Target tooltips and all dynamic data are excluded.",
+      "bindings": []
+    }
+  ]
+}
