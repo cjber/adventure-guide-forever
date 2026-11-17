@@ -3,7 +3,7 @@
 Adventure Guide Forever is a WoW: Forever addon (Interface 16001) that suggests a short, player-steered
 route of next steps from your level, finished quests and quest log. It requires ForeverCore (`## Dependencies:
 ForeverCore`, `required-dependencies` in `.pkgmeta`), the standalone addon every Forever addon needs: the tracker
-column, the report window, leaderboards, the error journal and debug log, the minimap button, the context menu, the
+column, the report window, leaderboards, the error journal and debug log, the context menu, the
 settings chrome and the family page are core's alone. Players install the zip the BigWigs packager builds on a `v*`
 tag, and the stores install ForeverCore with it.
 

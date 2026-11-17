@@ -513,15 +513,9 @@ L["WHY_REP_BELOW"] = "Seulement en dessous de %s auprès de %s"
 L["WHY_REP_MIN"] = "Requiert %s auprès de %s"
 L["WHY_SKILL"] = "Requiert %s %d"
 L["YOUR_CHOICE"] = "Votre choix"
--- mt: Minimap button settings.
-L["SETTING_MINIMAP_BUTTON"] = "Bouton de la mini-carte" -- mt
-L["MINIMAP_BUTTON_TOOLTIP"] =
-	"Ajoute un bouton Adventure Guide à la mini-carte. Faites-le glisser le long du bord pour le déplacer ou désactivez-le ici." -- mt
-L["MINIMAP_BUTTON_SUBTEXT"] = "Cliquez pour ouvrir le guide de progression" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] =
 	"/agf issue - signaler un bug ou demander une fonctionnalité avec un lien d’issue GitHub prêt à l’emploi" -- mt
-L["MINIMAP_UNAVAILABLE"] = "Mini-carte indisponible ; le bouton personnalisé est ignoré." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Désactiver le suivi de Questie" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"Tant que cette section s'affiche, le suivi de quêtes de Questie est désactivé, pour que vos quêtes n'apparaissent pas deux fois. Désactivez cette option pour rendre son suivi à Questie." -- mt
