@@ -10,11 +10,6 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago. O
 verbatim rather than rewritten as the addon moves. API changes other addons' authors need go under an
 optional `### For addon authors` subsection after a version's player bullets.
 
-## [Unreleased]
-
-- **Clearer Chinese warnings when ForeverCore needs attention.** Thanks to moshoutegong for the Simplified and Traditional Chinese corrections (#801, #802).
-- **Tracker menus:** Right-click any block title or the section heading for journey actions and tracker settings. End journey remains available while paused.
-
 ## [1.10.3] - 2026-11-17
 
 <!-- forever-core-sync -->

@@ -35,7 +35,9 @@ THIRD_PARTY.md ship with README's `## Credits` and THIRD_PARTY's `## Players` (W
 smoke spec passes on the packaged files.
 
 Every version needs a `CHANGELOG.md` entry (prose, bold-lead bullets) before its `v*` tag: the release publishes
-it as the notes on GitHub, CurseForge and Wago.
+it as the notes on GitHub, CurseForge and Wago. A change's player-facing notes go in `changes/<issue>.md` as bold-lead bullets, with an optional `### For addon
+authors` section after them. The release commit gathers them with `python3 tools/changelog.py release X.Y.Z`; no
+other pull request edits `CHANGELOG.md`, and CI's `--check --base` fails one that does.
 
 The same gate CI runs, plus actionlint, zizmor and gitleaks on the workflows and history. `tests/plan_bench.lua` fails a
 frame over the 3 ms budget (7 ms for the once-a-login QuestieDB catalogue build), allowing three times the measured time
