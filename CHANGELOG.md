@@ -17,6 +17,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 ### Fixed
 
 - **Zones you are already questing in keep their card.** A zone whose remaining quests are all in your log now gets its own card with those quests, instead of only showing them under Clean up my log (#820).
+- **Quest data loads in about half the time, and no longer crawls at low frame rates.** With Questie, the quest catalogue built at the first login after an update is ready in about 26 seconds instead of 43, and at 20 fps in about 28 seconds instead of more than 90, because a slow frame now does proportionally more of the work. No frame of the build stalls the game (#839).
+- **A late Questie no longer leaves an uncorrected quest list in place.** When Questie reported ready while the first read was still running, that read could finish last and replace the corrected list until the next login.
 - **A turned-off ForeverCore is named as the problem.** With ForeverCore turned off, Adventure Guide Forever now says so at login, instead of naming every other Forever addon as out of date. (cjber/forever-core#816)
 - **The addon compartment entry says why Adventure Guide Forever stopped.** While Adventure Guide Forever cannot start, clicking its entry repeats the line naming the fix instead of raising a Lua error.
 
