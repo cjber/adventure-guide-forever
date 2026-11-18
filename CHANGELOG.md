@@ -6,7 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). The entries are prose rather than bare
 Added/Fixed lists: what matters about a release is why the guide now sends you somewhere different.
 
-Each version's entry is also its release notes on GitHub, CurseForge and Wago. Older entries are kept
+Each version's entry is also its release notes on GitHub and CurseForge. Older entries are kept
 verbatim rather than rewritten as the addon moves. API changes other addons' authors need go under an
 optional `### For addon authors` subsection after a version's player bullets.
 
@@ -17,14 +17,14 @@ optional `### For addon authors` subsection after a version's player bullets.
 ### Fixed
 
 - **Zones you are already questing in keep their card.** A zone whose remaining quests are all in your log now gets its own card with those quests, instead of only showing them under Clean up my log (#820).
-- **Quest data loads in about half the time, and no longer crawls at low frame rates.** With Questie, the quest catalogue built at the first login after an update is ready in about 26 seconds instead of 43, and at 20 fps in about 28 seconds instead of more than 90, because a slow frame now does proportionally more of the work. No frame of the build stalls the game (#839).
-- **A late Questie no longer leaves an uncorrected quest list in place.** When Questie reported ready while the first read was still running, that read could finish last and replace the corrected list until the next login.
+- **Quest data loads faster, and no longer crawls at low frame rates.** With Questie, the quest data built at the first login after an update was ready in about 26 seconds at 76 fps, against 43 seconds on 1.10.3 at 86 fps. At 20 fps it took about 28 seconds, where 1.10.3 had not finished after 90 (#839).
+- **The quest list is right when Questie loads late.** If Questie finished loading while the guide was still reading quests, the guide could keep an outdated quest list until the next login.
 - **A turned-off ForeverCore is named as the problem.** With ForeverCore turned off, Adventure Guide Forever now says so at login, instead of naming every other Forever addon as out of date. (cjber/forever-core#816)
 - **The addon compartment entry says why Adventure Guide Forever stopped.** While Adventure Guide Forever cannot start, clicking its entry repeats the line naming the fix instead of raising a Lua error.
 
 ### Changed
 
-- **The Forever quest list is gone.** ForeverCore 1.14.5 turned it on for Adventure Guide players; it is removed now, so your quests show in the game's own quest tracker again, or in your quest addon's. The guide's section stays in the Forever column, which sits to the left of the game's tracker. Drag a heading to move it, and right-click one for Lock the tracker. Nothing to change in your settings. (cjber/forever-core#794)
+- **The Forever quest list is gone.** Your quests show in the game's own quest tracker again, or in your quest addon's. The guide's section stays in the Forever column, which sits to the left of the game's tracker. Drag a heading to move it, and right-click one for Lock the tracker. Nothing to change in your settings. (cjber/forever-core#794)
 - **Clearer Chinese warnings when ForeverCore needs attention.** Thanks to moshoutegong for the Simplified and Traditional Chinese corrections (#801, #802).
 - **Tracker menus:** right-click any block title or the section heading for journey actions and tracker settings. End journey remains available while paused.
 - **Shorter AddOns list name.** The addon is listed as Adventure Guide Forever, like the rest of the family (#819).
@@ -33,7 +33,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ### Removed
 
-- **The minimap button is gone.** Open the guide with `/agf`, Alt-G, its world-map tab, the game's settings or the AddOn compartment (#823).
+- **The minimap button is gone.** Open the guide with `/agf`, Alt-G, its world-map tab or the AddOn compartment (#823).
 - **No more hints for my other addons.** The Forever addons page and the install and enable hints for other Forever addons are gone.
 
 ## [1.10.3] - 2026-11-17
