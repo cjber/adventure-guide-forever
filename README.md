@@ -16,6 +16,13 @@ Each zone's quests read as chapters, the map offers journeys worth taking, and S
 
 Questie draws the quest markers; the guide adds route rings. With RestedXP installed, a one-time prompt lets you keep its display or follow its guides in Adventure Guide.
 
+## Known limitations
+
+- **Quest data comes from the QuestieDB addon.** Without QuestieDB installed there are no quests to route, and a quest that is new or changed in WoW: Forever can be missing, or have the wrong prerequisites, until QuestieDB's data catches up.
+- **The game does not tell an addon what a quest giver offers until you talk to them.** The guide can send you to a giver who has nothing for you. Once you talk to them, it drops that quest from the route.
+- **Some stops have no known place.** QuestieDB has no location for some quests and books, so they show as text, with no waypoint or map pin.
+- **Sync only shares quests with party members who run the guide.** For anyone else, the guide sees only the quests in your own log that they also have, not their finished quests or quests you have not taken.
+
 <p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/spf_map.png" width="640" alt="The Barrens story chosen: the journey card, its numbered stops and Shortest Path's route from the first"></p>
 
 <p align="center">The Barrens story chosen: the card names the chapter, every stop is numbered, and Shortest Path's route runs from the first.</p>
@@ -62,15 +69,9 @@ Questie draws the quest markers; the guide adds route rings. With RestedXP insta
 
 <p align="center">Right-click a dungeon card for its bosses and loot. Hover a drop for the game's item tooltip.</p>
 
-## Minimap button
-
-<p align="center"><img src="https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/minimap-adventure-guide.png" width="640" alt="The Adventure Guide button on the minimap rim"></p>
-
-<p align="center">Open Adventure Guide from its button on the minimap rim, Alt-G or <code>/agf</code>. Drag the button around the rim to move it, or turn it off in Settings > AddOns > Adventure Guide if you prefer the map tab or the addon compartment.</p>
-
 ## Install
 
-Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-forever) or [Wago Addons](https://addons.wago.io/addons/adventure-guide-forever), or download the zip from [Releases](https://github.com/cjber/adventure-guide-forever/releases). To install the zip by hand, extract it into the WoW: Forever client's `Interface/AddOns/` folder (`_forever_` on the live client, `_classic_beta_` on the beta), so you end up with `AddOns/AdventureGuideForever/AdventureGuideForever.toc`. After an update, `/reload`.
+Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-forever), or download the zip from [Releases](https://github.com/cjber/adventure-guide-forever/releases). To install the zip by hand, extract it into the WoW: Forever client's `Interface/AddOns/` folder (`_forever_` on the live client, `_classic_beta_` on the beta), so you end up with `AddOns/AdventureGuideForever/AdventureGuideForever.toc`. After an update, `/reload`.
 
 ## Usage
 
@@ -86,7 +87,7 @@ Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-
 | `/agf audit` | Compare the quest data with the game and report its source |
 | `/agf dump` | Save the drawn layout; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
 
-Open the guide from its world-map tab, its minimap button or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including tracking route quests. The shared Forever column sits left of the game's quest tracker: drag a section's heading to move it, and right-click a heading for **Lock** and **Reset position**.
+Open the guide from its world-map tab, Alt-G, `/agf` or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including tracking route quests. The shared Forever column sits left of the game's quest tracker: drag a section's heading to move it, and right-click a heading for **Lock** and **Reset position**.
 
 ## Where the quests come from
 

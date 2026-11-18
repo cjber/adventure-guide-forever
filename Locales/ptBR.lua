@@ -507,14 +507,8 @@ L["WHY_REP_BELOW"] = "Só enquanto abaixo de %s com %s"
 L["WHY_REP_MIN"] = "Requer %s com %s"
 L["WHY_SKILL"] = "Requer %s %d"
 L["YOUR_CHOICE"] = "Sua escolha"
--- mt: Minimap button settings.
-L["SETTING_MINIMAP_BUTTON"] = "Botão do minimapa" -- mt
-L["MINIMAP_BUTTON_TOOLTIP"] =
-	"Adiciona um botão do Adventure Guide ao minimapa. Arraste-o pela borda para movê-lo ou desative-o aqui." -- mt
-L["MINIMAP_BUTTON_SUBTEXT"] = "Clique para abrir o guia de nivelamento" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - relatar um erro ou pedir um recurso com um link de issue do GitHub pronto" -- mt
-L["MINIMAP_UNAVAILABLE"] = "Minimapa indisponível; o botão personalizado será ignorado." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Desativar o rastreador do Questie" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"Enquanto esta seção aparece, o rastreador de missões do Questie fica desativado, para que suas missões não apareçam duas vezes. Desative esta opção para devolver o rastreador ao Questie." -- mt

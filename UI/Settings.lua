@@ -236,25 +236,6 @@ function ns.RegisterSettings()
 					subcategory,
 					Checkbox(subcategory, "markUpgrades", ns.L.SETTING_UPGRADES, ns.L.SETTING_UPGRADES_TOOLTIP)
 				)
-				-- Shown unless hidden: the checkbox reads the shown state, while the saved key holds the hide flag
-				-- Core/MinimapButton.lua reads (Core.lua's migration carries an old micro menu choice over).
-				local minimap = Settings.RegisterProxySetting(
-					subcategory,
-					"AdventureGuideForever_minimapButton",
-					Settings.VarType.Boolean,
-					ns.L.SETTING_MINIMAP_BUTTON,
-					true,
-					function()
-						return ns.Setting("minimapButtonHidden") ~= true
-					end,
-					function(value)
-						ns.SetSetting("minimapButtonHidden", value ~= true)
-					end
-				)
-				Settings.RegisterInitializer(
-					subcategory,
-					Settings.CreateCheckboxInitializer(minimap, nil, ns.L.MINIMAP_BUTTON_TOOLTIP)
-				)
 			end,
 		},
 	}
