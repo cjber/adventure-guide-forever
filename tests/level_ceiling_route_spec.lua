@@ -120,6 +120,30 @@ for id, quest in pairs(data.quests) do
 	end
 end
 ok(found, "Redridge has a level 25 quest to hand in")
+
+-- The in-combat rebuild drops pickups past a lowered ceiling, and the planned work they open, as a full build does.
+do
+	local wide = { level = 20, maxLevel = 60, side = 1, raceBit = 1, classBit = 1, map = 1433, x = 0.31, y = 0.48 }
+	wide.logMax, wide.maxQuestLevelOffset = 20, 5
+	local route = Model.Plan(data, wide, {}, {}, prefs)
+	local function Past(plan, ceiling)
+		for _, journey in ipairs(plan.journeys) do
+			for _, step in ipairs(journey.steps) do
+				for _, id in ipairs(step.pickups or step.quests or {}) do
+					local quest = data.quests[id]
+					if quest and quest.level - wide.level > ceiling then
+						return journey.key .. " " .. step.key .. " quest " .. id
+					end
+				end
+			end
+		end
+	end
+	ok(Past(route, 2) ~= nil, "at +5 the route picks up a quest past +2")
+	wide.maxQuestLevelOffset = 2
+	local fight = Model.Refresh(data, wide, {}, {}, prefs, route)
+	local where = Past(fight, 2)
+	ok(where == nil, "the in-combat rebuild drops pickups past a lowered ceiling: " .. tostring(where))
+end
 -- The log's own level past the ceiling keeps a quest off even where the data's level is within it.
 for id, quest in pairs(data.quests) do
 	if quest.zone == 1433 and quest.level == 20 and quest.obj and #quest.obj > 0 then

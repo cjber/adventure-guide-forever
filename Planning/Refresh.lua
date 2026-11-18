@@ -210,8 +210,10 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 		end
 		return kept
 	end
+	-- A pickup past the level ceiling leaves too, as Model.Hard keeps it off a full build.
 	local function Open(id)
 		return Eligible(data, player, completed, log, id, groups)
+			and not Model.AboveCeiling(QuestLevel(data, log, player, id), player)
 	end
 	local function Carried(id)
 		return log[id] ~= nil and log[id].complete

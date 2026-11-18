@@ -23,10 +23,26 @@ local function Keys(route, journey)
 end
 
 local player = {
-	side = 2, map = 1412, x = 0.4618, y = 0.673, logMax = 5, level = 7, classBit = 1, maxLevel = 60, raceBit = 2,
+	side = 2,
+	map = 1412,
+	x = 0.4618,
+	y = 0.673,
+	logMax = 5,
+	level = 7,
+	classBit = 1,
+	maxLevel = 60,
+	raceBit = 2,
 }
-local completed = { [376] = true, [8744] = true, [96379] = true, [787] = true, [752] = true, [788] = true,
-	[60860] = true, [747] = true }
+local completed = {
+	[376] = true,
+	[8744] = true,
+	[96379] = true,
+	[787] = true,
+	[752] = true,
+	[788] = true,
+	[60860] = true,
+	[747] = true,
+}
 local prefs = { quests = true, dungeons = false, skipped = {}, optimisedRoute = true }
 
 local first = Model.Plan(data, player, completed, {}, prefs)
