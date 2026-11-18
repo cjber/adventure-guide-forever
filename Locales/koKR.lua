@@ -324,9 +324,6 @@ L["SETTINGS_GROUP_MAP"] = "지도"
 L["SETTINGS_GROUP_ROUTE"] = "경로"
 L["SETTINGS_GROUP_TRACKER"] = "목표 추적기"
 L["SETTINGS_OPEN"] = "열기"
-L["SETTING_ATTACH_TRACKER"] = "퀘스트 추적기에 붙이기"
-L["SETTING_ATTACH_TRACKER_TOOLTIP"] =
-	"끄면 공유 Forever 추적기를 화면 어디로든 끌어 옮길 수 있습니다."
 L["SETTING_AUTO_START"] = "경로 자동 시작"
 L["SETTING_AUTO_START_TOOLTIP"] =
 	"선택한 여정의 경로가 준비되면 바로 Shortest Path로 보내므로, 접속하거나 /reload한 후 출발을 누르지 않아도 지도에 선이 그려집니다. 중지를 누르면 여정을 다시 선택할 때까지 지워집니다."
@@ -346,8 +343,7 @@ L["SETTING_JOURNEY_WATCH"] = "여정의 퀘스트만 추적" -- mt
 L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
 	"여정이 이끄는 동안 목표 추적기는 그 여정이 다루는 퀘스트만 표시하고 나머지 퀘스트는 빠집니다. 직접 추적한 퀘스트는 캐릭터에 남아 있으며 여정이 더 이상 이끌지 않거나 다른 여정을 고르거나 이 설정을 끄면 돌아옵니다." -- mt
 L["SETTING_LOCK_TRACKER"] = "추적기 잠금"
-L["SETTING_LOCK_TRACKER_TOOLTIP"] =
-	"공유 Forever 추적기를 놓은 자리에 유지합니다. 위쪽 손잡이로 더 이상 끌 수 없습니다."
+L["SETTING_LOCK_TRACKER_TOOLTIP"] = "공유 Forever 추적기를 놓은 자리에 유지합니다."
 L["SETTING_MAP_PINS"] = "지도에 경로 핀 표시"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"해당 지역이 표시되는 동안 세계 지도에 경로의 번호 붙은 단계를 표시하며, 퀘스트 NPC 표시가 켜져 있으면 퀘스트 NPC도 표시합니다. 열린 안내서는 어느 경우든 경로를 미리 보여 줍니다."
@@ -413,8 +409,6 @@ L["SIDEBAR_COLLAPSED"] =
 	"안내서는 세계 지도 옆의 퀘스트 로그에서 열립니다. 지도 오른쪽 아래의 화살표를 눌러 퀘스트 로그를 표시하세요."
 L["SIDEBAR_MAXIMIZED"] =
 	"안내서는 세계 지도 옆의 퀘스트 로그에서 열립니다. 지도 닫기 표시 옆의 버튼을 눌러 지도를 줄이고 퀘스트 로그를 표시하세요."
-L["SKILLUP_FAMILY"] = "SkillUp Forever는 다음 전문 기술 등급까지 가장 저렴한 경로를 계획합니다."
-L["SKILLUP_FAMILY_MENU"] = "다음 등급까지 가장 저렴한 경로: SkillUp Forever"
 L["SKILLUP_NONE"] =
 	"올릴 제작 전문 기술이 없습니다. 상급자에게서 하나를 배우면 여기에 표시됩니다."
 L["SKILLUP_OUTDATED"] =
@@ -422,9 +416,6 @@ L["SKILLUP_OUTDATED"] =
 L["SKIP"] = "지금은 건너뛰기"
 L["SKIPPED"] = "건너뜀 (%d)"
 L["SKIP_STEP"] = "지금은 이 단계 건너뛰기"
-L["SPF_DISABLED"] = "걷는 경로와 배 시간을 보려면 Shortest Path Forever를 켜십시오."
-L["SPF_FAMILY_MENU"] = "걷는 경로와 배 시간: Shortest Path Forever"
-L["SPF_MISSING"] = "걷는 경로와 배 시간을 보려면 Shortest Path Forever를 설치하십시오."
 L["STARTS_AFTER_COMBAT"] = "전투가 끝나면 경로가 시작됩니다"
 L["STARTS_WITH"] = "시작: %s"
 L["START_ADVENTURE"] = "시작"
@@ -491,9 +482,6 @@ L["TRAVEL_WAIT"] = " · %d분 대기"
 L["TRAVEL_WALK"] = "%s까지 걷기"
 L["TRAVEL_ZEPPELIN"] = "%s행 비행선"
 L["TURN_IN"] = "제출: %s"
-L["TWEAKS_DISABLED"] = "던전 입구를 찾으려면 Tweaks Forever를 켜십시오."
-L["TWEAKS_FAMILY_MENU"] = "던전 입구 찾기: Tweaks Forever"
-L["TWEAKS_MISSING"] = "던전 입구를 찾으려면 Tweaks Forever를 설치하십시오."
 L["TWEAKS_OUTDATED"] = "던전 입구를 찾으려면 Tweaks Forever를 업데이트하십시오."
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
@@ -519,6 +507,7 @@ L["WHY_REP_BELOW"] = "%s 미만일 때만 (%s)"
 L["WHY_REP_MIN"] = "%s 필요 (%s)"
 L["WHY_SKILL"] = "%s %d 필요"
 L["YOUR_CHOICE"] = "선택"
+-- mt: Minimap button settings.
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - GitHub 이슈 링크와 함께 오류를 보고하거나 기능을 요청합니다" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Questie 추적기 끄기" -- mt
