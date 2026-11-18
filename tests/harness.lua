@@ -1812,6 +1812,7 @@ function harness.load(options)
 	end
 	-- Runs one frame: the timers queued now, not the ones they queue. Returns how many ran.
 	function h.tick()
+		h.clock = h.clock + h.frameTime
 		local due = timers
 		timers = {}
 		for _, fn in ipairs(due) do
@@ -1829,6 +1830,7 @@ function harness.load(options)
 					return
 				end
 			end
+			h.clock = h.clock + h.frameTime
 			local due = timers
 			timers = {}
 			for _, fn in ipairs(due) do
@@ -3585,7 +3587,8 @@ function harness.load(options)
 	-- areaOverride, parent, parentOverride, instances), and to fail a check `contract` (the newest it supports),
 	-- `flavor`, `missing` (a field name its schema lacks) or `noZones`. harness.questieMirror builds one from the
 	-- bundled data. h.clockStep is how far debugprofilestop moves on each call, 0 by default: one slice builds all.
-	h.metadata, h.clock, h.clockStep = {}, 0, 0
+	-- h.frameTime is how far debugprofilestop moves between frames (each tick, or each round of a flush), 0 by default.
+	h.metadata, h.clock, h.clockStep, h.frameTime = {}, 0, 0, 0
 	G.debugprofilestop = function()
 		h.clock = h.clock + h.clockStep
 		return h.clock

@@ -603,7 +603,8 @@ end
 -- A slice is a share of the frame the client measures, so at a third of the frame rate the build takes a third of the
 -- frames and the same wall time; above 60 fps the slice stays at its floor.
 do
-	local function Frames(framerate)
+	-- framerate is GetFramerate's smoothed answer; frameTime how long each frame takes (default: that rate's frame).
+	local function Frames(framerate, frameTime)
 		local many, frames = Fake(), 0
 		for id = 910000, 913000 do
 			many.quests[id] = many.quests[900001]
@@ -612,6 +613,7 @@ do
 			questiedb = many,
 			setup = function(h2)
 				h2.clockStep, h2.framerate = 0.01, framerate
+				h2.frameTime = frameTime or 1000 / framerate
 				local after = h2.G.C_Timer.After
 				h2.G.C_Timer.After = function(delay, fn)
 					if debug.getinfo(fn, "S").source:find("QuestieSource") then
@@ -627,7 +629,44 @@ do
 	local at60, at20, at144 = Frames(60), Frames(20), Frames(144)
 	-- Each slice ends at the first yield check past its budget, so the counts are near, not exactly, a third.
 	equal(at60 / at20 > 2.5 and at60 / at20 < 3.5, true, "a third of the frame rate takes a third of the frames")
-	equal(at144, at60, "above 60 fps the slice stays at its floor")
+	-- The slices are equal; where a slice's last yield check falls moves with the frame's length by one frame at most.
+	equal(math.abs(at144 - at60) <= 1, true, "above 60 fps the slice stays at its floor")
+	equal(Frames(0, 1000 / 60), at60, "an unmeasured frame rate keeps the floor")
+	-- The time since the last step includes the step's own slice, so the frame it measures is a little longer.
+	local stale = Frames(5, 1000 / 60)
+	equal(
+		stale > at60 * 0.8,
+		true,
+		"a smoothed rate still low after a slow spell does not stretch a 60 fps frame's slice"
+	)
+end
+-- The read the wait for Questie starts is still sliced when Questie reports ready: the corrected read replaces it,
+-- and the older read neither publishes nor saves its uncorrected quests.
+do
+	local many = Fake()
+	for id = 910000, 913000 do
+		many.quests[id] = many.quests[900001]
+	end
+	local raced = harness.load({
+		questiedb = many,
+		setup = function(h2)
+			NotReady(h2)
+			h2.clockStep = 0.01
+		end,
+	})
+	deadline()
+	for _ = 1, 3 do
+		raced.tick()
+	end
+	equal(raced.ns.QuestieStatus.state, "building", "the uncorrected read is still sliced")
+	raced.G.LibQuestieDB.Quest.GetAllIds = function()
+		return { 900002 }
+	end
+	raced.G.Questie.API.isReady = true
+	ready()
+	raced.flush()
+	equal(raced.ns.Data.quests[910000], nil, "the superseded read does not publish")
+	equal(raced.ns.Data.quests[900002].title, "Collect", "the corrected read stands")
 end
 -- The composed catalogue is saved per character and reloaded in place of the build. These checks drive the
 -- production save path through tests/harness.lua: a save is only adopted for the exact inputs that produced it
