@@ -23,6 +23,8 @@ for _, value in ipairs(characters.list) do
 end
 assert(fixture, "the Deadmines fixture is in tests/fixtures/characters.lua")
 local player, completed, log, prefs, inputs = characters.Resolve(data, fixture)
+-- The fixture's log holds dungeon quests past the default ceiling; the widest one keeps them on the card (#846).
+player.maxQuestLevelOffset = 10
 local route = Model.Plan(data, player, completed, log, prefs, nil, nil, nil, inputs)
 local card
 for _, journey in ipairs(route.journeys) do

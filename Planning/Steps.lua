@@ -530,7 +530,10 @@ end
 -- share; any other finished quest is a turn-in at its hand-in. A quest under way is done in areas (Nodes), each merged
 -- with the nearby ones of its kind (Near) into one visit keyed by its first quest and slot, its ring wide enough for
 -- them all. One nothing places has no step, and still counts: `held` maps every quest the card holds to its first
--- step, or false. `plan` keeps the areas and their first nodes, for a lap's pickups to join (Laps).
+-- step, or false. A quest under way past the player's level ceiling (Model.AboveCeiling, by the log's level) is no
+-- card's: the route never sends the player to work above the "Maximum quest level above yours" setting, whether the
+-- quest was taken from the route or not. It comes back once the player's level brings it within the ceiling, and its
+-- hand-in shows once it is done. `plan` keeps the areas and their first nodes, for a lap's pickups to join (Laps).
 ---@param ready table<integer, AGFPlace>
 ---@param belongs fun(id: integer, place?: table): boolean which log quests the card holds, by where they are done next
 ---@param plan AGFPlanAreas
@@ -541,8 +544,11 @@ local function LogSteps(data, player, log, ready, belongs, stops, steps, plan, a
 	local function Touches(a, b)
 		return Near(data, a, b)
 	end
-	for id in pairs(log) do
-		if not admit or admit(id) then
+	for id, entry in pairs(log) do
+		if
+			(entry.complete or not Model.AboveCeiling(QuestLevel(data, log, player, id), player))
+			and (not admit or admit(id))
+		then
 			ids[#ids + 1] = id
 		end
 	end

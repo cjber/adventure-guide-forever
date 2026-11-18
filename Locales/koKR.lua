@@ -356,7 +356,7 @@ L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 L["SETTING_QUEST_LEVEL"] = "내 레벨보다 높은 최대 퀘스트 레벨"
 L["SETTING_QUEST_LEVEL_ONE"] = "%s레벨"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =
-	"안내서가 추천하는 가장 높은 퀘스트 레벨을 내 레벨 기준으로 선택합니다. 기본값 +2는 주황색과 빨간색 퀘스트를 피합니다. 이미 퀘스트 목록에 있는 퀘스트는 계속 표시됩니다."
+	"안내서가 추천하는 가장 높은 퀘스트 레벨을 내 레벨 기준으로 선택합니다. 기본값 +2는 주황색과 빨간색 퀘스트를 피합니다. 퀘스트 목록에 있는 그보다 높은 퀘스트는 레벨이 따라잡거나 완료 보고가 가능해질 때까지 경로에서 빠집니다."
 L["SETTING_QUEST_LEVEL_VALUE"] = "%s레벨"
 L["SETTING_ROUTE_ORDER"] = "최적화된 경로 (베타)"
 L["SETTING_ROUTE_ORDER_TOOLTIP"] =
