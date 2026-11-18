@@ -987,6 +987,7 @@
 ---@field Stop fun() the player's Stop: our route stops and the choice clears
 ---@field Settling fun(): boolean a rebuild or step 1's travel line is due, whose frames take no card estimate
 ---@field PanelShown? fun(): boolean whether the guide is open, set once Blizzard_WorldMap has loaded
+---@field openButton Button the hidden button Alt-G clicks through Bindings.xml to open the guide
 ---@field Skip fun(key: string, title: string) hide a step for this session; the menu offers it back by its title
 ---@field Unskip fun(key: string) Show again: a skipped step or a journey not wanted
 ---@field Skipped fun(): AGFSkipped[] this session's skipped steps in skip order, then the journeys not wanted, by title

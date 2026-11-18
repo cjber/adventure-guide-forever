@@ -1,6 +1,6 @@
 ## Interface: 16001
 ## X-Forever-Core: v1.15.0
-## Title: Adventure Guide Forever - story levelling and quest routes
+## Title: Adventure Guide Forever
 ## Notes: Zone stories as chapters, journeys you pick on the map, and a route walked to each hand-in.
 ## Author: cjber
 ## Version: @project-version@

@@ -648,7 +648,7 @@ ns.L["%s: the installed ForeverCore is another addon (%s). Remove it and install
 	"%s: the installed ForeverCore is another addon (%s). Remove it and install ForeverCore from CurseForge."
 
 _G.BINDING_HEADER_ADVENTUREGUIDEFOREVER = "Adventure Guide Forever"
-_G["BINDING_NAME_CLICK AdventureGuideForeverMinimapButton:LeftButton"] = "Open Adventure Guide"
+_G["BINDING_NAME_CLICK AdventureGuideForeverOpenButton:LeftButton"] = "Open Adventure Guide"
 _G["BINDING_NAME_CLICK AdventureGuideForeverItem1:LeftButton"] = "Use step item 1"
 _G["BINDING_NAME_CLICK AdventureGuideForeverItem2:LeftButton"] = "Use step item 2"
 _G["BINDING_NAME_CLICK AdventureGuideForeverItem3:LeftButton"] = "Use step item 3"

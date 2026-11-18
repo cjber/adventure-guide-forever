@@ -1,5 +1,5 @@
 -- Run from the repository root: luajit tests/guide_open_spec.lua
--- #664: the minimap button and Alt-G open the guide on the state the client reports once the world map has shown.
+-- #664: Alt-G opens the guide on the state the client reports once the world map has shown.
 -- C_Map.OpenWorldMap posts the client's WORLD_MAP_OPEN, which opens the map a frame later, and the quest sidebar
 -- inside it comes with it (UIParentPanelManager hands ShowUIPanel to its secure frame). A reopen keeps the sidebar the
 -- player left and calls nothing. Reading QuestMapFrame as the opener returns read a map that had not shown yet, so
@@ -37,7 +37,8 @@ local function Load(cvars)
 	})
 end
 
--- The hidden open button, which Alt-G clicks through Bindings.xml (CLICK AdventureGuideForeverMinimapButton:LeftButton).
+-- The hidden open button, which Alt-G clicks through Bindings.xml
+-- (CLICK AdventureGuideForeverMinimapButton:LeftButton).
 ---@param h table
 local function PressOpen(h)
 	local button = h.ns.openButton
@@ -99,7 +100,7 @@ do
 
 	PressOpen(h)
 	h.flush()
-	equal(h.ns.PanelShown(), true, "reopen: the minimap button opens it again")
+	equal(h.ns.PanelShown(), true, "reopen: Alt-G opens it again")
 	equal(opens, 1, "reopen: and the guide runs its show path")
 	h.ns.Moments.Opened = opened
 	equal(#h.prints, 0, "reopen: without a complaint")
