@@ -477,7 +477,7 @@ L["TWEAKS_OUTDATED"] = "Actualiza Tweaks Forever para encontrar entradas de mazm
 L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
-L["WHATS_NEW"] = "Aceptar una misión ya no elimina otra de la ruta en la misma población." -- mt
+L["WHATS_NEW"] = "Las zonas en las que ya estás haciendo misiones conservan su tarjeta." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
