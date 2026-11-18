@@ -1,10 +1,10 @@
 {
-  "input_digest": "e6021e7d576b9303544c2f8527a0fdca973427f89000cf5ecc1686160d396112",
-  "runtime_sha256": "e6021e7d576b9303544c2f8527a0fdca973427f89000cf5ecc1686160d396112",
-  "candidate": "d63cccd8b6b75b6a8e3616fd98d7a77b60dfc22da634e73bf8367304dae6b941",
+  "input_digest": "a6f469308503b50cc9da10ddbc1b88f0ccd9254d94d4232e9e6bcd2686e3f49a",
+  "runtime_sha256": "a6f469308503b50cc9da10ddbc1b88f0ccd9254d94d4232e9e6bcd2686e3f49a",
+  "candidate": "493534be0b1c0164563e79326f1912ccaddf12a601e168940ac8045d6abc2991",
   "client_build": "1.60.1.70959 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "2bfef78f18e7254014edc2e3b50d246299dbd861",
+  "source_commit": "cefd7a3bbd6aed08bffb8a5a2c1bc3309d83de01",
   "flows": [
     {
       "name": "core-off",
@@ -16,19 +16,19 @@
     {
       "name": "compartment",
       "steps": [
-        "sha256:d87053ebc2117fba784d38e73e5cbbf689f473c509ffdbbf87b3994ffe1e368f adventure-guide-forever.lua"
+        "sha256:654019239321c52162ed85391a55b4cae846568062e31ed6646c68d2dff0e13f agf-settle-cold.lua"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/cdc2a3e8d959b133726a0f004720c619/raw/12fcff8c881907e934eaad2eb19928c505a136ce/1-core-off.png",
-      "sha256": "713219124cd561f5f32e47c47cbbe1cb939720cda57741fe32d5a71d81ca9efc"
+      "url": "https://gist.githubusercontent.com/cjber/c2d268a0d9cdbbd735a646e9cb27b1c6/raw/692f08aef1d4b69dfc24407afdde13db974f8d09/1-core-off.png",
+      "sha256": "e1593f9022743d7a03f7bb4ad556cf27e9db69ceb33bebc24ae7030433a31d17"
     },
     {
-      "url": "https://gist.githubusercontent.com/cjber/cdc2a3e8d959b133726a0f004720c619/raw/12fcff8c881907e934eaad2eb19928c505a136ce/2-compartment.png",
-      "sha256": "8865946a648c478fc58ac77fac1bad0d3899902c9fdf28c01214a3e9e75a98e8"
+      "url": "https://gist.githubusercontent.com/cjber/c2d268a0d9cdbbd735a646e9cb27b1c6/raw/692f08aef1d4b69dfc24407afdde13db974f8d09/2-compartment.png",
+      "sha256": "84e1e6538f4d5f66067626dae8f1eda3d37cae94b3fae96ec42279a6761ccdad"
     }
   ]
 }
