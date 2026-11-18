@@ -1657,7 +1657,6 @@
 ---@class AGFNamespace
 ---@field WhatsNew fun() on login: print WHATS_NEW once if the version changed since the last one seen
 ---@field AddOnState fun(folder: string): "on"|"off"|"missing" whether an addon runs, is installed but off, or is not installed
----@field openButton Button the hidden button Bindings.xml clicks to open the guide
 
 ---@class AGFModel
 ---@field ObjectiveDone fun(data: AGFData, entry?: AGFLogQuest, slot: integer): boolean
