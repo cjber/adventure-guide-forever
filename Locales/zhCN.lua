@@ -314,8 +314,6 @@ L["SETTINGS_GROUP_MAP"] = "地图" -- mt
 L["SETTINGS_GROUP_ROUTE"] = "路线" -- mt
 L["SETTINGS_GROUP_TRACKER"] = "目标追踪栏" -- mt
 L["SETTINGS_OPEN"] = "打开" -- mt
-L["SETTING_ATTACH_TRACKER"] = "附着于任务追踪栏" -- mt
-L["SETTING_ATTACH_TRACKER_TOOLTIP"] = "关闭后可将共享的Forever追踪栏拖动到屏幕任意位置。" -- mt
 L["SETTING_AUTO_START"] = "自动开始路线" -- mt
 L["SETTING_AUTO_START_TOOLTIP"] =
 	"路线一准备好，指南就会把所选旅程的路线发送给Shortest Path，因此登录和/reload后无需点击出发，地图上就会画出路线。点击停止仍会清除它，直到你再次选择旅程。" -- mt
@@ -335,8 +333,7 @@ L["SETTING_JOURNEY_WATCH"] = "只追踪旅程的任务" -- mt
 L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
 	"旅程引导时，目标追踪器只显示它正在处理的任务，其他任务会离开追踪器。你自己追踪的任务会留在角色上，并在旅程不再引导、你选择其他旅程或关闭此设置时回来。" -- mt
 L["SETTING_LOCK_TRACKER"] = "锁定追踪器" -- mt
-L["SETTING_LOCK_TRACKER_TOOLTIP"] =
-	"将共享的 Forever 追踪器保持在您放置的位置。顶部的拖拽手柄不再移动它。" -- mt
+L["SETTING_LOCK_TRACKER_TOOLTIP"] = "将共享的 Forever 追踪器保持在您放置的位置。" -- mt
 L["SETTING_MAP_PINS"] = "在地图上显示路线标记" -- mt
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"显示其所在地区时，在世界地图上显示路线的编号步骤；若任务NPC也已开启，则一并显示。打开的指南总会预览其路线。" -- mt
@@ -401,16 +398,11 @@ L["SIDEBAR_COLLAPSED"] =
 	"指南在世界地图旁的任务日志中打开。点击地图右下角的箭头即可显示任务日志。" -- mt
 L["SIDEBAR_MAXIMIZED"] =
 	"指南在世界地图旁的任务日志中打开。点击地图关闭按钮旁的按钮缩小地图，即可显示任务日志。" -- mt
-L["SKILLUP_FAMILY"] = "SkillUp Forever规划升到下一专业等级最省钱的路线。" -- mt
-L["SKILLUP_FAMILY_MENU"] = "升到下一等级最省钱的路线：SkillUp Forever" -- mt
 L["SKILLUP_NONE"] = "没有可提升的制造专业。在训练师处学会一个后，它会显示在这里。" -- mt
 L["SKILLUP_OUTDATED"] = "你的下一次技能提升来自SkillUp Forever。更新它后会显示在这里。" -- mt
 L["SKIP"] = "暂时跳过" -- mt
 L["SKIPPED"] = "已跳过（%d）" -- mt
 L["SKIP_STEP"] = "暂时跳过此步骤" -- mt
-L["SPF_DISABLED"] = "启用Shortest Path Forever以获得步行路线和船只时刻。" -- mt
-L["SPF_FAMILY_MENU"] = "步行路线和船只时刻：Shortest Path Forever" -- mt
-L["SPF_MISSING"] = "安装Shortest Path Forever以获得步行路线和船只时刻。" -- mt
 L["STARTS_AFTER_COMBAT"] = "战斗结束后路线开始" -- mt
 L["STARTS_WITH"] = "始于%s" -- mt
 L["START_ADVENTURE"] = "开始" -- mt
@@ -474,9 +466,6 @@ L["TRAVEL_WAIT"] = " · 等待%d分钟" -- mt
 L["TRAVEL_WALK"] = "步行前往%s" -- mt
 L["TRAVEL_ZEPPELIN"] = "前往%s的飞艇" -- mt
 L["TURN_IN"] = "交还：%s" -- mt
-L["TWEAKS_DISABLED"] = "启用Tweaks Forever以寻找地下城入口。" -- mt
-L["TWEAKS_FAMILY_MENU"] = "寻找地下城入口：Tweaks Forever" -- mt
-L["TWEAKS_MISSING"] = "安装Tweaks Forever以寻找地下城入口。" -- mt
 L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以寻找地下城入口。" -- mt
 L["UNLISTED"] = "这片土地有指南尚不知道的故事；请留意任务NPC头上的“!”。" -- mt
 L["UPDATED_TO"] = "已更新到%s。%s" -- mt
@@ -500,6 +489,7 @@ L["WHY_REP_BELOW"] = "仅在低于%s时（%s）" -- mt
 L["WHY_REP_MIN"] = "需要%s（%s）" -- mt
 L["WHY_SKILL"] = "需要%s %d" -- mt
 L["YOUR_CHOICE"] = "你的选择" -- mt
+-- mt: Minimap button settings.
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - 通过现成的 GitHub Issue 链接报告错误或请求功能" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "关闭 Questie 的追踪栏" -- mt

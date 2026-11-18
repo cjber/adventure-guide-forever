@@ -151,9 +151,10 @@ end
 
 local function LoadDB()
 	local loaded = type(AdventureGuideForeverDB) == "table" and AdventureGuideForeverDB or {}
-	-- The micro menu and minimap buttons are gone; their saved keys mean nothing now.
+	-- The micro menu and minimap buttons, and the Forever addons page's suggestions, are gone: their keys go.
 	loaded.microButton, loaded.microButtonPlacement, loaded.replaceMicroButton = nil, nil, nil
 	loaded.minimapButtonHidden, loaded.minimapButtonAngle = nil, nil
+	loaded.suggestCompanions, loaded.suggestFamily, loaded.familyDismissed = nil, nil, nil
 	-- "Stop tracking other quests" became "Track only the journey's quests", on unless the player turns it off. A
 	-- saved true carries over; a saved false leaves the new default on.
 	if loaded.untrackOthers ~= nil then
@@ -168,12 +169,6 @@ local function LoadDB()
 		end
 	end
 	loaded.window, loaded.floatWindow = nil, nil
-	-- "Suggest companion addons" became the Forever addons page's "Suggest my other Forever addons"
-	-- (ForeverCore.Family, `suggestFamily`, on unless false): a player who had turned it off keeps it off.
-	if loaded.suggestCompanions == false and loaded.suggestFamily == nil then
-		loaded.suggestFamily = false
-	end
-	loaded.suggestCompanions = nil
 	-- The shared error journal and debug log live in this saved table, under ForeverCore's own keys, so the report
 	-- lists earlier sessions' errors after a /reload. They are records, not settings: no row on the AddOns page reads
 	-- them.
@@ -182,11 +177,15 @@ local function LoadDB()
 	db = loaded
 end
 
--- The account-wide saved variables the Forever addons page and its hints read and write (ForeverCore.Family);
--- nil before they load.
----@return ForeverFamilyDB?
-function ns.FamilyDB()
-	return db
+-- Whether another addon runs ("on"), is installed but turned off ("off") or isn't installed ("missing"), read from the
+-- client: the guide offers what a companion does only while it runs.
+---@param folder string
+---@return "on"|"off"|"missing"
+function ns.AddOnState(folder)
+	if C_AddOns.IsAddOnLoaded(folder) then
+		return "on"
+	end
+	return C_AddOns.DoesAddOnExist(folder) and "off" or "missing"
 end
 
 local function LoadCharDB()
@@ -1313,13 +1312,15 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	end)
 	ns.RegisterSettings()
 	EventUtil.ContinueAfterAllEvents(ns.WhatsNew, "PLAYER_LOGIN")
-	-- Alt-G clicks this button through Bindings.xml.
-	ns.openButton = CreateFrame("Button", "AdventureGuideForeverOpenButton")
-	ns.openButton:SetScript("OnClick", function()
+	-- Bindings.xml clicks this hidden button for Alt-G and the "Open the guide" key binding. It keeps the retired
+	-- minimap button's name because the client saves custom key bindings by frame name.
+	local open = CreateFrame("Button", "AdventureGuideForeverMinimapButton")
+	open:SetScript("OnClick", function()
 		if ns.OpenPanel then
-			ns.OpenPanel()
+			ns.core.SafeCall("open binding", ns.OpenPanel)
 		end
 	end)
+	ns.openButton = open
 end)
 
 -- After an update, one chat line says what changed. Never on a first install (no version seen yet, which is also

@@ -1,188 +1,86 @@
-# AGENTS.md
+# Adventure Guide Forever
 
-Adventure Guide Forever is a WoW: Forever addon (Interface 16001) that suggests a short, player-steered
-route of next steps from your level, finished quests and quest log. It requires ForeverCore (`## Dependencies:
-ForeverCore`, `required-dependencies` in `.pkgmeta`), the standalone addon every Forever addon needs: the tracker
-column, the report window, leaderboards, the error journal and debug log, the context menu, the
-settings chrome and the family page are core's alone. Players install the zip the BigWigs packager builds on a `v*`
-tag, and the stores install ForeverCore with it.
+A WoW: Forever addon (`Interface 16001`) that suggests a short, player-steered route of next steps from your level,
+finished quests and quest log. It requires ForeverCore (tracker column, report window, leaderboards, error journal,
+debug log, context menu, settings chrome, family page); none of that is vendored here. Players install the zip the
+BigWigs packager builds on a `v*` tag.
 
-## Commands
+## Gate
 
 ```sh
-python3 tools/doctor.py   # first on a new machine: every tool pin below, with a fix for each problem
-export FOREVER_CORE=~/forever-core   # or the checkout of tools/forever-core.txt's ref, beside this one
-stylua --check .
-ruff format --check tools && ruff check tools
-luacheck .
-python3 tools/gen_corpus.py   # builds the test corpus into tests/.corpus/ (never committed)
-tools/typecheck.sh
-for s in tests/*_spec.lua; do luajit "$s" || exit 1; done
-luajit -joff tests/plan_bench.lua
-AGF_QUESTIEDB=tools/.cache/questiedb-<QUESTIEDB_TAG>/QuestieDB luajit -joff tools/login_bench.lua # login cost on the real QuestieDB
-python3 tools/check_generated.py --offline # omit --offline to fetch missing pinned inputs
-python3 tools/forever_tools/credits.py --check # Data/Credits.lua and both thanks blocks are current (WFA-31)
-python3 tools/changelog.py --check
-python3 tools/check_screenshots.py   # an image older than its scene; tools/screenshots.py re-records it
-python3 tools/check_menu_scroll.py # menus built from a list scroll (WFA-36); CI runs it in core-shared
-python3 tools/repo_rules.py   # rules no linter covers; CI runs it in project-rules
-python3 tools/check_api_docs.py # every function Core/API.lua publishes, and its minor, are in docs/api.md
+tools/gate.sh            # stylua, luacheck, ruff on tools, the quick specs under LuaJIT, changelog check
+GATE_SLOW=1 tools/gate.sh  # adds playthrough, laps, smoke and ui specs (~3 min); use for a planner or UI change
+tools/gate.sh --changed  # the same, linting only the Lua files changed against origin/main; specs only when a Lua, TOC or XML file changed
+tools/typecheck.sh       # LuaLS, load graph, shared lints; run after a signature or type change
+luajit -joff tests/plan_bench.lua   # after a planner or rebuild change, then again with AGF_BENCH_STRICT=1 (the measured budget)
 ```
 
-CI's `package` job builds the zip with the release's packager without uploading (`-d -z`) and runs
-`python3 tools/check_package.py` on its output: every loaded file ships, no development folder does, a licence file and
-THIRD_PARTY.md ship with README's `## Credits` and THIRD_PARTY's `## Players` (WFA-10, WFA-31), and the
-smoke spec passes on the packaged files.
+Set `FOREVER_CORE` to a ForeverCore checkout at `tools/forever-core.txt`'s ref when it is not at `../forever-core`
+(always, from a worktree). The gate rebuilds the gitignored `tests/.corpus/` with `tools/gen_corpus.py`.
+`python3 tools/doctor.py` checks this machine against the tool pins. CI runs the rest (generated data, screenshots,
+sim, API docs, repo rules, package, workflows, secrets); never run it whole here. `tests/plan_bench.lua` fails a frame
+over 3 ms (7 ms for the once-a-login catalogue build) at three times the measured time; `speedpatrol.yml` times it
+against the base branch. `AGF_UPDATE_GOLDEN=1` rewrites `tests/golden/`: re-base a golden route only when new data
+explains the change. `tools/forever_tools/` and `tools/forever_sim/` are copied from forever-core byte for byte: never
+edit them. Release: `.agents/skills/release/SKILL.md`.
 
-Every version needs a `CHANGELOG.md` entry (prose, bold-lead bullets) before its `v*` tag: the release publishes
-it as the notes on GitHub and CurseForge. A change's player-facing notes go in `changes/<issue>.md` as bold-lead bullets, with an optional `### For addon
-authors` section after them. The release commit gathers them with `python3 tools/changelog.py release X.Y.Z`; no
-other pull request edits `CHANGELOG.md`, and CI's `--check --base` fails one that does.
+After a UI change run `python3 tools/screenshots.py` (WFA-9; local only, needs Pillow and wago.tools, and
+`FOREVER_CORE` at the shared renderer) and commit the PNGs and `scenes.sha256`. On the bot's `data/refresh` PR a stale
+image is only a warning (`SCREENSHOTS_STALE_WARN`), so re-render straight after it merges.
 
-The same gate CI runs, plus actionlint, zizmor and gitleaks on the workflows and history. `tests/plan_bench.lua` fails a
-frame over the 3 ms budget (7 ms for the once-a-login QuestieDB catalogue build), allowing three times the measured time
-so a shared runner does not flake; after a change to the planner or the rebuild, also run
-`AGF_BENCH_STRICT=1 luajit -joff tests/plan_bench.lua`, which checks the budget as measured. `.github/workflows/speedpatrol.yml`
-times that bench on every pull request against its base branch and fails on a regression (`.speedpatrol/instructions.md`). `AGF_UPDATE_GOLDEN=1` rewrites the golden files in `tests/golden/`.
-After a UI change, set `FOREVER_CORE` to the installed shared renderer in cjber/forever-core directory and run
-`python3 tools/screenshots.py` (WFA-9; local only: it needs Pillow and wago.tools) and
-commit the PNGs it rewrites in `docs/screenshots/` with `scenes.sha256`; two runs give byte-identical files.
-A data refresh that changes what a scene shows is only a warning from `tools/check_screenshots.py` on the bot's
-`data/refresh` PR (ci.yml sets `SCREENSHOTS_STALE_WARN` there; the bot can't render), so render the images again
-straight after it merges: on main, and on every other branch, a stale image fails.
+## Data
 
-## Layout
+- `Data/Geometry.lua` (`tools/gen_quests.py`), `Data/Forever.lua` (`tools/diff_forever.py`), `Data/ZoneArt.lua`
+  (`tools/gen_zoneart.py`) and `Data/Territory.lua` (`tools/gen_territory.py`) are generated: never hand-edit. Geometry
+  holds only what neither QuestieDB nor the client answers; it carries no quest records, NPC places or towns, which
+  come from the installed QuestieDB at runtime (`Integrations/QuestieSource.lua`, `QuestieTowns.lua`).
+- `tests/.corpus/` is built from the sha-pinned QuestieDB release by `tools/gen_corpus.py`. It is gitignored and never
+  committed or shipped (QuestieDB 1.0.16 is GPLv3 only from 2026-10-21 and earlier content is all rights reserved), so
+  nothing is copied and the runtime-only waiver stands (WFA-28). `tests/fixtures/client.lua` holds the hand-written
+  client-only facts.
+- `refresh-data.yml` runs daily, moves the pins (`BUILD`, `ERA`, `QUESTIEDB_*`), regenerates `Data/` and the corpus and
+  opens the `data/refresh` PR; `retry-refresh.yml` re-runs a failed run once. A check that rejects new client data is
+  corrected from that data and kept exact, never loosened.
+- Pins moved by hand: `UI_ART_BUILD` in `tools/screenshots.py`, `LEGACY_MAP_BUILD`, `CLASSICDB_COMMIT` (waivers below;
+  not bumped), `SPF_SHA` in `tests/contract_spec.lua` and `tools/screenshots_spf.py` (review a new Shortest Path API's
+  types). Tool versions live in `tools/toolchain.json` and `tools/pyproject.toml`, vendored from ForeverCore.
 
-- `Data/Geometry.lua`: generated by `tools/gen_quests.py` (pins at the top of the script; never hand-edit): what
-  neither QuestieDB nor the client answers (zones, instances and their entrance requirements, maps, continents,
-  crossings, flight-map town names, trainer and battlemaster roles, profession ranks, overlays). It carries **no quest
-  records, no NPC places and no towns**: quests, where givers, trainers and innkeepers stand, their sides and the
-  towns they form come from the installed QuestieDB at runtime (`Integrations/QuestieSource.lua`,
-  `Integrations/QuestieTowns.lua`).
-- The test-only corpus, quests.lua, towns.lua and books.lua in the tests/.corpus folder, built by
-  `tools/gen_corpus.py` from the sha-pinned QuestieDB release through the addon's own QuestieSource build; the model
-  specs' deterministic world for one fixed character. Gitignored and never committed or shipped: QuestieDB 1.0.16
-  ships a LICENSE.md (GPLv3 from 2026-10-21) and treats earlier content as all rights reserved, so nothing is copied
-  and the runtime-only waiver stands (WFA-28). Build it before the specs, as `## Commands` does.
-  `tests/fixtures/client.lua` is the hand-written client-only facts (counts, elite, timed) the harness overlays.
-- `Data/Forever.lua`: generated by `tools/diff_forever.py` (Forever's DB2 against Classic Era's, pinned as `ERA`);
-  never hand-edit.
-- `Data/ZoneArt.lua`: generated by `tools/gen_zoneart.py`; never hand-edit.
-- `Data/Territory.lua`: generated by `tools/gen_territory.py` from wago.tools `UiMapAssignment` and
-  `AreaTable.FactionGroupMask` for every map `Data/Geometry.lua` places (2 Alliance, 4 Horde, 0 contested, 6 both);
-  the Library books journey keeps a faction's zones and the contested ones, never the other faction's. Never
-  hand-edit.
-- `Core/`: lifecycle, session state, live client reads and the public addon API (`Core/API.lua`, `docs/api.md`).
-  `Core/Require.lua` is the API floor, and `Core/Core.lua` registers the addon's shared services once (`ns.core`).
-- `Planning/`: route models, ordering, focus and geometry.
-- `Integrations/`: QuestieDB, companion addons and dungeon providers.
-- `UI/`: guide windows, hints, map pins, settings and the tracker section it attaches to ForeverCore's column.
-- `Planning/Model.lua`: the headless-testable planner's eligibility rules and shared table, `ns.Model`; the planner's
-  other modules load after it in `AdventureGuideForever.toc` order. `Core/State.lua` reads the client.
-- `Planning/Shown.lua`: the route as shown: `Shown.Build` runs the planner, the player's order and giver skips
-  over one snapshot; Core's rebuild is its one caller, and the planner reads no other module.
-- `Planning/Books.lua`: the Library books journey's one card: QuestieDB's books filtered to a territory's own and
-  contested zones, smaller zones first, up to the guide's step budget and ending at the librarian; a book with no
-  spawn is a row that says so and has no waypoint.
-- `Integrations/Integrations.lua`: Shortest Path Forever's public API when loaded, the native waypoint otherwise.
-- `Core/Guidance.lua`: the guidance lifecycle (choose, start, stop, restore, follow, end); the one writer of
-  `prefs.guided` and `prefs.waypoint`.
-- `Locales/enUS.lua`: every line the player reads (`ns.L`, constant keys); a translation is `Locales/<locale>.lua`
-  (`Locales/README.md`). After changing copy, `python3 tools/phrases.py > Locales/phrases.txt`.
-- `UI/Dump.lua`: `/agf dump` saves the drawn layout to the saved variables for `tests/dump_diff.lua`.
-- `UI/Panel.lua`: registers the guide's panel with `ForeverCore.QuestLogTabs` and opens through its `Select("guide")`.
-- `docs/curseforge.md`: the store description, pasted into CurseForge by hand.
-- `docs/design.md`: the brief contracts referenced by the source and headless specs.
+## Invariants
 
-## Data refresh
-
-`.github/workflows/refresh-data.yml` runs daily. `tools/refresh_pins.py` moves `BUILD` (`tools/gen_quests.py`) to
-the newest Forever build on wago.tools, `ERA` (`tools/diff_forever.py`) to the newest Classic Era build there, and
-`QUESTIEDB_TAG`, `QUESTIEDB_ASSET` and `QUESTIEDB_SHA256` (`tools/gen_corpus.py`) to the newest QuestieDB release; when one moved, the
-workflow regenerates `Data/` and the test corpus, runs `tools/check_generated.py --offline`, the
-generator tests, luacheck, every spec (the golden routes among them), the planner bench and stylua, opens the
-`data/refresh` PR, then approves that PR's CI and Speedpatrol runs, which GitHub holds for a PR opened by
-`GITHUB_TOKEN`. A failed run on main is re-run once ten minutes later by `.github/workflows/retry-refresh.yml`;
-one that fails again opens the issue "Data refresh failed", assigned to the owner, or comments on the open one. A check that rejects new client data is corrected from that data and kept
-exact, never loosened; a golden route is re-based only when the new data explains the change.
-
-Pins moved by hand: `UI_ART_BUILD` in `tools/screenshots.py` (the independently reviewed art pin), `LEGACY_MAP_BUILD` (the last build with WorldMapArea, fixed), `CLASSICDB_COMMIT` (the waivers
-below; not bumped), `SPF_SHA` in `tests/contract_spec.lua` and `tools/screenshots_spf.py` (a new Shortest Path API
-needs its types reviewed). Tool versions live in `tools/toolchain.json` and `tools/pyproject.toml`: both are vendored
-from ForeverCore, whose daily bump workflow and Dependabot move them, so a workflow here names a tool and never its
-version.
-
-## Rules
-
-- Lua 5.1 in the game's sandbox: no `require`. The client loads the files `AdventureGuideForever.toc`
-  lists, in that order, each receiving `local addonName, ns = ...`; a new file goes in the TOC or never runs.
-- The specs use stubbed client APIs. `tests/forever_core.lua` loads ForeverCore from `FOREVER_CORE` (else
-  `../forever-core`), and `tools/forever-core.txt` names the ref CI checks out; every harness loads it before the
-  addon's own files. Checks that need the client run in the headless client (forever-core's `wow-forever-addon/in-game.md`); list in the PR what was checked, and as `/reload` tests for the user what waits on their session.
-- Host globals go in `.luacheckrc`; LuaLS gets WoW APIs from the pinned Ketho annotations and ForeverCore's own
-  types from the checkout in `.luarc.json`'s library. Add missing integration APIs with real types in `types/`, never
+- Lua 5.1 in the game's sandbox: no `require`. A new file goes in `AdventureGuideForever.toc` or never runs.
+- A quest whose eligibility the data cannot establish is never recommended; a step never points at coordinates the data
+  lacks. `Planning/Model.lua` (`ns.Model`) is the headless-testable planner; `Planning/Shown.lua` is the one caller of
+  the planner, and the planner reads no other module; `Core/Guidance.lua` is the one writer of `prefs.guided` and `prefs.waypoint`.
+- Host globals go in `.luacheckrc`; add missing integration APIs with real types in `types/`, never
   `diagnostics.globals`. Addon contracts live in `types/Namespace.lua`.
-- A final `select(...)` argument, table element or return must be parenthesised, or carry a trailing
-  `-- multi-value: reason` when expansion is intentional.
-- Never stretch art: an icon, atlas or texture is drawn at its native aspect, through `UI/Art.lua` (`Art.Fit`,
-  `Art.Icon`, `Art.Markup`, `Art.Highlight`, the slices); only nine-slice pieces, bars and tiles stretch by design.
-  `tools/lint_art.py` refuses a raw `SetAtlas`, `SetTexture`, button atlas or `|A`/`|T` markup anywhere else unless
-  its line says why its shape is right (`-- art-ok: reason`); the specs fail on a file drawn over an atlas's leftover
-  crop, and `tools/screenshots.py` on any atlas drawn off its own shape.
-- Commits are signed (`git commit -S`) with the personal email.
-- Release: load `.agents/skills/release/SKILL.md` when preparing or publishing a release.
-  A cloud session cannot push tags: once the version's PR is merged and `.github/workflows/ci.yml` passed on main, start the Release
-  workflow on main with `version` (and `commit` for an older main commit); it tags that commit and publishes.
-- Quality: read the live roots and settled shapes in `.sloppatrol/instructions.md` before cleanup, dead-code or
-  refactoring work.
-- A quest whose eligibility the data cannot establish is never recommended, and a step never points at
-  coordinates the data does not have.
-- Store copy, README and posts pitch the addon as looking like it came with the game, in cjber's
-  own voice, never AI marketing: `wow-forever-addon` WFA-23/24, checked before every store paste.
+- A final `select(...)` argument, table element or return is parenthesised, or carries `-- multi-value: reason`.
+- Art is drawn at its native aspect through `UI/Art.lua`; `tools/lint_art.py` refuses a raw `SetAtlas`, `SetTexture`,
+  button atlas or `|A`/`|T` markup elsewhere unless the line says `-- art-ok: reason`.
+- Every line the player reads is in `Locales/enUS.lua`; after changing copy run
+  `python3 tools/phrases.py > Locales/phrases.txt`.
+- Tracker section: keep it in ForeverCore's shared column (set `legacySettings` and `safeCall`, add
+  `AddHeaderMenuEntries`, attach with `ForeverCore.TrackerHost.Attach`); never register with Blizzard's tracker
+  manager. This supersedes WFA-5. Render only after `PLAYER_ENTERING_WORLD` and `VARIABLES_LOADED`, deferred one
+  frame. Never touch Blizzard's Lua state (WFA-38). Test event ordering and reuse, not just method existence.
+- Player-facing notes go in `changes/<issue>.md`; only the release commit edits `CHANGELOG.md`
+  (`python3 tools/changelog.py release X.Y.Z`). Read `.sloppatrol/instructions.md` before dead-code or refactoring work.
+- Checks that need the client run in the headless client (forever-core's `wow-forever-addon/in-game.md`); the PR lists
+  what was checked and what waits as a `/reload` test for the user.
 
 ## Standards
 
-- `wow-forever-addon`: https://github.com/cjber/forever-core/tree/main/.agents/skills/wow-forever-addon (UI look,
-  icon, README and store page, CI and release requirements shared by every WoW: Forever addon)
-- For UI design, mockups, asset selection and visual audits, also read the
-  `wow-retail-ui-style` skill on ForeverCore `main`. Its asset registry and audit sheets
-  distinguish approved native host art from conditional and blacklisted assets.
-- `repo-standards`: the RS-* requirements every cjber repo meets (repo, Actions and security settings, rulesets, CI hardening, community files), a skill in cjber/skills whose `audit.py` checks this repo
+- `repo-standards`: the RS-* requirements every cjber and agent-labs-dev repo meets; its `audit.py` checks this repo.
+- `wow-forever-addon`: the WFA-* addon requirements (UI, assets, README and store page, CI and release); wins where
+  stricter. UI work also reads `wow-retail-ui-style` and its asset registry in forever-core.
 
 ## Waivers
 
-- WFA-2: quest records, NPC places and towns use installed QuestieDB, with Questie supplying live pickup
-  availability (owner decision 2026-09-28). Do not substitute a smaller bundled quest catalogue. WFA-28 names
-  QuestieDB as the one companion install this allows.
-- WFA-28: trainer roles (a trainer's class and level span, profession and ranks, riding race, pet training, and a
-  battlemaster's battleground): CMaNGOS classic-db `creature_template`, `npc_trainer` and `battlemaster_entry`.
-  QuestieDB's NPC rows carry only a generic trainer flag and a localised subtitle.
-  Where each stands and its side are QuestieDB's.
-- WFA-28: profession rank requirements (the level and skill each rank asks): CMaNGOS classic-db `npc_trainer`.
-  Neither database has trainer spell lists, and the client gives the requirement only while that trainer's
-  window is open.
-- WFA-28: dungeon entrance requirements (level, key items, completed quest): CMaNGOS classic-db
-  `areatrigger_teleport`. QuestieDB lists where an entrance is, not what it asks.
-- WFA-28: transports (boats and zeppelins between continents): CMaNGOS classic-db `gameobject_template` with
-  wago.tools `TaxiPathNode`. QuestieDB's object rows have a `waypoints` field for objects riding a transport,
-  empty in the Forever data, and neither database lists which docks a boat joins.
-- WFA-3: the map-pin, quest-giver and tracker toggles stay in the guide's cog as well as Settings > AddOns, as
-  quick switches next to the map (owner decision 2026-09-27).
-
-## Secure UI regression checks
-
-`tools/typecheck.sh` checks the TOC/XML load graph, LuaLS coverage, `tools/lint_art.py`, `tools/lint_secret.py` (secret values through `ns.Readable`, tooltip hooks behind `ns.Usable`),
-`tools/check_editorconfig.py` and `tools/check_family.py` (the shared family block between the `forever-family` markers in README.md and docs/curseforge.md).
-`tools/forever_tools/` is the shared tooling (cjber/forever-core, https://github.com/cjber/forever-core/tree/main/.agents/skills/wow-forever-addon/tooling), vendored byte for byte: never edit it here.
-`python3 tools/forever_tools/sync.py check` verifies it offline; `sync.py update --source <checkout>` is the only way to refresh it.
-CI installs every Lua, LuaLS, StyLua and gitleaks pin through ForeverCore's `.github/actions/toolchain` action, which
-reads `tools/toolchain.json` and verifies what it installed, and the Python tools as
-`uv run --project tools --frozen --group dev <tool>` from `tools/pyproject.toml`, resolved in `tools/uv.lock`.
-Never touch Blizzard's Lua state: WFA-38 in `wow-forever-addon` lists what addon code may do to Blizzard's
-frames, how to restyle one by drawing on top, and when a `taint-ok` exception holds.
-Keep addon tracker sections in ForeverCore's shared column: set its `legacySettings` and `safeCall`, add its
-`AddHeaderMenuEntries`, and attach it with `ForeverCore.TrackerHost.Attach`. Never register with Blizzard's tracker
-manager.
-Render only after `PLAYER_ENTERING_WORLD` and `VARIABLES_LOADED`, deferred one frame.
-This supersedes WFA-5's native registration guidance. ForeverCore owns the host; native manager access is forbidden.
-Test event ordering and reuse, not just method existence.
+- WFA-2: quest records, NPC places and towns use installed QuestieDB, with Questie supplying live pickup availability.
+  Do not substitute a smaller bundled quest catalogue. WFA-28 names QuestieDB as the one companion install this allows.
+- WFA-28: trainer roles (class and level span, profession and ranks, riding race, pet training, a battlemaster's
+  battleground), profession rank requirements, dungeon entrance requirements (`areatrigger_teleport`) and transports
+  (`gameobject_template` with wago.tools `TaxiPathNode`) come from CMaNGOS classic-db, because QuestieDB holds only a
+  generic trainer flag, where an entrance is, and no transport docks, and the client reveals rank requirements only
+  while that trainer's window is open. Where each stands and its side are QuestieDB's.
+- WFA-3: the map-pin, quest-giver and tracker toggles stay in the guide's cog as well as Settings > AddOns, as quick
+  switches next to the map.

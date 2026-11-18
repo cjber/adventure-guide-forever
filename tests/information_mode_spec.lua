@@ -635,8 +635,7 @@ do
 	equal(#h.errors, 0, table.concat(h.errors, "\n"))
 end
 
--- Tracker's Polestar row takes nothing over in the mode, and the step menu offers Show on Map instead of Go and no
--- Shortest Path companion submenu.
+-- Tracker's Polestar row takes nothing over in the mode, and the step menu offers Show on Map instead of Go.
 do
 	local h = Load({ db = { informationOnly = true, autoStart = false } })
 	h.flush()
@@ -648,7 +647,7 @@ do
 	equal(tookOver, 0, "Polestar is not taken over")
 	equal(h.spf.NavigateRoute or 0, 0, "and no route starts")
 
-	local labels, added = {}, {}
+	local labels = {}
 	local root = {}
 	function root:CreateTitle() end
 	function root:CreateButton(text)
@@ -657,12 +656,7 @@ do
 	end
 	function root:SetScrollMode() end
 	function root:SetTooltip() end
-	local addMenu = h.ns.Companions.AddMenu
-	h.ns.Companions.AddMenu = function(_, name)
-		added[#added + 1] = name
-	end
 	h.ns.Menu.Step(root, h.ns.Route().steps[1])
-	h.ns.Companions.AddMenu = addMenu
 	local has, go = false, false
 	for _, label in ipairs(labels) do
 		has = has or label == h.ns.L.SHOW_ON_MAP
@@ -670,7 +664,6 @@ do
 	end
 	equal(has, true, "the menu offers Show on Map")
 	equal(go, false, "and not Go")
-	equal(#added, 0, "no Shortest Path companion submenu")
 	equal(#h.errors, 0, table.concat(h.errors, "\n"))
 end
 
