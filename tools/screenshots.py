@@ -727,8 +727,6 @@ def render():
             "information_only",
             "information_fallback",
             "information_off",
-            "sync",
-            "sync_stops",
         ),
         known,
     )
@@ -774,24 +772,6 @@ def render():
     # The Barrens story chosen: lit over its numbered steps, their rings on the map, the others folded above it.
     canvas, _ = quest_log(ui, content_ui, data, rects, "panel", data["panel"]["pins"])
     images["chosen"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
-
-    # Sync Together (#617): the guide with its party of three, the Sync with checklist open beside it, and the same
-    # stops without the menu for the store gallery.
-    canvas, _ = quest_log(ui, content_ui, data, rects, "sync")
-    x, y, width, height = rects["sync"]["AdventureGuideForeverPanel"]
-    panel = crop(canvas, x - 6, y - 6, width + 12, height + 12)
-    parent, parent_rects = drawing.wm.context_menu(ui, menu_entries(data["sync_menu"]["entries"]))
-    child, _ = drawing.wm.context_menu(ui, menu_entries(data["sync_submenu"]))
-    fx, fy, fw, _ = parent_rects["menu"]
-    _, row_y, _, _ = parent_rects["rows"][data["sync_menu"]["syncRow"] - 1]
-    menu_x = width + 18
-    images["sync_picker"] = drawing.wm.scene(
-        ui,
-        [(panel, 0, 0), (parent, menu_x, 8), (child, menu_x + fw + 4, 8 + row_y - fy - 4)],
-    )
-    canvas, _ = quest_log(ui, content_ui, data, rects, "sync_stops")
-    x, y, width, height = rects["sync_stops"]["AdventureGuideForeverPanel"]
-    images["sync_stops"] = drawing.wm.scene(ui, [(crop(canvas, x - 6, y - 6, width + 12, height + 12), 0, 0)])
 
     # The Library books card on the overview, then its own journey's stops, each cropped to the guide's panel.
     canvas, _ = quest_log(ui, content_ui, data, rects, "library_card")

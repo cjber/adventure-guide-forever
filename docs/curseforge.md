@@ -11,7 +11,7 @@ Free, with nothing locked behind it. If it saves you time, you can [sponsor me o
 - **Quest data comes from the QuestieDB addon.** Without QuestieDB installed there are no quests to route, and a quest that is new or changed in WoW: Forever can be missing, or have the wrong prerequisites, until QuestieDB's data catches up.
 - **The game does not tell an addon what a quest giver offers until you talk to them.** The guide can send you to a giver who has nothing for you. Once you talk to them, it drops that quest from the route.
 - **Some stops have no known place.** QuestieDB has no location for some quests and books, so they show as text, with no waypoint or map pin.
-- **Sync only shares quests with party members who run the guide.** For anyone else, the guide sees only the quests in your own log that they also have, not their finished quests or quests you have not taken.
+- **Party quests come only from what your client shows.** In a party, the guide sees which of the quests in your own log a party member also has. It never asks other players for anything and sends nothing to them, so it cannot see their finished quests or quests you have not taken.
 
 ![The Barrens story chosen: the journey card, its numbered stops and Shortest Path's route from the first](https://raw.githubusercontent.com/cjber/adventure-guide-forever/main/docs/screenshots/spf_map.png)
 
@@ -38,7 +38,7 @@ These images are generated previews of the guide UI.
 ## Features
 
 - **Zone stories.** Each zone's quest chains read as chapters, such as *Chapter 3 of 7*, on the journey card, the map and the tracker, without naming later quests. Finishing a story shows a short popup, once per character, and moves on to the next zone.
-- **Journeys.** Pick a journey on the map: follow a zone's story, find nearby zones for your level, take class quests, collect Library books or tidy your log. Each journey explains why it fits. Party members who run the guide can sync and share one route.
+- **Journeys.** Pick a journey on the map: follow a zone's story, find nearby zones for your level, take class quests, collect Library books or tidy your log. Each journey explains why it fits.
 - **Dungeons.** Read a dungeon's quests and prerequisites, then visit its givers as a numbered route. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) supplies bosses, drops and native item tooltips.
 - **A route walked for you.** Choose a journey and Shortest Path Forever takes each stop in order, on foot, by flight or by boat, with its minutes on the card. Without it, the game's waypoint marks the next stop.
 - **Your route.** Ready hand-ins come first, towns group their givers into checklists, and a quest missing from its giver's list drops off with a line in chat.

@@ -152,9 +152,6 @@ L["JOURNEY_PROGRESS_EMPTY"] = "你完成的故事将显示在这里。" -- mt
 L["JOURNEY_QUESTS"] = "这段旅程的任务" -- mt
 L["JOURNEY_STORY"] = "%s的故事" -- mt
 L["LATER_LAPS"] = "其中%d个在之后的轮次" -- mt
-L["LEADERBOARD_SHARING_OFF"] = "分享已关闭：不会发送或显示任何内容。可用 /agf share on 开启。" -- mt
-L["LEADERBOARD_SHARING_ON"] =
-	"分享已开启。可用 /agf share off 或在 设置 > 插件 > Adventure Guide 中关闭。" -- mt
 L["LEGACY_PROGRESS_LINK"] = "打开地图查看传承进度" -- mt
 L["LEGACY_PROGRESS_NOTE"] = "收藏、探索和地区完成度由Legacy Forever追踪。" -- mt
 L["LEVELS"] = "%d-%d" -- mt
@@ -339,7 +336,7 @@ L["SETTING_MAP_PINS_TOOLTIP"] =
 	"显示其所在地区时，在世界地图上显示路线的编号步骤；若任务NPC也已开启，则一并显示。打开的指南总会预览其路线。" -- mt
 L["SETTING_PARTY_QUESTS"] = "优先队伍的任务" -- mt
 L["SETTING_PARTY_QUESTS_TOOLTIP"] =
-	"组队时，队伍中也有人接了的任务，其步骤会被算得稍近一些，便于你们一起完成。使用Adventure Guide的队友会通过隐藏的插件消息互相告知各自的任务。" -- mt
+	"组队时，队伍中也有人接了的任务，其步骤会被算得稍近一些，便于你们一起完成。" -- mt
 L["SETTING_POLESTAR_ASIDE"] = "Polestar导航时让路" -- mt
 L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 	"Polestar运行指南期间，本指南不会开始自己的路线，也不会在地图上绘制标记。目标追踪栏会显示Polestar正在为你导航；点击它即可重新接管。" -- mt
@@ -356,9 +353,6 @@ L["SETTING_OUTGROWN_TOOLTIP"] = "在选项中保留任务为灰色的区域和�
 L["SETTING_RXP"] = "使用RestedXP指南" -- mt
 L["SETTING_RXP_TOOLTIP"] =
 	"将当前的RestedXP指南添加到你的旅程卡片、地图和追踪栏。RestedXP推进指南步骤；Shortest Path Forever负责出行。RestedXP保持安装并控制指南进度。" -- mt
-L["SETTING_STATS_SHARE"] = "与公会和队伍分享活动" -- mt
-L["SETTING_STATS_SHARE_TOOLTIP"] =
-	"默认开启。与公会、队伍、团队或副本中的插件用户分享累计活动记录。关闭后，记录仅保存在此角色上。分享的记录由玩家报告，未经验证。" -- mt
 L["SETTING_STEP_SOUND"] = "完成步骤时播放声音" -- mt
 L["SETTING_STEP_SOUND_TOOLTIP"] = "完成一个路线步骤时播放一次短促的声音。" -- mt
 L["SETTING_TITLE_ROUTE"] = "旅程开始路线" -- mt
@@ -509,18 +503,6 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 	"当步骤需要与发放或交付任务的 NPC 交谈时，一个小箭头会在其姓名板上方跳动，追踪器下方会出现目标按钮。关闭后可隐藏两者。指南从不会更改你的姓名板设置。" -- mt
 L["NPC_HIGHLIGHT_HINT"] = "友方姓名板已关闭：请在界面选项中开启，以查看该往哪走。" -- mt
 
-L["SYNC_WITH"] = "同步" -- mt
-L["SYNC_MEMBERS"] = "使用指南的队伍成员" -- mt
-L["SYNC_NONE"] = "你的队伍中没有人使用指南" -- mt
-L["SYNC_SUBTITLE"] = "已与%s同步" -- mt
-L["SYNC_EVERYONE"] = "所有人" -- mt
-L["SYNC_FOR_YOU"] = "为你" -- mt
-L["SYNC_FOR"] = "为%s" -- mt
-L["SYNC_FOR_YOU_AND"] = "为你和%s" -- mt
-L["SYNC_AND"] = "和" -- mt
-
-L.LEADERBOARD_METRIC = "已交付任务" -- mt
-L.LEADERBOARD_TOTAL = "总计" -- mt
 -- mt: Information only (#715).
 L["SETTING_INFORMATION_ONLY"] = "仅信息：不规划路线" -- mt
 L["SETTING_INFORMATION_ONLY_TOOLTIP"] =

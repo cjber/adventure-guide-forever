@@ -49,11 +49,6 @@
         {
           "font": "GameFontHighlightSmall",
           "widget": "RefreshHeader subtitle",
-          "phrase": "SYNC_SUBTITLE"
-        },
-        {
-          "font": "GameFontHighlightSmall",
-          "widget": "RefreshHeader subtitle",
           "phrase": "OVERVIEW_WHERE"
         },
         {
