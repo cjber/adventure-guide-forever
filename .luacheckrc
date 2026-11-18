@@ -153,6 +153,7 @@ read_globals = {
 	"QuestieLoader",
 	"C_AddOns",
 	"debugprofilestop",
+	"GetFramerate",
 	-- Pins.lua
 	"CreateFromMixins",
 	"MapPinPingMixin",

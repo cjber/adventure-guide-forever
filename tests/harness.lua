@@ -3590,6 +3590,11 @@ function harness.load(options)
 		h.clock = h.clock + h.clockStep
 		return h.clock
 	end
+	-- h.framerate is GetFramerate's answer, 60 by default.
+	h.framerate = 60
+	G.GetFramerate = function()
+		return h.framerate
+	end
 	-- An addon is loaded when it has metadata or its global (every companion's global is its folder name);
 	-- options.installed names addons on disk but not loaded (turned off); options.version is this addon's TOC version.
 	h.installed = options.installed or {}

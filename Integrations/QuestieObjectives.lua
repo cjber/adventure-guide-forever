@@ -212,20 +212,61 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 				end
 			end
 		end
-		for index, spawn in ipairs(spawns) do
-			local geometry = scales[spawn.map]
-			spawn.size, spawn.sum = CampSize(squares[spawn.map], spawn, geometry.sx, geometry.sy)
-			if index % 64 == 0 then
-				yield()
+		-- A spawn's camp holds at most the spawns in its own square and the eight around it. Measuring every camp was
+		-- most of a cold build's work, so a spawn is measured only while that bound can still reach the best camp found:
+		-- the same choice as measuring them all.
+		for _, spawn in ipairs(spawns) do
+			local onMap, bound = squares[spawn.map], 0
+			for dx = -ROW, ROW, ROW do
+				for dy = -1, 1 do
+					local square = onMap[spawn.key + dx + dy]
+					bound = bound + (square and #square or 0)
+				end
+			end
+			spawn.bound = bound
+		end
+		local measured = 0
+		local function Measure(spawn)
+			if not spawn.size then
+				local geometry = scales[spawn.map]
+				spawn.size, spawn.sum = CampSize(squares[spawn.map], spawn, geometry.sx, geometry.sy)
+				measured = measured + 1
+				if measured % 64 == 0 then
+					yield()
+				end
 			end
 		end
 		-- Up to three camps, each centred on a spawn in no camp taken before it, so "Next spot" moves between camps:
-		-- the first in Before's order that is still free, picked by a scan rather than sorting every spawn.
+		-- the first in Before's order that is still free. The quest's zone comes first in that order, so the search
+		-- keeps to the zone's free spawns when it has any. The free spawn with the largest bound is measured first, so
+		-- the scan after it measures few.
 		for _ = 1, 3 do
-			local spawn
+			local inZone, seed = false, nil
 			for _, other in ipairs(spawns) do
-				if not other.used and (not spawn or Before(other, spawn, zone)) then
-					spawn = other
+				if not other.used then
+					local here = other.map == zone
+					if here and not inZone then
+						inZone, seed = true, other
+					elseif here == inZone and (not seed or other.bound > seed.bound) then
+						seed = other
+					end
+				end
+			end
+			local spawn = seed
+			if spawn then
+				Measure(spawn)
+				for _, other in ipairs(spawns) do
+					if
+						other ~= spawn
+						and not other.used
+						and (other.map == zone) == inZone
+						and other.bound >= spawn.size
+					then
+						Measure(other)
+						if Before(other, spawn, zone) then
+							spawn = other
+						end
+					end
 				end
 			end
 			if not spawn then

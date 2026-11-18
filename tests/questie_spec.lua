@@ -600,6 +600,35 @@ do
 	equal(frames > 10, true, "build yields across frames")
 	equal(most <= 501, true, "quest reads within slice")
 end
+-- A slice is a share of the frame the client measures, so at a third of the frame rate the build takes a third of the
+-- frames and the same wall time; above 60 fps the slice stays at its floor.
+do
+	local function Frames(framerate)
+		local many, frames = Fake(), 0
+		for id = 910000, 913000 do
+			many.quests[id] = many.quests[900001]
+		end
+		local built = harness.load({
+			questiedb = many,
+			setup = function(h2)
+				h2.clockStep, h2.framerate = 0.01, framerate
+				local after = h2.G.C_Timer.After
+				h2.G.C_Timer.After = function(delay, fn)
+					if debug.getinfo(fn, "S").source:find("QuestieSource") then
+						frames = frames + 1
+					end
+					return after(delay, fn)
+				end
+			end,
+		})
+		equal(built.ns.QuestieStatus.state, "questie", "built at " .. framerate .. " fps")
+		return frames
+	end
+	local at60, at20, at144 = Frames(60), Frames(20), Frames(144)
+	-- Each slice ends at the first yield check past its budget, so the counts are near, not exactly, a third.
+	equal(at60 / at20 > 2.5 and at60 / at20 < 3.5, true, "a third of the frame rate takes a third of the frames")
+	equal(at144, at60, "above 60 fps the slice stays at its floor")
+end
 -- The composed catalogue is saved per character and reloaded in place of the build. These checks drive the
 -- production save path through tests/harness.lua: a save is only adopted for the exact inputs that produced it
 -- (catalogue revision, QuestieDB version and flavour, client build, locale, class, faction), a save that fails the
