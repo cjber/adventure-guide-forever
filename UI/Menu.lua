@@ -166,9 +166,6 @@ local function Step(root, step, slots)
 	if skipped > 0 then
 		Menu.Skipped(slots:Submenu(L.SKIPPED:format(skipped)))
 	end
-	if step and not ns.Setting("wanderer") and not ns.Setting("informationOnly") then
-		ns.Companions.AddMenu(root, "ShortestPathForever")
-	end
 	if ns.OpenPanel then
 		slots:Open(L.CHOOSE_JOURNEY, function()
 			C_Timer.After(0, ns.OpenPanel)
@@ -279,10 +276,6 @@ function Menu.Journey(owner, journey)
 		root:CreateButton(L.NOT_INTERESTED, function()
 			ns.NotInterested(journey.key, journey.title)
 		end)
-		-- A dungeon whose entrance nothing knows: Tweaks Forever would find it.
-		if journey.instance and journey.kind == "dungeon" and not ns.Dungeons.Entrance(journey.instance) then
-			ns.Companions.AddMenu(root, "TweaksForever")
-		end
 	end)
 end
 

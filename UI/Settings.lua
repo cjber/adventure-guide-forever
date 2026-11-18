@@ -142,29 +142,8 @@ function ns.RegisterSettings()
 			function(subcategory)
 				---@type ForeverTrackerHostAPI
 				local host = ForeverCore.TrackerHost
-				if host and host.GetSettings and host.SetAttached and host.OnAttachmentChanged then
-					local variable = "AdventureGuideForever_attachTracker"
-					local setting = Settings.RegisterProxySetting(
-						subcategory,
-						variable,
-						Settings.VarType.Boolean,
-						ns.L.SETTING_ATTACH_TRACKER,
-						true,
-						function()
-							return host.GetSettings().attached
-						end,
-						function(value)
-							host.SetAttached(value)
-						end
-					)
-					host.OnAttachmentChanged(function()
-						Settings.NotifyUpdate(variable)
-					end)
-					local attach = Settings.CreateCheckboxInitializer(setting, nil, ns.L.SETTING_ATTACH_TRACKER_TOOLTIP)
-					Settings.RegisterInitializer(subcategory, attach)
-				end
-				-- Lock keeps the detached column where it is: the grip ignores drag while it is on. It only writes the
-				-- saved switch, so it is safe to toggle in combat.
+				-- Lock keeps the column where it is: a drag on a section header does nothing while it is on. It only
+				-- writes the saved switch, so it is safe to toggle in combat.
 				if host and host.GetSettings and host.SetLocked then
 					local lock = Settings.RegisterProxySetting(
 						subcategory,
@@ -236,25 +215,6 @@ function ns.RegisterSettings()
 					subcategory,
 					Checkbox(subcategory, "markUpgrades", ns.L.SETTING_UPGRADES, ns.L.SETTING_UPGRADES_TOOLTIP)
 				)
-				-- Shown unless hidden: the checkbox reads the shown state, while the saved key holds the hide flag
-				-- Core/MinimapButton.lua reads (Core.lua's migration carries an old micro menu choice over).
-				local minimap = Settings.RegisterProxySetting(
-					subcategory,
-					"AdventureGuideForever_minimapButton",
-					Settings.VarType.Boolean,
-					ns.L.SETTING_MINIMAP_BUTTON,
-					true,
-					function()
-						return ns.Setting("minimapButtonHidden") ~= true
-					end,
-					function(value)
-						ns.SetSetting("minimapButtonHidden", value ~= true)
-					end
-				)
-				Settings.RegisterInitializer(
-					subcategory,
-					Settings.CreateCheckboxInitializer(minimap, nil, ns.L.MINIMAP_BUTTON_TOOLTIP)
-				)
 			end,
 		},
 	}
@@ -278,13 +238,6 @@ function ns.RegisterSettings()
 		group[2](subcategory)
 		IndexButton(ns.L[group[1]], subcategory)
 	end
-
-	-- The Forever addons page, shared by all five addons (ForeverCore.Family), with the suggestions setting on it.
-	-- With the gamepad interface on, the page is the client's own rows so the Options navigation can enter it
-	-- (cjber/tweaks-forever#382).
-	local family =
-		ForeverCore.Family.Register(category, assert(ns.FamilyDB()), "AdventureGuideForever", ns.core.SafeCall)
-	IndexButton(family.name, family --[[@as AGFSettingsCategory]])
 
 	Settings.RegisterAddOnCategory(category)
 	function ns.OpenSettings()

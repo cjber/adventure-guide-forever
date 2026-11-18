@@ -318,9 +318,6 @@ L["SETTINGS_GROUP_MAP"] = "Mapa"
 L["SETTINGS_GROUP_ROUTE"] = "Rota"
 L["SETTINGS_GROUP_TRACKER"] = "Rastreador de objetivos"
 L["SETTINGS_OPEN"] = "Abrir"
-L["SETTING_ATTACH_TRACKER"] = "Prender ao rastreador de missões"
-L["SETTING_ATTACH_TRACKER_TOOLTIP"] =
-	"Desative para arrastar o Rastreador Forever compartilhado para qualquer lugar da tela."
 L["SETTING_AUTO_START"] = "Iniciar a rota automaticamente"
 L["SETTING_AUTO_START_TOOLTIP"] =
 	"O guia envia a rota da jornada escolhida ao Shortest Path assim que ela fica pronta, então a linha do mapa aparece ao entrar no jogo e depois de um /reload sem clicar em Ir. Clicar em Parar ainda a apaga até você escolher uma jornada de novo."
@@ -340,8 +337,7 @@ L["SETTING_JOURNEY_WATCH"] = "Rastrear só as missões da jornada" -- mt
 L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
 	"Enquanto uma jornada guia, o rastreador de objetivos mostra só as missões em que ela trabalha e todas as outras saem dele. As missões que você rastreava ficam no personagem e voltam quando a jornada deixa de guiar, você escolhe outra ou desativa isto." -- mt
 L["SETTING_LOCK_TRACKER"] = "Travar o rastreador"
-L["SETTING_LOCK_TRACKER_TOOLTIP"] =
-	"Mantém o rastreador Forever compartilhado onde você o colocou. A alça no topo não o arrasta mais."
+L["SETTING_LOCK_TRACKER_TOOLTIP"] = "Mantém o rastreador Forever compartilhado onde você o colocou."
 L["SETTING_MAP_PINS"] = "Mostrar marcadores de rota no mapa"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"Os passos numerados da rota no mapa-múndi enquanto a zona deles é mostrada, e os recrutadores de missões quando também estiverem ativados. O guia aberto mostra a rota de qualquer forma."
@@ -407,16 +403,11 @@ L["SIDEBAR_COLLAPSED"] =
 	"O guia abre no registro de missões ao lado do mapa do mundo. Clique na seta no canto inferior direito do mapa para mostrar o registro de missões."
 L["SIDEBAR_MAXIMIZED"] =
 	"O guia abre no registro de missões ao lado do mapa do mundo. Clique no botão ao lado do X de fechar do mapa para reduzi-lo e mostrar o registro de missões."
-L["SKILLUP_FAMILY"] = "O SkillUp Forever planeja o caminho mais barato até o seu próximo grau de profissão."
-L["SKILLUP_FAMILY_MENU"] = "Caminho mais barato até o próximo grau: SkillUp Forever"
 L["SKILLUP_NONE"] = "Nenhuma profissão de produção para evoluir. Aprenda uma com um instrutor e ela aparece aqui."
 L["SKILLUP_OUTDATED"] = "Seus próximos pontos de perícia vêm do SkillUp Forever. Atualize-o e eles aparecem aqui."
 L["SKIP"] = "Pular por enquanto"
 L["SKIPPED"] = "Puladas (%d)"
 L["SKIP_STEP"] = "Pular este passo por enquanto"
-L["SPF_DISABLED"] = "Ative o Shortest Path Forever para rotas a pé e horários de barcos."
-L["SPF_FAMILY_MENU"] = "Rotas a pé e horários de barcos: Shortest Path Forever"
-L["SPF_MISSING"] = "Instale o Shortest Path Forever para rotas a pé e horários de barcos."
 L["STARTS_AFTER_COMBAT"] = "A rota começa quando o combate acabar"
 L["STARTS_WITH"] = "Começa com %s"
 L["START_ADVENTURE"] = "Começar"
@@ -480,9 +471,6 @@ L["TRAVEL_WAIT"] = " · %d min de espera"
 L["TRAVEL_WALK"] = "Caminhar até %s"
 L["TRAVEL_ZEPPELIN"] = "Zepelim para %s"
 L["TURN_IN"] = "Entregar: %s"
-L["TWEAKS_DISABLED"] = "Ative o Tweaks Forever para encontrar entradas de masmorras."
-L["TWEAKS_FAMILY_MENU"] = "Encontrar entradas de masmorras: Tweaks Forever"
-L["TWEAKS_MISSING"] = "Instale o Tweaks Forever para encontrar entradas de masmorras."
 L["TWEAKS_OUTDATED"] = "Atualize o Tweaks Forever para encontrar entradas de masmorras."
 L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
@@ -508,13 +496,8 @@ L["WHY_REP_MIN"] = "Requer %s com %s"
 L["WHY_SKILL"] = "Requer %s %d"
 L["YOUR_CHOICE"] = "Sua escolha"
 -- mt: Minimap button settings.
-L["SETTING_MINIMAP_BUTTON"] = "Botão do minimapa" -- mt
-L["MINIMAP_BUTTON_TOOLTIP"] =
-	"Adiciona um botão do Adventure Guide ao minimapa. Arraste-o pela borda para movê-lo ou desative-o aqui." -- mt
-L["MINIMAP_BUTTON_SUBTEXT"] = "Clique para abrir o guia de nivelamento" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - relatar um erro ou pedir um recurso com um link de issue do GitHub pronto" -- mt
-L["MINIMAP_UNAVAILABLE"] = "Minimapa indisponível; o botão personalizado será ignorado." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Desativar o rastreador do Questie" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"Enquanto esta seção aparece, o rastreador de missões do Questie fica desativado, para que suas missões não apareçam duas vezes. Desative esta opção para devolver o rastreador ao Questie." -- mt

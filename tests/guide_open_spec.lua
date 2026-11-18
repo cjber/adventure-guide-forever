@@ -37,11 +37,11 @@ local function Load(cvars)
 	})
 end
 
--- The minimap button, which Alt-G clicks through Bindings.xml (CLICK AdventureGuideForeverMinimapButton:LeftButton).
+-- The hidden open button, which Alt-G clicks through Bindings.xml (CLICK AdventureGuideForeverOpen:LeftButton).
 ---@param h table
-local function PressMinimap(h)
-	local button = h.ns.minimapButton
-	check(button ~= nil, "the minimap button exists")
+local function PressOpen(h)
+	local button = h.ns.openButton
+	check(button ~= nil, "the open button exists")
 	h.Click(button, "LeftButton")
 end
 
@@ -51,7 +51,7 @@ do
 	local h = Load()
 	h.flush()
 	equal(h.map:IsShown(), false, "closed: the world map starts closed")
-	PressMinimap(h)
+	PressOpen(h)
 	equal(h.map:IsShown(), false, "closed: the click has not shown the map yet")
 	equal(#h.prints, 0, "closed: and says nothing about the sidebar")
 	h.flush()
@@ -72,7 +72,7 @@ do
 	h.flush()
 	equal(h.map:IsShown(), true, "open: the world map is up")
 	equal(h.G.QuestMapFrame:IsShown(), true, "open: with its quest sidebar")
-	PressMinimap(h)
+	PressOpen(h)
 	equal(h.ns.PanelShown(), true, "open: the guide shows")
 	equal(h.G.ForeverCore.QuestLogTabs.Selected(), "guide", "open: on its own tab")
 	equal(#h.prints, 0, "open: without a complaint")
@@ -84,7 +84,7 @@ end
 do
 	local h = Load()
 	h.flush()
-	PressMinimap(h)
+	PressOpen(h)
 	h.flush()
 	equal(h.ns.PanelShown(), true, "reopen: the guide opens")
 
@@ -97,7 +97,7 @@ do
 	h.flush()
 	equal(h.ns.PanelShown(), false, "reopen: closing the map hides the guide")
 
-	PressMinimap(h)
+	PressOpen(h)
 	h.flush()
 	equal(h.ns.PanelShown(), true, "reopen: the minimap button opens it again")
 	equal(opens, 1, "reopen: and the guide runs its show path")
@@ -110,7 +110,7 @@ end
 do
 	local h = Load({ questLogOpen = "0" })
 	h.flush()
-	PressMinimap(h)
+	PressOpen(h)
 	h.flush()
 	equal(h.map:IsShown(), true, "collapsed: the client shows the map")
 	equal(h.G.QuestMapFrame:IsShown(), false, "collapsed: without the quest sidebar")
@@ -125,7 +125,7 @@ end
 do
 	local h = Load({ miniWorldMap = "0" })
 	h.flush()
-	PressMinimap(h)
+	PressOpen(h)
 	h.flush()
 	equal(h.map:IsMaximized(), true, "maximized: the map opens maximized")
 	equal(h.G.QuestMapFrame:IsShown(), false, "maximized: with no quest sidebar")
@@ -145,7 +145,7 @@ do
 	h.flush()
 	h.G.WorldMapFrame:SetQuestLogPanelShown(false)
 	equal(h.G.QuestMapFrame:IsShown(), false, "shown: the player collapsed the sidebar")
-	PressMinimap(h)
+	PressOpen(h)
 	equal(#h.prints, 1, "shown: the click says what to click")
 	check(h.prints[1]:find(h.ns.L.SIDEBAR_COLLAPSED, 1, true) ~= nil, "shown: naming the sidebar toggle")
 	equal(h.ns.PanelShown(), false, "shown: the guide stays hidden")

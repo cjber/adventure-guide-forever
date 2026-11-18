@@ -1363,7 +1363,7 @@ function ns.SourceHint()
 		return ns.L.AUDIT_QUESTIE_BUILDING
 	end
 	if status.state ~= "questie" then
-		local installed = ForeverCore.Family.State(ADDON)
+		local installed = ns.AddOnState(ADDON)
 		if installed == "missing" then
 			return ns.L.QUESTIE_INSTALL
 		elseif installed == "off" then

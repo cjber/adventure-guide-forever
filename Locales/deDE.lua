@@ -320,9 +320,6 @@ L["SETTINGS_GROUP_MAP"] = "Karte"
 L["SETTINGS_GROUP_ROUTE"] = "Route"
 L["SETTINGS_GROUP_TRACKER"] = "Questzielverfolgung"
 L["SETTINGS_OPEN"] = "Öffnen"
-L["SETTING_ATTACH_TRACKER"] = "An die Questverfolgung anheften"
-L["SETTING_ATTACH_TRACKER_TOOLTIP"] =
-	"Schaltet dies aus, um die gemeinsame Forever-Verfolgung frei auf dem Bildschirm zu verschieben."
 L["SETTING_AUTO_START"] = "Route automatisch starten"
 L["SETTING_AUTO_START_TOOLTIP"] =
 	"Der Führer schickt die Route Eurer gewählten Reise an Shortest Path, sobald sie bereit ist, sodass die Linie auf der Karte nach dem Einloggen und nach /reload ohne „Los“ erscheint. „Stopp“ entfernt sie weiterhin, bis Ihr wieder eine Reise wählt."
@@ -342,8 +339,7 @@ L["SETTING_JOURNEY_WATCH"] = "Nur die Quests der Reise verfolgen" -- mt
 L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
 	"Während eine Reise führt, zeigt die Zielverfolgung nur die Quests, an denen sie arbeitet, und jede andere Quest verlässt sie. Eure eigenen verfolgten Quests bleiben am Charakter und kehren zurück, wenn die Reise nicht mehr führt, Ihr eine andere wählt oder dies ausschaltet." -- mt
 L["SETTING_LOCK_TRACKER"] = "Verfolgung sperren"
-L["SETTING_LOCK_TRACKER_TOOLTIP"] =
-	"Hält die gemeinsame Forever-Verfolgung dort, wo Ihr sie hingelegt habt. Der Griff oben zieht sie nicht mehr."
+L["SETTING_LOCK_TRACKER_TOOLTIP"] = "Hält die gemeinsame Forever-Verfolgung dort, wo Ihr sie hingelegt habt."
 L["SETTING_MAP_PINS"] = "Routenmarkierungen auf der Karte anzeigen"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"Die nummerierten Schritte der Route auf der Weltkarte, solange ihr Gebiet angezeigt wird, und Questgeber, wenn diese auch an sind. Der geöffnete Führer zeigt seine Route in jedem Fall als Vorschau."
@@ -409,17 +405,12 @@ L["SIDEBAR_COLLAPSED"] =
 	"Der Führer öffnet sich im Questlog neben der Weltkarte. Klickt auf den Pfeil unten rechts auf der Karte, um den Questlog einzublenden."
 L["SIDEBAR_MAXIMIZED"] =
 	"Der Führer öffnet sich im Questlog neben der Weltkarte. Klickt auf die Schaltfläche neben dem Schließen-Kreuz der Karte, um sie zu verkleinern und den Questlog einzublenden."
-L["SKILLUP_FAMILY"] = "SkillUp Forever plant den günstigsten Weg zu Eurem nächsten Berufsrang."
-L["SKILLUP_FAMILY_MENU"] = "Günstigster Weg zum nächsten Rang: SkillUp Forever"
 L["SKILLUP_NONE"] = "Keine Herstellungsberufe zu verbessern. Erlernt einen bei einem Lehrer, dann erscheint er hier."
 L["SKILLUP_OUTDATED"] =
 	"Eure nächsten Fertigkeitspunkte kommen von SkillUp Forever. Aktualisiert es, dann erscheinen sie hier."
 L["SKIP"] = "Vorerst überspringen"
 L["SKIPPED"] = "Übersprungen (%d)"
 L["SKIP_STEP"] = "Diesen Schritt vorerst überspringen"
-L["SPF_DISABLED"] = "Aktiviert Shortest Path Forever für Laufwege und Schiffszeiten."
-L["SPF_FAMILY_MENU"] = "Laufwege und Schiffszeiten: Shortest Path Forever"
-L["SPF_MISSING"] = "Installiert Shortest Path Forever für Laufwege und Schiffszeiten."
 L["STARTS_AFTER_COMBAT"] = "Die Route startet nach dem Kampf"
 L["STARTS_WITH"] = "Beginnt mit %s"
 L["START_ADVENTURE"] = "Starten"
@@ -483,9 +474,6 @@ L["TRAVEL_WAIT"] = " · %d Min. Wartezeit"
 L["TRAVEL_WALK"] = "Zu Fuß nach %s"
 L["TRAVEL_ZEPPELIN"] = "Zeppelin nach %s"
 L["TURN_IN"] = "Abgeben: %s"
-L["TWEAKS_DISABLED"] = "Aktiviert Tweaks Forever, um Dungeoneingänge zu finden."
-L["TWEAKS_FAMILY_MENU"] = "Dungeoneingänge finden: Tweaks Forever"
-L["TWEAKS_MISSING"] = "Installiert Tweaks Forever, um Dungeoneingänge zu finden."
 L["TWEAKS_OUTDATED"] = "Aktualisiert Tweaks Forever, um Dungeoneingänge zu finden."
 L["UNLISTED"] =
 	"Dieses Land hat Geschichten, die der Führer noch nicht kennt; achtet auf das „!“ über Questgebern."
@@ -511,13 +499,8 @@ L["WHY_REP_MIN"] = "Benötigt %s bei %s"
 L["WHY_SKILL"] = "Benötigt %s %d"
 L["YOUR_CHOICE"] = "Eure Wahl"
 -- mt: Minimap button settings.
-L["SETTING_MINIMAP_BUTTON"] = "Minimap-Schaltfläche" -- mt
-L["MINIMAP_BUTTON_TOOLTIP"] =
-	"Fügt dem Minimap eine Adventure Guide-Schaltfläche hinzu. Ziehe sie um den Rand, um sie zu verschieben, oder schalte sie hier aus." -- mt
-L["MINIMAP_BUTTON_SUBTEXT"] = "Klicken, um den Leveling-Guide zu öffnen" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - einen Fehler melden oder eine Funktion wünschen, mit einem fertigen GitHub-Issue-Link" -- mt
-L["MINIMAP_UNAVAILABLE"] = "Minimap nicht verfügbar; eigene Schaltfläche wird übersprungen." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Questies Tracker ausschalten" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"Solange dieser Abschnitt angezeigt wird, ist Questies eigener Quest-Tracker aus, damit deine Quests nicht doppelt erscheinen. Schalte dies aus, um Questie seinen Tracker zurückzugeben." -- mt

@@ -254,9 +254,6 @@ function Asides.Menu(root, aside, primary)
 	root:CreateButton(L.NOT_INTERESTED, function()
 		Asides.Decline(aside)
 	end)
-	if Asides.NextRank(aside) then
-		ns.Companions.AddMenu(root, "SkillUpForever")
-	end
 end
 
 ---@param owner Region
@@ -307,11 +304,6 @@ function Asides.Enter(owner, aside)
 			aside.text,
 			aside.place and not ns.Setting("wanderer") and ns.Menu.ClickLine() or nil,
 		})
-		-- A trainer for a profession's next rank: SkillUp Forever plans the way there.
-		if Asides.NextRank(aside) then
-			ns.Companions.AddLine(GameTooltip, "SkillUpForever")
-			GameTooltip:Show()
-		end
 	end
 end
 

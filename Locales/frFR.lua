@@ -321,9 +321,6 @@ L["SETTINGS_GROUP_MAP"] = "Carte"
 L["SETTINGS_GROUP_ROUTE"] = "Itinéraire"
 L["SETTINGS_GROUP_TRACKER"] = "Suivi des objectifs"
 L["SETTINGS_OPEN"] = "Ouvrir"
-L["SETTING_ATTACH_TRACKER"] = "Attacher au suivi des quêtes"
-L["SETTING_ATTACH_TRACKER_TOOLTIP"] =
-	"Désactivez cette option pour faire glisser le Suivi Forever partagé n’importe où à l’écran."
 L["SETTING_AUTO_START"] = "Lancer l’itinéraire automatiquement"
 L["SETTING_AUTO_START_TOOLTIP"] =
 	"Le guide envoie l’itinéraire du voyage choisi à Shortest Path dès qu’il est prêt : la ligne apparaît sur la carte à la connexion et après un /reload sans cliquer sur « Y aller ». « Arrêter » l’efface toujours jusqu’à ce que vous choisissiez à nouveau un voyage."
@@ -343,8 +340,7 @@ L["SETTING_JOURNEY_WATCH"] = "Suivre uniquement les quêtes du voyage" -- mt
 L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
 	"Pendant qu’un voyage vous guide, le suivi des objectifs n’affiche que les quêtes sur lesquelles il travaille et toutes les autres le quittent. Les quêtes que vous suiviez restent sur le personnage et reviennent quand le voyage ne vous guide plus, que vous en choisissez un autre ou que vous désactivez ceci." -- mt
 L["SETTING_LOCK_TRACKER"] = "Verrouiller le suivi"
-L["SETTING_LOCK_TRACKER_TOOLTIP"] =
-	"Garde le suivi Forever partagé là où vous l'avez placé. La poignée en haut ne le déplace plus."
+L["SETTING_LOCK_TRACKER_TOOLTIP"] = "Garde le suivi Forever partagé là où vous l'avez placé."
 L["SETTING_MAP_PINS"] = "Afficher les repères d’itinéraire sur la carte"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"Les étapes numérotées de l’itinéraire sur la carte du monde quand leur zone est affichée, et les donneurs de quêtes s’ils sont aussi activés. Le guide ouvert montre toujours un aperçu de son itinéraire."
@@ -410,8 +406,6 @@ L["SIDEBAR_COLLAPSED"] =
 	"Le guide s'ouvre dans le journal de quêtes à côté de la carte du monde. Cliquez sur la flèche en bas à droite de la carte pour afficher le journal de quêtes."
 L["SIDEBAR_MAXIMIZED"] =
 	"Le guide s'ouvre dans le journal de quêtes à côté de la carte du monde. Cliquez sur le bouton à côté de la croix de fermeture de la carte pour la réduire et afficher le journal de quêtes."
-L["SKILLUP_FAMILY"] = "SkillUp Forever prévoit le chemin le moins cher vers votre prochain rang de métier."
-L["SKILLUP_FAMILY_MENU"] = "Chemin le moins cher vers votre prochain rang : SkillUp Forever"
 L["SKILLUP_NONE"] =
 	"Aucun métier d’artisanat à faire progresser. Apprenez-en un auprès d’un maître et il apparaîtra ici."
 L["SKILLUP_OUTDATED"] =
@@ -419,9 +413,6 @@ L["SKILLUP_OUTDATED"] =
 L["SKIP"] = "Passer pour l’instant"
 L["SKIPPED"] = "Passées (%d)"
 L["SKIP_STEP"] = "Passer cette étape pour l’instant"
-L["SPF_DISABLED"] = "Activez Shortest Path Forever pour les trajets à pied et les horaires des bateaux."
-L["SPF_FAMILY_MENU"] = "Trajets à pied et horaires des bateaux : Shortest Path Forever"
-L["SPF_MISSING"] = "Installez Shortest Path Forever pour les trajets à pied et les horaires des bateaux."
 L["STARTS_AFTER_COMBAT"] = "L’itinéraire commencera à la fin du combat"
 L["STARTS_WITH"] = "Commence par %s"
 L["START_ADVENTURE"] = "Commencer"
@@ -486,9 +477,6 @@ L["TRAVEL_WAIT"] = " · %d min d’attente"
 L["TRAVEL_WALK"] = "Marcher jusqu’à %s"
 L["TRAVEL_ZEPPELIN"] = "Zeppelin pour %s"
 L["TURN_IN"] = "Rendre : %s"
-L["TWEAKS_DISABLED"] = "Activez Tweaks Forever pour trouver les entrées des donjons."
-L["TWEAKS_FAMILY_MENU"] = "Trouver les entrées des donjons : Tweaks Forever"
-L["TWEAKS_MISSING"] = "Installez Tweaks Forever pour trouver les entrées des donjons."
 L["TWEAKS_OUTDATED"] = "Mettez à jour Tweaks Forever pour trouver les entrées des donjons."
 L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
@@ -514,14 +502,9 @@ L["WHY_REP_MIN"] = "Requiert %s auprès de %s"
 L["WHY_SKILL"] = "Requiert %s %d"
 L["YOUR_CHOICE"] = "Votre choix"
 -- mt: Minimap button settings.
-L["SETTING_MINIMAP_BUTTON"] = "Bouton de la mini-carte" -- mt
-L["MINIMAP_BUTTON_TOOLTIP"] =
-	"Ajoute un bouton Adventure Guide à la mini-carte. Faites-le glisser le long du bord pour le déplacer ou désactivez-le ici." -- mt
-L["MINIMAP_BUTTON_SUBTEXT"] = "Cliquez pour ouvrir le guide de progression" -- mt
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] =
 	"/agf issue - signaler un bug ou demander une fonctionnalité avec un lien d’issue GitHub prêt à l’emploi" -- mt
-L["MINIMAP_UNAVAILABLE"] = "Mini-carte indisponible ; le bouton personnalisé est ignoré." -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Désactiver le suivi de Questie" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER_TOOLTIP"] =
 	"Tant que cette section s'affiche, le suivi de quêtes de Questie est désactivé, pour que vos quêtes n'apparaissent pas deux fois. Désactivez cette option pour rendre son suivi à Questie." -- mt
