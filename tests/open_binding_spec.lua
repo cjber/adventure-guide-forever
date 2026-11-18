@@ -4,8 +4,9 @@
 local harness = dofile("tests/harness.lua")
 local h = harness.load()
 
-assert(h.G.AdventureGuideForeverMinimapButton == nil, "the addon drew a minimap button")
-local button = assert(h.G.AdventureGuideForeverOpen, "no open button for the key binding")
+-- The open button keeps the old minimap button's name so saved key bindings still reach it, but nothing draws it.
+local button = assert(h.G.AdventureGuideForeverMinimapButton, "no open button for the key binding")
+assert(not button.parent, "the open button is parented to a visible frame")
 assert(h.ns.openButton == button, "the namespace does not point at it")
 
 local opens = 0

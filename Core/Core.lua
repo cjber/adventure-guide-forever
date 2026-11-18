@@ -1312,8 +1312,9 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	end)
 	ns.RegisterSettings()
 	EventUtil.ContinueAfterAllEvents(ns.WhatsNew, "PLAYER_LOGIN")
-	-- Bindings.xml clicks this hidden button for Alt-G and the "Open the guide" key binding.
-	local open = CreateFrame("Button", "AdventureGuideForeverOpen")
+	-- Bindings.xml clicks this hidden button for Alt-G and the "Open the guide" key binding. It keeps the retired
+	-- minimap button's name because the client saves custom key bindings by frame name.
+	local open = CreateFrame("Button", "AdventureGuideForeverMinimapButton")
 	open:SetScript("OnClick", function()
 		if ns.OpenPanel then
 			ns.core.SafeCall("open binding", ns.OpenPanel)

@@ -37,7 +37,7 @@ local function Load(cvars)
 	})
 end
 
--- The hidden open button, which Alt-G clicks through Bindings.xml (CLICK AdventureGuideForeverOpen:LeftButton).
+-- The hidden open button, which Alt-G clicks through Bindings.xml (CLICK AdventureGuideForeverMinimapButton:LeftButton).
 ---@param h table
 local function PressOpen(h)
 	local button = h.ns.openButton
