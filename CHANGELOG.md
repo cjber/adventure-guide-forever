@@ -6,7 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). The entries are prose rather than bare
 Added/Fixed lists: what matters about a release is why the guide now sends you somewhere different.
 
-Each version's entry is also its release notes on GitHub and CurseForge. Older entries are kept
+Each version's entry is also its release notes on GitHub, CurseForge and Wago. Older entries are kept
 verbatim rather than rewritten as the addon moves. API changes other addons' authors need go under an
 optional `### For addon authors` subsection after a version's player bullets.
 
