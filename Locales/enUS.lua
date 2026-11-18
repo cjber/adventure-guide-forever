@@ -606,7 +606,7 @@ ns.L = {
 	SETTING_WHATS_NEW_TOOLTIP = "One line in chat the first time you log in after the guide updates.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of the newest
 	-- CHANGELOG entry that has a bold lead, whose version is ns.WHATS_NEW_VERSION; tests/locales_spec.lua checks both.
-	WHATS_NEW = "Taking a quest no longer drops another one in the same town.",
+	WHATS_NEW = "Zones you are already questing in keep their card.",
 	DUNGEON_BOSSES_LOOT = "Bosses and loot",
 	DUNGEON_LOOT_INSTALL = "Install AtlasLoot Classic and its Dungeons and Raids module for bosses and loot.",
 	DUNGEON_LOOT_COMBAT = "Boss loot will load after combat.",
@@ -633,7 +633,7 @@ ns.L = {
 
 -- The release whose WHATS_NEW is the newest headline in CHANGELOG.md. A core sync adds a maintenance release above it
 -- with no bold lead, so the game prints nothing new for that version but still remembers it.
-ns.WHATS_NEW_VERSION = "1.10.2"
+ns.WHATS_NEW_VERSION = "1.11.0"
 
 -- The shared out-of-date warning (Core/ForeverRequire.lua) reads ns.L by the English phrase itself, so these keys are
 -- the sentence. A locale translates the same keys.
