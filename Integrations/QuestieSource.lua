@@ -633,10 +633,12 @@ local function Build(lib, zones, bundled, yield)
 	-- (objectives[3]) that run out in the bags (bundled `expiring`), in ID order; nil when none does.
 	local expiring = bundled.expiring or {}
 	local function Expires(source, required, objectives)
-		local items, seen = {}, {}
+		-- Most quests hand over nothing that runs out: the lists (and their sort) exist only once one does.
+		local items, seen
 		local function Add(item)
 			item = tonumber(item)
-			if item and expiring[item] and not seen[item] then
+			if item and expiring[item] and not (seen and seen[item]) then
+				items, seen = items or {}, seen or {}
 				items[#items + 1], seen[item] = item, true
 			end
 		end
@@ -648,8 +650,10 @@ local function Build(lib, zones, bundled, yield)
 		for _, objective in ipairs(type(collect) == "table" and collect or {}) do
 			Add(type(objective) == "table" and objective[1])
 		end
-		table.sort(items)
-		return items[1] and items or nil
+		if items then
+			table.sort(items)
+		end
+		return items and items[1] and items or nil
 	end
 	local ids, quests, books = lib.Quest.GetAllIds(), {}, {}
 	-- Item names that a step line can name, each with the item ID its quality colours.

@@ -250,6 +250,7 @@ local function Index(data)
 		hubs = {},
 		sides = { {}, {} },
 		starts = {},
+		folded = {},
 	}
 	for id in pairs(data.quests) do
 		index.ids[#index.ids + 1] = id
@@ -914,11 +915,30 @@ function Model.Search(data, player, query, title, completed, log)
 		return {}
 	end
 	query = table.concat(words, " ")
+	-- The data's titles folded once per data table (the index's `folded`, filled lazily here): a search per
+	-- keystroke must not re-fold every title. A client title that differs from the data's folds on the spot.
+	local foldedTitles = Index(data).folded
 	local found, rank = {}, {}
 	for id, quest in pairs(data.quests) do
 		if quest.side == 3 or quest.side == player.side then
 			local name = (title and title(id)) or quest.title
-			local tier = Text.Rank(Text.Fold(name), query)
+			local folded = name == quest.title and foldedTitles[id] or nil
+			if not folded then
+				folded = Text.Fold(name)
+				if name == quest.title then
+					foldedTitles[id] = folded
+				end
+			end
+			-- Every query word must appear before Rank runs: it re-splits the query and strips punctuation
+			-- per title, which only the few titles holding every word should pay for.
+			local holds = true
+			for _, word in ipairs(words) do
+				if not folded:find(word, 1, true) then
+					holds = false
+					break
+				end
+			end
+			local tier = holds and Text.Rank(folded, query) or nil
 			if tier then
 				local level = (quest.level or 0) > 0 and quest.level or player.level
 				found[#found + 1] = id
