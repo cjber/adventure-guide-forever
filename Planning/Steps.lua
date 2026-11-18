@@ -25,10 +25,14 @@ local function Count(one, many, count)
 	return count == 1 and one or many:format(count)
 end
 
--- A quest's level for its colour: the log's, the data's otherwise; a scaling quest (-1) is the player's own.
+-- A quest's level for its colour: the log's, the data's otherwise; a scaling quest (-1) is the player's own. The log
+-- stores 0 when the client gives no level (State.lua), which is no level, so the data's still decides.
 local function QuestLevel(data, log, player, id)
 	local entry, quest = log[id], data.quests[id]
-	local level = (entry and entry.level) or (quest and quest.level)
+	local level = entry and entry.level
+	if not level or level == 0 then
+		level = quest and quest.level
+	end
 	return (level and level > 0) and level or player.level
 end
 

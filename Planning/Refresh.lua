@@ -15,6 +15,7 @@ local InZone = ns.Planner.Zones.InZone
 local Index = ns.Planner.Eligibility.Index
 local Locate = ns.Planner.Steps.Locate
 local Opens = ns.Planner.Steps.Opens
+local QuestLevel = ns.Planner.Steps.QuestLevel
 local ReadDropped = ns.Planner.Eligibility.ReadDropped
 local Ready = ns.Planner.Steps.Ready
 local Route = ns.Planner.Plan.Route
@@ -224,9 +225,12 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 		if not step.pickups then
 			-- Keep carried quests and a lap's still-open pickups. Objective work drops completed quests;
 			-- hand-ins belong to town/return steps and have no objective rows.
+			-- An open log quest past the level ceiling leaves the work, as in LogSteps: the setting can drop in a fight.
 			local function Carrying(id)
 				if log[id] == nil then
 					return step.planned ~= nil and step.planned[id] ~= nil and Open(id)
+				elseif not log[id].complete and Model.AboveCeiling(QuestLevel(data, log, player, id), player) then
+					return false
 				end
 				return not ((step.objectives or step.entrance) and log[id].complete)
 			end
