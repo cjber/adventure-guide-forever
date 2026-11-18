@@ -10,19 +10,31 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago. O
 verbatim rather than rewritten as the addon moves. API changes other addons' authors need go under an
 optional `### For addon authors` subsection after a version's player bullets.
 
-## [1.10.5] - 2026-11-17
+## [1.11.0] - 2026-11-18
 
-<!-- forever-core-sync -->
+<!-- discord-image: docs/screenshots/panel.png -->
 
-- Ships with the same shared code as your other Forever addons, so they keep working together.
+### Fixed
 
-## [1.10.4] - 2026-11-17
+- **Zones you are already questing in keep their card.** A zone whose remaining quests are all in your log now gets its own card with those quests, instead of only showing them under Clean up my log (#820).
+- **Quest data loads faster, and no longer crawls at low frame rates.** With Questie, the quest data built at the first login after an update was ready in about 26 seconds at 76 fps, against 43 seconds on 1.10.3 at 86 fps. At 20 fps it took about 28 seconds, where 1.10.3 had not finished after 90 (#839).
+- **The guide's quest data is right when Questie loads late.** If Questie finished loading while the guide was still reading quests, the guide could keep outdated quest data until the next login.
+- **A turned-off ForeverCore is named as the problem.** With ForeverCore turned off, Adventure Guide Forever now says so at login, instead of naming every other Forever addon as out of date. (cjber/forever-core#816)
+- **The addon compartment entry says why Adventure Guide Forever stopped.** While Adventure Guide Forever cannot start, clicking its entry repeats the line naming the fix instead of raising a Lua error.
 
 ### Changed
 
-- Clearer Chinese warnings when ForeverCore needs attention. Thanks to moshoutegong for the Simplified and Traditional Chinese corrections (#801, #802).
-- Tracker menus: right-click any block title or the section heading for journey actions and tracker settings. End journey remains available while paused.
-- Ships with the same shared code as your other Forever addons, so they keep working together.
+- **The Forever quest list is gone.** Your quests show in the game's own quest tracker again, or in your quest addon's. The guide's section stays in the Forever column, which sits to the left of the game's tracker. Drag a heading to move it, and right-click one for Lock the tracker. Nothing to change in your settings. (cjber/forever-core#792)
+- **Clearer Chinese warnings when ForeverCore needs attention.** Thanks to moshoutegong for the Simplified and Traditional Chinese corrections (#801, #802).
+- **Tracker menus hold journey actions and tracker settings.** Right-click any block title or the section heading to open them. End journey remains available while paused.
+- **Shorter AddOns list name.** The addon is listed as Adventure Guide Forever, like the rest of the family (#819).
+- **The tracker settings follow the new tracker.** The "Attach to quest tracker" setting is gone, because the column is pinned beside the game's tracker. "Lock the tracker" stays.
+- **Updates are published on CurseForge and GitHub.** Wago publishing has ended, so install and update from CurseForge. (cjber/forever-core#649)
+
+### Removed
+
+- **The minimap button is gone.** Open the guide with `/agf`, Alt-G, its world-map tab or the AddOn compartment (#823).
+- **No more hints for my other addons.** The Forever addons page and the install and enable hints for other Forever addons are gone.
 
 ## [1.10.3] - 2026-11-17
 
