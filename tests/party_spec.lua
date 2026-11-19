@@ -251,6 +251,20 @@ do
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 
+-- A turn-in on its own reads the party again.
+do
+	local h = Load()
+	h.fire("GROUP_ROSTER_UPDATE")
+	h.flush()
+	equal(h.ns.Party.Quests(), nil, "turn-in: nothing shared before")
+	h.party.on.party1 = { [845] = true }
+	h.fire("QUEST_TURNED_IN", 869)
+	h.flush()
+	check(h.ns.Party.Quests() and h.ns.Party.Quests()[845] == 1, "turn-in: the party is read again")
+	equal(#h.sent, 0, "turn-in: no message is sent")
+	check(#h.errors == 0, table.concat(h.errors, "\n"))
+end
+
 -- The setting off: nothing is read; turning it on reads at once, and off again drops the answer.
 do
 	local h = Load({ db = { partyQuests = false } })

@@ -146,6 +146,7 @@ for _, event in ipairs({
 	"UNIT_QUEST_LOG_CHANGED",
 	"QUEST_ACCEPTED",
 	"QUEST_REMOVED",
+	"QUEST_TURNED_IN",
 }) do
 	pcall(events.RegisterEvent, events, event)
 end
