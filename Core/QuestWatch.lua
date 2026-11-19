@@ -356,9 +356,9 @@ events:SetScript("OnEvent", function(_, event, first, second)
 			-- The window of a watch still the client's when combat began, or added during it, starts again now: a fight
 			-- longer than the window must not turn the client's watch into the player's.
 			local now = GetTime()
-			for questID, at in pairs(auto) do
+			for id, at in pairs(auto) do
 				if combatAt and at >= combatAt - AUTO_WINDOW then
-					auto[questID] = now
+					auto[id] = now
 				end
 			end
 			combatAt = nil
