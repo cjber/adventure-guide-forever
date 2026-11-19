@@ -26,12 +26,28 @@ local function RunDue()
 	end
 end
 
--- Run `callback` on the frame after the client's data for `itemID` arrives. Asking again for an item already
--- awaited adds nothing, and an item whose data never arrives costs one table entry.
+-- Run `callbacks` on the next frame, each once, with whatever else is due then.
+---@param callbacks table<function, true>
+local function Due(callbacks)
+	if not due then
+		due = {}
+		C_Timer.After(0, RunDue)
+	end
+	for callback in pairs(callbacks) do
+		due[callback] = true
+	end
+end
+
+-- Run `callback` on the frame after the client answers for `itemID`: at once (next frame) for an item already
+-- cached, otherwise once its load ends. Asking again for an item already awaited adds nothing.
 ---@param itemID integer?
 ---@param callback function
 function ItemInfo.Await(itemID, callback)
 	if type(itemID) ~= "number" then
+		return
+	end
+	if C_Item.IsItemDataCachedByID(itemID) then
+		Due({ [callback] = true })
 		return
 	end
 	local callbacks = awaited[itemID]
@@ -40,6 +56,7 @@ function ItemInfo.Await(itemID, callback)
 		awaited[itemID] = callbacks
 	end
 	callbacks[callback] = true
+	C_Item.RequestLoadItemDataByID(itemID)
 end
 
 -- Stop waiting with `callback` for every item: what it waited for is gone, or it is about to name its items afresh.
@@ -58,18 +75,13 @@ end
 
 local events = CreateFrame("Frame")
 events:RegisterEvent("GET_ITEM_INFO_RECEIVED")
-events:SetScript("OnEvent", function(_, _, itemID, success)
+events:SetScript("OnEvent", function(_, _, itemID)
 	local callbacks = awaited[itemID]
-	-- A failed load caches nothing: the wait stays for the arrival that does.
-	if not callbacks or success == false then
+	if not callbacks then
 		return
 	end
+	-- A failed load is handed back too (`success` false): the client sends no second answer for a request it has
+	-- ended, so a wait kept here would never end. The callback reads again, and that read asks for the item afresh.
 	awaited[itemID] = nil
-	if not due then
-		due = {}
-		C_Timer.After(0, RunDue)
-	end
-	for callback in pairs(callbacks) do
-		due[callback] = true
-	end
+	Due(callbacks)
 end)

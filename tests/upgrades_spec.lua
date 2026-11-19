@@ -209,7 +209,29 @@ do
 	end
 	h.flush()
 	equal(read, 2, "with nothing loading, the choices' own items re-read nothing")
+
+	-- A failed load comes back to the reader, which asks again; nothing waits on an answer the client won't send.
+	info["item:3"] = nil
+	G.QuestInfo_Display(G.QUEST_TEMPLATE_DETAIL)
+	h.flush()
+	equal(read, 3, "the panel reads again with a choice loading")
+	h.fire("GET_ITEM_INFO_RECEIVED", 3, false)
+	h.flush()
+	equal(read, 4, "a failed load re-reads, which asks for the item again")
+	info["item:3"] = { 12, "INVTYPE_HEAD", 4, LEATHER }
+	h.fire("GET_ITEM_INFO_RECEIVED", 3, true)
+	h.flush()
+	equal(read, 5, "and the retried load's arrival re-reads once more")
 	Upgrades.Marked = marked0
+
+	-- Awaiting an item already cached runs on the next frame instead of waiting for an event that already fired.
+	local ran = 0
+	h.ns.ItemInfo.Await(101, function()
+		ran = ran + 1
+	end)
+	equal(ran, 0, "a cached item's callback waits for the next frame")
+	h.flush()
+	equal(ran, 1, "a cached item's callback runs once")
 end
 
 print(("upgrades_spec: %d checks passed"):format(checks))
