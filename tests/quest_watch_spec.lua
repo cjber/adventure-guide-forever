@@ -1,6 +1,6 @@
 -- Run from the repository root: luajit tests/quest_watch_spec.lua
 -- One watch owner for a leading RestedXP guide and an Adventure Guide journey (#682): the journey's quests are
--- tracked, the player's own come back when it stops, and the tracker counts what it hides.
+-- tracked, and the player's own are never untracked (#865).
 local harness = dofile("tests/harness.lua")
 local checks = 0
 local function equal(actual, expected, label)
@@ -48,53 +48,24 @@ local function Watched(h, questID)
 	return false
 end
 
--- A journey leads: its quests in the log are tracked and the player's other tracked quests leave, kept on the
--- character.
+-- #865: a journey leads. Its quests in the log are tracked, and every quest the player tracked stays tracked.
 local h = Load()
-h.watched = { 850, 855 }
+h.watched = { 850, 855, 843 }
 h.ns.Choose("zone:1413", false)
 h.flush()
 equal(h.ns.QuestWatch.Source(), "journey", "the chosen journey leads")
 equal(h.ns.Route().chosen, true, "the route is chosen")
 equal(Watched(h, 845), true, "the journey's hand-in is tracked")
-equal(Watched(h, 850), false, "another tracked quest is gone from the tracker")
-equal(Watched(h, 855), false, "and so is the next")
+for _, questID in ipairs({ 850, 855, 843 }) do
+	equal(Watched(h, questID), true, "the player's tracked quest " .. questID .. " stays tracked")
+end
 local state = h.ns.Prefs().guideWatch
-check(state ~= nil, "what the journey hid is kept on the character")
-equal(#state.saved, 2, "the player's two quests are saved")
-equal(h.ns.QuestWatch.Hidden(), 2, "the tracker counts them as hidden")
+check(state ~= nil and state.added[845], "the journey's own watch is kept on the character")
+equal(state.saved, nil, "no player list is kept: nothing of theirs is taken away")
+equal(h.ns.State.Tracked()[845], nil, "the journey's watch is not counted as the player's")
+equal(h.ns.State.Tracked()[850], true, "the player's own are")
 
--- The notice: a small grey count, its tooltip, and the header menu's Show all quests.
-local notice = h.tracker.hiddenText
-check(notice ~= nil and notice:IsShown(), "the header shows the hidden count")
-equal(notice:GetText(), h.ns.L.TRACKER_HIDDEN_COUNT:format(2), "in the guide's words")
-h.tooltip = {}
-h.tracker.Header.scripts.OnEnter(h.tracker.Header)
-equal(h.tooltip[1], "title: " .. h.ns.CurrentJourney().title, "hovering the header names the journey")
-check(
-	table.concat(h.tooltip, "\n"):find(h.ns.L.TRACKER_HIDDEN_TOOLTIP:format(2), 1, true) ~= nil,
-	"the tooltip says how many are hidden"
-)
-check(table.concat(h.tooltip, "\n"):find(h.ns.L.TRACKER_HIDDEN_SHOW_ALL, 1, true) ~= nil, "and how to show them")
-check(
-	table.concat(h.tooltip, "\n"):find(h.ns.L.TRACKER_HIDDEN_TOOLTIP_ONE, 1, true) == nil,
-	"the two-quest line is not the one-quest line"
-)
-
--- The player tracks one of their own quests by hand while the journey leads: it stays, and the count drops. The
--- header keeps the journey's whole title on one line, narrowed so the client ellipsises it before the count.
-h.watched[#h.watched + 1] = 850
-h.fire("QUEST_WATCH_LIST_CHANGED", 850, true)
-h.flush()
-equal(Watched(h, 850), true, "a quest the player tracks by hand stays tracked")
-equal(h.ns.QuestWatch.Hidden(), 1, "and is no longer counted as hidden")
-equal(h.tracker.hiddenText:GetText(), h.ns.L.TRACKER_HIDDEN_COUNT:format(1), "the count follows")
-h.tooltip = {}
-h.tracker.Header.scripts.OnEnter(h.tracker.Header)
-local oneLine = table.concat(h.tooltip, "\n")
-check(oneLine:find(h.ns.L.TRACKER_HIDDEN_TOOLTIP_ONE, 1, true) ~= nil, "the tooltip says one quest is hidden")
-check(oneLine:find(h.ns.L.TRACKER_HIDDEN_TOOLTIP:format(1), 1, true) == nil, "not the plural line")
--- A watch change now replans the tracked card, so set the layout-only title after that rebuild.
+-- The tracker header keeps the journey's whole title on one line, at the header's own width.
 local journey = h.ns.CurrentJourney()
 local title = journey.title
 journey.title = string.rep("A very long journey title ", 10)
@@ -103,46 +74,69 @@ local heading = h.tracker.Header.Text
 equal(heading:GetText(), journey.title, "the full journey title is the header's text")
 equal(heading.wordWrap, false, "the title stays on one line")
 equal(heading.maxLines, 1, "...")
-check(heading:GetWidth() < 200, "and is narrowed to leave the count its room")
 journey.title = title
+local menu = h.OpenTrackerMenu(h.tracker)
+for _, entry in ipairs(menu.entries) do
+	check(entry.text ~= "Show all quests", "the header menu has no Show all quests: nothing is hidden")
+end
 
--- The client tracks a quest on accept; one the journey does not name is the addon's, not the player's, and goes.
+-- The player untracks one of their own quests and tracks the journey's by hand: both stay as they left them.
+for index = #h.watched, 1, -1 do
+	if h.watched[index] == 855 then
+		table.remove(h.watched, index)
+	end
+end
+h.fire("QUEST_WATCH_LIST_CHANGED", 855, false)
+h.flush()
+equal(Watched(h, 855), false, "a quest the player untracks by hand stays untracked")
+
+-- The client tracks a quest on accept; one the journey does not name is the client's, not the player's, and goes.
 h.watched[#h.watched + 1] = 851
 h.fire("QUEST_ACCEPTED", 851)
 h.ns.Invalidate()
 h.flush()
 equal(Watched(h, 851), false, "a quest the client tracked on accept is untracked")
 
--- The setting off gives the player's own list back and stops counting anything.
+-- The setting off takes back only what the journey tracked.
 h.ns.SetSetting("journeyWatch", false)
 h.flush()
-equal(Watched(h, 850), true, "the player's own tracked quests come back")
-equal(Watched(h, 855), true, "both of them")
+equal(Watched(h, 850), true, "the player's own tracked quests stay")
+equal(Watched(h, 843), true, "all of them")
 equal(Watched(h, 845), false, "what the journey tracked goes")
-equal(h.ns.Prefs().guideWatch, nil, "nothing is kept once it is given back")
-equal(h.ns.QuestWatch.Hidden(), 0, "nothing is hidden any more")
-check(not h.tracker.hiddenText:IsShown(), "and the count is gone")
+equal(h.ns.Prefs().guideWatch, nil, "nothing is kept once the journey stops leading")
 check(#h.errors == 0, table.concat(h.errors, "\n"))
 
--- The header's right-click menu turns the setting off and gives the player's quests back.
+-- A journey that names no quest in the log (a Books story, #865): every watch survives, through a switch back to a
+-- zone and the journey ending.
 h = Load()
-h.watched = { 850 }
+h.watched = { 850, 855, 843, 845 }
 h.ns.Choose("zone:1413", false)
 h.flush()
-check(h.ns.QuestWatch.Hidden() > 0, "the journey hides the player's quest")
-local menu = h.OpenTrackerMenu(h.tracker)
-local show
-for _, entry in ipairs(menu.entries) do
-	if entry.text == h.ns.L.TRACKER_SHOW_ALL then
-		show = entry
-	end
-end
-check(show ~= nil, "the header menu offers Show all quests")
-show.onClick()
+h.ns.Choose("calling", false)
 h.flush()
-equal(h.ns.Setting("journeyWatch"), false, "Show all quests turns the setting off")
-equal(Watched(h, 850), true, "and gives the player's quest back")
-equal(h.ns.QuestWatch.Hidden(), 0, "with nothing hidden")
+for _, questID in ipairs({ 850, 855, 843, 845 }) do
+	equal(Watched(h, questID), true, "another journey leaves the player's quest " .. questID .. " tracked")
+end
+h.ns.Stop()
+h.flush()
+for _, questID in ipairs({ 850, 855, 843, 845 }) do
+	equal(Watched(h, questID), true, "ending the journey leaves " .. questID .. " tracked")
+end
+check(#h.errors == 0, table.concat(h.errors, "\n"))
+
+-- A character saved by an earlier version, whose journey had untracked the player's quests: they come back.
+h = Load({
+	charDB = {
+		journey = "zone:1413",
+		guideWatch = { saved = { 850, 855, 999 }, added = {}, named = {}, hidden = { [850] = true, [855] = true } },
+	},
+})
+h.ns.QuestWatch.Sync()
+h.flush()
+equal(Watched(h, 850), true, "an untracked player quest is tracked again on upgrade")
+equal(Watched(h, 855), true, "every one of them")
+equal(Watched(h, 999), false, "a quest no longer in the log is not")
+equal(h.ns.Prefs().guideWatch and h.ns.Prefs().guideWatch.saved, nil, "the old list is gone once given back")
 check(#h.errors == 0, table.concat(h.errors, "\n"))
 
 -- "Stop tracking other quests" carried over: a saved true turns the new setting on, a saved false leaves its default.

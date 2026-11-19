@@ -225,22 +225,19 @@
 ---@field guided? string the key of the chosen journey whose route AGF started, while that guidance should run
 ---@field autoStartBlocked? boolean the player pressed Stop, so no journey starts itself until they choose one again
 ---@field focus? integer the quest AGF selected on walking into its area (Focus.lua), while that selection is still AGF's
----@field guideWatch? AGFGuideWatchState the tracked quests a leading RestedXP guide or AGF journey took over (QuestWatch.lua)
+---@field guideWatch? AGFGuideWatchState the watches a leading RestedXP guide or AGF journey added (QuestWatch.lua)
 
--- What QuestWatch.lua keeps on the character while a RestedXP guide or an AGF journey leads the tracked quests.
+-- What QuestWatch.lua keeps on the character while a RestedXP guide or an AGF journey leads.
 ---@class AGFGuideWatchState
----@field saved integer[] the player's tracked quests when the leader took over, given back when it stops
 ---@field added table<integer, true> what QuestWatch or the client's auto quest watch tracked for the leader
 ---@field named table<integer, true> the quests the leader named at the last look
----@field hidden table<integer, true> the player's own quests the leader is withholding from the tracker
+---@field saved? integer[] an earlier version's untracked player quests, given back once (QuestWatch.lua Restore)
+---@field hidden? table<integer, true> an earlier version's field, cleared with saved
 
--- The one owner of the tracked quests while a RestedXP guide or an AGF journey leads (Core/QuestWatch.lua).
+-- Adds and takes back the watches a RestedXP guide or an AGF journey leads with (Core/QuestWatch.lua).
 ---@class AGFQuestWatch
 ---@field Sync fun() settle the watches on the leader as it is now; never in combat
----@field Refresh fun() the hidden count may have moved with a watch the player changed
----@field Hidden fun(): integer the player's own quests hidden from the tracker while an AGF journey leads
 ---@field Source fun(): "rxp"|"journey"|nil which leader is settling the watches
----@field OnChange fun(fn: fun()) called when the hidden count changes
 
 -- What Focus.Next keeps between looks: the area step 1 was, and the quest AGF selected.
 ---@class AGFFocusState
@@ -824,11 +821,6 @@
 ---@field SETTING_GUIDE_TRACKS_TOOLTIP string
 ---@field SETTING_JOURNEY_WATCH string
 ---@field SETTING_JOURNEY_WATCH_TOOLTIP string
----@field TRACKER_HIDDEN_COUNT string
----@field TRACKER_HIDDEN_TOOLTIP string
----@field TRACKER_HIDDEN_TOOLTIP_ONE string the same for one quest
----@field TRACKER_HIDDEN_SHOW_ALL string
----@field TRACKER_SHOW_ALL string
 ---@field PREVIOUS_PAGE string
 ---@field NEXT_PAGE string
 ---@field JOURNEY_PAGE string

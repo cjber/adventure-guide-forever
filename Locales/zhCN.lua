@@ -326,12 +326,12 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "在地图上显示任务NPC" -- mt
 L["SETTING_GIVERS_TOOLTIP"] =
 	"在世界地图上，为每个有你现在可接任务的人显示“!”。还需要开启地图上的路线标记。" -- mt
-L["SETTING_GUIDE_TRACKS"] = "只追踪RestedXP指南的任务" -- mt
+L["SETTING_GUIDE_TRACKS"] = "追踪 RestedXP 指南的任务" -- mt
 L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
-	"跟随RestedXP指南时，目标追踪器只显示其当前和进行中步骤提到的任务。停止跟随后，你自己追踪的任务会恢复。" -- mt
-L["SETTING_JOURNEY_WATCH"] = "只追踪旅程的任务" -- mt
+	"跟随 RestedXP 指南时，目标追踪器还会显示其当前步骤和进行中步骤所列的任务。你自己追踪的任务始终保持追踪。" -- mt
+L["SETTING_JOURNEY_WATCH"] = "追踪旅程的任务" -- mt
 L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
-	"旅程引导时，目标追踪器只显示它正在处理的任务，其他任务会离开追踪器。你自己追踪的任务会留在角色上，并在旅程不再引导、你选择其他旅程或关闭此设置时回来。" -- mt
+	"旅程引导时，目标追踪器还会显示你任务日志中它正在进行的任务，并在它继续前进后取消追踪。你自己追踪的任务始终保持追踪。" -- mt
 L["SETTING_LOCK_TRACKER"] = "锁定追踪器" -- mt
 L["SETTING_LOCK_TRACKER_TOOLTIP"] = "将共享的 Forever 追踪器保持在您放置的位置。" -- mt
 L["SETTING_MAP_PINS"] = "在地图上显示路线标记" -- mt
@@ -437,13 +437,8 @@ L["TOWN_PICKUPS"] = "接受%d个" -- mt
 L["TOWN_SKIP_GIVER"] = "跳过此任务NPC" -- mt
 L["TRACKER_DRAG_TITLE"] = "Forever追踪栏" -- mt
 L["TRACKER_DRAG_TOOLTIP"] = "拖动以移动" -- mt
-L["TRACKER_HIDDEN_COUNT"] = "已隐藏 %d 个" -- mt
-L["TRACKER_HIDDEN_TOOLTIP"] = "此旅程引导期间，有 %d 个任务在追踪器中隐藏。" -- mt
-L["TRACKER_HIDDEN_TOOLTIP_ONE"] = "此旅程引导期间，有 1 个任务在追踪器中隐藏。" -- mt
-L["TRACKER_HIDDEN_SHOW_ALL"] = "右键：显示所有任务。" -- mt
 L["TRACKER_LOADING"] = "正在加载任务数据..." -- mt
 L["TRACKER_LOCKED_TOOLTIP"] = "追踪器已锁定。关闭“锁定追踪器”即可移动它。" -- mt
-L["TRACKER_SHOW_ALL"] = "显示所有任务" -- mt
 L["TRACKER_PAUSED"] = "路线已暂停。点击标题以继续。" -- mt
 L["TRACKER_SHOW_WHERE"] = "可在 设置 > 插件 > Adventure Guide 的 目标追踪栏 中重新开启。" -- mt
 L["TRACKER_UNATTACHED"] = "无法在目标追踪栏中添加区块；请使用/agf audit报告。" -- mt

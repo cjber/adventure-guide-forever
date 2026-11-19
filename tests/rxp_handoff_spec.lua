@@ -92,7 +92,8 @@ late.flush()
 check(late.ns.Route().chosen and late.ns.Guidance.Owns(), "and guides again")
 check(#late.errors == 0, table.concat(late.errors, "\n"))
 
--- #362: while the guide leads, the tracker holds only the quests its step under way and its ongoing steps name.
+-- #362: while the guide leads, the tracker holds the quests its step under way and its ongoing steps name, and the
+-- player's own tracked quests stay (#865).
 local LOG = {
 	{ id = 845, title = "The Zhevra", level = 13, complete = false },
 	{ id = 846, title = "Revenge of Gann", level = 15, complete = false },
@@ -123,7 +124,7 @@ w.ns.StartJourney(key)
 w.flush()
 check(w.ns.Route().chosen and w.ns.Route().journey == key, "the guide leads")
 check(watched(845) and watched(846), "the quests its current and ongoing steps name are tracked")
-check(not watched(850) and not watched(855), "every other tracked quest is untracked")
+check(watched(850) and watched(855), "the player's own tracked quests stay tracked")
 
 -- The client tracks a quest on accept; one the guide does not name goes, one the player tracks by hand stays.
 w.log[#w.log + 1] = { id = 851, title = "Lost in Battle", level = 15, complete = false }
@@ -132,17 +133,24 @@ w.fire("QUEST_ACCEPTED", 851)
 w.ns.Invalidate()
 w.flush()
 check(not watched(851), "a quest the client tracked on accept, and the guide does not name, is untracked")
-w.watched[#w.watched + 1] = 850
-w.fire("QUEST_WATCH_LIST_CHANGED", 850, true)
+-- A quest the guide named that the player tracks again by hand is theirs: it stays when the guide stops naming it.
+for index = #w.watched, 1, -1 do
+	if w.watched[index] == 846 then
+		table.remove(w.watched, index)
+	end
+end
+w.fire("QUEST_WATCH_LIST_CHANGED", 846, false)
+w.watched[#w.watched + 1] = 846
+w.fire("QUEST_WATCH_LIST_CHANGED", 846, true)
 w.ns.Invalidate()
 w.flush()
-check(watched(850), "a quest the player tracks by hand while the guide leads stays tracked")
 
--- The guide stops leading: the player's own list comes back, and what the guide tracked goes.
+-- The guide stops leading: the player's own list stays, and what the guide tracked goes.
 w.ns.SetSetting("guideTracksQuests", false)
 w.flush()
-check(watched(850) and watched(855), "the player's own tracked quests come back")
-check(not watched(845) and not watched(846), "what the guide tracked goes")
+check(watched(850) and watched(855), "the player's own tracked quests stay")
+check(not watched(845), "what the guide tracked goes")
+check(watched(846), "a quest the player tracked by hand stays")
 check(w.ns.Prefs().guideWatch == nil, "nothing is kept once it is given back")
 check(#w.errors == 0, table.concat(w.errors, "\n"))
 
