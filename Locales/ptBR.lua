@@ -330,6 +330,12 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "Mostrar recrutadores de missões no mapa"
 L["SETTING_GIVERS_TOOLTIP"] =
 	'Um "!" no mapa-múndi sobre todos que têm uma missão que você pode aceitar agora. Também precisa dos marcadores de rota no mapa.'
+L["SETTING_GUIDE_TRACKS"] = "Rastrear as missões do guia do RestedXP" -- mt
+L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
+	"Enquanto você segue um guia do RestedXP, o rastreador de objetivos também mostra as missões que as etapas atuais e em andamento citam. As missões que você mesmo rastreou continuam sempre rastreadas." -- mt
+L["SETTING_JOURNEY_WATCH"] = "Rastrear as missões da jornada" -- mt
+L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
+	"Enquanto uma jornada guia, o rastreador de objetivos também mostra as missões do seu registro em que ela trabalha, e as solta quando ela segue adiante. As missões que você mesmo rastreou continuam sempre rastreadas." -- mt
 L["SETTING_LOCK_TRACKER"] = "Travar o rastreador"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] = "Mantém o rastreador Forever compartilhado onde você o colocou."
 L["SETTING_MAP_PINS"] = "Mostrar marcadores de rota no mapa"

@@ -326,6 +326,12 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "在地图上显示任务NPC" -- mt
 L["SETTING_GIVERS_TOOLTIP"] =
 	"在世界地图上，为每个有你现在可接任务的人显示“!”。还需要开启地图上的路线标记。" -- mt
+L["SETTING_GUIDE_TRACKS"] = "追踪 RestedXP 指南的任务" -- mt
+L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
+	"跟随 RestedXP 指南时，目标追踪器还会显示其当前步骤和进行中步骤所列的任务。你自己追踪的任务始终保持追踪。" -- mt
+L["SETTING_JOURNEY_WATCH"] = "追踪旅程的任务" -- mt
+L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
+	"旅程引导时，目标追踪器还会显示你任务日志中它正在进行的任务，并在它继续前进后取消追踪。你自己追踪的任务始终保持追踪。" -- mt
 L["SETTING_LOCK_TRACKER"] = "锁定追踪器" -- mt
 L["SETTING_LOCK_TRACKER_TOOLTIP"] = "将共享的 Forever 追踪器保持在您放置的位置。" -- mt
 L["SETTING_MAP_PINS"] = "在地图上显示路线标记" -- mt

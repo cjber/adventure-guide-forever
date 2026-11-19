@@ -336,6 +336,12 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "지도에 퀘스트 NPC 표시"
 L["SETTING_GIVERS_TOOLTIP"] =
 	'지금 수락할 수 있는 퀘스트가 있는 모든 NPC 위에 세계 지도의 "!"를 표시합니다. 지도의 경로 핀도 켜야 합니다.'
+L["SETTING_GUIDE_TRACKS"] = "RestedXP 가이드의 퀘스트 추적" -- mt
+L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
+	"RestedXP 가이드를 따르는 동안, 목표 추적기에 현재 단계와 진행 중인 단계가 지정한 퀘스트도 표시합니다. 직접 추적한 퀘스트는 항상 추적 상태로 남습니다." -- mt
+L["SETTING_JOURNEY_WATCH"] = "여정의 퀘스트 추적" -- mt
+L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
+	"여정이 안내하는 동안, 목표 추적기에 여정이 진행 중인 퀘스트 목록의 퀘스트도 표시하고, 여정이 다음으로 넘어가면 해제합니다. 직접 추적한 퀘스트는 항상 추적 상태로 남습니다." -- mt
 L["SETTING_LOCK_TRACKER"] = "추적기 잠금"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] = "공유 Forever 추적기를 놓은 자리에 유지합니다."
 L["SETTING_MAP_PINS"] = "지도에 경로 핀 표시"

@@ -326,6 +326,12 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "在地圖上顯示任務給予者" -- mt
 L["SETTING_GIVERS_TOOLTIP"] =
 	"在世界地圖上，為每個有你現在可接任務的人顯示「!」。還需要開啟地圖上的路線標記。" -- mt
+L["SETTING_GUIDE_TRACKS"] = "追蹤 RestedXP 指南的任務" -- mt
+L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
+	"跟隨 RestedXP 指南時，目標追蹤器也會顯示其目前步驟與進行中步驟所列的任務。你自己追蹤的任務會一直保持追蹤。" -- mt
+L["SETTING_JOURNEY_WATCH"] = "追蹤旅程的任務" -- mt
+L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
+	"旅程引導時，目標追蹤器也會顯示你任務日誌中它正在進行的任務，並在它繼續前進後取消追蹤。你自己追蹤的任務會一直保持追蹤。" -- mt
 L["SETTING_LOCK_TRACKER"] = "鎖定追蹤器" -- mt
 L["SETTING_LOCK_TRACKER_TOOLTIP"] = "將共用的 Forever 追蹤器保持在您放置的位置。" -- mt
 L["SETTING_MAP_PINS"] = "在地圖上顯示路線標記" -- mt

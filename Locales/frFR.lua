@@ -333,6 +333,12 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "Afficher les donneurs de quêtes sur la carte"
 L["SETTING_GIVERS_TOOLTIP"] =
 	"Un « ! » sur la carte du monde au-dessus de chaque personnage ayant une quête que vous pouvez prendre maintenant. Demande aussi les repères d’itinéraire sur la carte."
+L["SETTING_GUIDE_TRACKS"] = "Suivre les quêtes du guide RestedXP" -- mt
+L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
+	"Pendant que vous suivez un guide RestedXP, le suivi des objectifs affiche aussi les quêtes que nomment ses étapes en cours. Les quêtes que vous suivez vous-même restent toujours suivies." -- mt
+L["SETTING_JOURNEY_WATCH"] = "Suivre les quêtes du voyage" -- mt
+L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
+	"Pendant qu'un voyage mène, le suivi des objectifs affiche aussi les quêtes de votre journal sur lesquelles il travaille, puis les retire quand il passe à la suite. Les quêtes que vous suivez vous-même restent toujours suivies." -- mt
 L["SETTING_LOCK_TRACKER"] = "Verrouiller le suivi"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] = "Garde le suivi Forever partagé là où vous l'avez placé."
 L["SETTING_MAP_PINS"] = "Afficher les repères d’itinéraire sur la carte"

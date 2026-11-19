@@ -332,6 +332,12 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "Questgeber auf der Karte anzeigen"
 L["SETTING_GIVERS_TOOLTIP"] =
 	"Ein „!“ auf der Weltkarte über allen, die jetzt eine Quest für Euch haben. Braucht auch die Routenmarkierungen auf der Karte."
+L["SETTING_GUIDE_TRACKS"] = "Quests des RestedXP-Guides verfolgen" -- mt
+L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
+	"Während Ihr einem RestedXP-Guide folgt, zeigt die Zielverfolgung zusätzlich die Quests, die seine aktuellen und laufenden Schritte nennen. Quests, die Ihr selbst verfolgt, bleiben immer verfolgt." -- mt
+L["SETTING_JOURNEY_WATCH"] = "Quests der Reise verfolgen" -- mt
+L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
+	"Während eine Reise führt, zeigt die Zielverfolgung zusätzlich die Quests in Eurem Log, an denen sie arbeitet, und gibt sie wieder frei, sobald sie weiterzieht. Quests, die Ihr selbst verfolgt, bleiben immer verfolgt." -- mt
 L["SETTING_LOCK_TRACKER"] = "Verfolgung sperren"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] = "Hält die gemeinsame Forever-Verfolgung dort, wo Ihr sie hingelegt habt."
 L["SETTING_MAP_PINS"] = "Routenmarkierungen auf der Karte anzeigen"
