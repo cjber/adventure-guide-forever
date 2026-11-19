@@ -128,6 +128,8 @@ local function PlayerTurnedOn(profile)
 	end
 	held = nil
 	ns.SetSetting("hideQuestieTracker", false)
+	-- An open settings page shows the checkbox turning off too.
+	Settings.NotifyUpdate("AdventureGuideForever_hideQuestieTracker")
 	return true
 end
 

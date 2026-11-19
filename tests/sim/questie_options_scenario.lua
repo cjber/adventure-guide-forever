@@ -139,6 +139,12 @@ scenario(
 		sim:login()
 		sim:advance(4)
 		local profile = sim.G.Questie.db.profile
+		local notified = {}
+		local notify = sim.G.Settings.NotifyUpdate
+		sim.G.Settings.NotifyUpdate = function(variable)
+			notified[#notified + 1] = variable
+			return notify(variable)
+		end
 		profile.trackerEnabled = true
 		-- The guide's own tracker is hidden and shown again: the guide applies its setting.
 		settings.showTracker = false
@@ -147,6 +153,10 @@ scenario(
 		ns.QuestieOptions.ApplyTracker()
 		assert(profile.trackerEnabled == true, "Questie's tracker stays the player's")
 		assert(settings.hideQuestieTracker == false, "and the guide's setting is off")
+		assert(
+			notified[1] == "AdventureGuideForever_hideQuestieTracker",
+			"an open settings page is told the checkbox turned off"
+		)
 		sim:expectNoErrors(ADDON)
 	end
 )
