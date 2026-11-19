@@ -131,9 +131,12 @@ end)
 assert(#futureRows >= 9, "the existing map guide panel displays upcoming steps")
 preview.tracker:LayoutContents()
 local currentBlock = preview.tracker.liveBlocks[upcoming.steps[1].key]
-local nextLine = currentBlock and currentBlock.lines[currentBlock.order[#currentBlock.order]]
+local order = currentBlock and currentBlock.order or {}
+local nextLine, thenLine =
+	currentBlock and currentBlock.lines[order[#order - 1]], currentBlock and currentBlock.lines[order[#order]]
 assert(nextLine and nextLine:find(upcoming.steps[2].title, 1, true), "the step under way names the next step")
-local later = upcoming.steps[3].title
+assert(thenLine and thenLine:find(upcoming.steps[3].title, 1, true), "and the one after it (#870)")
+local later = upcoming.steps[4].title
 for _, block in pairs(preview.tracker.liveBlocks) do
 	for _, text in pairs(block.used and block.lines or {}) do
 		assert(not text:find(later, 1, true), "later preview steps stay in the world map panel")

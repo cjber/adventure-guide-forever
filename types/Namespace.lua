@@ -1507,6 +1507,7 @@
 ---@field text string
 ---@field rxpTag? string a RestedXP line's kind (AGFRXPElement.tag)
 ---@field rxpQuest? integer the quest a RestedXP line works on
+---@field hint? boolean a RestedXP tip: drawn grey, never the line the step waits on (AGFRXPInstruction.hint)
 ---@field pickups integer[]
 ---@field handins integer[]
 ---@field done boolean
