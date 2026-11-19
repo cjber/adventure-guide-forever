@@ -9,7 +9,8 @@ end
 -- a feature never reacts to the event itself: it names the item it is waiting for, and its callback runs once that
 -- item's data arrives, at most once per frame however many of its items land together (#844). This is the one file
 -- that names the event (tools/repo_rules.py, item-info-outside-core).
-local ItemInfo = {} --[[@as AGFItemInfo]]
+---@class AGFItemInfo
+local ItemInfo = {}
 ns.ItemInfo = ItemInfo
 
 ---@type table<integer, table<function, true>>

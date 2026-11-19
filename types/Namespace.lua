@@ -938,10 +938,6 @@
 ---@field RouteChanged fun() Core, ahead of every route listener: a waiting start, a choice that went, the restore, Focus.Sync, then following
 ---@field Debug fun(): string /agf travel's line
 
----@class AGFItemInfo
----@field Await fun(itemID: integer?, callback: function)
----@field Forget fun(callback: function)
-
 ---@class AGFNamespace
 ---@field Credits ForeverCreditsData the player credits Data/Credits.lua generates for the shared Thanks page
 ---@field broken? boolean set when an installed ForeverCore is too old, so the addon's files stop
