@@ -27,7 +27,35 @@ function Guidance.OnChange(fn)
 	listeners[#listeners + 1] = fn
 end
 
+-- What the listeners read of guidance (CurrentStep, Guided, Owns, Status, another journey a click would replace) as
+-- one string, and its value when they were
+-- last told: a look that changed none of it tells no one (#836).
+---@type string?
+local told
+---@return string
+local function View()
+	local step, prefs = Guidance.CurrentStep(), ns.Prefs()
+	local handed = {}
+	for index, each in ipairs(Guidance.Guided()) do
+		handed[index] = each.key or ""
+	end
+	-- Owns forgets a waypoint that no longer matches, so the waypoint is read after it.
+	local owns = tostring(Guidance.Owns())
+	local waypoint = prefs.waypoint
+	return table.concat({
+		step and step.key or "",
+		tostring(Integrations.Guiding() and Integrations.CurrentStop() or ""),
+		table.concat(handed, ","),
+		owns,
+		tostring(Guidance.Status() or ""),
+		tostring(prefs.guided or ""),
+		tostring(Integrations.ReplacesJourney()),
+		waypoint and ("%s:%s:%s"):format(waypoint.map, waypoint.x, waypoint.y) or "",
+	}, "|")
+end
+
 local function Notify()
+	told = View()
 	for _, fn in ipairs(listeners) do
 		fn()
 	end
@@ -431,10 +459,13 @@ end
 -- itself when its guidance changes, on the next frame, so from login only the client's waypoint event is watched;
 -- an older one is noticed through the super-tracking events it registers, handled on the next frame once its own
 -- handler has run. Either way with the guide open or closed.
--- Look again: follow the chosen journey, then tell the views.
+-- Look again: follow the chosen journey, then tell the views when what they read changed. Shortest Path's callback
+-- and the super-tracking events come on most quest events, which mostly change nothing here (#836).
 local function Look()
 	Follow()
-	Notify()
+	if View() ~= told then
+		Notify()
+	end
 end
 local events, eventPending = CreateFrame("Frame"), false
 events:RegisterEvent("SUPER_TRACKING_CHANGED")
