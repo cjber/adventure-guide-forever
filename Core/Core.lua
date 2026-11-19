@@ -1295,6 +1295,8 @@ end
 EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	LoadDB()
 	LoadCharDB()
+	-- The settings page goes in first, in its own protected call, so a later startup error still leaves it working.
+	ns.core.SafeCall("settings", ns.RegisterSettings)
 	-- The saved journal and log are ForeverCore's now, under the same table: what SafeCall recorded before this line
 	-- (the client's own early errors) arrives with it, and a /reload keeps it.
 	ns.core.Attach(AdventureGuideForeverDB)
@@ -1311,7 +1313,6 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	ns.State.OnInitialLogin(function()
 		resumeLatch = true
 	end)
-	ns.RegisterSettings()
 	EventUtil.ContinueAfterAllEvents(ns.WhatsNew, "PLAYER_LOGIN")
 	-- Alt-G clicks this button through Bindings.xml.
 	ns.openButton = CreateFrame("Button", "AdventureGuideForeverOpenButton")
