@@ -40,7 +40,8 @@ ns.L = {
 	SETTING_QUEST_LEVEL_VALUE = "%s levels",
 	SETTING_QUEST_LEVEL_ONE = "%s level",
 	SETTING_QUEST_LEVEL_TOOLTIP = "Choose the highest quest level the guide recommends relative to your level. "
-		.. "The default, +2, avoids orange and red quests. Quests already in your log remain visible.",
+		.. "The default, +2, avoids orange and red quests. A quest in your log above it stays off the route until your "
+		.. "level catches up or it is ready to hand in.",
 	-- The addon's name wherever the game shows it: the window, the map tab, the objective tracker, its settings page and
 	-- chat. Only WoW: Forever loads this addon, so in game it is simply the Adventure Guide.
 	TITLE = "Adventure Guide",
@@ -197,13 +198,12 @@ ns.L = {
 	SETTING_TRACK_ROUTE = "Tracker title tracks quests",
 	SETTING_TRACK_ROUTE_TOOLTIP = "Clicking the guide's title in the objective tracker adds every quest on the "
 		.. "route that's in your log, up to the tracker's limit.",
-	SETTING_GUIDE_TRACKS = "Track only the RestedXP guide's quests",
-	SETTING_GUIDE_TRACKS_TOOLTIP = "While you follow a RestedXP guide, the objective tracker shows only the quests its "
-		.. "current and ongoing steps name. The quests you tracked yourself come back when you stop following it.",
-	SETTING_JOURNEY_WATCH = "Track only the journey's quests",
-	SETTING_JOURNEY_WATCH_TOOLTIP = "While a journey leads, the objective tracker shows only the quests it works on "
-		.. "and every other quest leaves it. The quests you tracked yourself stay on the character and come back when "
-		.. "the journey stops leading, you choose another, or you turn this off.",
+	SETTING_GUIDE_TRACKS = "Track the RestedXP guide's quests",
+	SETTING_GUIDE_TRACKS_TOOLTIP = "While you follow a RestedXP guide, the objective tracker also shows the quests its "
+		.. "current and ongoing steps name. Quests you tracked yourself always stay tracked.",
+	SETTING_JOURNEY_WATCH = "Track the journey's quests",
+	SETTING_JOURNEY_WATCH_TOOLTIP = "While a journey leads, the objective tracker also shows the quests in your log it "
+		.. "works on, and lets them go once it moves on. Quests you tracked yourself always stay tracked.",
 	-- Why-not (docs/design.md §2.4): what the data says a quest needs, one line per requirement.
 	WHY_NO_START = "The guide can't tell where this starts",
 	WHY_DONE = "You've done this",
@@ -308,11 +308,6 @@ ns.L = {
 	TRACKER_DRAG_TOOLTIP = "Drag to move",
 	TRACKER_LOCKED_TOOLTIP = "The tracker is locked. Turn off Lock the tracker to move it.",
 	TRACKER_LOADING = "Loading quest data...",
-	TRACKER_HIDDEN_COUNT = "%d hidden",
-	TRACKER_HIDDEN_TOOLTIP = "%d quests are hidden from the tracker while this journey leads.",
-	TRACKER_HIDDEN_TOOLTIP_ONE = "1 quest is hidden from the tracker while this journey leads.",
-	TRACKER_HIDDEN_SHOW_ALL = "Right-click: Show all quests.",
-	TRACKER_SHOW_ALL = "Show all quests",
 	-- While Polestar runs a guide (Polestar.lua): the tracker's one line, and the setting behind it.
 	POLESTAR_GUIDING = "Polestar is guiding you",
 	POLESTAR_TAKE_OVER = "Click to take over",

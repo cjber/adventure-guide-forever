@@ -42,9 +42,10 @@ abandons quests.
   same routing and skips. It adds no objectives, pickups or trainers. Clean up my log keeps its ordinary objective
   work and pickups on the way. The subset is rebuilt from live completion and destination facts in combat too.
     Give each card a reason and only known travel estimates.
-- **2.3 Chapters.** Expand Continue to choose another eligible story in the viewed destination without dismissing the
-  suggested zone. Each chain is offered once, named by its known first quest, with its current chapter. Accepted quests
-  stay on the chosen story; other destinations keep their zone cards. Show a total only for a proven chain. A quest tooltip may name its proven next chapter with its level.
+- **2.3 Chapters.** Continue lists zones, not stories. A chain is a card only once chosen (from a quest's next chapter
+  or the search), or as a stranded character's dungeon preparation, where no zone card is left to follow. A chosen
+  chain is named by its known first quest, with its current chapter. Accepted quests stay on the chosen story; other
+  destinations keep their zone cards. Show a total only for a proven chain. A quest tooltip may name its proven next chapter with its level.
 - **2.4 Search.** Share eligibility checks with the planner. Explain missing requirements; locked
   quests offer no destination. Every word of the query must appear in the title (case and Latin accents folded); the
   best match comes first (the whole title, the title's start, the start of its words, anywhere), then a quest open
@@ -246,7 +247,9 @@ follow the shared family voice.
   the step sends the player to, so an area whose mobs outlevel the ceiling waits even when its quest does not. A town or pickup stop
   reads the quest's own level only. A
   ready hand-in, a quest within the ceiling, and a stop with no quest at all (a trainer, an entrance) are work for now. So near-level and lower-level work, and hand-ins already done, lead a quest several levels above the
-  player. Then take the nearest town pickup, the nearest area of a quest the town handed out or the player carries, or
+  player. A quest under way in the log past the ceiling, by the log's level, is on no card at all (`LogSteps`, #846):
+  the route never sends the player to work above the setting, whether the route took the quest or not. Its hand-in
+  routes once it is done, and the quest comes back once the player's level brings it within the ceiling. Then take the nearest town pickup, the nearest area of a quest the town handed out or the player carries, or
   the nearest ready hand-in. A ready hand-in or a pickup within a short walk of the player comes before a step whose
   own target point is farther, so the guide finishes what is beside the player first; once it leads it stays until it
   is done or skipped (the held step, §4.2).
@@ -349,7 +352,7 @@ AGF hands the current guide waypoint to SPF as `AdventureGuideForever`, held unt
 
 When RXP hides its current step from its window, the step it shows next leads and is handed on; the step under way is never a read-only preview. A guide step's walk names the NPC its lines name, else its zone when RXP gave it no title. A chosen guide waits while RXP has no guide loaded (its empty guide during a purchased-guide import, or between two loads): it is neither ended nor replaced by an auto-started journey, and a chosen guide key follows the guide RXP loads.
 
-While a RestedXP guide leads with `guideTracksQuests` on (default), or an Adventure Guide journey leads with `journeyWatch` on (also default), `Core/QuestWatch.lua` keeps the client's quest watches to the quests in the log that the leader names: the RestedXP guide's non-preview steps, or the journey's own steps. The player's watch list is saved on the character when the leader takes over and given back when it stops leading. Only watches it or the client's auto watch on accept added are removed later, so a quest the player tracks or untracks by hand meanwhile stays as they left it. Questie mirrors the client's watches on Forever, so its tracker follows without being written to. While an AGF journey hides any of the player's quests, the tracker's section header counts them, explains why on hover, and its right-click menu offers Show all quests, which turns `journeyWatch` off.
+While a RestedXP guide leads with `guideTracksQuests` on (default), or an Adventure Guide journey leads with `journeyWatch` on (also default), `Core/QuestWatch.lua` adds watches for the quests in the log that the leader names: the RestedXP guide's non-preview steps, or the journey's own steps. It never removes a watch the player made: only watches it or the client's auto watch on accept added come off again, once the leader stops naming them or stops leading, and a quest the player tracks or untracks by hand stays as they left it. A character saved by an earlier version, which untracked the player's quests while a leader led, gets those quests back on the next sync. Questie mirrors the client's watches on Forever, so its tracker follows without being written to.
 
 RXP active-item and target windows and its minimap icon are suppressed alongside its guide window. `UI/RXPActions.lua` draws their native-styled replacement in the AGF tracker section: a secure item button per usable item of the current step, with the client's cooldown, count, range marker and key binding, and secure `/target` macro buttons for the step's talk and kill targets, with the current target marked. Their secure frames are built, shown, hidden, moved and given attributes only out of combat, and changes seen during a fight wait for `PLAYER_REGEN_ENABLED`. Restoring the original frontend shows RXP's windows again through its own update. Its arrow is suppressed too while SPF is loaded, since SPF's arrow points at the step AGF hands it. Without SPF, RXP's arrow is the guide's only arrow and is suppressed only while another journey is chosen. The adapter does not change the player's RXP arrow preference. Native RXP windows retain their engine updates while their presentation is suppressed; restoring the original frontend restores its captured presentation state.
 

@@ -330,12 +330,12 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "Mostrar recrutadores de missões no mapa"
 L["SETTING_GIVERS_TOOLTIP"] =
 	'Um "!" no mapa-múndi sobre todos que têm uma missão que você pode aceitar agora. Também precisa dos marcadores de rota no mapa.'
-L["SETTING_GUIDE_TRACKS"] = "Rastrear só as missões do guia RestedXP" -- mt
+L["SETTING_GUIDE_TRACKS"] = "Rastrear as missões do guia do RestedXP" -- mt
 L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
-	"Enquanto você segue um guia RestedXP, o rastreador de objetivos mostra só as missões que as etapas atuais e em andamento citam. As missões que você rastreava voltam quando você para de segui-lo." -- mt
-L["SETTING_JOURNEY_WATCH"] = "Rastrear só as missões da jornada" -- mt
+	"Enquanto você segue um guia do RestedXP, o rastreador de objetivos também mostra as missões que as etapas atuais e em andamento citam. As missões que você mesmo rastreou continuam sempre rastreadas." -- mt
+L["SETTING_JOURNEY_WATCH"] = "Rastrear as missões da jornada" -- mt
 L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
-	"Enquanto uma jornada guia, o rastreador de objetivos mostra só as missões em que ela trabalha e todas as outras saem dele. As missões que você rastreava ficam no personagem e voltam quando a jornada deixa de guiar, você escolhe outra ou desativa isto." -- mt
+	"Enquanto uma jornada guia, o rastreador de objetivos também mostra as missões do seu registro em que ela trabalha, e as solta quando ela segue adiante. As missões que você mesmo rastreou continuam sempre rastreadas." -- mt
 L["SETTING_LOCK_TRACKER"] = "Travar o rastreador"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] = "Mantém o rastreador Forever compartilhado onde você o colocou."
 L["SETTING_MAP_PINS"] = "Mostrar marcadores de rota no mapa"
@@ -350,7 +350,7 @@ L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 L["SETTING_QUEST_LEVEL"] = "Nível máximo de missão acima do seu"
 L["SETTING_QUEST_LEVEL_ONE"] = "%s nível"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =
-	"Escolha o nível de missão mais alto que o guia recomenda em relação ao seu nível. O padrão, +2, evita missões laranjas e vermelhas. Missões que já estão no seu registro continuam visíveis."
+	"Escolha o nível de missão mais alto que o guia recomenda em relação ao seu nível. O padrão, +2, evita missões laranjas e vermelhas. Uma missão do seu registro acima dele fica fora da rota até seu nível alcançá-la ou ela estar pronta para entregar."
 L["SETTING_QUEST_LEVEL_VALUE"] = "%s níveis"
 L["SETTING_ROUTE_ORDER"] = "Rota otimizada (beta)"
 L["SETTING_ROUTE_ORDER_TOOLTIP"] =
@@ -442,13 +442,8 @@ L["TOWN_PICKUPS"] = "Aceitar %d"
 L["TOWN_SKIP_GIVER"] = "Pular este recrutador"
 L["TRACKER_DRAG_TITLE"] = "Rastreador Forever"
 L["TRACKER_DRAG_TOOLTIP"] = "Arraste para mover"
-L["TRACKER_HIDDEN_COUNT"] = "%d ocultas" -- mt
-L["TRACKER_HIDDEN_TOOLTIP"] = "%d missões estão ocultas do rastreador enquanto esta jornada guia." -- mt
-L["TRACKER_HIDDEN_TOOLTIP_ONE"] = "1 missão está oculta do rastreador enquanto esta jornada guia." -- mt
-L["TRACKER_HIDDEN_SHOW_ALL"] = "Clique direito: Mostrar todas as missões." -- mt
 L["TRACKER_LOADING"] = "Carregando dados de missões..."
 L["TRACKER_LOCKED_TOOLTIP"] = "O rastreador está travado. Desative Travar o rastreador para movê-lo."
-L["TRACKER_SHOW_ALL"] = "Mostrar todas as missões" -- mt
 L["TRACKER_PAUSED"] = "Rota pausada. Clique no título para retomar." -- mt
 L["TRACKER_SHOW_WHERE"] = "Ligue novamente em Opções > AddOns > Adventure Guide, em Rastreador de objetivos." -- mt
 L["TRACKER_UNATTACHED"] = "não foi possível adicionar uma seção ao rastreador de objetivos; informe com /agf audit."

@@ -1,34 +1,34 @@
 {
-  "input_digest": "d43446268f3f6fb33e20e090838207731173d59d9a81877d19e65e31f164ed82",
-  "runtime_sha256": "d43446268f3f6fb33e20e090838207731173d59d9a81877d19e65e31f164ed82",
-  "candidate": "9b4ba62f2e3c69329de4c875069ccdab775fb9ca7f5727e66927e967afe48811",
+  "input_digest": "6f0c31c9c670b041f16990b5be3e540685a24ae348bf1ce93d24001ad636fe2e",
+  "runtime_sha256": "6f0c31c9c670b041f16990b5be3e540685a24ae348bf1ce93d24001ad636fe2e",
+  "candidate": "db45b6a8ecfb37d615f0d1f3ed9f15d7cf78336d6d956ae91984e2c6734ffb3d",
   "client_build": "1.60.1.70959 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "86bdf66f2ea28d91c7c97388d9fb5e12caf3ee0e",
+  "source_commit": "d3740b7feb8686ee0c9f81b3ce977de7dad671f4",
   "flows": [
     {
-      "name": "clear",
+      "name": "panel",
       "steps": [
-        "sha256:b69d4481536dd95bd3523d31c736433cb06d257385778bee775668821ed87efa clear.lua"
+        "sha256:02a9190acbe50f259ff5abf6ec5934f93db24138ca084ae3cce983b04b24f147 agf-panel.lua"
       ],
       "result": "pass"
     },
     {
-      "name": "guide",
+      "name": "tracker",
       "steps": [
-        "sha256:3b31076c16c11700485a5506db43520617aecfe6a749828313d5f3c7c8cfb7a5 guide.lua"
+        "/agf"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/7181092d509b81f79152437301a362b6/raw/a5a21300cec0821c72bbf2469d83d2aa3d4ffa2c/1-clear.png",
-      "sha256": "7591b47377186a60ba10b7209fa29e96bccabfb97deb8ebcb985898dde306ede"
+      "url": "https://gist.githubusercontent.com/cjber/5ffeb63217f5681da4d36e6bfa88b389/raw/fa25714613ffb8076c64286862c48090a6bbd8dd/1-panel.png",
+      "sha256": "37ae7e609ae961a97db7cfdd1cec9fd6143bb8ae6c6291fc705bda05165e52a6"
     },
     {
-      "url": "https://gist.githubusercontent.com/cjber/7181092d509b81f79152437301a362b6/raw/a5a21300cec0821c72bbf2469d83d2aa3d4ffa2c/2-guide.png",
-      "sha256": "bf5c2adff26cd7ffe9d6f043bfe4f94d4c6b8de33b06138641efde0f7aed8152"
+      "url": "https://gist.githubusercontent.com/cjber/5ffeb63217f5681da4d36e6bfa88b389/raw/fa25714613ffb8076c64286862c48090a6bbd8dd/2-tracker.png",
+      "sha256": "131e23fd870048a86fa9971fb9da05b6fc07ab0fa17f3e82916acc3f6e541c53"
     }
   ]
 }

@@ -406,10 +406,13 @@ local function LayoutChecklist(pool, first, parent, step, left, top, width, bott
 		line.Tick:SetAtlas(giver.done and "UI-QuestTracker-Tracker-Check" or "UI-QuestTracker-Objective-Nub")
 		line.Tick:SetAlpha(giver.skipped and 0.4 or 1)
 		line.Text:SetWordWrap(step.rxpIndex ~= nil)
-		line.Text:SetText((giver.done or giver.skipped) and giver.text or ns.StepStyle.Checklist(step, giver))
+		line.Text:SetText(
+			(giver.done or giver.skipped or giver.hint) and giver.text or ns.StepStyle.Checklist(step, giver)
+		)
 		local height = step.rxpIndex and math.max(CHECK_HEIGHT, line.Text:GetStringHeight()) or CHECK_HEIGHT
 		line:SetHeight(height)
-		local shade = (giver.done or giver.skipped) and 0.6 or 0.9
+		-- A RestedXP tip reads as advice beside the step's lines, never one of them (#870).
+		local shade = (giver.done or giver.skipped or giver.hint) and 0.6 or 0.9
 		line.Text:SetTextColor(shade, shade, shade)
 		line:Show()
 		top, index = top + height, index + 1

@@ -218,7 +218,13 @@ for _, fixture in ipairs(characters.list) do
 				end
 			end
 		end
-		equal(counted, #fixture.log, "human19_redridge_full: every carried quest counted once")
+		-- A quest under way past the level ceiling is no card's (#846): the route never sends the player to it.
+		local within = 0
+		for _, entry in ipairs(fixture.log) do
+			within = within + ((entry.complete or not Model.AboveCeiling(entry.level, player)) and 1 or 0)
+		end
+		equal(within < #fixture.log, true, "human19_redridge_full: the log carries quests past the ceiling")
+		equal(counted, within, "human19_redridge_full: every carried quest within the ceiling counted once")
 	end
 
 	-- F12: a route crosses an ocean at most once, and a turn-in over there waits until the route is there.
@@ -289,12 +295,23 @@ for _, fixture in ipairs(characters.list) do
 	equal(Render(fixture, again), text, fixture.name .. ": rebuild")
 	-- The in-combat rebuild: a quest looted mid-fight brings a carry card the last build lacked, in the story's wake as
 	-- the full build orders them, and a chosen last card keeps its slot (design §2.10).
-	local saved, last = prefs.journey, route.journeys[#route.journeys]
+	local saved = prefs.journey
 	local fight = {}
 	for id, entry in pairs(log) do
 		fight[id] = entry
 	end
 	fight[168] = { id = 168, title = "Collecting Memories", level = 18, complete = true }
+	-- The last card a full build still keeps once the looted quest is in the log. human19_redridge_full's last card, the
+	-- far zone Stranglethorn Vale, is no longer built when chosen with that quest carried; its earlier cards are.
+	local last
+	for index = #route.journeys, 1, -1 do
+		prefs.journey = route.journeys[index].key
+		local kept = Model.Plan(data, player, completed, fight, prefs, nil, nil, nil, inputs)
+		if kept.journey == prefs.journey and kept.chosen then
+			last = route.journeys[index]
+			break
+		end
+	end
 	prefs.journey = last and last.key
 	local refreshed = Model.Refresh(data, player, completed, fight, prefs, route)
 	local full = Model.Plan(data, player, completed, fight, prefs, nil, nil, nil, inputs)
