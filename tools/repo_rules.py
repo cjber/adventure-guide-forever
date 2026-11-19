@@ -31,9 +31,9 @@ def em_dashes(path: str, text: str) -> list[str]:
 
 
 def item_events(path: str, text: str) -> list[str]:
-    """One finding per line of addon Lua, outside Core/ItemInfo.lua, that names an item data event."""
+    """One finding per line of addon Lua or XML, outside Core/ItemInfo.lua, naming an item data event."""
     name = PurePosixPath(path)
-    if name.suffix != ".lua" or path == ITEM_INFO or name.parts[0] in ("tests", "tools", "types"):
+    if name.suffix not in (".lua", ".xml") or path == ITEM_INFO or name.parts[0] in ("tests", "tools", "types"):
         return []
     return [
         f"{path}:{number}: item-info-outside-core: await items through ns.ItemInfo, not the event"
