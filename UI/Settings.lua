@@ -143,7 +143,10 @@ function ns.RegisterSettings()
 				---@type ForeverTrackerHostAPI
 				local host = ForeverCore.TrackerHost
 				-- The shared column's attach choice, the same row and words in every Forever addon (forever-core#910).
-				ForeverCore.SettingsSections.RegisterTrackerAttach(subcategory, "AdventureGuideForever_trackerAttached")
+				local sections = ForeverCore.SettingsSections
+				if sections and sections.RegisterTrackerAttach then
+					sections.RegisterTrackerAttach(subcategory, "AdventureGuideForever_trackerAttached")
+				end
 				-- Lock keeps the column where it is: a drag on a section header does nothing while it is on. It only
 				-- writes the saved switch, so it is safe to toggle in combat.
 				if host and host.GetSettings and host.SetLocked then
