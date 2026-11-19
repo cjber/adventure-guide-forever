@@ -371,6 +371,21 @@ events:SetScript("OnEvent", function(_, event, first, second)
 			end
 		end
 	end
+	-- A quest accepted now was not in the log before, so no watch on it is the player's yet. The client's watch event
+	-- can come before this one and record the client's own watch as the player's: take it back out.
+	if event == "QUEST_ACCEPTED" then
+		local state = ns.Prefs().guideWatch
+		if state then
+			for index = #state.saved, 1, -1 do
+				if state.saved[index] == questID then
+					table.remove(state.saved, index)
+				end
+			end
+			if state.hidden then
+				state.hidden[questID] = nil
+			end
+		end
+	end
 	if event == "QUEST_ACCEPTED" or (event == "QUEST_WATCH_LIST_CHANGED" and second == true and automatic) then
 		DropAutomatic(questID)
 	end

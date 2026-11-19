@@ -121,6 +121,17 @@ h.watched[#h.watched + 1] = 852
 h.fire("QUEST_WATCH_LIST_CHANGED", 852, true)
 equal(Watched(h, 852), false, "a quest auto tracked after the accept is untracked at once")
 h.flush()
+-- The client's watch event can come before QUEST_ACCEPTED: its watch is still the client's, never the player's.
+h.watched[#h.watched + 1] = 853
+h.fire("QUEST_WATCH_LIST_CHANGED", 853, true)
+h.fire("QUEST_ACCEPTED", 853)
+equal(Watched(h, 853), false, "a quest the client tracked just before the accept event is untracked at once")
+local kept = false
+for _, questID in ipairs(h.ns.Prefs().guideWatch.saved) do
+	kept = kept or questID == 853
+end
+equal(kept, false, "and is not kept as one of the player's own quests")
+h.flush()
 
 -- The setting off gives the player's own list back and stops counting anything.
 h.ns.SetSetting("journeyWatch", false)
