@@ -13,10 +13,11 @@ end
 --   so the map loses the blue areas the guide's steps are drawn round. While that question is still unanswered, the
 --   guide answers it with Questie's own "Blizzard" theme, once, and marks it answered, so a new player keeps the
 --   game's quest areas. An answer the player already gave is never changed: the tracker's hint offers the areas back.
--- * Questie's tracker (#366). While the guide's tracker shows, Questie's own tracker is off
---   (Questie.db.profile.trackerEnabled), so the quests are not listed twice. Questie's own choice is kept and put back
---   when the setting or the guide's tracker is turned off, and before the game saves at logout, so Questie's saved
---   settings never carry the guide's change.
+-- * Questie's tracker (#366). Once the player ticks the guide's setting, Questie's own tracker is off
+--   (Questie.db.profile.trackerEnabled) while the guide's tracker shows, so the quests are not listed twice. Questie's
+--   own choice is kept and put back when the setting or the guide's tracker is turned off, and before the game saves
+--   at logout, so Questie's saved settings never carry the guide's change. The player turning Questie's tracker on in
+--   Questie wins: the guide's setting turns off and never forces it off again (#858).
 ---@class AGFQuestieOptions
 local QuestieOptions = {}
 ns.QuestieOptions = QuestieOptions
@@ -117,12 +118,25 @@ local function UpdateTracker(showing)
 	ns.core.SafeCall("Questie tracker", tracker.Update, tracker)
 end
 
+-- Whether the player turned Questie's tracker on in Questie while the guide held it off. Their choice wins: the hold
+-- ends and the guide's setting turns off.
+---@param profile AGFQuestieSavedProfile
+---@return boolean
+local function PlayerTurnedOn(profile)
+	if held == nil or profile.trackerEnabled ~= true then
+		return false
+	end
+	held = nil
+	ns.SetSetting("hideQuestieTracker", false)
+	return true
+end
+
 -- Questie's tracker off while the guide's shows and the setting asks for it; Questie's own choice back otherwise.
 ---@param quiet? boolean at login, before Questie has built anything, nothing needs redrawing
 function QuestieOptions.ApplyTracker(quiet)
 	local db = DB()
 	local profile = db and db.profile
-	if type(profile) ~= "table" then
+	if type(profile) ~= "table" or PlayerTurnedOn(profile) then
 		return
 	end
 	local off = ns.Setting("hideQuestieTracker") == true and ns.Setting("showTracker") == true
@@ -173,7 +187,7 @@ events:SetScript("OnEvent", function(self, event)
 	elseif event == "PLAYER_LOGOUT" then
 		-- Questie saves its settings after this: its own choice goes back first.
 		local db = DB()
-		if held ~= nil and db and type(db.profile) == "table" then
+		if held ~= nil and db and type(db.profile) == "table" and not PlayerTurnedOn(db.profile) then
 			db.profile.trackerEnabled = held
 		end
 	end
