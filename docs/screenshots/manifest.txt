@@ -1,4 +1,4 @@
-data build 1.60.1.70938, art build 1.60.1.70124
+data build 1.60.1.70959, art build 1.60.1.70124
 shortest-path-forever 9c2d86bad8418ee07c74b54e2757568b9d5aff3f
 rxpguides 8cff2f62751651f3d34311f1c00efd235e1c7e65
 rxpguides/Textures/v2/rxp-icon-logo.blp a1b118be54154ea5a9511d25162d84f1b7b228e07a3bb3b1e7f2fdfbbc42ed2b
@@ -28,7 +28,7 @@ docs/screenshots/rxp_information_chosen.png 385c74110c9ea625307ade6b1c78c0bfef94
 docs/screenshots/rxp_legacy.png 5da9fd5256b1a4638b27dd87384af96086fede616e2f63dac89904dc024d8530
 docs/screenshots/rxp_overview.png 56ba4f9d433520df3585965e868e9ac335724f4239849c2450048b4fc2306977
 docs/screenshots/rxp_tooltip.png b21840f4037b178e95247564cbf12ca6f08966507f483bad6322c8da3c27d2c1
-docs/screenshots/search.png 11a01720fd7c45b559bee610f8bd6efbe4cdc164aa4361c5bc12e46a5c96d38d
+docs/screenshots/search.png b3ffdbe746dbf45163199acce2cdeb37237c389d0cd4c5bd388783f0fbed2ef9
 docs/screenshots/spf_map.png bd8b6f6f81599b0f2b236d3e71d0e3dbee070ed4a0cde6012d1f19894d5bf85b
 docs/screenshots/spf_minimap.png 46a649af5fe10b2d5e3ca8e3957148cd4e34503abd512cf3a95b154d461357ad
 docs/screenshots/spf_steps.png 126e1d07256e91d2cffd0c2bbd5822f2f87c50d4e40e62e085ad25aa5c842670
