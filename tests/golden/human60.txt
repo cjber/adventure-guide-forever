@@ -166,47 +166,42 @@ card | dungeon:229 | Blackrock Spire | 16 quests for this dungeon | - | map 1455
   step 3 | town:1428:2418 | Pick up: Put Her Down | 1428 0.8582,0.6895 | near your level
 card | chain:8912 | The way into Stratholme | Chapter 1 | Begins a new story | map 1455
   step 1 | town:1455:0 | Pick up: An Earnest Proposition | 1455 0.4353,0.5264 | Begins a new story
-card | chain:5251 | The way into Stratholme | Chapter 1 of 5 | Begins a new story | map 1423
-  step 1 | town:1423:2268 | Pick up: The Archivist | 1423 0.7163,0.5009 | Begins a new story
 card | chain:5212 | The way into Stratholme | Chapter 1 of 2 | Begins a new story | map 1423
   step 1 | town:1423:2268 | Pick up: The Flesh Does Not Lie | 1423 0.7166,0.4994 | Begins a new story
-card | chain:5281 | The way into Stratholme | Chapter 1 of 2 | Begins a new story | map 1423
-  step 1 | town:1423:2271 | Pick up: The Restless Souls | 1423 0.6993,0.5372 | Begins a new story
-card | chain:5382 | The way into Scholomance | Chapter 1 of 9 | Begins a new story | map 1422
-  step 1 | town:1422:2298 | Pick up: Doctor Theolen Krastinov, the Butcher | 1422 0.7022,0.7371 | Begins a new story
 card | chain:5529 | The way into Scholomance | Chapter 1 of 2 | Begins a new story | map 1423
   step 1 | town:1423:2268 | Pick up: Plagued Hatchlings | 1423 0.7166,0.4994 | Begins a new story
+card | chain:5382 | The way into Scholomance | Chapter 1 of 9 | Begins a new story | map 1422
+  step 1 | town:1422:2298 | Pick up: Doctor Theolen Krastinov, the Butcher | 1422 0.7022,0.7371 | Begins a new story
+card | chain:5251 | The way into Stratholme | Chapter 1 of 5 | Begins a new story | map 1423
+  step 1 | town:1423:2268 | Pick up: The Archivist | 1423 0.7163,0.5009 | Begins a new story
+card | chain:5281 | The way into Stratholme | Chapter 1 of 2 | Begins a new story | map 1423
+  step 1 | town:1423:2271 | Pick up: The Restless Souls | 1423 0.6993,0.5372 | Begins a new story
 card | chain:7494 | The way into Dire Maul | Chapter 1 of 2 | Begins a new story | map 1453
   step 1 | town:1453:0 | Pick up: Feathermoon Stronghold | 1453 0.5639,0.7409 | Begins a new story
-card | chain:6026 | That's Asking A Lot | Chapter 1 of 2 | Begins a new story | map 1423
-  step 1 | town:1423:2268 | Pick up: That's Asking A Lot | 1423 0.7088,0.4843 | Begins a new story
-card | chain:5542 | The way into Stratholme | Chapter 1 | Begins a new story | map 1423
-  step 1 | town:1423:2627 | Pick up: Demon Dogs | 1423 0.0516,0.3557 | Begins a new story
-card | chain:5343 | The way into Scholomance | Chapter 1 of 2 | Begins a new story | map 1422
-  step 1 | town:1422:197 | Pick up: Barov Family Fortune | 1422 0.4345,0.8373 | Begins a new story
-card | chain:5544 | The way into Stratholme | Chapter 1 | Begins a new story | map 1423
-  step 1 | town:1423:2627 | Pick up: Carrion Grubbage | 1423 0.0516,0.3557 | Begins a new story
 card | chain:4023 | The way into Blackrock Depths | Chapter 1 | Begins a new story | map 1428
   step 1 | town:1428:2420 | Pick up: A Taste of Flame | 1428 0.9509,0.3156 | Begins a new story
+card | chain:5343 | The way into Scholomance | Chapter 1 of 2 | Begins a new story | map 1422
+  step 1 | town:1422:197 | Pick up: Barov Family Fortune | 1422 0.4345,0.8373 | Begins a new story
+card | chain:5542 | The way into Stratholme | Chapter 1 | Begins a new story | map 1423
+  step 1 | town:1423:2627 | Pick up: Demon Dogs | 1423 0.0516,0.3557 | Begins a new story
+card | chain:5544 | The way into Stratholme | Chapter 1 | Begins a new story | map 1423
+  step 1 | town:1423:2627 | Pick up: Carrion Grubbage | 1423 0.0516,0.3557 | Begins a new story
 card | chain:5543 | The way into Stratholme | Chapter 1 | Begins a new story | map 1423
   step 1 | town:1423:2627 | Pick up: Blood Tinged Skies | 1423 0.0516,0.3557 | Begins a new story
 card | chain:4128 | The way into Blackrock Depths | Chapter 1 of 2 | Begins a new story | map 1426
   step 1 | town:1426:136 | Pick up: Hurley Blackbreath | 1426 0.4683,0.5236 | near your level
   step 2 | town:1419:1438 | Pick up: Ragnar Thunderbrew | 1419 0.6363,0.2063 | Begins a new story
-card | chain:5601 | Sister Pamela | Chapter 1 of 2 | Begins a new story | map 1423
-  step 1 | town:1423:2261 | Pick up: Pamela's Doll | 1423 0.3115,0.7798 | near your level
-  step 2 | town:1452:2255 | Pick up: Sister Pamela | 1452 0.6128,0.3898 | Begins a new story
-card | chain:4726 | The way into Scholomance | Chapter 1 of 10 | Begins a new story | map 1428
-  step 1 | town:1428:250 | Pick up: Broodling Essence | 1428 0.6524,0.2400 | Begins a new story
 card | chain:3702 | The way into Blackrock Depths | Chapter 1 of 7 | Begins a new story | map 1455
   step 1 | town:1455:0 | Pick up: The Smoldering Ruins of Thaurissan | 1455 0.3837,0.5531 | Begins a new story
+card | chain:4726 | The way into Scholomance | Chapter 1 of 10 | Begins a new story | map 1428
+  step 1 | town:1428:250 | Pick up: Broodling Essence | 1428 0.6524,0.2400 | Begins a new story
 card | chain:4324 | The way into Blackrock Depths | Chapter 1 of 2 | Begins a new story | map 1428
   step 1 | town:1428:250 | Pick up: Ribbly Screwspigot | 1428 0.6606,0.2195 | near your level
   step 2 | town:1446:977 | Pick up: Yuka Screwspigot | 1446 0.6704,0.2401 | Begins a new story
-card | chain:4182 | The way into Blackrock Depths | Chapter 1 of 16 | Begins a new story | map 1428
-  step 1 | town:1428:2418 | Pick up: Dragonkin Menace | 1428 0.8582,0.6895 | Begins a new story
 card | chain:4262 | The way into Blackrock Depths | Chapter 1 of 2 | Begins a new story | map 1428
   step 1 | town:1428:2418 | Pick up: Overmaster Pyron | 1428 0.8541,0.7006 | Begins a new story
+card | chain:4182 | The way into Blackrock Depths | Chapter 1 of 16 | Begins a new story | map 1428
+  step 1 | town:1428:2418 | Pick up: Dragonkin Menace | 1428 0.8582,0.6895 | Begins a new story
 card | chain:3801 | The way into Blackrock Depths | Chapter 1 of 2 | Begins a new story | map 1428
   step 1 | town:1428:254 | Pick up: Dark Iron Legacy | 1428 0.2896,0.2893 | Begins a new story
 card | dungeon:429 | Dire Maul | 26 quests for this dungeon | - | map 1455

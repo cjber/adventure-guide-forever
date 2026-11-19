@@ -47,8 +47,6 @@ card (chosen) | dungeon:36 | Deadmines | 6 quests for this dungeon | 3 of your q
   step 3 | entrance:36 | Go to entrance | 1436 0.4250,0.7160 | 2 dungeon quests are still to pick up
 card | dungeon:3065 | The Hall of Thanes | 4 quests for this dungeon | - | map 1455
   step 1 | town:1455:0 | Visit Ironforge: Pick up 2 | 1455 0.3322,0.4800 | 2 to pick up
-card | chain:65 | The way into Deadmines | Chapter 1 of 7 | Begins a new story | map 1433
-  step 1 | turnin:65 | Turn in: The Defias Brotherhood | 1433 0.2139,0.4535 | Begins a new story
 card | dungeon:43 | Wailing Caverns | 5 quests for this dungeon | - | map 1413
   step 1 | town:1413:392 | Visit Ratchet: Pick up 2 | 1413 0.6237,0.3762 | 2 to pick up
   step 2 | town:1413:387 | Pick up: Deviate Hides | 1413 0.4599,0.3566 | near your level

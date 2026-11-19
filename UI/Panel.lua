@@ -72,6 +72,8 @@ local BADGE, BADGE_OUT = 16, 3
 local ORDER_HEIGHT, CHECK_LEFT = 16, 46
 local ASIDE_HEIGHT, ASIDE_GAP = 14, 2
 local FOOTER = 40
+-- With nothing in the footer the list runs to the frame's bottom, less the 4px its scrollbar reaches below it.
+local NO_FOOTER = 4
 -- The map overview uses compact full-width rows. The renown atlas has a 6px empty margin;
 -- slicing its rim keeps the same card art at this shorter height.
 local ART_BLEED, ART_SLICE = 6, 12
@@ -1289,6 +1291,8 @@ function Refresh()
 	queuedText:SetText(queued and L.STARTS_AFTER_COMBAT or L.ROUTE_PAUSED)
 	queuedText:SetShown(queued or status == "paused")
 	stopButton:SetShown(ns.Guidance.Owns())
+	---@cast viewport -?
+	viewport:SetPoint("BOTTOMRIGHT", 0, (stopButton:IsShown() or queuedText:IsShown()) and FOOTER or NO_FOOTER)
 end
 
 local function Attach()
