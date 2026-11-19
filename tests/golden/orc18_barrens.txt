@@ -10,10 +10,8 @@ card | zone:1413 | The Barrens story | Chapter 1 of 8 | A chain begins with Sput
   step 8 | town:1413:382 | Pick up: Ignition | 1413 0.5652,0.0745 | near your level
   step 9 | area:858:4 | Complete objectives · Ignition | 1413 0.5630,0.0860 | after you pick it up | 0 yd | 858/4
   step 10 | town:1413:382:2 | Turn in: Ignition | 1413 0.5652,0.0745 | Opens the next chapter here
-card (chosen) | carry | Clean up my log | 1 ready to hand in, 1 in progress | - | map 1413
+card (chosen) | carry | Clean up my log | 1 ready to hand in | - | map 1413
   step 1 | town:1413:380 | Turn in: The Zhevra | 1413 0.5223,0.3101 | Opens the next chapter here
-  step 2 | area:843:0 | Complete 3 objectives · Gann's Reclamation | 1413 0.4760,0.8530 | quests in progress | 103 yd | 843/0 843/1 843/4
-  step 3 | town:1413:390 | Turn in: Gann's Reclamation | 1413 0.4589,0.7700 | Opens the next chapter here
 card | turnins | Turn-ins only | 1 ready to hand in | Hand in completed quests, without picking up more | map 1413
   step 1 | town:1413:380 | Turn in: The Zhevra | 1413 0.5223,0.3101 | Opens the next chapter here
 card | zone:1442 | Head to Stonetalon Mountains | 7 quests near your level | - | map 1413
@@ -36,8 +34,6 @@ card | zone:1434 | Head to Stranglethorn Vale | 2 quests near your level | - | m
 card | chain:6541 | Report to Kadrak | Chapter 1 of 2 | Begins a new story | map 1413
   step 1 | town:1413:380 | Visit The Crossroads: Pick up 1, turn in 1 | 1413 0.5223,0.3101 | Begins a new story
   step 2 | town:1413:1703 | Pick up: The Warsong Reports | 1413 0.4812,0.0542 | near your level
-card | chain:843 | Gann's Reclamation | Chapter 1 of 3 | Begins a new story | map 1413
-  step 1 | area:843:0 | Complete 3 objectives · Gann's Reclamation | 1413 0.4760,0.8530 | Begins a new story | 103 yd | 843/0 843/1 843/4
 card | chain:4921 | Lost in Battle | Chapter 1 of 2 | Begins a new story | map 1413
   step 1 | town:1413:380 | Visit The Crossroads: Pick up 1, turn in 1 | 1413 0.5223,0.3101 | Begins a new story
 card | chain:865 | The way into Wailing Caverns | Chapter 1 of 2 | Begins a new story | map 1413

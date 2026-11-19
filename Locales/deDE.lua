@@ -352,7 +352,7 @@ L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 L["SETTING_QUEST_LEVEL"] = "Höchste Queststufe über Eurer"
 L["SETTING_QUEST_LEVEL_ONE"] = "%s Stufe"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =
-	"Wählt die höchste Queststufe, die der Führer relativ zu Eurer Stufe empfiehlt. Der Standard, +2, meidet orange und rote Quests. Quests in Eurem Questlog bleiben sichtbar."
+	"Wählt die höchste Queststufe, die der Führer relativ zu Eurer Stufe empfiehlt. Der Standard, +2, meidet orange und rote Quests. Eine Quest in Eurem Questlog darüber bleibt aus der Route, bis Eure Stufe aufholt oder sie zur Abgabe bereit ist."
 L["SETTING_QUEST_LEVEL_VALUE"] = "%s Stufen"
 L["SETTING_ROUTE_ORDER"] = "Optimierte Route (Beta)"
 L["SETTING_ROUTE_ORDER_TOOLTIP"] =

@@ -40,7 +40,8 @@ ns.L = {
 	SETTING_QUEST_LEVEL_VALUE = "%s levels",
 	SETTING_QUEST_LEVEL_ONE = "%s level",
 	SETTING_QUEST_LEVEL_TOOLTIP = "Choose the highest quest level the guide recommends relative to your level. "
-		.. "The default, +2, avoids orange and red quests. Quests already in your log remain visible.",
+		.. "The default, +2, avoids orange and red quests. A quest in your log above it stays off the route until your "
+		.. "level catches up or it is ready to hand in.",
 	-- The addon's name wherever the game shows it: the window, the map tab, the objective tracker, its settings page and
 	-- chat. Only WoW: Forever loads this addon, so in game it is simply the Adventure Guide.
 	TITLE = "Adventure Guide",

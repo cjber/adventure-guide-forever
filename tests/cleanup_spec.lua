@@ -98,7 +98,7 @@ end
 -- right-click still does nothing.
 do
 	local h = harness.load({
-		db = { autoStart = false },
+		db = { maxQuestLevelOffset = 10, autoStart = false },
 		planned = true,
 		panelHeight = 1200,
 		log = { { id = 843, title = "Gann's Reclamation", level = 23, complete = false } },
