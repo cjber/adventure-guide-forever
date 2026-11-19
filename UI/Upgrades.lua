@@ -198,8 +198,9 @@ local function Info(item)
 	return level, equipLoc or "", classID, subclassID
 end
 
--- What the character wears, by slot (false for empty); nil while a worn item is not cached.
+-- What the character wears, by slot (false for empty); nil and the item's ID while a worn item is not cached.
 ---@return table<integer, AGFWorn|false>?
+---@return integer?
 local function Worn()
 	local worn = {}
 	for slot = 1, 18 do
@@ -207,7 +208,7 @@ local function Worn()
 		if id then
 			local level, equipLoc = Info(id)
 			if not level then
-				return nil
+				return nil, id
 			end
 			worn[slot] = { level = level, equipLoc = equipLoc }
 		else
@@ -217,9 +218,11 @@ local function Worn()
 	return worn
 end
 
--- The `index`th reward choice as an AGFRewardItem; false for one that is not an item; nil while it is not cached.
+-- The `index`th reward choice as an AGFRewardItem; false for one that is not an item; nil while it is not cached,
+-- with the item's ID once the quest has given its link.
 ---@param index integer
 ---@return AGFRewardItem|false|nil
+---@return integer?
 local function Choice(index)
 	if GetQuestItemInfoLootType and GetQuestItemInfoLootType("choice", index) ~= 0 then
 		return false
@@ -230,7 +233,7 @@ local function Choice(index)
 	end
 	local level, equipLoc, classID, subclassID = Info(link)
 	if not level then
-		return nil
+		return nil, tonumber(link:match("item:(%d+)"))
 	end
 	local usable = select(5, GetQuestItemInfo("choice", index))
 	return {
@@ -243,13 +246,14 @@ local function Choice(index)
 	}
 end
 
--- Which reward choices are upgrades, by choice index, and whether any item was still loading.
----@return table<integer, true>, boolean
+-- Which reward choices are upgrades, by choice index, whether any item was still loading, and the IDs of those
+-- whose data the client is still fetching.
+---@return table<integer, true>, boolean, integer[]
 function Upgrades.Marked()
-	local marked, pending = {}, false
-	local worn = Worn()
+	local marked, pending, loading = {}, false, {}
+	local worn, wornID = Worn()
 	if not worn then
-		return marked, true
+		return marked, true, { wornID }
 	end
 	local player = {
 		class = UnitClassBase("player"),
@@ -257,20 +261,22 @@ function Upgrades.Marked()
 		dualWield = CanDualWield and CanDualWield() == true or false,
 	}
 	for index = 1, GetNumQuestChoices() do
-		local item = Choice(index)
+		local item, id = Choice(index)
 		if item == nil then
 			pending = true
+			loading[#loading + 1] = id
 		elseif item and Upgrades.IsUpgrade(item, worn, player) then
 			marked[index] = true
 		end
 	end
-	return marked, pending
+	return marked, pending, loading
 end
 
 ---@type table<AGFQuestRewardButton, Texture>
 local arrows = {}
--- A quest giver's detail or reward panel is the quest display on screen; an item is still loading.
+-- A quest giver's detail or reward panel is the quest display on screen; a choice's link is still loading.
 local showing, waiting = false, false
+local Update
 
 -- The quest frame's reward choice buttons in choice order. Read only: Blizzard lays out the choices in order, after
 -- any fixed rewards, and marks each with type "choice".
@@ -285,16 +291,25 @@ local function ChoiceButtons()
 	return buttons
 end
 
-local function Update()
+-- An awaited item arrived: lay the marks out again with it.
+local function Arrived()
+	Update()
+end
+
+function Update()
 	waiting = false
+	ns.ItemInfo.Forget(Arrived)
 	for _, arrow in pairs(arrows) do
 		arrow:Hide()
 	end
 	if not (showing and ns.Setting("markUpgrades")) or C_AddOns.IsAddOnLoaded("Pawn") then
 		return
 	end
-	local marked, pending = Upgrades.Marked()
+	local marked, pending, loading = Upgrades.Marked()
 	waiting = pending
+	for _, id in ipairs(loading) do
+		ns.ItemInfo.Await(id, Arrived)
+	end
 	for index, button in ipairs(ChoiceButtons()) do
 		if marked[index] then
 			local arrow = arrows[button]
@@ -322,8 +337,8 @@ end
 
 local events = CreateFrame("Frame")
 events:RegisterEvent("PLAYER_LOGIN")
-events:RegisterEvent("GET_ITEM_INFO_RECEIVED")
--- A choice's item arriving re-lays the rewards without QuestInfo_Display.
+-- A choice's link arriving re-lays the rewards without QuestInfo_Display; a cached item's data arrives through
+-- ns.ItemInfo, for the items Update named.
 events:RegisterEvent("QUEST_ITEM_UPDATE")
 events:RegisterEvent("QUEST_FINISHED")
 events:SetScript("OnEvent", function(_, event)

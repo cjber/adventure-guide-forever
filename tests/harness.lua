@@ -2236,6 +2236,10 @@ function harness.load(options)
 	h.bank = options.bank or {}
 	G.C_Item = {
 		RequestLoadItemDataByID = noop,
+		-- Cached when the item's info reads, as the client's cache backs both (a spec's GetItemInfo stub counts).
+		IsItemDataCachedByID = function(itemID)
+			return G.C_Item.GetItemInfo(itemID) ~= nil
+		end,
 		GetItemCount = function(itemID, includeBank)
 			return (h.bags[itemID] or 0) + (includeBank and (h.bank[itemID] or 0) or 0)
 		end,
