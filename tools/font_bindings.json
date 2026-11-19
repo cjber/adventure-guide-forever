@@ -305,15 +305,9 @@
     },
     {
       "source": "UI/Tracker.lua",
-      "sha256": "61725e5433a358eea7a4f16cc3488b4f43712dc4850cb97be10e8c7e8d275dae",
-      "review": "Read module construction, LayoutContentsBase, GuideSection, Preview, TravelLines, StoryBeat, HiddenString, UpdateHidden and Refresh. HiddenString explicitly creates GameFontDisableSmall, with no later override; UpdateHidden sends TRACKER_HIDDEN_COUNT to that widget. Reviewed ForeverCore UI/TrackerSection.lua Create and pinned Blizzard_ObjectiveTrackerModule.xml, Block.xml, Shared.xml and AnimTemplates.xml: module header uses ObjectiveTrackerHeaderFont; anim block HeaderText and anim line Text inherit ObjectiveTrackerLineFont. Excluded those template text paths because Blizzard_ObjectiveTrackerManager.lua SetTextSize later calls SetFontObject on both FontObjects, so their final font is outside this review. Also excluded tooltips, menus, chat, dynamic data, helper output and companion fonts.",
-      "bindings": [
-        {
-          "font": "GameFontDisableSmall",
-          "widget": "UpdateHidden notice via HiddenString",
-          "phrase": "TRACKER_HIDDEN_COUNT"
-        }
-      ]
+      "sha256": "fb3636ab90f4e1c0e1c33f582d7145dacb1ac5fd4a7560321c915886da992fca",
+      "review": "Read module construction, LayoutContentsBase, GuideSection, Preview, TravelLines, StoryBeat and Refresh. The hidden-count notice and its HiddenString widget are removed (#865), so no addon-created font string remains to bind. Reviewed ForeverCore UI/TrackerSection.lua Create and pinned Blizzard_ObjectiveTrackerModule.xml, Block.xml, Shared.xml and AnimTemplates.xml: module header uses ObjectiveTrackerHeaderFont; anim block HeaderText and anim line Text inherit ObjectiveTrackerLineFont. Excluded those template text paths because Blizzard_ObjectiveTrackerManager.lua SetTextSize later calls SetFontObject on both FontObjects, so their final font is outside this review. Also excluded tooltips, menus, chat, dynamic data, helper output and companion fonts.",
+      "bindings": []
     },
     {
       "source": "UI/StoryCompletion.lua",
