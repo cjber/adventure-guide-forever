@@ -22,6 +22,9 @@ ns.QuestWatch = Watch
 local AUTO_WINDOW = 5
 ---@type table<integer, number>
 local auto = {}
+-- When combat began. Nothing is settled in combat, so a watch the client added then is still the client's afterwards.
+---@type number?
+local combatAt
 
 -- The leader the last Sync settled, and how many of the player's own quests it currently hides for the tracker.
 ---@type "rxp"|"journey"|nil
@@ -339,12 +342,26 @@ local events = CreateFrame("Frame")
 events:RegisterEvent("QUEST_ACCEPTED")
 events:RegisterEvent("QUEST_WATCH_UPDATE")
 events:RegisterEvent("QUEST_WATCH_LIST_CHANGED")
+events:RegisterEvent("PLAYER_REGEN_DISABLED")
 events:RegisterEvent("PLAYER_REGEN_ENABLED")
 events:SetScript("OnEvent", function(_, event, first, second)
+	if event == "PLAYER_REGEN_DISABLED" then
+		combatAt = GetTime()
+		return
+	end
 	-- QUEST_ACCEPTED gives the quest ID alone, or the log index first on clients that keep the older signature.
 	local questID = event == "QUEST_ACCEPTED" and type(second) == "number" and second or first
 	if type(questID) ~= "number" then
 		if event == "PLAYER_REGEN_ENABLED" then
+			-- The window of a watch still the client's when combat began, or added during it, starts again now: a fight
+			-- longer than the window must not turn the client's watch into the player's.
+			local now = GetTime()
+			for questID, at in pairs(auto) do
+				if combatAt and at >= combatAt - AUTO_WINDOW then
+					auto[questID] = now
+				end
+			end
+			combatAt = nil
 			Later()
 		end
 		return

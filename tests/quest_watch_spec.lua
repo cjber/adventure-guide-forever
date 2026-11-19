@@ -132,6 +132,15 @@ for _, questID in ipairs(h.ns.Prefs().guideWatch.saved) do
 end
 equal(kept, false, "and is not kept as one of the player's own quests")
 h.flush()
+-- Progress in a fight longer than the auto window: the client's watch on a hidden quest is still the client's after it.
+h.SetCombat(true)
+h.fire("QUEST_WATCH_UPDATE", 855)
+h.watched[#h.watched + 1] = 855
+h.fire("QUEST_WATCH_LIST_CHANGED", 855, true)
+h.time = h.time + 30
+h.SetCombat(false)
+h.flush()
+equal(Watched(h, 855), false, "a hidden quest the client tracked in a long fight is hidden again after it")
 
 -- The setting off gives the player's own list back and stops counting anything.
 h.ns.SetSetting("journeyWatch", false)
