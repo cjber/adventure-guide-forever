@@ -55,11 +55,9 @@ local DEFAULTS = {
 	npcHighlight = true,
 	-- Opt-in: a title click adds the route's own quests to the tracker. A saved true stays true.
 	trackRouteQuests = false,
-	-- While a journey leads, the tracker lists only its quests; the player's own list comes back when it stops
-	-- (QuestWatch.lua).
+	-- While a journey leads, the tracker also lists its quests in the log; the player's own stay (QuestWatch.lua).
 	journeyWatch = true,
-	-- While a RestedXP guide leads, the tracker lists only the quests its steps name; the player's own list comes back
-	-- when it stops (also QuestWatch.lua).
+	-- While a RestedXP guide leads, the tracker also lists the quests its steps name (also QuestWatch.lua).
 	guideTracksQuests = true,
 	-- Hint strength, Guide (false) or Wanderer (true), which gates every waypoint, route and map mark.
 	wanderer = false,
@@ -155,7 +153,7 @@ local function LoadDB()
 	loaded.microButton, loaded.microButtonPlacement, loaded.replaceMicroButton = nil, nil, nil
 	loaded.minimapButtonHidden, loaded.minimapButtonAngle = nil, nil
 	loaded.suggestCompanions, loaded.suggestFamily, loaded.familyDismissed = nil, nil, nil
-	-- "Stop tracking other quests" became "Track only the journey's quests", on unless the player turns it off. A
+	-- "Stop tracking other quests" became "Track the journey's quests", on unless the player turns it off. A
 	-- saved true carries over; a saved false leaves the new default on.
 	if loaded.untrackOthers ~= nil then
 		if loaded.untrackOthers == true and loaded.journeyWatch == nil then

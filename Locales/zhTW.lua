@@ -326,12 +326,6 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "在地圖上顯示任務給予者" -- mt
 L["SETTING_GIVERS_TOOLTIP"] =
 	"在世界地圖上，為每個有你現在可接任務的人顯示「!」。還需要開啟地圖上的路線標記。" -- mt
-L["SETTING_GUIDE_TRACKS"] = "只追蹤RestedXP指南的任務" -- mt
-L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
-	"跟隨RestedXP指南時，目標追蹤器只顯示其目前和進行中步驟提到的任務。停止跟隨後，你自己追蹤的任務會恢復。" -- mt
-L["SETTING_JOURNEY_WATCH"] = "只追蹤旅程的任務" -- mt
-L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
-	"旅程引導時，目標追蹤器只顯示它正在處理的任務，其他任務會離開追蹤器。你自己追蹤的任務會留在角色上，並在旅程不再引導、你選擇其他旅程或關閉此設定時回來。" -- mt
 L["SETTING_LOCK_TRACKER"] = "鎖定追蹤器" -- mt
 L["SETTING_LOCK_TRACKER_TOOLTIP"] = "將共用的 Forever 追蹤器保持在您放置的位置。" -- mt
 L["SETTING_MAP_PINS"] = "在地圖上顯示路線標記" -- mt
@@ -437,13 +431,8 @@ L["TOWN_PICKUPS"] = "接受%d個" -- mt
 L["TOWN_SKIP_GIVER"] = "跳過此任務給予者" -- mt
 L["TRACKER_DRAG_TITLE"] = "Forever追蹤器" -- mt
 L["TRACKER_DRAG_TOOLTIP"] = "拖曳以移動" -- mt
-L["TRACKER_HIDDEN_COUNT"] = "已隱藏 %d 個" -- mt
-L["TRACKER_HIDDEN_TOOLTIP"] = "此旅程引導期間，有 %d 個任務在追蹤器中隱藏。" -- mt
-L["TRACKER_HIDDEN_TOOLTIP_ONE"] = "此旅程引導期間，有 1 個任務在追蹤器中隱藏。" -- mt
-L["TRACKER_HIDDEN_SHOW_ALL"] = "右鍵：顯示所有任務。" -- mt
 L["TRACKER_LOADING"] = "正在載入任務資料..." -- mt
 L["TRACKER_LOCKED_TOOLTIP"] = "追蹤器已鎖定。關閉「鎖定追蹤器」即可移動它。" -- mt
-L["TRACKER_SHOW_ALL"] = "顯示所有任務" -- mt
 L["TRACKER_PAUSED"] = "路線已暫停。點擊標題以繼續。" -- mt
 L["TRACKER_SHOW_WHERE"] = "可在 設定 > 附加元件 > Adventure Guide 的 目標追蹤器 中重新開啟。" -- mt
 L["TRACKER_UNATTACHED"] = "無法在目標追蹤器中加入區塊；請使用/agf audit回報。" -- mt
