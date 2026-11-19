@@ -144,6 +144,28 @@ do
 	local where = Past(fight, 2)
 	ok(where == nil, "the in-combat rebuild drops pickups past a lowered ceiling: " .. tostring(where))
 end
+-- A lap's return to hand in an open log quest leaves the in-combat rebuild too, once the ceiling drops below it.
+do
+	local human = { level = 20, maxLevel = 60, side = 1, raceBit = 1, classBit = 1, map = 1437, x = 0.5, y = 0.5 }
+	human.logMax, human.maxQuestLevelOffset = 20, 5
+	local returns = 0
+	for id, quest in pairs(data.quests) do
+		local over = quest.level - human.level
+		if quest.zone == 1437 and over > 2 and over <= 5 and quest.obj and #quest.obj > 0 then
+			local log = { [id] = { id = id, title = quest.title, level = quest.level, complete = false } }
+			human.maxQuestLevelOffset = 5
+			local wide = Model.Plan(data, human, {}, log, prefs)
+			if HandsIn(wide, id) then
+				human.maxQuestLevelOffset = 2
+				local fight = Model.Refresh(data, human, {}, log, prefs, wide)
+				ok(not HandsIn(fight, id), ("the in-combat rebuild drops quest %d's lap return"):format(id))
+				returns = returns + 1
+			end
+		end
+	end
+	ok(returns > 0, "the Wetlands has laps that return to hand in an open quest")
+end
+
 -- The log's own level past the ceiling keeps a quest off even where the data's level is within it.
 for id, quest in pairs(data.quests) do
 	if quest.zone == 1433 and quest.level == 20 and quest.obj and #quest.obj > 0 then

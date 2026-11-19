@@ -218,6 +218,11 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 	local function Carried(id)
 		return log[id] ~= nil and log[id].complete
 	end
+	-- An open log quest past the level ceiling leaves the work and a lap's return, as in LogSteps: the setting can drop
+	-- in a fight.
+	local function Over(id)
+		return log[id] ~= nil and not log[id].complete and Model.AboveCeiling(QuestLevel(data, log, player, id), player)
+	end
 	local function Prune(step)
 		if skipped[step.key] then
 			return nil
@@ -227,11 +232,10 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 		if not step.pickups then
 			-- Keep carried quests and a lap's still-open pickups. Objective work drops completed quests;
 			-- hand-ins belong to town/return steps and have no objective rows.
-			-- An open log quest past the level ceiling leaves the work, as in LogSteps: the setting can drop in a fight.
 			local function Carrying(id)
 				if log[id] == nil then
 					return step.planned ~= nil and step.planned[id] ~= nil and Open(id)
-				elseif not log[id].complete and Model.AboveCeiling(QuestLevel(data, log, player, id), player) then
+				elseif Over(id) then
 					return false
 				end
 				return not ((step.objectives or step.entrance) and log[id].complete)
@@ -274,7 +278,8 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 		end
 		-- A lap's return hands in what it picks up or carries once done: kept while carried, or while still open.
 		local function Due(id)
-			return Carried(id) or (step.returns ~= nil and step.returns[id] ~= nil and (log[id] ~= nil or Open(id)))
+			return Carried(id)
+				or (step.returns ~= nil and step.returns[id] ~= nil and not Over(id) and (log[id] ~= nil or Open(id)))
 		end
 		local pickups, handins = Keep(step.pickups, Open), Keep(step.handins, Due)
 		if #pickups + #handins == #step.quests then
