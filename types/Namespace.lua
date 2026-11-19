@@ -947,6 +947,7 @@
 ---@field Offers AGFOffersModule what a giver's window really offers (Offers.lua)
 ---@field Closes AGFClosesModule the chat warning before taking a quest that closes another (Closes.lua)
 ---@field Upgrades AGFUpgrades the upgrade arrow on quest reward choices (Upgrades.lua)
+---@field ItemInfo AGFItemInfo waits for named items' client data (Core/ItemInfo.lua)
 ---@field CreatureEntry fun(guid?: string): integer? a creature's entry from its GUID; nil for anything else or a secret
 ---@field PanelSearch AGFPanelSearch
 ---@field QuestieFields {spawns: string[], drops: string[], level: string[], rank: string[]}

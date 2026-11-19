@@ -67,6 +67,7 @@ Core\Guidance.lua
 Core\API.lua
 Core\Offers.lua
 Core\Closes.lua
+Core\ItemInfo.lua
 Core\Report.lua
 Integrations\Providers.lua
 Integrations\QuestieObjectives.lua
