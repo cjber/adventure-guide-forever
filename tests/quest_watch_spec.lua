@@ -106,12 +106,41 @@ equal(heading.maxLines, 1, "...")
 check(heading:GetWidth() < 200, "and is narrowed to leave the count its room")
 journey.title = title
 
--- The client tracks a quest on accept; one the journey does not name is the addon's, not the player's, and goes.
+-- The client tracks a quest on accept; one the journey does not name is the addon's, not the player's, and goes in
+-- the same event, before the quest tracker's next frame draws it (#860): a block drawn for one frame and taken away
+-- in the next grows and shrinks the tracker, and the column under it jumps down and back.
 h.watched[#h.watched + 1] = 851
 h.fire("QUEST_ACCEPTED", 851)
+equal(Watched(h, 851), false, "a quest the client tracked on accept is untracked at once")
 h.ns.Invalidate()
 h.flush()
-equal(Watched(h, 851), false, "a quest the client tracked on accept is untracked")
+equal(Watched(h, 851), false, "and stays untracked after the rebuild")
+-- Questie's auto tracking adds the watch a moment after the accept: that one goes at once too.
+h.fire("QUEST_ACCEPTED", 852)
+h.watched[#h.watched + 1] = 852
+h.fire("QUEST_WATCH_LIST_CHANGED", 852, true)
+equal(Watched(h, 852), false, "a quest auto tracked after the accept is untracked at once")
+h.flush()
+-- The client's watch event can come before QUEST_ACCEPTED: its watch is still the client's, never the player's.
+h.watched[#h.watched + 1] = 853
+h.fire("QUEST_WATCH_LIST_CHANGED", 853, true)
+h.fire("QUEST_ACCEPTED", 853)
+equal(Watched(h, 853), false, "a quest the client tracked just before the accept event is untracked at once")
+local kept = false
+for _, questID in ipairs(h.ns.Prefs().guideWatch.saved) do
+	kept = kept or questID == 853
+end
+equal(kept, false, "and is not kept as one of the player's own quests")
+h.flush()
+-- Progress in a fight longer than the auto window: the client's watch on a hidden quest is still the client's after it.
+h.SetCombat(true)
+h.fire("QUEST_WATCH_UPDATE", 855)
+h.watched[#h.watched + 1] = 855
+h.fire("QUEST_WATCH_LIST_CHANGED", 855, true)
+h.time = h.time + 30
+h.SetCombat(false)
+h.flush()
+equal(Watched(h, 855), false, "a hidden quest the client tracked in a long fight is hidden again after it")
 
 -- The setting off gives the player's own list back and stops counting anything.
 h.ns.SetSetting("journeyWatch", false)
