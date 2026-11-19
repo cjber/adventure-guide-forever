@@ -87,4 +87,24 @@ do
 	equal(#h.errors, 0, "old spf: errors\n" .. table.concat(h.errors, "\n"))
 end
 
+-- Another journey in Shortest Path, with none of ours: the guide's cards warn that a click replaces it, so its start
+-- and end reach the listeners though nothing of ours changed.
+do
+	local h = Load("subscribe")
+	local counts = Counting(h)
+	h.spfOther()
+	h.spfNotify({ changed = true })
+	h.flush()
+	equal(h.ns.Integrations.ReplacesJourney(), true, "other: the journey would be replaced")
+	local told = counts()
+	equal(told > 0, true, "other: its start reaches the listeners")
+	local before = told
+	h.spfEnd("cleared")
+	h.spfNotify({ changed = true })
+	h.flush()
+	told = counts()
+	equal(told > before, true, "other: its end reaches the listeners")
+	equal(#h.errors, 0, "other: errors\n" .. table.concat(h.errors, "\n"))
+end
+
 print(("guidance_quiet_spec: %d checks passed"):format(checks))

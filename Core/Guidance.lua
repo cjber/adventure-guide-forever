@@ -27,24 +27,29 @@ function Guidance.OnChange(fn)
 	listeners[#listeners + 1] = fn
 end
 
--- What the listeners read of guidance (CurrentStep, Guided, Owns, Status) as one string, and its value when they were
+-- What the listeners read of guidance (CurrentStep, Guided, Owns, Status, another journey a click would replace) as
+-- one string, and its value when they were
 -- last told: a look that changed none of it tells no one (#836).
 ---@type string?
 local told
 ---@return string
 local function View()
 	local step, prefs = Guidance.CurrentStep(), ns.Prefs()
-	local waypoint, handed = prefs.waypoint, {}
+	local handed = {}
 	for index, each in ipairs(Guidance.Guided()) do
 		handed[index] = each.key or ""
 	end
+	-- Owns forgets a waypoint that no longer matches, so the waypoint is read after it.
+	local owns = tostring(Guidance.Owns())
+	local waypoint = prefs.waypoint
 	return table.concat({
 		step and step.key or "",
 		tostring(Integrations.Guiding() and Integrations.CurrentStop() or ""),
 		table.concat(handed, ","),
-		tostring(Guidance.Owns()),
+		owns,
 		tostring(Guidance.Status() or ""),
 		tostring(prefs.guided or ""),
+		tostring(Integrations.ReplacesJourney()),
 		waypoint and ("%s:%s:%s"):format(waypoint.map, waypoint.x, waypoint.y) or "",
 	}, "|")
 end
