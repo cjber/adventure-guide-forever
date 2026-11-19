@@ -469,19 +469,6 @@ def tracker_module(ui, dump):
     return drawing.wm.TrackerModule(dump["header"], blocks)
 
 
-TRACKER_HIDDEN_GAP = 6  # UI/Tracker.lua's HIDDEN_GAP, between the count and the collapse button
-
-
-def tracker_hidden(canvas, rects, text):
-    """The grey count UI/Tracker.lua anchors left of the module's collapse button, in the tracker dump's own words."""
-    if not text:
-        return
-    x, y, _, height = rects["modules"][0]
-    minimize = canvas.ui.atlas("ui-questtrackerbutton-secondary-collapse")
-    right = x + drawing.wm.TRACKER_WIDTH + 1 - minimize.width - TRACKER_HIDDEN_GAP
-    canvas.text(0, y, text, font("GameFontDisableSmall"), box_height=height, justify="RIGHT", width=right)
-
-
 def spf_map(ui, content_ui, data, rects):
     """The world map with the guide's journey card and Shortest Path's walked route to the first stop: the guide's
     own panel, its numbered stops, and the walk Shortest Path took up when the route was handed over."""
@@ -860,10 +847,9 @@ def render():
     fx, fy, _, _ = menu_rects["menu"]
     images["menu"] = drawing.wm.scene(ui, [(canvas, 0, 0), (menu, bx + 60 - fx, by + 8 - fy)])
 
-    # The tracker on the journey that hides two of the player's own quests, with the grey count beside its header.
+    # The tracker while a journey leads: its quests beside the player's own tracked ones.
     watch = data["tracker_watch"]
     canvas, tracked = drawing.wm.objective_tracker(ui, [tracker_module(ui, watch)], container=False)
-    tracker_hidden(canvas, tracked, watch["hidden"])
     images["tracker"] = drawing.wm.scene(ui, [(canvas, 0, 0)])
 
     canvas = ui.canvas(400, 122)
