@@ -1881,9 +1881,9 @@ do
 			end
 		end
 	end
-	equal(#heads, 1068, "walk: chain heads in the data")
-	equal(totals, 820, "walk: heads whose total the data proves")
-	equal(textOnly, 248, "walk: heads shown as a chapter only")
+	equal(#heads, 1069, "walk: chain heads in the data")
+	equal(totals, 837, "walk: heads whose total the data proves")
+	equal(textOnly, 232, "walk: heads shown as a chapter only")
 	equal(#heads - totals - textOnly, 0, "walk: heads whose next dangles at once")
 end
 
