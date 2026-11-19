@@ -15,7 +15,7 @@ local LOGO = [[Interface\AddOns\RXPGuides\Textures\v2\rxp-icon-logo]]
 local h = harness.load({
 	spf = "v1",
 	planned = true,
-	db = { autoStart = false },
+	db = { maxQuestLevelOffset = 10, autoStart = false },
 	charDB = { journey = "carry" },
 	completed = { 844 },
 	log = { { id = 843, title = "Gann's Reclamation", level = 23, complete = false } },
