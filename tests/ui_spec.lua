@@ -46,16 +46,10 @@ local function Places(route)
 end
 
 -- A step menu's lines with "Not this quest" (design §2.18) after "Skip for now": one button for a lone quest, else
--- one per quest under it, titled as the log titles it. `combat`: the menu opened in combat.
-local function WithNotThisQuest(ns, family, step, lines, combat)
+-- one per quest under it, titled as the log titles it.
+local function WithNotThisQuest(ns, step, lines)
 	local out = {}
-	-- Without Shortest Path installed, a step's menu ends with its grey suggestion before Choose another journey; never
-	-- in combat, where its window can't open.
-	local suggests = family.State("ShortestPathForever") == "missing" and not ns.Setting("wanderer") and not combat
 	for _, line in ipairs(lines) do
-		if suggests and line == "button: " .. ns.L.CHOOSE_JOURNEY then
-			out[#out + 1] = "button: " .. "|cff7f7f7f" .. ns.L.SPF_FAMILY_MENU .. "|r"
-		end
 		out[#out + 1] = line
 		if line == "button: Skip for now" and #step.quests == 1 then
 			out[#out + 1] = "button: " .. ns.L.NOT_THIS_QUEST
@@ -349,7 +343,7 @@ do
 	-- Every row goes in through the secure delegate; none from addon code, which taints the search. The rows are
 	-- grouped into subcategories with a short index page, so no page grows tall.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 33, "28 settings rows and 5 index buttons, all through Settings.RegisterInitializer")
+	equal(#h.settings, 31, "27 settings rows and 4 index buttons, all through Settings.RegisterInitializer")
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
@@ -366,13 +360,13 @@ do
 	)
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_TRACKER] or {}, " "),
-		"attachTracker lockTracker showTracker trackRouteQuests journeyWatch guideTracksQuests",
+		"lockTracker showTracker trackRouteQuests journeyWatch guideTracksQuests",
 		"the objective tracker rows sit together, the parent first"
 	)
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_INTERFACE] or {}, " "),
 		"whatsNew markUpgrades",
-		"Interface holds the update rows; the suggestions setting is on the Forever addons page"
+		"Interface holds the update rows"
 	)
 	-- The index page's buttons are on the addon's own category, one per group, in index order, and open its subpage.
 	local buttons = {}
@@ -381,16 +375,8 @@ do
 			buttons[#buttons + 1] = entry
 		end
 	end
-	equal(#buttons, 5, "one index button per group, then the Forever addons page")
-	local familyButton = table.remove(buttons)
-	local familyName = "Forever addons"
-	local familyPage = assert(h.canvasPages[familyName], "the Forever addons page is registered")
-	equal(familyButton.name, familyName, "the last index button is the Forever addons page's")
-	equal(familyButton.addSearchTags, false, "the Forever addons button stays out of search")
-	equal(familyPage.parent.name, h.ns.TITLE, "the Forever addons page hangs off the addon's page")
-	familyButton.onClick()
-	equal(h.openedSettings, familyPage.GetID(), "the Forever addons button opens its page")
-	equal(familyPage.frame ~= nil, true, "the page is the shared module's panel")
+	equal(#buttons, 4, "one index button per group")
+	equal(h.canvasPages["Forever addons"], nil, "no Forever addons page is registered")
 	equal(
 		buttons[1].name .. " " .. buttons[2].name .. " " .. buttons[3].name .. " " .. buttons[4].name,
 		L.SETTINGS_GROUP_ROUTE
@@ -417,33 +403,28 @@ do
 	equal(h.openedSettingsRestricted, 0, "no index button calls Blizzard's restricted opener")
 	equal(h.openedSettingsElement, nil, "an index button asks for no row to scroll to")
 	h.ns.OpenSettings()
-	equal(h.openedSettings, familyPage.parent.GetID(), "More settings opens the addon's own page")
+	equal(h.openedSettings, h.subcategories[1].parent.GetID(), "More settings opens the addon's own page")
 	equal(h.openedSettingsRestricted, 0, "More settings calls the shared opener, not Blizzard's wrapper")
 	equal(byKey.journeyWatch.indented, nil, "journey watching is its own row, not under the title click")
 	equal(byKey.journeyWatch.tooltip, L.SETTING_JOURNEY_WATCH_TOOLTIP, "and says what happens to the player's quests")
-	local attachSetting
+	local lockSetting
 	for _, setting in ipairs(h.addonSettings) do
-		if setting.key == "attachTracker" then
-			attachSetting = setting
+		if setting.key == "lockTracker" then
+			lockSetting = setting
 		end
+		equal(
+			setting.key == "attachTracker",
+			false,
+			"no attach setting: the column is pinned left of the game's tracker"
+		)
 	end
-	equal(attachSetting ~= nil, true, "shared tracker setting is registered")
-	equal(attachSetting.GetValue(), true, "shared tracker defaults attached")
-	h.trackerHostSettings.attached = false
-	equal(h.G.ForeverCore.TrackerHost.GetSettings().attached, false, "ForeverCore's host state retains saved false")
-	local malformed = Load("v1", nil, nil, nil, nil, nil, { trackerHost = "bad" })
-	equal(
-		malformed.G.ForeverCore.TrackerHost.GetSettings().attached,
-		true,
-		"ForeverCore's host state normalizes malformed value"
-	)
-	h.trackerHostSettings.attached = false
-	equal(attachSetting.GetValue(), false, "shared tracker reads the host owner state")
-	h.trackerHostSettings.attached = true
-	attachSetting:SetValue(false)
-	equal(h.trackerHostSettings.attached, false, "shared tracker setting writes shared host state")
-	attachSetting:SetValue(true)
-	equal(attachSetting.GetValue(), true, "shared tracker setting round trips attached")
+	equal(lockSetting ~= nil, true, "shared tracker lock setting is registered")
+	equal(lockSetting.GetValue(), false, "the tracker starts unlocked")
+	lockSetting:SetValue(true)
+	equal(h.trackerHostSettings.locked, true, "the lock setting writes shared host state")
+	equal(lockSetting.GetValue(), true, "the lock setting reads the host owner state")
+	lockSetting:SetValue(false)
+	equal(h.G.ForeverCore.TrackerHost.IsLocked(), false, "unlocking round trips")
 	-- The client re-sorts its watches by distance on every zone change (Blizzard_ObjectiveTracker.lua
 	-- SortQuestWatches), so the tooltip promises no order it cannot keep.
 	equal(byKey.trackRouteQuests.tooltip:find("order") ~= nil, false, "the tracking tooltip promises no order")
@@ -1393,7 +1374,7 @@ for _, spf in ipairs({ false, "v1" }) do
 		"button: Skip for now",
 		"button: Choose another journey",
 	}
-	same(TrackerActions(h), WithNotThisQuest(ns, h.G.ForeverCore.Family, head, menu), label .. ": tracker menu")
+	same(TrackerActions(h), WithNotThisQuest(ns, head, menu), label .. ": tracker menu")
 	ns.Prefs().journey = ns.Route().journey
 	ns.Guidance.Navigate(head)
 	h.SetCombat(true)
@@ -1401,11 +1382,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.SetCombat(false)
 	table.remove(menu, 3)
 	menu[#menu + 1] = "button: " .. ns.L.END_JOURNEY
-	same(
-		TrackerActions(h),
-		WithNotThisQuest(ns, h.G.ForeverCore.Family, head, menu, true),
-		label .. ": tracker menu while Go guides, in combat"
-	)
+	same(TrackerActions(h), WithNotThisQuest(ns, head, menu), label .. ": tracker menu while Go guides, in combat")
 	ns.Guidance.Cancel()
 	clean(h, label .. ": pins")
 end
@@ -1463,7 +1440,7 @@ do
 	local h = harness.load({
 		planned = true,
 		-- A copy, never the shared PINS_ON table: Core.LoadDB merges the addon's defaults into whatever db it is given.
-		db = { showMapPins = true, showQuestGivers = true },
+		db = { showMapPins = true, showQuestGivers = true, maxQuestLevelOffset = 10 },
 		charDB = {
 			journey = "carry",
 			notInterested = { ["zone:1413"] = { title = "The Barrens story" } },
@@ -2099,7 +2076,7 @@ do
 	h.Click(Rows()[1], "RightButton")
 	same(
 		h.MenuLines(),
-		WithNotThisQuest(ns, h.G.ForeverCore.Family, first, {
+		WithNotThisQuest(ns, first, {
 			"title: " .. first.title,
 			"button: Go",
 			"button: " .. ns.L.END_JOURNEY,
@@ -2145,7 +2122,7 @@ do
 	local submenu = { "  button: Show again: " .. first.title, "  button: Show again: " .. second.title }
 	same(
 		h.MenuLines(),
-		WithNotThisQuest(ns, h.G.ForeverCore.Family, ns.Route().steps[1], {
+		WithNotThisQuest(ns, ns.Route().steps[1], {
 			"title: " .. ns.Route().steps[1].title,
 			"button: Go",
 			"button: " .. ns.L.END_JOURNEY,
@@ -2393,7 +2370,7 @@ do
 		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
 		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 	}
-	local h = harness.load({ planned = true, completed = completed, log = log })
+	local h = harness.load({ db = { maxQuestLevelOffset = 10 }, planned = true, completed = completed, log = log })
 	local ns = h.ns
 	h.flush()
 	-- A town's step stays while the town offers anything, so the gone step here is the objective's.
@@ -2544,11 +2521,8 @@ do
 	equal(lines[4], "colored: |A:questturnin:14:14|a [13] The Zhevra", "hub tooltip: a hand-in has the turn-in mark")
 	equal(lines[6], "colored: |A:questnormal:14:14|a [13] Raptor Thieves", "hub tooltip: a pickup has its level")
 	local quests, npcs = 0, 0
-	-- Without Shortest Path the last line is its grey suggestion, not a quest.
-	equal(lines[#lines], "colored: " .. ns.L.SPF_MISSING, "hub tooltip: the Shortest Path suggestion last")
-	same(colors[#lines], { 0.5, 0.5, 0.5 }, "hub tooltip: and grey")
 	for index, line in ipairs(lines) do
-		if line:find("^colored: ") and index < #lines then
+		if line:find("^colored: ") then
 			quests = quests + 1
 			-- A quest with no level (A Sealed Crate) shows none and takes the normal font colour.
 			local level = tonumber(line:match("%[(%d+)%]"))
@@ -2559,8 +2533,8 @@ do
 	end
 	equal(quests, 8, "hub tooltip: 8 quest lines")
 	equal(npcs, 7, "hub tooltip: one line per NPC shown")
-	equal(lines[#lines - 2], "highlight: And 1 more", "hub tooltip: the rest counted")
-	equal(lines[#lines - 1], "instruction: " .. ns.L.ORDER_DRAG, "hub tooltip: then how to reorder")
+	equal(lines[#lines - 1], "highlight: And 1 more", "hub tooltip: the rest counted")
+	equal(lines[#lines], "instruction: " .. ns.L.ORDER_DRAG, "hub tooltip: then how to reorder")
 	local over
 	for index, line in ipairs(lines) do
 		over = tonumber(line:match("%[(%d+)%]")) == 20 and index or over
@@ -2881,7 +2855,8 @@ do
 	for _, journey in ipairs(route.journeys) do
 		alternatives = alternatives + (journey.key:match("^chain:") and 1 or 0)
 	end
-	equal(alternatives, 11, "guide: all eleven alternative stories survive")
+	-- Gann's Reclamation, under way five levels up, is past the ceiling, so its story is not offered (#846).
+	equal(alternatives, 10, "guide: all ten alternative stories survive")
 	equal(#route.journeys - alternatives, 10, "guide: all ten destination/activity journeys survive")
 	equal(full, 1, "guide: only the chosen card is whole")
 	equal(lit, 1, "guide: and only it stays lit, so it reads as chosen in game")
@@ -3464,7 +3439,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#Overview(), 0, label .. ": the overview gives way")
 	equal(Previews(), "", label .. ": with its steps")
 	equal(Says(L.OVERVIEW_WHERE:format("The Barrens", h.player.level)), 0, label .. ": and the line by the title")
-	equal(Heights(), "86" .. string.rep(" 26", 20), label .. ": the chosen route precedes alternatives")
+	equal(Heights(), "86" .. string.rep(" 26", 19), label .. ": the chosen route precedes alternatives")
 	equal(Cards()[1].journey.key, story.key, label .. ": the chosen card first, over its steps")
 	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
 	local chosenCard = Cards()[1]
@@ -3561,7 +3536,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(Overview()[2])
 	h.flush()
 	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a row chooses it")
-	equal(Heights(), "86" .. string.rep(" 26", 20), label .. ": alternatives fold below it")
+	equal(Heights(), "86" .. string.rep(" 26", 19), label .. ": alternatives fold below it")
 	equal(Cards()[1].journey.key, second.key, label .. ": lit over its steps")
 	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
 	h.Click(Back())
@@ -3693,17 +3668,17 @@ do
 	equal(#Cards("zones"), 1, label .. ": the header's own toggle still folds")
 	equal(More("zones").Text:GetText(), L.MORE_CARDS:format(6), label .. ": its row is back")
 
-	-- Continue keeps two cards, so its row counts the other thirteen, including the cloned card.
+	-- Continue keeps two cards, so its row counts the other twelve, including the cloned card.
 	local continuing = h.ns.Model.InSection(route.journeys, "continue")
 	Clone(continuing[#continuing], "continue:more")
 	h.ns.Prefs().previewGroups.continue = true
 	h.ns.OpenPanel()
 	h.flush()
 	equal(#Cards("continue"), 2, label .. ": a folded Continue shows two cards")
-	equal(More("continue").Text:GetText(), L.MORE_CARDS:format(13), label .. ": and its thirteen hidden cards")
+	equal(More("continue").Text:GetText(), L.MORE_CARDS:format(12), label .. ": and its twelve hidden cards")
 	h.Click(More("continue"))
 	h.flush()
-	equal(#Cards("continue"), 15, label .. ": the row opens it")
+	equal(#Cards("continue"), 14, label .. ": the row opens it")
 	equal(More("continue"), nil, label .. ": and the row goes")
 	clean(h, label)
 end
@@ -4184,7 +4159,13 @@ do
 		local h = harness.load({
 			planned = true,
 			spf = "v1+",
-			db = { showMapPins = true, showQuestGivers = true, autoStart = false, trainingReminders = true },
+			db = {
+				maxQuestLevelOffset = 10,
+				showMapPins = true,
+				showQuestGivers = true,
+				autoStart = false,
+				trainingReminders = true,
+			},
 			tf = case.tf,
 			completed = { 844 },
 			log = {

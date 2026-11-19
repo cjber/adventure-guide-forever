@@ -1,8 +1,9 @@
 -- Run from the repository root: luajit tests/level_order_spec.lua
 -- #474: in Duskwood the route led with a red, optional quest while a green quest and a ready hand-in waited nearer
--- (docs/design.md §4.1). The nearest order now takes every stop that is work for now before a stop above the player's
--- level, so near-level and lower-level work and hand-ins already done come before a quest several levels above them;
--- within a tier distance still decides.
+-- (docs/design.md §4.1). #846: a quest under way past the player's ceiling is on no route at all, so near-level and
+-- lower-level work and hand-ins already done lead, and the red quest's hand-in comes back once it is finished. The
+-- nearest order still takes every stop that is work for now before a stop above the player (an area whose mobs are
+-- past the ceiling); within a tier distance decides.
 local ns = {}
 dofile("tests/harness.lua").model(ns)
 local Model = ns.Model
@@ -76,14 +77,30 @@ end
 local high, highIndex = step("area:181:4")
 local low, lowIndex = step("area:93:4")
 local handin, handinIndex = step("turnin:5")
-equal(high ~= nil, true, "level order: the accepted level 30 quest is on the route")
+equal(high, nil, "level order: the accepted level 30 quest, six levels up, is not on the route")
+equal(highIndex, nil, "level order: so it has no place in the order")
 equal(low ~= nil, true, "level order: the accepted level 20 quest is on the route")
 equal(handin ~= nil, true, "level order: the finished quest is on the route")
-equal(high.optional, true, "level order: the level 30 quest is optional")
 equal(low.optional, nil, "level order: the level 20 quest is not optional")
-equal(lowIndex < highIndex, true, "level order: near-level work leads the higher-level quest")
-equal(handinIndex < highIndex, true, "level order: the ready hand-in leads the higher-level quest")
 equal(lowIndex, 1, "level order: the near-level work leads the route")
+equal(handinIndex > lowIndex, true, "level order: the ready hand-in follows it")
+for _, each in ipairs(route.journeys) do
+	for _, card in ipairs(each.steps or {}) do
+		for _, id in ipairs(card.quests or {}) do
+			equal(
+				id == 181 and card.kind ~= "turnin",
+				false,
+				"level order: no card works the level 30 quest: " .. each.key
+			)
+		end
+	end
+end
+
+-- Finished, the level 30 quest's hand-in is routed like any other.
+log[181].complete = true
+route = Model.Plan(data, player, {}, log, prefs)
+equal(step("turnin:181") ~= nil, true, "level order: the finished level 30 quest is handed in")
+log[181].complete = false
 
 -- The other nearest path, Build (used by cards that are not laps), takes a stop for now before a stop above the
 -- player, ahead of distance: the far low-level stop still leads the near high-level one.

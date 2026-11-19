@@ -380,6 +380,35 @@ function harness.load(options)
 	G.ResetCursor = function()
 		h.cursor = nil
 	end
+	-- The pointer in screen pixels, and Blizzard_SharedXML's helpers that ForeverCore's ContextMenu places a menu with:
+	-- at the cursor, or under the gamepad interface (h.gamepad) beside its owner by screen quadrant.
+	G.GetCursorPosition = function()
+		return h.cursorX or 0, h.cursorY or 0
+	end
+	G.InputUtil = {
+		IsGamepadUIEnabled = function()
+			return h.gamepad == true
+		end,
+		AnchorRegionToCursor = function(region, point)
+			local x, y = G.GetCursorPosition()
+			local scale = G.UIParent:GetEffectiveScale()
+			region:ClearAllPoints()
+			region:SetPoint(point, G.UIParent, "BOTTOMLEFT", x / scale, y / scale)
+		end,
+	}
+	G.FrameUtilQuadrantEnum = { BottomLeft = 1, BottomRight = 2, TopLeft = 3, TopRight = 4 }
+	G.FrameUtil = {
+		GetScreenQuadrant = function(frame)
+			local x, y = frame:GetCenter()
+			x, y = x * frame:GetScale(), y * frame:GetScale()
+			local left, bottom = x < G.UIParent:GetWidth() / 2, y < G.UIParent:GetHeight() / 2
+			local quadrant = G.FrameUtilQuadrantEnum
+			if bottom then
+				return left and quadrant.BottomLeft or quadrant.BottomRight
+			end
+			return left and quadrant.TopLeft or quadrant.TopRight
+		end,
+	}
 
 	function Methods:GetObjectType()
 		return self.objectType
@@ -1812,6 +1841,7 @@ function harness.load(options)
 	end
 	-- Runs one frame: the timers queued now, not the ones they queue. Returns how many ran.
 	function h.tick()
+		h.clock = h.clock + h.frameTime
 		local due = timers
 		timers = {}
 		for _, fn in ipairs(due) do
@@ -1829,6 +1859,7 @@ function harness.load(options)
 					return
 				end
 			end
+			h.clock = h.clock + h.frameTime
 			local due = timers
 			timers = {}
 			for _, fn in ipairs(due) do
@@ -3585,10 +3616,16 @@ function harness.load(options)
 	-- areaOverride, parent, parentOverride, instances), and to fail a check `contract` (the newest it supports),
 	-- `flavor`, `missing` (a field name its schema lacks) or `noZones`. harness.questieMirror builds one from the
 	-- bundled data. h.clockStep is how far debugprofilestop moves on each call, 0 by default: one slice builds all.
-	h.metadata, h.clock, h.clockStep = {}, 0, 0
+	-- h.frameTime is how far debugprofilestop moves between frames (each tick, or each round of a flush), 0 by default.
+	h.metadata, h.clock, h.clockStep, h.frameTime = {}, 0, 0, 0
 	G.debugprofilestop = function()
 		h.clock = h.clock + h.clockStep
 		return h.clock
+	end
+	-- h.framerate is GetFramerate's answer, 60 by default.
+	h.framerate = 60
+	G.GetFramerate = function()
+		return h.framerate
 	end
 	-- An addon is loaded when it has metadata or its global (every companion's global is its folder name);
 	-- options.installed names addons on disk but not loaded (turned off); options.version is this addon's TOC version.

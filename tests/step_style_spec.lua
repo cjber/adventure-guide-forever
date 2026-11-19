@@ -24,7 +24,7 @@ local GREEN, RED, GOLD, WHITE = "|cff009919", "|cffcc4c38", "|cffffd100", "|cfff
 
 local h = harness.load({
 	planned = true,
-	db = { autoStart = false },
+	db = { maxQuestLevelOffset = 10, autoStart = false },
 	-- The carry card (a log turn-in) holds the area step whose objectives name enemies for this fixture; the Barrens
 	-- story's ten-step cap no longer reaches it now the data ranks its steps.
 	charDB = { journey = "carry" },

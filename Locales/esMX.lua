@@ -320,9 +320,6 @@ L["SETTINGS_GROUP_MAP"] = "Mapa"
 L["SETTINGS_GROUP_ROUTE"] = "Ruta"
 L["SETTINGS_GROUP_TRACKER"] = "Rastreador de objetivos"
 L["SETTINGS_OPEN"] = "Abrir"
-L["SETTING_ATTACH_TRACKER"] = "Unir al rastreador de misiones"
-L["SETTING_ATTACH_TRACKER_TOOLTIP"] =
-	"Desactívalo para arrastrar el Rastreador Forever compartido a cualquier parte de la pantalla."
 L["SETTING_AUTO_START"] = "Iniciar la ruta automáticamente"
 L["SETTING_AUTO_START_TOOLTIP"] =
 	"La guía envía la ruta del viaje elegido a Shortest Path en cuanto está lista, así que la línea del mapa aparece al conectarte y tras un /reload sin pulsar Ir. Pulsar Detener la sigue borrando hasta que vuelvas a elegir un viaje."
@@ -342,8 +339,7 @@ L["SETTING_JOURNEY_WATCH"] = "Seguir solo las misiones del viaje" -- mt
 L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
 	"Mientras un viaje guía, el rastreador de objetivos muestra solo las misiones en las que trabaja y las demás lo abandonan. Tus misiones seguidas se quedan en el personaje y vuelven cuando el viaje deja de guiar, eliges otro o desactivas esto." -- mt
 L["SETTING_LOCK_TRACKER"] = "Bloquear el rastreador"
-L["SETTING_LOCK_TRACKER_TOOLTIP"] =
-	"Mantiene el rastreador compartido Forever donde lo pones. El tirador de arriba ya no lo arrastra."
+L["SETTING_LOCK_TRACKER_TOOLTIP"] = "Mantiene el rastreador compartido Forever donde lo pones."
 L["SETTING_MAP_PINS"] = "Mostrar marcas de ruta en el mapa"
 L["SETTING_MAP_PINS_TOOLTIP"] =
 	"Los pasos numerados de la ruta en el mapa del mundo mientras se muestra su zona, y los asignadores de misiones cuando también estén activados. La guía abierta muestra su ruta de todos modos."
@@ -356,7 +352,7 @@ L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 L["SETTING_QUEST_LEVEL"] = "Nivel máximo de misión por encima del tuyo"
 L["SETTING_QUEST_LEVEL_ONE"] = "%s nivel"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =
-	"Elige el nivel de misión más alto que la guía recomienda respecto a tu nivel. El valor por defecto, +2, evita las misiones naranjas y rojas. Las misiones de tu registro siguen visibles."
+	"Elige el nivel de misión más alto que la guía recomienda respecto a tu nivel. El valor por defecto, +2, evita las misiones naranjas y rojas. Una misión de tu registro por encima queda fuera de la ruta hasta que tu nivel la alcance o esté lista para entregar."
 L["SETTING_QUEST_LEVEL_VALUE"] = "%s niveles"
 L["SETTING_ROUTE_ORDER"] = "Ruta optimizada (beta)"
 L["SETTING_ROUTE_ORDER_TOOLTIP"] =
@@ -408,17 +404,12 @@ L["SIDEBAR_COLLAPSED"] =
 	"La guía se abre en el registro de misiones junto al mapa del mundo. Haz clic en la flecha de la esquina inferior derecha del mapa para mostrar el registro de misiones."
 L["SIDEBAR_MAXIMIZED"] =
 	"La guía se abre en el registro de misiones junto al mapa del mundo. Haz clic en el botón junto a la cruz de cerrar del mapa para reducirlo y mostrar el registro de misiones."
-L["SKILLUP_FAMILY"] = "SkillUp Forever planea la ruta más barata hasta tu siguiente rango de profesión."
-L["SKILLUP_FAMILY_MENU"] = "La ruta más barata a tu siguiente rango: SkillUp Forever"
 L["SKILLUP_NONE"] = "No tienes profesiones de fabricación que subir. Aprende una con un instructor y aparecerá aquí."
 L["SKILLUP_OUTDATED"] =
 	"Tus próximas subidas de habilidad vienen de SkillUp Forever. Actualízalo y aparecerán aquí."
 L["SKIP"] = "Saltar por ahora"
 L["SKIPPED"] = "Saltadas (%d)"
 L["SKIP_STEP"] = "Saltar este paso por ahora"
-L["SPF_DISABLED"] = "Activa Shortest Path Forever para rutas a pie y horarios de barcos."
-L["SPF_FAMILY_MENU"] = "Rutas a pie y horarios de barcos: Shortest Path Forever"
-L["SPF_MISSING"] = "Instala Shortest Path Forever para rutas a pie y horarios de barcos."
 L["STARTS_AFTER_COMBAT"] = "La ruta empieza cuando acabe el combate"
 L["STARTS_WITH"] = "Empieza con %s"
 L["START_ADVENTURE"] = "Empezar"
@@ -482,14 +473,11 @@ L["TRAVEL_WAIT"] = " · %d min de espera"
 L["TRAVEL_WALK"] = "Caminar hasta %s"
 L["TRAVEL_ZEPPELIN"] = "Zepelín a %s"
 L["TURN_IN"] = "Entregar: %s"
-L["TWEAKS_DISABLED"] = "Activa Tweaks Forever para encontrar entradas de calabozos."
-L["TWEAKS_FAMILY_MENU"] = "Encontrar entradas de calabozos: Tweaks Forever"
-L["TWEAKS_MISSING"] = "Instala Tweaks Forever para encontrar entradas de calabozos."
 L["TWEAKS_OUTDATED"] = "Actualiza Tweaks Forever para encontrar entradas de calabozos."
 L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
-L["WHATS_NEW"] = "Aceptar una misión ya no elimina otra de la ruta en la misma población." -- mt
+L["WHATS_NEW"] = "Las zonas en las que ya estás haciendo misiones conservan su tarjeta." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
@@ -509,6 +497,7 @@ L["WHY_REP_BELOW"] = "Solo mientras estés por debajo de %s con %s"
 L["WHY_REP_MIN"] = "Requiere %s con %s"
 L["WHY_SKILL"] = "Requiere %s %d"
 L["YOUR_CHOICE"] = "Tu elección"
+-- mt: Minimap button settings.
 -- mt: Issue composer and report window.
 L["HELP_ISSUE"] = "/agf issue - informar de un error o pedir una función con un enlace listo para GitHub" -- mt
 L["SETTING_HIDE_QUESTIE_TRACKER"] = "Desactivar el rastreador de Questie" -- mt

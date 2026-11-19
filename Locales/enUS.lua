@@ -40,7 +40,8 @@ ns.L = {
 	SETTING_QUEST_LEVEL_VALUE = "%s levels",
 	SETTING_QUEST_LEVEL_ONE = "%s level",
 	SETTING_QUEST_LEVEL_TOOLTIP = "Choose the highest quest level the guide recommends relative to your level. "
-		.. "The default, +2, avoids orange and red quests. Quests already in your log remain visible.",
+		.. "The default, +2, avoids orange and red quests. A quest in your log above it stays off the route until your "
+		.. "level catches up or it is ready to hand in.",
 	-- The addon's name wherever the game shows it: the window, the map tab, the objective tracker, its settings page and
 	-- chat. Only WoW: Forever loads this addon, so in game it is simply the Adventure Guide.
 	TITLE = "Adventure Guide",
@@ -421,11 +422,8 @@ ns.L = {
 	SETTINGS_OPEN = "Open",
 	SETTING_TRACKER = "Show tracker section",
 	SETTING_TRACKER_BACKGROUND = "Tracker background",
-	SETTING_ATTACH_TRACKER = "Attach to quest tracker",
-	SETTING_ATTACH_TRACKER_TOOLTIP = "Turn this off to drag the shared Forever tracker anywhere on screen.",
 	SETTING_LOCK_TRACKER = "Lock the tracker",
-	SETTING_LOCK_TRACKER_TOOLTIP = "Keeps the shared Forever tracker where you put it. The grip at its top no "
-		.. "longer drags it.",
+	SETTING_LOCK_TRACKER_TOOLTIP = "Keeps the shared Forever tracker where you put it.",
 	SETTING_TRACKER_TOOLTIP = 'A short "Adventure Guide" section above your quests in the objective tracker, for the '
 		.. "current step.",
 	SETTING_HIDE_QUESTIE_TRACKER = "Turn off Questie's tracker",
@@ -556,9 +554,7 @@ ns.L = {
 
 	TAB_PVP = "PvP",
 	GO_TO_ENTRANCE = "Go to entrance",
-	TWEAKS_MISSING = "Install Tweaks Forever to find dungeon entrances.",
 	TWEAKS_OUTDATED = "Update Tweaks Forever to find dungeon entrances.",
-	TWEAKS_DISABLED = "Enable Tweaks Forever to find dungeon entrances.",
 	ENTRANCE_UNKNOWN = "The entrance location is unknown.",
 	-- Legacy Forever's own words for items it can't check yet, with its hint when one category holds them all.
 	PVP_RANK = "Rank %d",
@@ -609,17 +605,9 @@ ns.L = {
 	UPDATED_TO = "updated to %s. %s",
 	SETTING_WHATS_NEW = "What's new after an update",
 	SETTING_WHATS_NEW_TOOLTIP = "One line in chat the first time you log in after the guide updates.",
-	-- Companion hints (Companions.lua): what another Forever addon would add here, while it isn't loaded. The
-	-- Forever addons page itself and its setting are ForeverCore.Family's, shared by all five addons.
-	SPF_FAMILY_MENU = "Walked routes and boat times: Shortest Path Forever",
-	SKILLUP_FAMILY = "SkillUp Forever plans the cheapest route to your next profession rank.",
-	SKILLUP_FAMILY_MENU = "Cheapest route to your next rank: SkillUp Forever",
-	TWEAKS_FAMILY_MENU = "Find dungeon entrances: Tweaks Forever",
-	SPF_MISSING = "Install Shortest Path Forever for walked routes and boat times.",
-	SPF_DISABLED = "Enable Shortest Path Forever for walked routes and boat times.",
 	-- The one chat line after an update to this version (ns.WhatsNew): it opens with the headline of the newest
 	-- CHANGELOG entry that has a bold lead, whose version is ns.WHATS_NEW_VERSION; tests/locales_spec.lua checks both.
-	WHATS_NEW = "Taking a quest no longer drops another one in the same town.",
+	WHATS_NEW = "Zones you are already questing in keep their card.",
 	DUNGEON_BOSSES_LOOT = "Bosses and loot",
 	DUNGEON_LOOT_INSTALL = "Install AtlasLoot Classic and its Dungeons and Raids module for bosses and loot.",
 	DUNGEON_LOOT_COMBAT = "Boss loot will load after combat.",
@@ -646,7 +634,7 @@ ns.L = {
 
 -- The release whose WHATS_NEW is the newest headline in CHANGELOG.md. A core sync adds a maintenance release above it
 -- with no bold lead, so the game prints nothing new for that version but still remembers it.
-ns.WHATS_NEW_VERSION = "1.10.2"
+ns.WHATS_NEW_VERSION = "1.11.0"
 
 -- The shared out-of-date warning (Core/ForeverRequire.lua) reads ns.L by the English phrase itself, so these keys are
 -- the sentence. A locale translates the same keys.
