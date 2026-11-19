@@ -59,11 +59,3 @@ card | zone:1434 | Head to Stranglethorn Vale | 2 quests near your level | - | m
 card | calling | Your calling | Chapter 1 of 5 | Your class trainer has a task: Yorus Barleybrew | map 1453
   step 1 | town:1453:0 | Pick up: Yorus Barleybrew | 1453 0.8055,0.5987 | Begins a new story
   step 2 | town:1433:69 | Pick up: The Rethban Gauntlet | 1433 0.2149,0.4472 | near your level
-card | chain:463 | The Greenwarden | Chapter 1 of 5 | Begins a new story | map 1437
-  step 1 | town:1437:150 | Pick up: The Greenwarden | 1437 0.1090,0.5964 | Begins a new story
-  step 2 | town:1437:1025 | Pick up: Tramping Paws | 1437 0.5637,0.4040 | near your level
-card | chain:468 | Report to Mountaineer Rockgar | Chapter 1 | Begins a new story | map 1432
-  step 1 | town:1432:838 | Pick up: The Algaz Gauntlet | 1432 0.2544,0.1038 | near your level
-  step 2 | town:1432:144 | Pick up: Report to Mountaineer Rockgar | 1432 0.3263,0.4974 | Begins a new story
-card | chain:98461 | Unrequited Love | Chapter 1 of 3 | Begins a new story | map 1439
-  step 1 | town:1439:442 | Pick up: Unrequited Love | 1439 0.3744,0.4184 | Begins a new story
