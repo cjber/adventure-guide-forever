@@ -178,6 +178,38 @@ do
 	equal(next(marked), nil, "a worn item still loading marks nothing")
 	equal(pending, true, "and waits")
 	equal(h.ns.DEFAULTS.markUpgrades, true, "on by default")
+
+	-- Item data other addons ask for does no work; the awaited items' arrivals, however many in a frame, re-read once.
+	info[101] = { 15, "INVTYPE_HEAD", 4, LEATHER }
+	G.QUEST_TEMPLATE_DETAIL, G.QUEST_TEMPLATE_REWARD = {}, {}
+	G.QuestInfo_Display = function() end
+	h.fire("PLAYER_LOGIN")
+	local read, marked0 = 0, Upgrades.Marked
+	Upgrades.Marked = function()
+		read = read + 1
+		return marked0()
+	end
+	info["item:3"], info["item:2"] = nil, nil
+	G.QuestInfo_Display(G.QUEST_TEMPLATE_DETAIL)
+	h.flush()
+	equal(read, 1, "the giver's panel reads the choices once")
+	for id = 5000, 5199 do
+		h.fire("GET_ITEM_INFO_RECEIVED", id, true)
+	end
+	h.flush()
+	equal(read, 1, "200 unrelated items arriving re-read nothing")
+	info["item:3"], info["item:2"] = { 12, "INVTYPE_HEAD", 4, LEATHER }, { 20, "INVTYPE_HEAD", 4, MAIL }
+	h.fire("GET_ITEM_INFO_RECEIVED", 3, true)
+	h.fire("GET_ITEM_INFO_RECEIVED", 2, true)
+	equal(read, 1, "an awaited arrival waits for the next frame")
+	h.flush()
+	equal(read, 2, "both awaited arrivals in one frame re-read once")
+	for id = 1, 3 do
+		h.fire("GET_ITEM_INFO_RECEIVED", id, true)
+	end
+	h.flush()
+	equal(read, 2, "with nothing loading, the choices' own items re-read nothing")
+	Upgrades.Marked = marked0
 end
 
 print(("upgrades_spec: %d checks passed"):format(checks))

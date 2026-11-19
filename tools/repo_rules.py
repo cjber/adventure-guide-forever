@@ -3,6 +3,8 @@
 
 - `no-em-dash`: no U+2014 in `tools/*.py` or `Data/*.lua`. Generator banners use a colon, and the generated data
   takes its punctuation from them, so an em dash in a generator reaches every output it writes.
+- `item-info-outside-core`: only `Core/ItemInfo.lua` names `GET_ITEM_INFO_RECEIVED` or `ITEM_DATA_LOAD_RESULT`. They
+  fire for every item any addon asks about, in bursts, so a feature awaits its own items through `ns.ItemInfo`.
 """
 
 import subprocess
@@ -12,6 +14,8 @@ from pathlib import Path, PurePosixPath
 ROOT = Path(__file__).resolve().parents[1]
 SCOPE = {("tools", ".py"), ("Data", ".lua")}
 EM_DASH = "\u2014"
+ITEM_EVENTS = ("GET_ITEM_INFO_RECEIVED", "ITEM_DATA_LOAD_RESULT")
+ITEM_INFO = "Core/ItemInfo.lua"
 
 
 def em_dashes(path: str, text: str) -> list[str]:
@@ -26,12 +30,25 @@ def em_dashes(path: str, text: str) -> list[str]:
     ]
 
 
+def item_events(path: str, text: str) -> list[str]:
+    """One finding per line of addon Lua, outside Core/ItemInfo.lua, that names an item data event."""
+    name = PurePosixPath(path)
+    if name.suffix != ".lua" or path == ITEM_INFO or name.parts[0] in ("tests", "tools", "types"):
+        return []
+    return [
+        f"{path}:{number}: item-info-outside-core: await items through ns.ItemInfo, not the event"
+        for number, line in enumerate(text.splitlines(), 1)
+        if any(event in line for event in ITEM_EVENTS)
+    ]
+
+
 def main() -> int:
     files = subprocess.run(["git", "-C", str(ROOT), "ls-files"], capture_output=True, text=True, check=True).stdout
     hits = []
     for path in files.splitlines():
         if (ROOT / path).is_file():
-            hits += em_dashes(path, (ROOT / path).read_text(encoding="utf-8", errors="replace"))
+            text = (ROOT / path).read_text(encoding="utf-8", errors="replace")
+            hits += em_dashes(path, text) + item_events(path, text)
     for hit in hits:
         print(hit)
     return int(bool(hits))

@@ -938,6 +938,10 @@
 ---@field RouteChanged fun() Core, ahead of every route listener: a waiting start, a choice that went, the restore, Focus.Sync, then following
 ---@field Debug fun(): string /agf travel's line
 
+---@class AGFItemInfo
+---@field Await fun(itemID: integer?, callback: function)
+---@field Forget fun(callback: function)
+
 ---@class AGFNamespace
 ---@field Credits ForeverCreditsData the player credits Data/Credits.lua generates for the shared Thanks page
 ---@field broken? boolean set when an installed ForeverCore is too old, so the addon's files stop
@@ -947,6 +951,7 @@
 ---@field Offers AGFOffersModule what a giver's window really offers (Offers.lua)
 ---@field Closes AGFClosesModule the chat warning before taking a quest that closes another (Closes.lua)
 ---@field Upgrades AGFUpgrades the upgrade arrow on quest reward choices (Upgrades.lua)
+---@field ItemInfo AGFItemInfo waits for named items' client data (Core/ItemInfo.lua)
 ---@field CreatureEntry fun(guid?: string): integer? a creature's entry from its GUID; nil for anything else or a secret
 ---@field PanelSearch AGFPanelSearch
 ---@field QuestieFields {spawns: string[], drops: string[], level: string[], rank: string[]}
