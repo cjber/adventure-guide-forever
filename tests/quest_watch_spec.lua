@@ -61,7 +61,7 @@ for _, questID in ipairs({ 850, 855, 843 }) do
 end
 local state = h.ns.Prefs().guideWatch
 check(state ~= nil and state.added[845], "the journey's own watch is kept on the character")
-equal(state.saved, nil, "no player list is kept: nothing of theirs is taken away")
+equal(#state.saved, 0, "no player list is kept: nothing of theirs is taken away")
 equal(h.ns.State.Tracked()[845], nil, "the journey's watch is not counted as the player's")
 equal(h.ns.State.Tracked()[850], true, "the player's own are")
 
@@ -136,8 +136,28 @@ h.flush()
 equal(Watched(h, 850), true, "an untracked player quest is tracked again on upgrade")
 equal(Watched(h, 855), true, "every one of them")
 equal(Watched(h, 999), false, "a quest no longer in the log is not")
-equal(h.ns.Prefs().guideWatch and h.ns.Prefs().guideWatch.saved, nil, "the old list is gone once given back")
+equal(#h.ns.Prefs().guideWatch.saved, 0, "the old list is emptied once given back")
+equal(next(h.ns.Prefs().guideWatch.hidden), nil, "and so is what it hid")
 check(#h.errors == 0, table.concat(h.errors, "\n"))
+
+-- Rolled back to v1.11.0: its reader takes the state this version saves without an error, and with nothing saved it
+-- untracks none of the player's quests.
+h = Load()
+h.watched = { 850, 855, 843 }
+h.ns.Choose("zone:1413", false)
+h.flush()
+local saved = h.ns.Prefs().guideWatch
+check(type(saved.saved) == "table" and type(saved.hidden) == "table", "the state keeps the fields v1.11.0 reads")
+local v111 = assert(loadfile("tests/fixtures/QuestWatch_v1.11.0.lua"))
+setfenv(v111, h.G)
+v111("AdventureGuideForever", h.ns)
+h.ns.QuestWatch.Sync()
+h.flush()
+check(#h.errors == 0, table.concat(h.errors, "\n"))
+for _, questID in ipairs({ 850, 855, 843 }) do
+	equal(Watched(h, questID), true, "v1.11.0 leaves the player's tracked quest " .. questID .. " tracked")
+end
+equal(h.ns.QuestWatch.Hidden and h.ns.QuestWatch.Hidden() or 0, 0, "and counts none hidden")
 
 -- "Stop tracking other quests" carried over: a saved true turns the new setting on, a saved false leaves its default.
 local migrated = Load({ db = { untrackOthers = true } })

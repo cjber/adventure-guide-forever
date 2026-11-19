@@ -136,19 +136,18 @@ local function GiveBack(state)
 end
 
 -- Earlier versions untracked the player's own quests while a leader led, keeping them in `saved` (#865). A quest still
--- in the log that the leader took off the tracker goes back on once, and the state forgets the old fields.
+-- in the log that the leader took off the tracker goes back on once. `saved` and `hidden` stay, empty: v1.11.0 and
+-- earlier read both with ipairs and pairs, so a player who rolls back keeps a working state, and with nothing saved
+-- the old reader takes none of their quests.
 ---@param state AGFGuideWatchState
 local function Restore(state)
-	if not state.saved then
-		return
-	end
 	local log = ns.State.Log()
-	for _, questID in ipairs(state.saved) do
+	for _, questID in ipairs(state.saved or {}) do
 		if log[questID] and not Watched(questID) then
 			AddWatch(questID)
 		end
 	end
-	state.saved, state.hidden = nil, nil
+	state.saved, state.hidden = {}, {}
 end
 
 -- Settles the tracked quests on the leader as it is now. Never in combat, and never while the route is provisional
@@ -177,7 +176,7 @@ function Watch.Sync()
 	---@cast named table<integer, true>
 	---@cast order integer[]
 	if not state then
-		state = { added = {}, named = {} }
+		state = { added = {}, named = {}, saved = {}, hidden = {} }
 		prefs.guideWatch = state
 	end
 	local now = GetTime()

@@ -231,8 +231,8 @@
 ---@class AGFGuideWatchState
 ---@field added table<integer, true> what QuestWatch or the client's auto quest watch tracked for the leader
 ---@field named table<integer, true> the quests the leader named at the last look
----@field saved? integer[] an earlier version's untracked player quests, given back once (QuestWatch.lua Restore)
----@field hidden? table<integer, true> an earlier version's field, cleared with saved
+---@field saved integer[] an earlier version's untracked player quests, given back once, then kept empty for v1.11.0
+---@field hidden table<integer, true> an earlier version's field, kept empty so v1.11.0 reads the state after a rollback
 
 -- Adds and takes back the watches a RestedXP guide or an AGF journey leads with (Core/QuestWatch.lua).
 ---@class AGFQuestWatch
