@@ -1440,7 +1440,7 @@ do
 	local h = harness.load({
 		planned = true,
 		-- A copy, never the shared PINS_ON table: Core.LoadDB merges the addon's defaults into whatever db it is given.
-		db = { showMapPins = true, showQuestGivers = true },
+		db = { showMapPins = true, showQuestGivers = true, maxQuestLevelOffset = 10 },
 		charDB = {
 			journey = "carry",
 			notInterested = { ["zone:1413"] = { title = "The Barrens story" } },
@@ -2370,7 +2370,7 @@ do
 		{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
 		{ id = 843, title = "Gann's Reclamation", level = 23, complete = false },
 	}
-	local h = harness.load({ planned = true, completed = completed, log = log })
+	local h = harness.load({ db = { maxQuestLevelOffset = 10 }, planned = true, completed = completed, log = log })
 	local ns = h.ns
 	h.flush()
 	-- A town's step stays while the town offers anything, so the gone step here is the objective's.
@@ -2855,7 +2855,8 @@ do
 	for _, journey in ipairs(route.journeys) do
 		alternatives = alternatives + (journey.key:match("^chain:") and 1 or 0)
 	end
-	equal(alternatives, 11, "guide: all eleven alternative stories survive")
+	-- Gann's Reclamation, under way five levels up, is past the ceiling, so its story is not offered (#846).
+	equal(alternatives, 10, "guide: all ten alternative stories survive")
 	equal(#route.journeys - alternatives, 10, "guide: all ten destination/activity journeys survive")
 	equal(full, 1, "guide: only the chosen card is whole")
 	equal(lit, 1, "guide: and only it stays lit, so it reads as chosen in game")
@@ -3438,7 +3439,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#Overview(), 0, label .. ": the overview gives way")
 	equal(Previews(), "", label .. ": with its steps")
 	equal(Says(L.OVERVIEW_WHERE:format("The Barrens", h.player.level)), 0, label .. ": and the line by the title")
-	equal(Heights(), "86" .. string.rep(" 26", 20), label .. ": the chosen route precedes alternatives")
+	equal(Heights(), "86" .. string.rep(" 26", 19), label .. ": the chosen route precedes alternatives")
 	equal(Cards()[1].journey.key, story.key, label .. ": the chosen card first, over its steps")
 	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
 	local chosenCard = Cards()[1]
@@ -3535,7 +3536,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(Overview()[2])
 	h.flush()
 	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a row chooses it")
-	equal(Heights(), "86" .. string.rep(" 26", 20), label .. ": alternatives fold below it")
+	equal(Heights(), "86" .. string.rep(" 26", 19), label .. ": alternatives fold below it")
 	equal(Cards()[1].journey.key, second.key, label .. ": lit over its steps")
 	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
 	h.Click(Back())
@@ -3667,17 +3668,17 @@ do
 	equal(#Cards("zones"), 1, label .. ": the header's own toggle still folds")
 	equal(More("zones").Text:GetText(), L.MORE_CARDS:format(6), label .. ": its row is back")
 
-	-- Continue keeps two cards, so its row counts the other thirteen, including the cloned card.
+	-- Continue keeps two cards, so its row counts the other twelve, including the cloned card.
 	local continuing = h.ns.Model.InSection(route.journeys, "continue")
 	Clone(continuing[#continuing], "continue:more")
 	h.ns.Prefs().previewGroups.continue = true
 	h.ns.OpenPanel()
 	h.flush()
 	equal(#Cards("continue"), 2, label .. ": a folded Continue shows two cards")
-	equal(More("continue").Text:GetText(), L.MORE_CARDS:format(13), label .. ": and its thirteen hidden cards")
+	equal(More("continue").Text:GetText(), L.MORE_CARDS:format(12), label .. ": and its twelve hidden cards")
 	h.Click(More("continue"))
 	h.flush()
-	equal(#Cards("continue"), 15, label .. ": the row opens it")
+	equal(#Cards("continue"), 14, label .. ": the row opens it")
 	equal(More("continue"), nil, label .. ": and the row goes")
 	clean(h, label)
 end
@@ -4158,7 +4159,13 @@ do
 		local h = harness.load({
 			planned = true,
 			spf = "v1+",
-			db = { showMapPins = true, showQuestGivers = true, autoStart = false, trainingReminders = true },
+			db = {
+				maxQuestLevelOffset = 10,
+				showMapPins = true,
+				showQuestGivers = true,
+				autoStart = false,
+				trainingReminders = true,
+			},
 			tf = case.tf,
 			completed = { 844 },
 			log = {

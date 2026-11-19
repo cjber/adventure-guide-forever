@@ -25,7 +25,7 @@ end
 local function Load(planned)
 	return harness.load({
 		planned = planned,
-		db = { autoStart = false },
+		db = { maxQuestLevelOffset = 10, autoStart = false },
 		completed = { 844 },
 		logMax = 40,
 		log = {
