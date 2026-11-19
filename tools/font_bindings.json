@@ -3,7 +3,7 @@
   "producers": [
     {
       "source": "UI/Panel.lua",
-      "sha256": "ee20b8a7362991b17286fc779eb2d4f67ae89618adce18fb668f1dadf127820c",
+      "sha256": "6e079e8f60b5f3d8c73f06d3d31ee5e6a6617ff70853c83c6d03ca01e1114449",
       "review": "Read the full panel builders, refresh paths and callers in Overview, Widgets and GuideOutline. Explicit CreateFontString templates fix Tag, order tag, emptyText, unlistedText, queuedText, subtitle and fold-row fonts, with no later font override. Journey-card Travel inherits GameFontHighlightSmall from Panel.xml. SearchBoxTemplate inherits InputBoxInstructionsTemplate in pinned client Blizzard_SharedXML/Shared/InputBox/InputBoxTemplates.xml; Instructions uses GameFontDisableSmall, and its scripts change visibility/color/text, not fonts. SharedButtonSmallTemplate in Shared/Button/ThreeSliceButtonTemplate.xml supplies all three Stop button font states. Reset and Skipped buttons explicitly set normal and highlight fonts and have no disabling caller. Bound each confirmed button state. Excluded tooltips, menus, chat, search input, dynamic journey/step/provider titles, sync member strings and data/helper output not separately reviewed. Formatted bindings cover the locale format only, not substituted game data.",
       "bindings": [
         {
@@ -300,7 +300,7 @@
     },
     {
       "source": "UI/Tracker.lua",
-      "sha256": "61725e5433a358eea7a4f16cc3488b4f43712dc4850cb97be10e8c7e8d275dae",
+      "sha256": "f6ca8a5efc986b03059dec60fff39cd5684cc997b867239205f2624c9e1e66cb",
       "review": "Read module construction, LayoutContentsBase, GuideSection, Preview, TravelLines, StoryBeat, HiddenString, UpdateHidden and Refresh. HiddenString explicitly creates GameFontDisableSmall, with no later override; UpdateHidden sends TRACKER_HIDDEN_COUNT to that widget. Reviewed ForeverCore UI/TrackerSection.lua Create and pinned Blizzard_ObjectiveTrackerModule.xml, Block.xml, Shared.xml and AnimTemplates.xml: module header uses ObjectiveTrackerHeaderFont; anim block HeaderText and anim line Text inherit ObjectiveTrackerLineFont. Excluded those template text paths because Blizzard_ObjectiveTrackerManager.lua SetTextSize later calls SetFontObject on both FontObjects, so their final font is outside this review. Also excluded tooltips, menus, chat, dynamic data, helper output and companion fonts.",
       "bindings": [
         {
