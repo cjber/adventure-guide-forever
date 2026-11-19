@@ -23,4 +23,4 @@ local ready = ForeverCore ~= nil
 	and type(ForeverCore.Art.Marker) == "function"
 	and type(ForeverCore.Art.Ring) == "function"
 
-ns.ForeverRequire(ready)
+ns.ForeverRequire(ready, { key = "ADVENTUREGUIDEFOREVER", "/agf", "/adventureguide" })

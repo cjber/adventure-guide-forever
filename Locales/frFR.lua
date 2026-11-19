@@ -333,12 +333,12 @@ L["SETTING_FOLLOW_QUEST_TOOLTIP"] =
 L["SETTING_GIVERS"] = "Afficher les donneurs de quêtes sur la carte"
 L["SETTING_GIVERS_TOOLTIP"] =
 	"Un « ! » sur la carte du monde au-dessus de chaque personnage ayant une quête que vous pouvez prendre maintenant. Demande aussi les repères d’itinéraire sur la carte."
-L["SETTING_GUIDE_TRACKS"] = "Suivre uniquement les quêtes du guide RestedXP" -- mt
+L["SETTING_GUIDE_TRACKS"] = "Suivre les quêtes du guide RestedXP" -- mt
 L["SETTING_GUIDE_TRACKS_TOOLTIP"] =
-	"Pendant que vous suivez un guide RestedXP, le suivi des objectifs n'affiche que les quêtes nommées par ses étapes actuelles et en cours. Les quêtes que vous suiviez vous-même reviennent quand vous arrêtez de le suivre." -- mt
-L["SETTING_JOURNEY_WATCH"] = "Suivre uniquement les quêtes du voyage" -- mt
+	"Pendant que vous suivez un guide RestedXP, le suivi des objectifs affiche aussi les quêtes que nomment ses étapes en cours. Les quêtes que vous suivez vous-même restent toujours suivies." -- mt
+L["SETTING_JOURNEY_WATCH"] = "Suivre les quêtes du voyage" -- mt
 L["SETTING_JOURNEY_WATCH_TOOLTIP"] =
-	"Pendant qu’un voyage vous guide, le suivi des objectifs n’affiche que les quêtes sur lesquelles il travaille et toutes les autres le quittent. Les quêtes que vous suiviez restent sur le personnage et reviennent quand le voyage ne vous guide plus, que vous en choisissez un autre ou que vous désactivez ceci." -- mt
+	"Pendant qu'un voyage mène, le suivi des objectifs affiche aussi les quêtes de votre journal sur lesquelles il travaille, puis les retire quand il passe à la suite. Les quêtes que vous suivez vous-même restent toujours suivies." -- mt
 L["SETTING_LOCK_TRACKER"] = "Verrouiller le suivi"
 L["SETTING_LOCK_TRACKER_TOOLTIP"] = "Garde le suivi Forever partagé là où vous l'avez placé."
 L["SETTING_MAP_PINS"] = "Afficher les repères d’itinéraire sur la carte"
@@ -447,13 +447,8 @@ L["TOWN_PICKUPS"] = "Prendre %d"
 L["TOWN_SKIP_GIVER"] = "Passer ce donneur de quêtes"
 L["TRACKER_DRAG_TITLE"] = "Suivi Forever"
 L["TRACKER_DRAG_TOOLTIP"] = "Glisser pour déplacer"
-L["TRACKER_HIDDEN_COUNT"] = "%d masquées" -- mt
-L["TRACKER_HIDDEN_TOOLTIP"] = "%d quêtes sont masquées du suivi pendant que ce voyage vous guide." -- mt
-L["TRACKER_HIDDEN_TOOLTIP_ONE"] = "1 quête est masquée du suivi pendant que ce voyage vous guide." -- mt
-L["TRACKER_HIDDEN_SHOW_ALL"] = "Clic droit : Afficher toutes les quêtes." -- mt
 L["TRACKER_LOADING"] = "Chargement des données de quêtes..."
 L["TRACKER_LOCKED_TOOLTIP"] = "Le suivi est verrouillé. Désactivez Verrouiller le suivi pour le déplacer."
-L["TRACKER_SHOW_ALL"] = "Afficher toutes les quêtes" -- mt
 L["TRACKER_PAUSED"] = "Itinéraire en pause. Cliquez sur le titre pour reprendre." -- mt
 L["TRACKER_SHOW_WHERE"] = "Réactivez-le dans Options > AddOns > Adventure Guide, sous Suivi des objectifs." -- mt
 L["TRACKER_UNATTACHED"] =

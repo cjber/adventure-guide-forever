@@ -2855,8 +2855,8 @@ do
 	for _, journey in ipairs(route.journeys) do
 		alternatives = alternatives + (journey.key:match("^chain:") and 1 or 0)
 	end
-	-- Gann's Reclamation, under way five levels up, is past the ceiling, so its story is not offered (#846).
-	equal(alternatives, 10, "guide: all ten alternative stories survive")
+	-- Continue lists zones: no unchosen story is a card (#864).
+	equal(alternatives, 0, "guide: Continue offers no story cards")
 	equal(#route.journeys - alternatives, 10, "guide: all ten destination/activity journeys survive")
 	equal(full, 1, "guide: only the chosen card is whole")
 	equal(lit, 1, "guide: and only it stays lit, so it reads as chosen in game")
@@ -2873,6 +2873,35 @@ do
 		return count
 	end
 	equal(Says(h, h.ns.L.NO_JOURNEY), 0, "guide: no empty line beside the cards")
+	-- #863: the list reaches the frame's bottom unless the footer shows a Stop button or a paused line.
+	local function ListBottom(each)
+		local panel = each.G.AdventureGuideForeverPanel
+		local found = each.Find(function(frame)
+			local corner = frame.points and frame.points[2]
+			return frame.parent
+				and frame.parent.parent == panel
+				and corner
+				and corner[1] == "BOTTOMRIGHT"
+				and frame.points[1][1] == "TOPLEFT"
+				and frame.points[1][4] == 0
+				and frame.points[1][5] == 0
+				and corner[4] == 0
+				and corner[5] > 0
+		end)
+		equal(#found, 1, "footer: one list viewport")
+		return found[1].points[2][5]
+	end
+	equal(h.ns.Guidance.Owns(), false, "footer: nothing guides here")
+	equal(ListBottom(h), 4, "footer: with no footer the list runs to the bottom")
+	local guided = Load("v1")
+	guided.tracker:OnBlockHeaderClick(guided.tracker.liveBlocks[guided.ns.Route().steps[1].key], "LeftButton")
+	guided.ns.OpenPanel()
+	guided.flush()
+	equal(guided.ns.Guidance.Owns(), true, "footer: the route guides")
+	equal(ListBottom(guided), 40, "footer: the list ends above the Stop button")
+	guided.ns.Stop()
+	guided.flush()
+	equal(ListBottom(guided), 4, "footer: once stopped the list runs to the bottom again")
 
 	-- F4: the chosen story shows its chapter track, one square per proven chapter, and never a later chapter's title.
 	local story = route.journeys[1]
@@ -3439,7 +3468,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(#Overview(), 0, label .. ": the overview gives way")
 	equal(Previews(), "", label .. ": with its steps")
 	equal(Says(L.OVERVIEW_WHERE:format("The Barrens", h.player.level)), 0, label .. ": and the line by the title")
-	equal(Heights(), "86" .. string.rep(" 26", 19), label .. ": the chosen route precedes alternatives")
+	-- Continue lists zones, so the alternatives are the other destinations and activities, no stories (#864).
+	equal(Heights(), "86" .. string.rep(" 26", 9), label .. ": the chosen route precedes alternatives")
 	equal(Cards()[1].journey.key, story.key, label .. ": the chosen card first, over its steps")
 	-- The chosen card is lit, not pressed: its art, pressed or not, is the card's own, so nothing moves.
 	local chosenCard = Cards()[1]
@@ -3501,7 +3531,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.flush()
 	equal(h.ns.Route().journey, key, label .. ": a row chooses its card")
 	equal(Starts(), 2, label .. ": and starts its route in place of the first")
-	equal(Heights(), "86" .. string.rep(" 26", 14), label .. ": still one whole card")
+	equal(Heights(), "86" .. string.rep(" 26", 9), label .. ": still one whole card")
 	equal(Cards()[1].journey.key, key, label .. ": the new choice over the steps")
 
 	-- The chosen card again: nothing changes but the map, which turns to it.
@@ -3536,7 +3566,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	h.Click(Overview()[2])
 	h.flush()
 	equal(h.ns.Route().chosen and h.ns.Route().journey, second.key, label .. ": a row chooses it")
-	equal(Heights(), "86" .. string.rep(" 26", 19), label .. ": alternatives fold below it")
+	equal(Heights(), "86" .. string.rep(" 26", 9), label .. ": alternatives fold below it")
 	equal(Cards()[1].journey.key, second.key, label .. ": lit over its steps")
 	equal(Rows(), #h.ns.Route().steps, label .. ": which are listed")
 	h.Click(Back())
@@ -3668,17 +3698,17 @@ do
 	equal(#Cards("zones"), 1, label .. ": the header's own toggle still folds")
 	equal(More("zones").Text:GetText(), L.MORE_CARDS:format(6), label .. ": its row is back")
 
-	-- Continue keeps two cards, so its row counts the other twelve, including the cloned card.
+	-- Continue keeps two cards, so its row counts the other two, including the cloned card; it lists no stories (#864).
 	local continuing = h.ns.Model.InSection(route.journeys, "continue")
 	Clone(continuing[#continuing], "continue:more")
 	h.ns.Prefs().previewGroups.continue = true
 	h.ns.OpenPanel()
 	h.flush()
 	equal(#Cards("continue"), 2, label .. ": a folded Continue shows two cards")
-	equal(More("continue").Text:GetText(), L.MORE_CARDS:format(12), label .. ": and its twelve hidden cards")
+	equal(More("continue").Text:GetText(), L.MORE_CARDS:format(2), label .. ": and its two hidden cards")
 	h.Click(More("continue"))
 	h.flush()
-	equal(#Cards("continue"), 14, label .. ": the row opens it")
+	equal(#Cards("continue"), 4, label .. ": the row opens it")
 	equal(More("continue"), nil, label .. ": and the row goes")
 	clean(h, label)
 end

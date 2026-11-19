@@ -292,6 +292,7 @@ function harness.load(options)
 	for _, name in ipairs({
 		"RegisterForDrag",
 		"SetClampedToScreen",
+		"SetClampRectInsets",
 		"SetMaxLetters",
 		"SetAutoFocus",
 		"SetMultiLine",
@@ -2236,6 +2237,10 @@ function harness.load(options)
 	h.bank = options.bank or {}
 	G.C_Item = {
 		RequestLoadItemDataByID = noop,
+		-- Cached when the item's info reads, as the client's cache backs both (a spec's GetItemInfo stub counts).
+		IsItemDataCachedByID = function(itemID)
+			return G.C_Item.GetItemInfo(itemID) ~= nil
+		end,
 		GetItemCount = function(itemID, includeBank)
 			return (h.bags[itemID] or 0) + (includeBank and (h.bank[itemID] or 0) or 0)
 		end,
@@ -3442,6 +3447,10 @@ function harness.load(options)
 	-- Core 1.12 post-hooks the container's own AddModule to join and leave the native list.
 	G.ObjectiveTrackerFrame.AddModule = function() end
 	G.ObjectiveTrackerFrame.RemoveModule = function() end
+	-- Core 1.15.3 places its column by whether the game's tracker is collapsed to its header.
+	G.ObjectiveTrackerFrame.IsCollapsed = function()
+		return false
+	end
 	G.ObjectiveTrackerManager = setmetatable({}, {
 		__index = function(_, key)
 			error("addon entered native tracker manager: " .. key)

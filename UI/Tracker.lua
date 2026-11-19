@@ -26,6 +26,8 @@ local LOADING = "loading"
 local POLESTAR = "polestar"
 -- A RestedXP guide's ongoing steps, one line each, under the step under way.
 local ONGOING = "rxp-ongoing"
+-- How many RestedXP steps after the one under way the tracker names (#870).
+local UPCOMING = 2
 -- The game's quest areas are off (the questPOI CVar, which Questie's Questie and pfQuest objective types turn off):
 -- one note says so, a click turns them back on and a right-click hides the note for good (#363). Never turned on
 -- without the player's click: it is their choice, or Questie's.
@@ -93,7 +95,6 @@ end
 ---@field hasContents? boolean whether the section laid out a block of its own this layout
 ---@field rxpActionsReserved? number the height the RestedXP action rows already added to contentsHeight
 ---@field npcHighlightReserved? number the height the next-NPC target button already added to contentsHeight
----@field hiddenText? FontString the grey "%d hidden" count beside the header
 local ModuleMixin = {
 	blockTemplate = "ObjectiveTrackerAnimBlockTemplate",
 }
@@ -186,11 +187,6 @@ local function TrackerMenu(target, menu)
 		if ns.Prefs().journey then
 			menu:End(L.END_JOURNEY, ns.Stop)
 		end
-	end
-	if ns.QuestWatch.Hidden() > 0 then
-		menu:Action(L.TRACKER_SHOW_ALL, function()
-			ns.SetSetting("journeyWatch", false)
-		end)
 	end
 end
 
@@ -349,7 +345,7 @@ end
 local function OneLine(step)
 	local first
 	for _, item in ipairs(step.checklist or {}) do
-		if not item.done then
+		if not item.done and not item.hint then
 			local text = ns.Overview.LineMarkup(item.rxpTag, MARK_SIZE) .. item.text
 			if Plain(item.text):find("^%d+/%d+ ") then
 				return text
@@ -390,9 +386,10 @@ local function GuideSection(module, block, step)
 	end
 	for _, item in ipairs(step.checklist or {}) do
 		line = line + 1
-		-- A done line greys whole, its coloured words too.
+		-- A done line greys whole, its coloured words too; so does a RestedXP tip, which is advice, never the line the
+		-- step is waiting on (#870).
 		local style, text = colors.Complete, Plain(item.text)
-		if not item.done then
+		if not item.done and not item.hint then
 			style, text = lit and colors.Normal or colors.NormalHighlight, ns.StepStyle.Checklist(step, item)
 			lit = true
 		end
@@ -402,20 +399,21 @@ local function GuideSection(module, block, step)
 	if not ns.Integrations.Guiding() then
 		line = TravelLines(block, step, line)
 	end
-	local ongoing, upcoming = {}, nil
+	-- The next two steps, one grey line each, as RestedXP's own window lists what comes after (#870).
+	local ongoing, upcoming = {}, {}
 	for _, other in ipairs(ns.Route().steps) do
 		if other ~= step and other.rxpIndex then
 			if other.rxpSticky and not other.preview then
 				ongoing[#ongoing + 1] = other
-			elseif not other.rxpSticky and not upcoming then
-				upcoming = other
+			elseif not other.rxpSticky and #upcoming < UPCOMING then
+				upcoming[#upcoming + 1] = other
 			end
 		end
 	end
-	if upcoming then
+	for index, other in ipairs(upcoming) do
 		block:AddObjective(
-			line + 1,
-			GRAY_FONT_COLOR:WrapTextInColorCode(L.NEXT:format(upcoming.title)),
+			line + index,
+			GRAY_FONT_COLOR:WrapTextInColorCode(L.NEXT:format(other.title)),
 			nil,
 			nil,
 			OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE
@@ -713,123 +711,20 @@ if module then
 	ForeverCore.TrackerLine.SetHeaderTooltip(module, BlockTooltip)
 	local header = module.Header
 	if header then
-		-- One line, so the client shortens a title too long for the room the hidden count leaves with its own ellipsis.
+		-- One line, so the client shortens a title too long for the header with its own ellipsis.
 		local title = header.Text
 		if title then
 			title:SetWordWrap(false)
 			title:SetMaxLines(1)
 		end
-		-- The section title explains the hidden count when there is one; nothing is said otherwise.
-		header:HookScript("OnEnter", function(self)
-			if not ns.Usable(self) then
-				return
-			end
-			local count = ns.QuestWatch.Hidden()
-			if count <= 0 or not GameTooltip then
-				return
-			end
-			GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-			GameTooltip_SetTitle(GameTooltip, module.headerText or L.TITLE)
-			local hidden = count == 1 and L.TRACKER_HIDDEN_TOOLTIP_ONE or L.TRACKER_HIDDEN_TOOLTIP:format(count)
-			GameTooltip_AddNormalLine(GameTooltip, hidden)
-			GameTooltip_AddNormalLine(GameTooltip, L.TRACKER_HIDDEN_SHOW_ALL)
-			GameTooltip:Show()
-		end)
-		header:HookScript("OnLeave", function()
-			if GameTooltip and GameTooltip.Hide then
-				GameTooltip:Hide()
-			end
-		end)
 	end
-end
-
--- The section's own header text starts 200 wide (ObjectiveTrackerModuleHeader.xml:33); the hidden count sits left of
--- the collapse button, so a long title is shortened to leave it room instead of running under it.
-local HEADER_TEXT_WIDTH = 200
-local HIDDEN_GAP = 6
----@type FontString?
-local hiddenText
-
----@return FontString?
-local function HeaderText()
-	return module and module.Header and module.Header.Text or nil
-end
-
----@return FontString?
-local function HiddenString()
-	if hiddenText then
-		return hiddenText
-	end
-	local header = module and module.Header
-	if not header then
-		return nil
-	end
-	hiddenText = header:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
-	hiddenText:SetJustifyH("RIGHT")
-	local collapse = header.MinimizeButton
-	if collapse then
-		hiddenText:SetPoint("RIGHT", collapse, "LEFT", -HIDDEN_GAP, 0)
-	else
-		hiddenText:SetPoint("RIGHT", header, "RIGHT", -22, 0)
-	end
-	hiddenText:Hide()
-	if module then
-		module.hiddenText = hiddenText
-	end
-	return hiddenText
-end
-
--- The room the title has before the hidden count and the collapse button.
----@param notice FontString
----@return number
-local function HeaderRoom(notice)
-	local header = module and module.Header
-	if not header then
-		return HEADER_TEXT_WIDTH
-	end
-	local width = header:GetWidth()
-	if not width or width <= 0 then
-		width = 260
-	end
-	local collapse = header.MinimizeButton
-	local button = collapse and collapse:GetWidth() or 0
-	local fromRight = collapse and 1 or 22
-	local room = width - 7 - fromRight - button - notice:GetStringWidth() - HIDDEN_GAP * 2
-	return math.min(HEADER_TEXT_WIDTH, math.max(24, room))
-end
-
--- Draws the small grey count while the journey hides any of the player's quests, and narrows the title around it.
-local function UpdateHidden()
-	if not module then
-		return
-	end
-	local text, notice = HeaderText(), HiddenString()
-	if not (text and notice) then
-		return
-	end
-	text:SetText(module.headerText or text:GetText() or "")
-	local count = ns.QuestWatch.Hidden()
-	if count <= 0 then
-		notice:Hide()
-		text:SetWidth(HEADER_TEXT_WIDTH)
-		return
-	end
-	notice:SetText(L.TRACKER_HIDDEN_COUNT:format(count))
-	notice:Show()
-	local room = HeaderRoom(notice)
-	text:SetWidth(room)
 end
 
 local function Refresh()
 	if module then
 		local journey = ns.Route().chosen and not ns.Polestar.Active() and ns.CurrentJourney()
 		module.headerText = journey and journey.title or L.TITLE
-		local text = HeaderText()
-		if text then
-			text:SetWidth(HEADER_TEXT_WIDTH)
-		end
 		module:SetHeader(module.headerText)
-		UpdateHidden()
 		module:MarkDirty()
 	end
 end
@@ -904,7 +799,6 @@ cvars:SetScript("OnEvent", function(_, _, name)
 	end
 end)
 ns.OnRouteChange(OnRouteChange)
-ns.QuestWatch.OnChange(Refresh)
 ns.Integrations.OnTravelChange(Refresh)
 ns.Guidance.OnChange(Refresh)
 ns.Asides.OnChange(Refresh)

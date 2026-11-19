@@ -202,12 +202,12 @@ equal(warning ~= nil, true, "quest visit: the zone is above the character's leve
 equal(Tracker(h), warning, "quest visit: alert keeps the range warning")
 clean(h, "quest visit")
 
--- A newly eligible alternative is a new offer even when the destination card was already seen.
+-- A story is never an offer of its own: Continue lists zones, so a level-up that makes one eligible says nothing.
 do
 	local alternative = Load({ seen = { ["zone:1424"] = true } })
 	LevelUp(alternative, 19)
-	equal(Tracker(alternative), "Ziz Fizziks is now for your level", "new alternative: names its own story")
-	equal(alternative.ns.Moments.IsNew("chain:1483"), true, "new alternative: its card is marked")
+	equal(Tracker(alternative), nil, "new alternative: a story makes no moment line")
+	equal(alternative.ns.Moments.IsNew("chain:1483"), false, "new alternative: no story card is marked")
 	clean(alternative, "new alternative")
 end
 

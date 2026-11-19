@@ -50,6 +50,11 @@ local function Setup(sim, settings, global)
 			calls.printed[#calls.printed + 1] = text
 		end,
 	}
+	-- As Core.lua's: the setting changes, and the guide applies it.
+	ns.SetSetting = function(key, value)
+		settings[key] = value
+		ns.QuestieOptions.ApplyTracker()
+	end
 	assert(
 		sim.templates.loadLua("Integrations/QuestieOptions.lua", ADDON .. "/Integrations/QuestieOptions.lua", ADDON, ns)
 	)
@@ -100,6 +105,58 @@ scenario(
 		assert(sim.cvars.questPOI == "0", "the CVar is the player's")
 		assert(sim.G.Questie.db.profile.trackerEnabled == true, "with the setting off Questie's tracker is untouched")
 		assert(sim.G.Questie_BaseFrame ~= nil, "and Questie builds it")
+		sim:expectNoErrors(ADDON)
+	end
+)
+
+scenario(
+	"The player turning Questie's tracker on in Questie wins over the guide's setting",
+	{ addon = false, stubs = { Questie = { delay = 2 } } },
+	function(sim)
+		local settings = { hideQuestieTracker = true, showTracker = true }
+		local ns = Setup(sim, settings, { tutorialObjectiveTypeChosen = true })
+		sim:login()
+		sim:advance(4)
+		local profile = sim.G.Questie.db.profile
+		assert(profile.trackerEnabled == false, "the ticked setting turns Questie's tracker off")
+		-- The player ticks Questie's own tracker option, and Questie reloads.
+		profile.trackerEnabled = true
+		sim.events.fire("PLAYER_LOGOUT")
+		assert(profile.trackerEnabled == true, "Questie saves the player's choice")
+		assert(settings.hideQuestieTracker == false, "and the guide's setting gives way")
+		ns.QuestieOptions.ApplyTracker(true)
+		assert(profile.trackerEnabled == true, "the next load leaves Questie's tracker on")
+		sim:expectNoErrors(ADDON)
+	end
+)
+
+scenario(
+	"Questie's tracker turned on mid-session stays on when the guide next applies its setting",
+	{ addon = false, stubs = { Questie = { delay = 2 } } },
+	function(sim)
+		local settings = { hideQuestieTracker = true, showTracker = true }
+		local ns = Setup(sim, settings, { tutorialObjectiveTypeChosen = true })
+		sim:login()
+		sim:advance(4)
+		local profile = sim.G.Questie.db.profile
+		local notified = {}
+		local notify = sim.G.Settings.NotifyUpdate
+		sim.G.Settings.NotifyUpdate = function(variable)
+			notified[#notified + 1] = variable
+			return notify(variable)
+		end
+		profile.trackerEnabled = true
+		-- The guide's own tracker is hidden and shown again: the guide applies its setting.
+		settings.showTracker = false
+		ns.QuestieOptions.ApplyTracker()
+		settings.showTracker = true
+		ns.QuestieOptions.ApplyTracker()
+		assert(profile.trackerEnabled == true, "Questie's tracker stays the player's")
+		assert(settings.hideQuestieTracker == false, "and the guide's setting is off")
+		assert(
+			notified[1] == "AdventureGuideForever_hideQuestieTracker",
+			"an open settings page is told the checkbox turned off"
+		)
 		sim:expectNoErrors(ADDON)
 	end
 )
