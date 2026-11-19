@@ -218,7 +218,13 @@ for _, fixture in ipairs(characters.list) do
 				end
 			end
 		end
-		equal(counted, #fixture.log, "human19_redridge_full: every carried quest counted once")
+		-- A quest under way past the level ceiling is no card's (#846): the route never sends the player to it.
+		local within = 0
+		for _, entry in ipairs(fixture.log) do
+			within = within + ((entry.complete or not Model.AboveCeiling(entry.level, player)) and 1 or 0)
+		end
+		equal(within < #fixture.log, true, "human19_redridge_full: the log carries quests past the ceiling")
+		equal(counted, within, "human19_redridge_full: every carried quest within the ceiling counted once")
 	end
 
 	-- F12: a route crosses an ocean at most once, and a turn-in over there waits until the route is there.

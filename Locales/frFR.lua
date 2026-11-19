@@ -353,7 +353,7 @@ L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 L["SETTING_QUEST_LEVEL"] = "Niveau de quête maximum au-dessus du vôtre"
 L["SETTING_QUEST_LEVEL_ONE"] = "%s niveau"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =
-	"Choisissez le niveau de quête le plus élevé que le guide recommande par rapport à votre niveau. La valeur par défaut, +2, évite les quêtes orange et rouges. Les quêtes déjà dans votre journal restent visibles."
+	"Choisissez le niveau de quête le plus élevé que le guide recommande par rapport à votre niveau. La valeur par défaut, +2, évite les quêtes orange et rouges. Une quête de votre journal au-dessus reste hors de l'itinéraire jusqu'à ce que votre niveau la rattrape ou qu'elle soit prête à être rendue."
 L["SETTING_QUEST_LEVEL_VALUE"] = "%s niveaux"
 L["SETTING_ROUTE_ORDER"] = "Itinéraire optimisé (bêta)"
 L["SETTING_ROUTE_ORDER_TOOLTIP"] =

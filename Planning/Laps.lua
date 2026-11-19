@@ -1022,11 +1022,11 @@ local function FinishLapOrder(route, skipped, order, card, ordered, into)
 	-- A step the check dropped (its pickups gave way to the log's limit) leaves the order with it, so the next build
 	-- ranks only steps this one holds and a rebuild with nothing changed is the same route. A step past the step limit
 	-- stays in the order.
-	local held = {}
+	local held, picked = {}, {}
 	for _, step in ipairs(route) do
 		held[step] = {}
 		for _, id in ipairs(step.kind == "town" and step.pickups or NONE) do
-			held[step][id] = true
+			held[step][id], picked[id] = true, true
 		end
 		for _, id in ipairs(step.kind == "town" and step.handins or NONE) do
 			held[step][-id] = true
@@ -1061,12 +1061,8 @@ local function FinishLapOrder(route, skipped, order, card, ordered, into)
 				order.taken[id] = id > 0 or nil
 			end
 		end
-		order.picked = {}
-		for _, step in ipairs(route) do
-			for _, id in ipairs(step.kind == "town" and step.pickups or NONE) do
-				order.picked[id] = true
-			end
-		end
+		-- The pickups the order holds, past the step limit too, keep their log room on the next build (Verify).
+		order.picked = picked
 		State.committedOrders[card] = order
 	end
 end

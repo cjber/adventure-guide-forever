@@ -15,6 +15,7 @@ local InZone = ns.Planner.Zones.InZone
 local Index = ns.Planner.Eligibility.Index
 local Locate = ns.Planner.Steps.Locate
 local Opens = ns.Planner.Steps.Opens
+local QuestLevel = ns.Planner.Steps.QuestLevel
 local ReadDropped = ns.Planner.Eligibility.ReadDropped
 local Ready = ns.Planner.Steps.Ready
 local Route = ns.Planner.Plan.Route
@@ -209,11 +210,18 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 		end
 		return kept
 	end
+	-- A pickup past the level ceiling leaves too, as Model.Hard keeps it off a full build.
 	local function Open(id)
 		return Eligible(data, player, completed, log, id, groups)
+			and not Model.AboveCeiling(QuestLevel(data, log, player, id), player)
 	end
 	local function Carried(id)
 		return log[id] ~= nil and log[id].complete
+	end
+	-- An open log quest past the level ceiling leaves the work and a lap's return, as in LogSteps: the setting can drop
+	-- in a fight.
+	local function Over(id)
+		return log[id] ~= nil and not log[id].complete and Model.AboveCeiling(QuestLevel(data, log, player, id), player)
 	end
 	local function Prune(step)
 		if skipped[step.key] then
@@ -227,6 +235,8 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 			local function Carrying(id)
 				if log[id] == nil then
 					return step.planned ~= nil and step.planned[id] ~= nil and Open(id)
+				elseif Over(id) then
+					return false
 				end
 				return not ((step.objectives or step.entrance) and log[id].complete)
 			end
@@ -268,7 +278,8 @@ function Model.Refresh(data, player, completed, log, prefs, last, mapName, input
 		end
 		-- A lap's return hands in what it picks up or carries once done: kept while carried, or while still open.
 		local function Due(id)
-			return Carried(id) or (step.returns ~= nil and step.returns[id] ~= nil and (log[id] ~= nil or Open(id)))
+			return Carried(id)
+				or (step.returns ~= nil and step.returns[id] ~= nil and not Over(id) and (log[id] ~= nil or Open(id)))
 		end
 		local pickups, handins = Keep(step.pickups, Open), Keep(step.handins, Due)
 		if #pickups + #handins == #step.quests then

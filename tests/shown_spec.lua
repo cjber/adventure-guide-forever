@@ -23,6 +23,8 @@ local function Case(name, optimised)
 	for _, fixture in ipairs(characters.list) do
 		if fixture.name == name then
 			local player, completed, log, wanted = characters.Resolve(ns.Data, fixture)
+			-- orc18_barrens carries a quest five levels up: the widest ceiling keeps its steps to reorder (#846).
+			player.maxQuestLevelOffset = 10
 			local prefs = ns.Prefs()
 			for key, value in pairs(wanted) do
 				if key ~= "skipped" then
