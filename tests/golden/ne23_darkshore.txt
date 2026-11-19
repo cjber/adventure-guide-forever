@@ -11,7 +11,7 @@ card (chosen) | zone:1437 | Wetlands story | Chapter 1 of 8 | A chain begins wit
   step 9 | area:470:4 | Complete objectives · Digging Through the Ooze | 1437 0.4470,0.2540 | after you pick it up | 92 yd | 470/4
   step 10 | area:294:0 | Complete objectives · Ormer's Revenge | 1437 0.2420,0.4830 | after you pick it up | 87 yd | 294/0
 card | zone:1442 | Head to Stonetalon Mountains | 3 quests near your level | - | map 1442
-  step 1 | town:1442:464 | Pick up: Stonetalon Supply Run | 1442 0.4869,0.3985 | near your level
+  step 1 | town:1442:464 | Pick up: Stonetalon Supply Run | 1442 0.4869,0.3986 | near your level
   step 2 | town:1442:1076 | Pick up: Super Reaper 6000 | 1442 0.5899,0.6260 | near your level
   step 3 | town:1442:461 | Pick up: Gerenzo's Orders | 1442 0.7187,0.6000 | near your level
 card | zone:1433 | Head to Redridge Mountains | 12 quests near your level | - | map 1433
@@ -39,7 +39,7 @@ card | zone:1436 | Head to Westfall | 4 quests near your level | - | map 1436
   step 3 | town:1436:115 | Visit Westfall Lighthouse: Pick up 2 | 1436 0.3001,0.8602 | 2 to pick up
 card | zone:1432 | Head to Loch Modan | 7 quests near your level | Thelsamar needs hands | map 1432
   step 1 | town:1432:144 | Visit Thelsamar: Pick up 3 | 1432 0.3730,0.4652 | 3 to pick up
-  step 2 | town:1432:556 | Pick up: Silver of the Waves | 1432 0.4568,0.4329 | near your level
+  step 2 | town:1432:556 | Pick up: Silver of the Waves | 1432 0.4568,0.4328 | near your level
   step 3 | town:1432:146 | Pick up: A Dark Threat Looms | 1432 0.4605,0.1361 | near your level
   step 4 | town:1432:142 | Pick up: Gathering Idols | 1432 0.6490,0.6666 | near your level
   step 5 | town:1432:923 | Pick up: Banner of the Fallen | 1432 0.3178,0.8633 | near your level
@@ -48,5 +48,5 @@ card | zone:1426 | Head to Dun Morogh | 2 quests near your level | - | map 1426
   step 2 | town:1432:144 | Pick up: Stonegear's Search | 1432 0.3263,0.4974 | near your level
 card | zone:1445 | Head to Dustwallow Marsh | 1 quest near your level | - | map 1445
   step 1 | town:1445:513 | Pick up: Journey to Astranaar | 1445 0.6646,0.4515 | near your level
-card | zone:1434 | Head to Stranglethorn Vale | 2 quests near your level | - | map 1434
-  step 1 | town:1434:35 | Visit Booty Bay: Pick up 2 | 1434 0.2813,0.7590 | 2 to pick up
+card | zone:1434 | Head to Stranglethorn Vale | 1 quest near your level | - | map 1434
+  step 1 | town:1434:35 | Pick up: A Special Gift | 1434 0.2813,0.7590 | near your level
