@@ -108,6 +108,7 @@ equal(#Model.Spots(step), 1, "spots: one distinct spot")
 -- Through the addon: the first area step with several spots offers "Next spot", and pressing it moves its point.
 do
 	local h = harness.load({
+		db = { maxQuestLevelOffset = 10 },
 		charDB = { journey = "zone:1413" },
 		planned = true,
 		completed = { 844 },
@@ -235,6 +236,7 @@ end
 -- walks, though the area the player stands in stays the same.
 do
 	local h = harness.load({
+		db = { maxQuestLevelOffset = 10 },
 		charDB = { journey = "zone:1431" },
 		planned = true,
 		log = { { id = 56, title = "The Night Watch", level = 24, complete = false } },

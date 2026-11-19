@@ -346,7 +346,7 @@ L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 L["SETTING_QUEST_LEVEL"] = "任務等級最多高於你" -- mt
 L["SETTING_QUEST_LEVEL_ONE"] = "%s級" -- mt
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =
-	"選擇指南相對你的等級所建議的最高任務等級。預設的+2可避開橘色與紅色任務。任務日誌中已有的任務仍會顯示。" -- mt
+	"選擇指南相對你的等級所建議的最高任務等級。預設的+2可避開橘色與紅色任務。任務日誌中高於此等級的任務不會列入路線，直到你的等級跟上或它可以交付。" -- mt
 L["SETTING_QUEST_LEVEL_VALUE"] = "%s級" -- mt
 L["SETTING_ROUTE_ORDER"] = "最佳化路線（測試版）" -- mt
 L["SETTING_ROUTE_ORDER_TOOLTIP"] =

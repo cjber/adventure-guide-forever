@@ -350,7 +350,7 @@ L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 L["SETTING_QUEST_LEVEL"] = "Nível máximo de missão acima do seu"
 L["SETTING_QUEST_LEVEL_ONE"] = "%s nível"
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =
-	"Escolha o nível de missão mais alto que o guia recomenda em relação ao seu nível. O padrão, +2, evita missões laranjas e vermelhas. Missões que já estão no seu registro continuam visíveis."
+	"Escolha o nível de missão mais alto que o guia recomenda em relação ao seu nível. O padrão, +2, evita missões laranjas e vermelhas. Uma missão do seu registro acima dele fica fora da rota até seu nível alcançá-la ou ela estar pronta para entregar."
 L["SETTING_QUEST_LEVEL_VALUE"] = "%s níveis"
 L["SETTING_ROUTE_ORDER"] = "Rota otimizada (beta)"
 L["SETTING_ROUTE_ORDER_TOOLTIP"] =

@@ -346,7 +346,7 @@ L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 L["SETTING_QUEST_LEVEL"] = "任务等级最多高于你" -- mt
 L["SETTING_QUEST_LEVEL_ONE"] = "%s级" -- mt
 L["SETTING_QUEST_LEVEL_TOOLTIP"] =
-	"选择指南相对你的等级所推荐的最高任务等级。默认的+2可避开橙色和红色任务。任务日志中已有的任务仍会显示。" -- mt
+	"选择指南相对你的等级所推荐的最高任务等级。默认的+2可避开橙色和红色任务。任务日志中高于此等级的任务不会列入路线，直到你的等级跟上或它可以交付。" -- mt
 L["SETTING_QUEST_LEVEL_VALUE"] = "%s级" -- mt
 L["SETTING_ROUTE_ORDER"] = "优化路线（测试版）" -- mt
 L["SETTING_ROUTE_ORDER_TOOLTIP"] =

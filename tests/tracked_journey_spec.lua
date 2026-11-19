@@ -26,7 +26,8 @@ local function Load(watched, options)
 	options = options or {}
 	return harness.load({
 		planned = true,
-		db = { autoStart = false },
+		-- Gann's Reclamation is five levels above the level 18 player: the widest ceiling keeps it on the route.
+		db = { autoStart = false, maxQuestLevelOffset = 10 },
 		charDB = options.charDB,
 		completed = { 844 },
 		log = options.log or LOG,
