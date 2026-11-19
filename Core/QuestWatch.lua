@@ -319,6 +319,21 @@ local function Later()
 	C_Timer.After(0, Watch.Sync)
 end
 
+-- A quest the client or Questie tracked on its own, which the leader did not name at the last settle, goes in the
+-- same event (#860). The quest tracker draws a new watch on its next frame, so Sync's untracking a frame later would
+-- grow the tracker for one frame and shrink it again, and the column under it would jump down and back. A quest the
+-- rebuilt route names is tracked by Sync once, after the rebuild.
+---@param questID integer
+local function DropAutomatic(questID)
+	if not source or InCombatLockdown() or not Watched(questID) then
+		return
+	end
+	local state = ns.Prefs().guideWatch
+	if state and not state.named[questID] then
+		RemoveWatch(questID)
+	end
+end
+
 ns.OnRouteChange(Watch.Sync)
 local events = CreateFrame("Frame")
 events:RegisterEvent("QUEST_ACCEPTED")
@@ -355,6 +370,9 @@ events:SetScript("OnEvent", function(_, event, first, second)
 				state.hidden[questID] = nil
 			end
 		end
+	end
+	if event == "QUEST_ACCEPTED" or (event == "QUEST_WATCH_LIST_CHANGED" and second == true and automatic) then
+		DropAutomatic(questID)
 	end
 	-- A watch change needs a look only for a quest the client may have tracked: the rest are ours or the player's.
 	if event ~= "QUEST_WATCH_UPDATE" and (event ~= "QUEST_WATCH_LIST_CHANGED" or auto[questID]) then

@@ -106,12 +106,21 @@ equal(heading.maxLines, 1, "...")
 check(heading:GetWidth() < 200, "and is narrowed to leave the count its room")
 journey.title = title
 
--- The client tracks a quest on accept; one the journey does not name is the addon's, not the player's, and goes.
+-- The client tracks a quest on accept; one the journey does not name is the addon's, not the player's, and goes in
+-- the same event, before the quest tracker's next frame draws it (#860): a block drawn for one frame and taken away
+-- in the next grows and shrinks the tracker, and the column under it jumps down and back.
 h.watched[#h.watched + 1] = 851
 h.fire("QUEST_ACCEPTED", 851)
+equal(Watched(h, 851), false, "a quest the client tracked on accept is untracked at once")
 h.ns.Invalidate()
 h.flush()
-equal(Watched(h, 851), false, "a quest the client tracked on accept is untracked")
+equal(Watched(h, 851), false, "and stays untracked after the rebuild")
+-- Questie's auto tracking adds the watch a moment after the accept: that one goes at once too.
+h.fire("QUEST_ACCEPTED", 852)
+h.watched[#h.watched + 1] = 852
+h.fire("QUEST_WATCH_LIST_CHANGED", 852, true)
+equal(Watched(h, 852), false, "a quest auto tracked after the accept is untracked at once")
+h.flush()
 
 -- The setting off gives the player's own list back and stops counting anything.
 h.ns.SetSetting("journeyWatch", false)
