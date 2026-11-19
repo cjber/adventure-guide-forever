@@ -246,7 +246,9 @@ follow the shared family voice.
   the step sends the player to, so an area whose mobs outlevel the ceiling waits even when its quest does not. A town or pickup stop
   reads the quest's own level only. A
   ready hand-in, a quest within the ceiling, and a stop with no quest at all (a trainer, an entrance) are work for now. So near-level and lower-level work, and hand-ins already done, lead a quest several levels above the
-  player. Then take the nearest town pickup, the nearest area of a quest the town handed out or the player carries, or
+  player. A quest under way in the log past the ceiling, by the log's level, is on no card at all (`LogSteps`, #846):
+  the route never sends the player to work above the setting, whether the route took the quest or not. Its hand-in
+  routes once it is done, and the quest comes back once the player's level brings it within the ceiling. Then take the nearest town pickup, the nearest area of a quest the town handed out or the player carries, or
   the nearest ready hand-in. A ready hand-in or a pickup within a short walk of the player comes before a step whose
   own target point is farther, so the guide finishes what is beside the player first; once it leads it stays until it
   is done or skipped (the held step, §4.2).

@@ -380,6 +380,35 @@ function harness.load(options)
 	G.ResetCursor = function()
 		h.cursor = nil
 	end
+	-- The pointer in screen pixels, and Blizzard_SharedXML's helpers that ForeverCore's ContextMenu places a menu with:
+	-- at the cursor, or under the gamepad interface (h.gamepad) beside its owner by screen quadrant.
+	G.GetCursorPosition = function()
+		return h.cursorX or 0, h.cursorY or 0
+	end
+	G.InputUtil = {
+		IsGamepadUIEnabled = function()
+			return h.gamepad == true
+		end,
+		AnchorRegionToCursor = function(region, point)
+			local x, y = G.GetCursorPosition()
+			local scale = G.UIParent:GetEffectiveScale()
+			region:ClearAllPoints()
+			region:SetPoint(point, G.UIParent, "BOTTOMLEFT", x / scale, y / scale)
+		end,
+	}
+	G.FrameUtilQuadrantEnum = { BottomLeft = 1, BottomRight = 2, TopLeft = 3, TopRight = 4 }
+	G.FrameUtil = {
+		GetScreenQuadrant = function(frame)
+			local x, y = frame:GetCenter()
+			x, y = x * frame:GetScale(), y * frame:GetScale()
+			local left, bottom = x < G.UIParent:GetWidth() / 2, y < G.UIParent:GetHeight() / 2
+			local quadrant = G.FrameUtilQuadrantEnum
+			if bottom then
+				return left and quadrant.BottomLeft or quadrant.BottomRight
+			end
+			return left and quadrant.TopLeft or quadrant.TopRight
+		end,
+	}
 
 	function Methods:GetObjectType()
 		return self.objectType
