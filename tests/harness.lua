@@ -292,6 +292,7 @@ function harness.load(options)
 	for _, name in ipairs({
 		"RegisterForDrag",
 		"SetClampedToScreen",
+		"SetClampRectInsets",
 		"SetMaxLetters",
 		"SetAutoFocus",
 		"SetMultiLine",
@@ -3442,6 +3443,10 @@ function harness.load(options)
 	-- Core 1.12 post-hooks the container's own AddModule to join and leave the native list.
 	G.ObjectiveTrackerFrame.AddModule = function() end
 	G.ObjectiveTrackerFrame.RemoveModule = function() end
+	-- Core 1.15.3 reads whether the player collapsed the tracker to its header (forever-core#911).
+	G.ObjectiveTrackerFrame.IsCollapsed = function()
+		return false
+	end
 	G.ObjectiveTrackerManager = setmetatable({}, {
 		__index = function(_, key)
 			error("addon entered native tracker manager: " .. key)

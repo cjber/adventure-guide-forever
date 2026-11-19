@@ -343,7 +343,7 @@ do
 	-- Every row goes in through the secure delegate; none from addon code, which taints the search. The rows are
 	-- grouped into subcategories with a short index page, so no page grows tall.
 	equal(h.taintedRows, 0, "no settings row is inserted from addon code")
-	equal(#h.settings, 31, "27 settings rows and 4 index buttons, all through Settings.RegisterInitializer")
+	equal(#h.settings, 32, "28 settings rows and 4 index buttons, all through Settings.RegisterInitializer")
 	local L = h.ns.L
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_ROUTE] or {}, " "),
@@ -360,7 +360,7 @@ do
 	)
 	equal(
 		table.concat(pages[L.SETTINGS_GROUP_TRACKER] or {}, " "),
-		"lockTracker showTracker trackRouteQuests journeyWatch guideTracksQuests",
+		"trackerAttached lockTracker showTracker trackRouteQuests journeyWatch guideTracksQuests",
 		"the objective tracker rows sit together, the parent first"
 	)
 	equal(
@@ -407,17 +407,26 @@ do
 	equal(h.openedSettingsRestricted, 0, "More settings calls the shared opener, not Blizzard's wrapper")
 	equal(byKey.journeyWatch.indented, nil, "journey watching is its own row, not under the title click")
 	equal(byKey.journeyWatch.tooltip, L.SETTING_JOURNEY_WATCH_TOOLTIP, "and says what happens to the player's quests")
-	local lockSetting
+	local lockSetting, attachSetting
 	for _, setting in ipairs(h.addonSettings) do
 		if setting.key == "lockTracker" then
 			lockSetting = setting
+		elseif setting.key == "trackerAttached" then
+			attachSetting = setting
 		end
-		equal(
-			setting.key == "attachTracker",
-			false,
-			"no attach setting: the column is pinned left of the game's tracker"
-		)
 	end
+	-- The shared column's attach row is core's, the same in every Forever addon (forever-core#910).
+	equal(attachSetting ~= nil, true, "the shared attach setting is registered")
+	equal(
+		byKey.trackerAttached.tooltip:find("Every Forever addon shows this same setting", 1, true) ~= nil,
+		true,
+		"with core's words"
+	)
+	equal(attachSetting.GetValue(), true, "the column starts under the quest tracker")
+	attachSetting:SetValue(false)
+	equal(h.G.ForeverCore.TrackerHost.GetPlacement(), "left", "turning it off places the column left of the tracker")
+	attachSetting:SetValue(true)
+	equal(h.G.ForeverCore.TrackerHost.GetPlacement(), "under", "and on puts it back under")
 	equal(lockSetting ~= nil, true, "shared tracker lock setting is registered")
 	equal(lockSetting.GetValue(), false, "the tracker starts unlocked")
 	lockSetting:SetValue(true)
