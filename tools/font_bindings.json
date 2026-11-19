@@ -188,7 +188,7 @@
     },
     {
       "source": "UI/Overview.lua",
-      "sha256": "c90e7d84d85da65ea615759aba07fc3f4d0d5f29869f73d665875063efcb3e8f",
+      "sha256": "ba157280bc0fa2afa410c7273754b8afc314ee84431cd906f8c1804d255597f7",
       "review": "Read GROUPS/LABELS, HubLine, DropLine, CleanupLine, Progress, Stops, Levels and VisitWarning, their exports and Panel.lua consumers. LayoutGroup sends group.label to Game15Font_Shadow header.Name. Hub/drop/cleanup/warning formats reach card.Reason (GameFontHighlightSmall in both Panel.xml and CreateOverviewCard). Progress and Stops reach overview card.Foot (GameFontDisableSmall); Levels reaches card.Level (GameFontNormal). No consumer changes these fonts. Checklist text, arbitrary helper arguments, Counts output without a confirmed rendering caller, tooltip/menu-only phrases, dynamic game data and group notes sent to runtime-rebound tracker fonts are excluded.",
       "bindings": [
         {
@@ -305,7 +305,7 @@
     },
     {
       "source": "UI/Tracker.lua",
-      "sha256": "fb3636ab90f4e1c0e1c33f582d7145dacb1ac5fd4a7560321c915886da992fca",
+      "sha256": "8fed0a8cdb16e75db669a2587dfc2fc4e725cfc6b8884407f110742bddbf7097",
       "review": "Read module construction, LayoutContentsBase, GuideSection, Preview, TravelLines, StoryBeat and Refresh. The hidden-count notice and its HiddenString widget are removed (#865), so no addon-created font string remains to bind. Reviewed ForeverCore UI/TrackerSection.lua Create and pinned Blizzard_ObjectiveTrackerModule.xml, Block.xml, Shared.xml and AnimTemplates.xml: module header uses ObjectiveTrackerHeaderFont; anim block HeaderText and anim line Text inherit ObjectiveTrackerLineFont. Excluded those template text paths because Blizzard_ObjectiveTrackerManager.lua SetTextSize later calls SetFontObject on both FontObjects, so their final font is outside this review. Also excluded tooltips, menus, chat, dynamic data, helper output and companion fonts.",
       "bindings": []
     },

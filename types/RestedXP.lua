@@ -116,6 +116,7 @@ RXPCData = nil
 ---@field text string
 ---@field done boolean
 ---@field elementIndex? integer
+---@field hint? boolean a RestedXP tip ("*" line): its step window shows it, its tooltips and step list do not
 
 ---@class AGFRXPDisplayStep
 ---@field index integer

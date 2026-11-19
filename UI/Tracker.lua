@@ -26,6 +26,8 @@ local LOADING = "loading"
 local POLESTAR = "polestar"
 -- A RestedXP guide's ongoing steps, one line each, under the step under way.
 local ONGOING = "rxp-ongoing"
+-- How many RestedXP steps after the one under way the tracker names (#870).
+local UPCOMING = 2
 -- The game's quest areas are off (the questPOI CVar, which Questie's Questie and pfQuest objective types turn off):
 -- one note says so, a click turns them back on and a right-click hides the note for good (#363). Never turned on
 -- without the player's click: it is their choice, or Questie's.
@@ -343,7 +345,7 @@ end
 local function OneLine(step)
 	local first
 	for _, item in ipairs(step.checklist or {}) do
-		if not item.done then
+		if not item.done and not item.hint then
 			local text = ns.Overview.LineMarkup(item.rxpTag, MARK_SIZE) .. item.text
 			if Plain(item.text):find("^%d+/%d+ ") then
 				return text
@@ -384,9 +386,10 @@ local function GuideSection(module, block, step)
 	end
 	for _, item in ipairs(step.checklist or {}) do
 		line = line + 1
-		-- A done line greys whole, its coloured words too.
+		-- A done line greys whole, its coloured words too; so does a RestedXP tip, which is advice, never the line the
+		-- step is waiting on (#870).
 		local style, text = colors.Complete, Plain(item.text)
-		if not item.done then
+		if not item.done and not item.hint then
 			style, text = lit and colors.Normal or colors.NormalHighlight, ns.StepStyle.Checklist(step, item)
 			lit = true
 		end
@@ -396,20 +399,21 @@ local function GuideSection(module, block, step)
 	if not ns.Integrations.Guiding() then
 		line = TravelLines(block, step, line)
 	end
-	local ongoing, upcoming = {}, nil
+	-- The next two steps, one grey line each, as RestedXP's own window lists what comes after (#870).
+	local ongoing, upcoming = {}, {}
 	for _, other in ipairs(ns.Route().steps) do
 		if other ~= step and other.rxpIndex then
 			if other.rxpSticky and not other.preview then
 				ongoing[#ongoing + 1] = other
-			elseif not other.rxpSticky and not upcoming then
-				upcoming = other
+			elseif not other.rxpSticky and #upcoming < UPCOMING then
+				upcoming[#upcoming + 1] = other
 			end
 		end
 	end
-	if upcoming then
+	for index, other in ipairs(upcoming) do
 		block:AddObjective(
-			line + 1,
-			GRAY_FONT_COLOR:WrapTextInColorCode(L.NEXT:format(upcoming.title)),
+			line + index,
+			GRAY_FONT_COLOR:WrapTextInColorCode(L.NEXT:format(other.title)),
 			nil,
 			nil,
 			OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE

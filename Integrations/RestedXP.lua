@@ -478,10 +478,13 @@ local function Snapshot(engine)
 		}
 		for index, element in ipairs(step.elements or {}) do
 			local text, npc = Text(engine, element.text or element.tooltipText or element.rawtext, element)
-			if text ~= "" and not element.hideTooltip and not element.hidden then
+			-- RestedXP's step window draws every line of a step under way, its tips ("*" lines) too; hideTooltip only
+			-- keeps a line out of its tooltips and its list of later steps, so a preview row drops them (#870).
+			local hint = element.hideTooltip and element.textOnly
+			if text ~= "" and not element.hidden and not (element.hideTooltip and (preview or not hint)) then
 				local done = not preview and not element.textOnly and not not (element.completed or element.skip)
 				-- Who the step is for: the first NPC an open line names, else any line's.
-				if npc and (not row.target or not (done or row.targetOpen)) then
+				if npc and not hint and (not row.target or not (done or row.targetOpen)) then
 					row.target, row.targetOpen = npc, not done
 				end
 				row.lines[#row.lines + 1] = {
@@ -490,6 +493,7 @@ local function Snapshot(engine)
 					questId = element.questId,
 					tag = element.tag,
 					elementIndex = not preview and not element.textOnly and not element.optional and index or nil,
+					hint = hint or nil,
 				}
 			end
 		end
@@ -646,6 +650,7 @@ local function Sync()
 				.. tostring(line.elementIndex)
 				.. tostring(line.questId)
 				.. tostring(line.tag)
+				.. tostring(line.hint)
 		end
 		for _, item in ipairs(step.items or {}) do
 			parts[#parts + 1] = "item:" .. tostring(item.id)
@@ -959,6 +964,7 @@ function Guide.Journey()
 						text = line.text,
 						rxpTag = line.tag,
 						rxpQuest = line.questId,
+						hint = line.hint,
 						pickups = {},
 						handins = {},
 						done = line.done,
