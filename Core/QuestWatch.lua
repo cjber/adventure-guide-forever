@@ -141,10 +141,12 @@ end
 -- the old reader takes none of their quests.
 ---@param state AGFGuideWatchState
 local function Restore(state)
-	local log = ns.State.Log()
-	for _, questID in ipairs(state.saved or {}) do
-		if log[questID] and not Watched(questID) then
-			AddWatch(questID)
+	if state.saved and #state.saved > 0 then
+		local log = ns.State.Log()
+		for _, questID in ipairs(state.saved) do
+			if log[questID] and not Watched(questID) then
+				AddWatch(questID)
+			end
 		end
 	end
 	state.saved, state.hidden = {}, {}
