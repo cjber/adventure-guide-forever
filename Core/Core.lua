@@ -1307,6 +1307,8 @@ end
 EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	LoadDB()
 	LoadCharDB()
+	-- The settings page goes in first, in its own protected call, so a later startup error still leaves it working.
+	ns.core.SafeCall("settings", ns.RegisterSettings)
 	-- The saved journal and log are ForeverCore's now, under the same table: what SafeCall recorded before this line
 	-- (the client's own early errors) arrives with it, and a /reload keeps it.
 	ns.core.Attach(AdventureGuideForeverDB)
@@ -1323,7 +1325,6 @@ EventUtil.ContinueOnAddOnLoaded(addonName, function()
 	ns.State.OnInitialLogin(function()
 		resumeLatch = true
 	end)
-	ns.RegisterSettings()
 	EventUtil.ContinueAfterAllEvents(ns.WhatsNew, "PLAYER_LOGIN")
 	-- Bindings.xml clicks this hidden button for Alt-G and the "Open the guide" key binding. It keeps the retired
 	-- minimap button's name because the client saves custom key bindings by frame name.
