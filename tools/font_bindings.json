@@ -3,8 +3,8 @@
   "producers": [
     {
       "source": "UI/Panel.lua",
-      "sha256": "374c7eacd0e10d24cc213749448c15c4c00fc6fd09858a1b267c3fa2b4fc1a68",
-      "review": "Read the full panel builders, refresh paths and callers in Overview, Widgets and GuideOutline. Explicit CreateFontString templates fix Tag, order tag, emptyText, unlistedText, queuedText, subtitle and fold-row fonts, with no later font override. Journey-card Travel inherits GameFontHighlightSmall from Panel.xml. SearchBoxTemplate inherits InputBoxInstructionsTemplate in pinned client Blizzard_SharedXML/Shared/InputBox/InputBoxTemplates.xml; Instructions uses GameFontDisableSmall, and its scripts change visibility/color/text, not fonts. SharedButtonSmallTemplate in Shared/Button/ThreeSliceButtonTemplate.xml supplies all three Stop button font states. Reset and Skipped buttons explicitly set normal and highlight fonts and have no disabling caller. Bound each confirmed button state. Excluded tooltips, menus, chat, search input, dynamic journey/step/provider titles, sync member strings and data/helper output not separately reviewed. Formatted bindings cover the locale format only, not substituted game data.",
+      "sha256": "3d87b2e8bde5dc8680b392b05d6e075b4d3f5f6a13971f1fe2cb5bccb2bcb219",
+      "review": "Read the full panel builders, refresh paths and callers in Overview, Widgets and GuideOutline. Explicit CreateFontString templates fix Tag, order tag, emptyText, unlistedText, queuedText, subtitle and fold-row fonts, with no later font override. Journey-card Travel inherits GameFontHighlightSmall from Panel.xml. SearchBoxTemplate inherits InputBoxInstructionsTemplate in pinned client Blizzard_SharedXML/Shared/InputBox/InputBoxTemplates.xml; Instructions uses GameFontDisableSmall, and its scripts change visibility/color/text, not fonts. SharedButtonSmallTemplate in Shared/Button/ThreeSliceButtonTemplate.xml supplies all three Stop button font states. Reset and Skipped buttons explicitly set normal and highlight fonts and have no disabling caller. Bound each confirmed button state. Excluded tooltips, menus, chat, search input, dynamic journey/step/provider titles and data/helper output not separately reviewed. Formatted bindings cover the locale format only, not substituted game data.",
       "bindings": [
         {
           "font": "GameFontDisableSmall",
@@ -300,7 +300,7 @@
     },
     {
       "source": "UI/Tracker.lua",
-      "sha256": "8fed0a8cdb16e75db669a2587dfc2fc4e725cfc6b8884407f110742bddbf7097",
+      "sha256": "151cb10830c05692ba8c89a4d75f1b8a43702100ef8b38dcbf0ef001063aaa64",
       "review": "Read module construction, LayoutContentsBase, GuideSection, Preview, TravelLines, StoryBeat and Refresh. The hidden-count notice and its HiddenString widget are removed (#865), so no addon-created font string remains to bind. Reviewed ForeverCore UI/TrackerSection.lua Create and pinned Blizzard_ObjectiveTrackerModule.xml, Block.xml, Shared.xml and AnimTemplates.xml: module header uses ObjectiveTrackerHeaderFont; anim block HeaderText and anim line Text inherit ObjectiveTrackerLineFont. Excluded those template text paths because Blizzard_ObjectiveTrackerManager.lua SetTextSize later calls SetFontObject on both FontObjects, so their final font is outside this review. Also excluded tooltips, menus, chat, dynamic data, helper output and companion fonts.",
       "bindings": []
     },
@@ -347,8 +347,8 @@
     },
     {
       "source": "UI/Settings.lua",
-      "sha256": "fb4447f3ad2bf7c868cd0e61a7e672917e2a221a85fb557208a81a70cacbfb86",
-      "review": "Read RegisterSettings, all groups, Checkbox and IndexButton. Localized labels and descriptions delegate to secure Blizzard settings initializers, without an explicit local FontObject. Excluded these consumer-owned fonts and tooltip descriptions rather than assuming a settings font.",
+      "sha256": "a81cfd23e12e258d78d8bc4c38040348617821d3e5ac3ed91cbb0f3df671a254",
+      "review": "Read RegisterSettings, all groups, Checkbox and IndexButton. Localized labels and descriptions delegate to secure Blizzard settings initializers, without an explicit local FontObject. Excluded these consumer-owned fonts and tooltip descriptions rather than assuming a settings font. The Tracker group's Attach to quest tracker row is ForeverCore.SettingsSections.RegisterTrackerAttach, a core-owned initializer; excluded with the other settings fonts.",
       "bindings": []
     },
     {
