@@ -3929,6 +3929,15 @@ function harness.load(options)
 	-- real shared modules, never a fake, so a change in core reaches them.
 	G.ForeverCoreDB = options.coreDB or {}
 	local coreNamespace = ForeverCore.load(G, nil, RegisterTemplate)
+	-- options.coreWithout names facade fields ("SettingsSections.RegisterTrackerAttach") an older standalone ForeverCore
+	-- lacks: the loader adopts an installed standalone as it is, even when it is older than the copy the addon embeds.
+	for _, path in ipairs(options.coreWithout or {}) do
+		local parent, key = G.ForeverCore, path
+		for head, rest in path:gmatch("([^.]+)%.(.+)") do
+			parent, key = parent[head], rest
+		end
+		parent[key] = nil
+	end
 	h.fire("ADDON_LOADED", "ForeverCore")
 	-- Frames made so far belong to ForeverCore; the addon's own start at the next index.
 	h.coreFrameCount = #h.frames
