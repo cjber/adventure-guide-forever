@@ -541,7 +541,7 @@ function Guidance.Ended(route)
 		if nextKey then
 			ns.Choose(nextKey, prefs.guided == key)
 		else
-			prefs.journey, prefs.heldStep, pendingStart = nil, nil, false
+			prefs.journey, prefs.heldStep, prefs.paused, pendingStart = nil, nil, nil, false
 		end
 		if completed and ns.OnJourneyComplete then
 			ns.OnJourneyComplete(nextTitle)
@@ -562,6 +562,10 @@ function ns.Choose(key, start)
 	-- A different journey is a different route, so no step of the old one is held (docs/design.md §4.2).
 	if prefs.journey ~= key then
 		prefs.heldStep = nil
+	end
+	-- A pause belongs to the journey it stopped: choosing another forgets it, so it is not kept across /reload (#878).
+	if prefs.paused ~= key then
+		prefs.paused = nil
 	end
 	prefs.journey = key
 	-- Choosing a journey, after Stop or any other time, asks for one to run again.

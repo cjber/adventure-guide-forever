@@ -55,6 +55,20 @@ Case("API pause", function(h)
 	h.ns.Guidance.Pause()
 end)
 
+-- Choosing another journey forgets the pause, so the first comes back as offered, not paused, after a /reload.
+do
+	local h = Login()
+	all[#all + 1] = h
+	local key = h.ns.Prefs().journey
+	h.ns.Guidance.Pause()
+	h.flush()
+	equal(h.ns.Prefs().paused, key, "switch: paused")
+	h.ns.Choose("not-" .. tostring(key))
+	equal(h.ns.Prefs().paused, nil, "switch: choosing another journey forgets the pause")
+	h.ns.Choose(key)
+	equal(h.ns.Prefs().paused, nil, "switch: choosing the first again does not bring it back")
+end
+
 for _, h in ipairs(all) do
 	equal(#h.errors, 0, table.concat(h.errors, "\n"))
 end
