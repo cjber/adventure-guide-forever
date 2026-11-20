@@ -311,6 +311,9 @@ local function LoadCharDB()
 	if loaded.guided ~= nil and type(loaded.guided) ~= "string" then
 		loaded.guided = nil
 	end
+	if loaded.paused ~= nil and type(loaded.paused) ~= "string" then
+		loaded.paused = nil
+	end
 	-- The step the tracker held at the last build, so the first build after a /reload keeps it (docs/design.md §4.2).
 	if loaded.heldStep ~= nil and type(loaded.heldStep) ~= "string" then
 		loaded.heldStep = nil
@@ -900,6 +903,9 @@ local function CommitRoute(shown, full, world)
 			prefs.heldStep = nil
 			if prefs.guided == was then
 				prefs.guided = guide.key
+			end
+			if prefs.paused == was then
+				prefs.paused = guide.key
 			end
 		end
 		for _, route in ipairs(shown == full and { shown } or { shown, full }) do

@@ -223,6 +223,7 @@
 ---@field left? integer the map of the zone the story left, which waits behind every other zone the next build offers
 ---@field waypoint? {map: integer, x: number, y: number} the native waypoint the last Go set, while it may still be ours
 ---@field guided? string the key of the chosen journey whose route AGF started, while that guidance should run
+---@field paused? string the chosen journey whose route was cleared in Shortest Path, replaced or paused, until something is handed again; kept across a /reload so nothing starts it over the player's own journey
 ---@field autoStartBlocked? boolean the player pressed Stop, so no journey starts itself until they choose one again
 ---@field focus? integer the quest AGF selected on walking into its area (Focus.lua), while that selection is still AGF's
 ---@field guideWatch? AGFGuideWatchState the watches a leading RestedXP guide or AGF journey added (QuestWatch.lua)
