@@ -103,6 +103,14 @@ local function Current()
 	end
 end
 
+-- A read with nothing to answer, in this API's own read errors: the kit answers `nil, reason`.
+---@param reason "loading"|"none"
+---@return nil, AGFAPIReadError
+local function ReadError(reason)
+	local _, answer = APIKit.NotReady(reason)
+	return nil, answer --[[@as AGFAPIReadError]]
+end
+
 ---@return AGFAPIStop?, ForeverCoreAPIReason?
 function API.CurrentStop()
 	if not ns.RouteSettled() then
@@ -128,11 +136,11 @@ function API.NextStops(limit)
 		return APIKit.Invalid()
 	end
 	if not ns.RouteSettled() then
-		return APIKit.NotReady("loading")
+		return ReadError("loading")
 	end
 	local _, index = Current()
 	if not index then
-		return APIKit.NotReady("none")
+		return ReadError("none")
 	end
 	local stops, steps = {}, ns.Route().steps
 	for offset = 1, math.min(limit, NEXT_LIMIT) do
@@ -202,7 +210,7 @@ function API.Suggestions(limit)
 		return APIKit.Invalid()
 	end
 	if not ns.RouteSettled() then
-		return APIKit.NotReady("loading")
+		return ReadError("loading")
 	end
 	local suggestions, cap = {}, math.min(limit, SUGGESTION_LIMIT)
 	for _, journey in ipairs(ns.Model.Cards(ns.Route())) do
