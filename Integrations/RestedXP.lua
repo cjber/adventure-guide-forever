@@ -462,10 +462,12 @@ local function Snapshot(engine)
 				end
 			end
 		end
+		local title = (Text(engine, step.title or ns.L.RXP_STEP:format(step.index)))
 		---@type AGFRXPDisplayStep
 		local row = {
 			index = step.index,
-			title = (Text(engine, step.title or ns.L.RXP_STEP:format(step.index))),
+			title = title,
+			summary = title,
 			titled = type(step.title) == "string",
 			sticky = not preview and not not step.sticky,
 			preview = not not preview,
@@ -495,6 +497,14 @@ local function Snapshot(engine)
 					elementIndex = not preview and not element.textOnly and not element.optional and index or nil,
 					hint = hint or nil,
 				}
+			end
+		end
+		-- What the step is, in one line: its own title, else its first line, as RestedXP's window lists a later step
+		-- by its lines; most RestedXP steps have no title, and "Step 96" says nothing of what comes next (#903).
+		for _, line in ipairs(row.titled and {} or row.lines) do
+			if not line.hint then
+				row.summary = line.text
+				break
 			end
 		end
 		result.steps[#result.steps + 1] = row
@@ -990,6 +1000,7 @@ function Guide.Journey()
 					x = row.x,
 					y = row.y,
 					rxpIndex = row.index,
+					rxpSummary = row.summary,
 					rxpSticky = row.sticky,
 					rxpGuide = name,
 					checklist = checklist,

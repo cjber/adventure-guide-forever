@@ -122,6 +122,7 @@ RXPCData = nil
 ---@field index integer
 ---@field title string
 ---@field titled boolean RestedXP gave the step a title of its own (else `title` is "Step N")
+---@field summary string the step in one line: its title when titled, else its first line that is not a tip
 ---@field target? string the NPC the step's open lines name first, else any line's
 ---@field targetOpen? boolean `target` comes from a line not yet done
 ---@field sticky boolean
