@@ -744,8 +744,73 @@ do
 	equal(adopted.ns.Data.quests[900001].title, "Provider-only quest", "the adopted records stand after ready")
 	equal(#adopted.errors, 0, "the late ready raises no error")
 end
--- A key that no longer matches neither adopts nor waits forever: Questie's ready callback builds the catalogue, and
--- /agf timing names the input that changed and when the build ran.
+-- A save one update old (a new catalogue revision, QuestieDB release or client build) stands in at login: the tracker
+-- shows its route at once, not the loading line for the sliced build's half a minute or more (#895). Questie's ready
+-- callback still builds the fresh catalogue, which replaces it and is saved, and /agf timing names the input that
+-- changed and when the build ran.
+for _, case in ipairs({
+	{
+		"questiedb",
+		function(loaded)
+			loaded.metadata.QuestieDB.Version = "0.0-other"
+		end,
+	},
+	{
+		"catalogue",
+		function(loaded)
+			local saved = loaded.G.AdventureGuideForeverCharDB.catalogue
+			saved.key = saved.key:gsub("catalogue=%x+", "catalogue=0123abcd")
+		end,
+	},
+}) do
+	local charDB = SavedOnce("0.8.0")
+	local log = {
+		{ id = 900001, title = "Provider-only quest", level = 20, complete = false, map = 1429, x = 0.5, y = 0.5 },
+	}
+	local changed = harness.load({
+		version = "0.8.0",
+		questiedb = Fake(),
+		charDB = charDB,
+		log = log,
+		setup = function(loaded)
+			case[2](loaded)
+			NotReady(loaded)
+		end,
+	})
+	local name = "a changed " .. case[1] .. " "
+	equal(changed.ns.QuestieStatus.settled, true, name .. "settles at login")
+	equal(changed.ns.QuestieBuilding(), false, name .. "does not hold the route")
+	equal(changed.ns.Data.quests[900001].title, "Provider-only quest", name .. "adopts the saved records meanwhile")
+	equal(#changed.ns.Route().steps > 0, true, name .. "shows a planned route at once")
+	equal(
+		changed.tracker.liveBlocks.loading == nil or not changed.tracker.liveBlocks.loading.used,
+		true,
+		name .. "shows no loading line"
+	)
+	changed.G.LibQuestieDB.Quest.GetAllIds = function()
+		return { 900002 }
+	end
+	changed.G.Questie.API.isReady = true
+	ready()
+	changed.flush()
+	equal(changed.ns.QuestieStatus.state, "questie", name .. "builds and lands")
+	equal(changed.ns.Data.quests[900002].title, "Collect", name .. "builds the fresh catalogue")
+	equal(changed.ns.Data.quests[900001], nil, name .. "replaces the interim records")
+	local saved = changed.G.AdventureGuideForeverCharDB.catalogue
+	equal(saved.key:find("catalogue=0123abcd", 1, true), nil, name .. "saves the fresh catalogue's key")
+	local line = changed.ns.LoginTiming()
+	equal(
+		line:find("(saved one: " .. case[1] .. ")", 1, true) ~= nil,
+		true,
+		"the timing line names the changed input: " .. line
+	)
+	equal(line:find("saved one adopted in", 1, true) ~= nil, true, "the timing line says it stood in: " .. line)
+	equal(line:find("Questie ready +", 1, true) ~= nil, true, "the timing line has Questie's ready: " .. line)
+	equal(line:find("first route +", 1, true) ~= nil, true, "the timing line has the first route: " .. line)
+	equal(#changed.errors, 0, name .. "raises no error")
+end
+
+-- A save another character's rows could be (a changed locale here) never stands in: the guide waits for the build.
 do
 	local charDB = SavedOnce("0.8.0")
 	local changed = harness.load({
@@ -753,30 +818,19 @@ do
 		questiedb = Fake(),
 		charDB = charDB,
 		setup = function(loaded)
-			loaded.metadata.QuestieDB.Version = "0.0-other"
+			loaded.G.GetLocale = function()
+				return "deDE"
+			end
 			NotReady(loaded)
 		end,
 	})
-	equal(changed.ns.QuestieStatus.settled, false, "a changed key waits for Questie")
+	equal(changed.ns.QuestieStatus.settled, false, "a changed locale waits for Questie")
 	equal(changed.ns.QuestieBuilding(), true, "and holds the route")
 	equal(next(changed.ns.Data.quests), nil, "no saved records are adopted")
-	changed.G.LibQuestieDB.Quest.GetAllIds = function()
-		return { 900002 }
-	end
 	changed.G.Questie.API.isReady = true
 	ready()
 	changed.flush()
 	equal(changed.ns.QuestieStatus.state, "questie", "the build lands")
-	equal(changed.ns.Data.quests[900002].title, "Collect", "a changed key builds the catalogue")
-	equal(changed.ns.Data.quests[900001], nil, "the build replaces the saved records")
-	local line = changed.ns.LoginTiming()
-	equal(
-		line:find("(saved one: questiedb)", 1, true) ~= nil,
-		true,
-		"the timing line names the changed input: " .. line
-	)
-	equal(line:find("Questie ready +", 1, true) ~= nil, true, "the timing line has Questie's ready: " .. line)
-	equal(line:find("first route +", 1, true) ~= nil, true, "the timing line has the first route: " .. line)
 	equal(#changed.errors, 0, "the rebuild raises no error")
 end
 
