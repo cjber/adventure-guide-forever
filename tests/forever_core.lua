@@ -64,7 +64,8 @@ local function Wanted(names)
 	if names == nil then
 		return nil
 	end
-	local wanted = { ["Locales/enUS.lua"] = true }
+	-- Core 1.15.4's SafeCall calls ns.AtStart, which Core.lua defines, so every subset loads it.
+	local wanted = { ["Core.lua"] = true, ["Locales/enUS.lua"] = true }
 	for _, name in ipairs(names) do
 		wanted[name] = true
 	end
