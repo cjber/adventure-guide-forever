@@ -64,8 +64,10 @@ local function Wanted(names)
 	if names == nil then
 		return nil
 	end
-	-- Core 1.15.4's SafeCall calls ns.AtStart, which Core.lua defines, so every subset loads it.
-	local wanted = { ["Core.lua"] = true, ["Locales/enUS.lua"] = true }
+	-- Core 1.15.4's SafeCall calls ns.AtStart, which Core.lua defines, so every subset loads it. Core/API.lua holds
+	-- the version Expose.lua publishes (ForeverCore 1.15.6 and later) and builds it with Core/APIKit.lua.
+	local wanted =
+		{ ["Core.lua"] = true, ["Core/APIKit.lua"] = true, ["Core/API.lua"] = true, ["Locales/enUS.lua"] = true }
 	for _, name in ipairs(names) do
 		wanted[name] = true
 	end

@@ -1317,7 +1317,7 @@ ns.OnFilesLoaded(function()
 	ns.State.OnInitialLogin(function()
 		resumeLatch = true
 	end)
-	EventUtil.ContinueAfterAllEvents(ns.WhatsNew, "PLAYER_LOGIN")
+	ns.AfterEvents(ns.WhatsNew, "PLAYER_LOGIN")
 	-- Bindings.xml clicks this hidden button for Alt-G and the "Open the guide" key binding. It keeps the retired
 	-- minimap button's name because the client saves custom key bindings by frame name.
 	local open = CreateFrame("Button", "AdventureGuideForeverMinimapButton")

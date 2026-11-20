@@ -44,6 +44,8 @@ scenario("RestedXP action windows survive guide suppression", { addon = false, s
 		end,
 		currentGuide = { name = "Example", group = "Example", steps = {} },
 	}
+	-- The shared wait the integration starts from (ns.AfterEvents).
+	assert(sim.templates.loadLua("Core/ForeverRequire.lua", ADDON .. "/Core/ForeverRequire.lua", ADDON, ns))
 	assert(sim.templates.loadLua("Integrations/RestedXP.lua", ADDON .. "/Integrations/RestedXP.lua", ADDON, ns))
 	sim:login()
 	sim:advance(0.1)

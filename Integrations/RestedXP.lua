@@ -1120,7 +1120,7 @@ events:SetScript("OnEvent", function(_, event, ...)
 	Guide.Refresh()
 end)
 EventUtil.ContinueOnAddOnLoaded("RXPGuides", Attach)
-EventUtil.ContinueAfterAllEvents(function()
+ns.AfterEvents(function()
 	ready = true
 	-- Choosing another journey, or the guide again, decides whether RXP's arrow shows without Shortest Path.
 	hooksecurefunc(ns, "Choose", Guide.Refresh) -- taint-ok: Adventure Guide owns this addon table.
