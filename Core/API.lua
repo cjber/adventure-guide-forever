@@ -125,7 +125,7 @@ function API.NextStops(limit)
 	if limit == nil then
 		limit = 2
 	elseif type(limit) ~= "number" or limit < 0 or limit % 1 ~= 0 then
-		return nil, "invalid"
+		return APIKit.Invalid()
 	end
 	if not ns.RouteSettled() then
 		return APIKit.NotReady("loading")
@@ -199,7 +199,7 @@ function API.Suggestions(limit)
 	if limit == nil then
 		limit = SUGGESTION_LIMIT
 	elseif type(limit) ~= "number" or limit < 0 or limit % 1 ~= 0 then
-		return nil, "invalid"
+		return APIKit.Invalid()
 	end
 	if not ns.RouteSettled() then
 		return APIKit.NotReady("loading")
