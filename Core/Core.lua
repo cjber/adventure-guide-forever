@@ -70,7 +70,7 @@ local DEFAULTS = {
 	optimisedRoute = false,
 	-- While Polestar runs a guide, the route steps aside for it (Polestar.lua); off does nothing without Polestar.
 	polestarAside = true,
-	-- In a party, steps for quests the party shares count as nearer, and the quest IDs go to the party (Party.lua).
+	-- In a party, steps for quests the client shows a party member on count as nearer (Party.lua).
 	partyQuests = true,
 	-- Before a giver's window offers a quest that closes another for good, say which in chat (Closes.lua).
 	warnClosing = true,
@@ -106,8 +106,6 @@ local PREFS_DEFAULTS = {
 	notOffered = {},
 	-- RestedXP guide steps skipped while RestedXP had not reached them, by guide key: step index -> true (RestedXP.lua).
 	guideSkips = {},
-	-- Party members ticked under Sync with (Party.lua), by "Name-Realm"; a member who leaves is unticked.
-	sync = {},
 }
 
 ---@type table<string, any>?
@@ -280,15 +278,8 @@ local function LoadCharDB()
 			loaded.asides[key] = nil
 		end
 	end
-	-- Members ticked under Sync with: a key ("Name-Realm") set to true, nothing else (Party.lua).
-	if type(loaded.sync) ~= "table" then
-		loaded.sync = {}
-	end
-	for key, value in pairs(loaded.sync) do
-		if type(key) ~= "string" or value ~= true then
-			loaded.sync[key] = nil
-		end
-	end
+	-- The party members once ticked under Sync with: party sync is gone, so none is kept.
+	loaded.sync = nil
 	-- The zone picked in the old "Where next?" cards: nothing offers that choice any more, so none is kept.
 	loaded.zone = nil
 	if loaded.journey ~= nil and type(loaded.journey) ~= "string" then
@@ -310,6 +301,9 @@ local function LoadCharDB()
 	end
 	if loaded.guided ~= nil and type(loaded.guided) ~= "string" then
 		loaded.guided = nil
+	end
+	if loaded.paused ~= nil and type(loaded.paused) ~= "string" then
+		loaded.paused = nil
 	end
 	-- The step the tracker held at the last build, so the first build after a /reload keeps it (docs/design.md §4.2).
 	if loaded.heldStep ~= nil and type(loaded.heldStep) ~= "string" then
@@ -900,6 +894,9 @@ local function CommitRoute(shown, full, world)
 			prefs.heldStep = nil
 			if prefs.guided == was then
 				prefs.guided = guide.key
+			end
+			if prefs.paused == was then
+				prefs.paused = guide.key
 			end
 		end
 		for _, route in ipairs(shown == full and { shown } or { shown, full }) do

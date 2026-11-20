@@ -144,7 +144,6 @@ do
 	equal(later.ns.Asides.Current().key, "b", "cog: shown again")
 	equal(later.G.AdventureGuideForeverCharDB.asides.b, nil, "cog: forgotten")
 	menu = later.OpenMenu(cog)
-	equal(menu.entries[#menu.entries - 1].text, later.ns.L.SYNC_WITH, "cog: Sync with before More settings")
 	for _, entry in ipairs(menu.entries) do
 		equal(entry.text == later.ns.L.SKIPPED:format(1), false, "cog: no submenu with none turned down")
 	end

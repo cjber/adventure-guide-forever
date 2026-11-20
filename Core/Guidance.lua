@@ -66,9 +66,6 @@ end
 local guided = {}
 -- Shortest Path held our journey at the last look, and it ended at its last stop since.
 local ours, arrived = false, false
--- The chosen journey whose route the player cleared or another journey replaced, until something is handed again.
----@type string?
-local stopped
 -- A quest was handed in since the last full build: a chosen journey that ends there was completed, not abandoned.
 local turnedIn = false
 -- A start waiting for the rebuild that has the chosen journey's steps, or for combat's end. Shortest Path refuses every
@@ -102,7 +99,8 @@ local function Send(steps, hold)
 	if not Integrations.Hand(steps, hold) then
 		return false
 	end
-	guided, ours, arrived, stopped = steps, true, false, nil
+	guided, ours, arrived = steps, true, false
+	ns.Prefs().paused = nil
 	ns.Pins.Refresh()
 	Notify()
 	return true
@@ -325,7 +323,7 @@ end
 
 -- Ends only what Go started: Shortest Path's journey by our name, and the native waypoint only while it is ours.
 local function CancelRoute()
-	ns.Prefs().guided, ours, arrived, stopped = nil, false, false, nil
+	ns.Prefs().guided, ns.Prefs().paused, ours, arrived = nil, nil, false, false
 	-- The step the tracker held went with the route it led (docs/design.md §4.2).
 	ns.Prefs().heldStep = nil
 	if Integrations.Drop() then
@@ -353,7 +351,7 @@ function Guidance.Pause()
 	end
 	local key = route.journey
 	CancelRoute()
-	stopped = key
+	ns.Prefs().paused = key
 	Notify()
 	return true
 end
@@ -368,7 +366,8 @@ local function Watch()
 		if reason == "arrived" then
 			arrived = true
 		elseif reason == "cleared" or reason == "replaced" then
-			stopped, ns.Prefs().guided, ns.Prefs().heldStep = ns.Prefs().guided, nil, nil
+			local prefs = ns.Prefs()
+			prefs.paused, prefs.guided, prefs.heldStep = prefs.guided, nil, nil
 		end
 		ns.Pins.Refresh()
 	end
@@ -542,7 +541,7 @@ function Guidance.Ended(route)
 		if nextKey then
 			ns.Choose(nextKey, prefs.guided == key)
 		else
-			prefs.journey, prefs.heldStep, pendingStart = nil, nil, false
+			prefs.journey, prefs.heldStep, prefs.paused, pendingStart = nil, nil, nil, false
 		end
 		if completed and ns.OnJourneyComplete then
 			ns.OnJourneyComplete(nextTitle)
@@ -563,6 +562,10 @@ function ns.Choose(key, start)
 	-- A different journey is a different route, so no step of the old one is held (docs/design.md §4.2).
 	if prefs.journey ~= key then
 		prefs.heldStep = nil
+	end
+	-- A pause belongs to the journey it stopped: choosing another forgets it, so it is not kept across /reload (#878).
+	if prefs.paused ~= key then
+		prefs.paused = nil
 	end
 	prefs.journey = key
 	-- Choosing a journey, after Stop or any other time, asks for one to run again.
@@ -693,7 +696,7 @@ local function Paused()
 	local key = route.journey
 	return route.chosen
 		and not ns.Setting("informationOnly")
-		and (ns.Prefs().guided == key or stopped == key)
+		and (ns.Prefs().guided == key or ns.Prefs().paused == key)
 		and ns.Model.ValidPlace(route.steps[1]) == true
 		and ns.Setting("titleStartsRoute") == true
 		and not pendingStart
@@ -797,7 +800,7 @@ local function Restore()
 		and not prefs.autoStartBlocked
 		and route.journey
 		and not ns.Setting("wanderer")
-		and stopped ~= route.journey
+		and prefs.paused ~= route.journey
 		and Integrations.Provider()
 	then
 		ns.StartRoute()
@@ -832,9 +835,9 @@ end
 ---@return string
 function Guidance.Debug()
 	return Integrations.Debug(
-		("arrived=%s stopped=%s ours=%s guidedN=%d"):format(
+		("arrived=%s paused=%s ours=%s guidedN=%d"):format(
 			tostring(arrived),
-			tostring(stopped),
+			tostring(ns.Prefs().paused),
 			tostring(ours),
 			#guided
 		)

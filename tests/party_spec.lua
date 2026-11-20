@@ -1,8 +1,8 @@
 -- Run from the repository root: luajit tests/party_spec.lua
 -- Party quests (docs/design.md §4.5, Core/Party.lua): in a party, a step for a quest someone in the party also has
 -- counts as nearer (Model.PartyCost), never a fixed order; a pickup the party has says so. The party's quests come
--- from what the client shows (C_QuestLog.IsUnitOnQuest) and from party members' hidden addon messages, which go out
--- throttled, never in combat, to the party only, and only with the setting on.
+-- from what the client shows (C_QuestLog.IsUnitOnQuest) alone. Nothing is ever sent to another player: no addon
+-- message, no prefix registered, whatever the party or the setting.
 local harness = dofile("tests/harness.lua")
 local checks = 0
 local function check(condition, label)
@@ -121,101 +121,7 @@ do
 	player.party = nil
 end
 
---[[ The message format ]]
-
-do
-	local h = harness.load({})
-	local Party = h.ns.Party
-	local function Done(page)
-		local done, id = {}, 0
-		for _, gap in ipairs(page.gaps) do
-			id = id + gap
-			done[id] = true
-		end
-		return done
-	end
-	local pages = Party.Encode({ 1, 35, 36, 845, 12345 }, { 2, 35, 844, 12345 }, false, 7)
-	equal(#pages, 1, "encode: a short state is one message")
-	check(#pages[1] <= 255, "encode: within the client's message limit")
-	equal(pages[1]:sub(1, 1), "2", "encode: version 2 carries the completed set")
-	local page = Party.Decode(pages[1])
-	check(page, "decode: our own page comes back")
-	check(page.log[1] and page.log[35] and page.log[36] and page.log[845] and page.log[12345], "decode: the log's IDs")
-	local done = Done(page)
-	check(done[2] and done[35] and done[844] and done[12345], "decode: the completed quests")
-	equal(page.asks, false, "decode: a plain set asks nothing")
-	equal(page.page, 1, "decode: the first page")
-	equal(page.pages, 1, "decode: of one")
-	equal(page.gen, 7, "decode: of its generation")
-
-	pages = Party.Encode({ 7 }, {}, true, 2)
-	page = Party.Decode(pages[1])
-	check(page and page.log[7] == true, "encode: the log's one ID")
-	equal(page.asks, true, "encode: a set asking for theirs")
-	page = Party.Decode("2abc:01/01:|")
-	check(page and next(page.log) == nil and #page.gaps == 0, "decode: an empty state")
-
-	-- A full set is cut into pages: every page within the limit, the log on the first only, the gaps joined back up.
-	local manyDone = {}
-	for id = 1, 800, 2 do
-		manyDone[#manyDone + 1] = id
-	end
-	pages = Party.Encode({ 845 }, manyDone, true, 9)
-	check(#pages > 1, "encode: a completed set past one message is cut into pages")
-	local joined, seen = {}, 0
-	for index, text in ipairs(pages) do
-		check(#text <= 255, "encode: page " .. index .. " fits one message")
-		page = Party.Decode(text)
-		check(page, "decode: page " .. index .. " comes back")
-		equal(page.page, index, "encode: page " .. index .. " numbers itself")
-		equal(page.pages, #pages, "encode: page " .. index .. " knows the whole")
-		equal(page.gen, 9, "encode: page " .. index .. " shares the generation")
-		equal(page.log[845] == true, index == 1, "encode: only the first page carries the log")
-		for _, gap in ipairs(page.gaps) do
-			joined[#joined + 1] = gap
-			seen = seen + 1
-		end
-	end
-	equal(#joined, #manyDone, "encode: every completed quest is on a page")
-	for index, id in ipairs(manyDone) do
-		local sum = 0
-		for position = 1, index do
-			sum = sum + joined[position]
-		end
-		equal(sum, id, "encode: gap " .. index .. " lands on its quest")
-	end
-
-	local many = {}
-	for id = 1, 41 do
-		many[id] = id
-	end
-	equal(Party.Encode(many, {}), nil, "encode: more than a log holds is not sent")
-	many = {}
-	for id = 1, 6001 do
-		many[id] = id
-	end
-	equal(Party.Encode({}, many), nil, "encode: more completed quests than the catalogue holds is not sent")
-	for _, bad in ipairs({
-		"1:1",
-		"1?:1",
-		"3abc:01/01:1|1",
-		"2abc:00/01:1|1",
-		"2abc:02/01:1|1",
-		"2abc:01/01:0|1",
-		"2abc:01/01:|0",
-		"2abc:01/01:1|1,,2",
-		"2abc:02/02:1|",
-		"2abc:01/01:1;1",
-		"hello",
-		("2abc:01/01:1|" .. ("a"):rep(300)),
-	}) do
-		equal(Party.Decode(bad), nil, "decode: refuses " .. bad:sub(1, 20))
-	end
-	equal(Party.Decode(nil), nil, "decode: refuses nil")
-	check(#h.errors == 0, table.concat(h.errors, "\n"))
-end
-
---[[ The client: what is read, what is sent, and when ]]
+--[[ The client: what is read, and that nothing is ever sent ]]
 
 local LOG = {
 	{ id = 845, title = "The Zhevra", level = 13, complete = true, map = 1413, x = 0.5223, y = 0.3101 },
@@ -223,14 +129,15 @@ local LOG = {
 }
 
 -- A party of the player and Ana (or nobody), a client that answers IsUnitOnQuest from `on`, and a chat that records
--- each addon message and timer delay.
+-- any addon message or prefix the addon would send or register.
 local function Load(options)
 	options = options or {}
 	local party = { grouped = options.grouped ~= false, raid = false, members = { party1 = "Ana" }, on = {} }
-	local sent, delays = {}, {}
+	local sent, prefixes = {}, {}
 	local h = harness.load({
 		log = LOG,
 		db = options.db,
+		charDB = options.charDB,
 		setup = function(h)
 			local G = h.G
 			G.LE_PARTY_CATEGORY_HOME = 1
@@ -243,214 +150,143 @@ local function Load(options)
 			G.IsInRaid = function()
 				return party.raid
 			end
-			G.GetNormalizedRealmName = function()
-				return "Realm"
-			end
 			G.UnitExists = function(unit)
 				return party.grouped and party.members[unit] ~= nil
-			end
-			G.UnitName = function(unit)
-				if unit == "player" then
-					return "Me"
-				end
-				local name = party.members[unit]
-				return name, party.realms and party.realms[unit] or nil
 			end
 			G.C_QuestLog.IsUnitOnQuest = function(unit, questID)
 				return party.on[unit] ~= nil and party.on[unit][questID] == true
 			end
 			G.C_ChatInfo = {
 				RegisterAddonMessagePrefix = function(prefix)
-					party.prefix = prefix
+					prefixes[#prefixes + 1] = prefix
 					return 0
 				end,
-				SendAddonMessage = function(prefix, text, channel, target)
-					sent[#sent + 1] = { prefix = prefix, text = text, channel = channel, target = target }
-					return party.result or 0
+				SendAddonMessage = function(prefix, text, channel)
+					sent[#sent + 1] = { prefix = prefix, text = text, channel = channel }
+					return 0
 				end,
 			}
-			G.Enum = setmetatable({
-				SendAddonMessageResult = { Success = 0, AddonMessageThrottle = 3, ChannelThrottle = 8 },
-			}, { __index = G.Enum })
-			local after = G.C_Timer.After
-			G.C_Timer.After = function(delay, fn)
-				delays[#delays + 1] = delay
-				return after(delay, fn)
+			if options.setup then
+				options.setup(h)
 			end
 		end,
 	})
-	h.party, h.sent, h.delays = party, sent, delays
+	h.party, h.sent, h.prefixes = party, sent, prefixes
 	return h
+end
+
+-- Every event the party module once answered with a message, fired in and out of a party.
+local function Everything(h)
+	for _, event in ipairs({ "PLAYER_ENTERING_WORLD", "GROUP_ROSTER_UPDATE", "UNIT_QUEST_LOG_CHANGED" }) do
+		h.fire(event)
+	end
+	h.fire("QUEST_ACCEPTED", 870)
+	h.fire("QUEST_REMOVED", 845)
+	h.fire("QUEST_TURNED_IN", 845)
+	h.fire("CHAT_MSG_ADDON", "AGFParty", "2?001:01/01:nh|", "PARTY", "Ana-Realm")
+	h.flush()
 end
 
 -- Not in a party: nothing is read or sent, and the planner favours nothing.
 do
 	local h = Load({ grouped = false })
-	h.fire("GROUP_ROSTER_UPDATE")
-	h.fire("QUEST_ACCEPTED", 870)
-	h.flush()
-	equal(#h.sent, 0, "alone: no message is sent")
+	Everything(h)
 	equal(h.ns.Party.Quests(), nil, "alone: no party quests")
 	equal(h.ns.State.Player().party, nil, "alone: the planner sees no party")
-	equal(h.party.prefix, "AGFParty", "the addon message prefix is registered once at load")
+	equal(#h.sent, 0, "alone: no message is sent")
+	equal(#h.prefixes, 0, "alone: no addon message prefix is registered")
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 
--- In a party: Ana's log, as the client shows it, makes a shared quest, and one message asks for hers.
+-- In a party: Ana's log, as the client shows it, makes a shared quest; nothing goes to her.
 do
 	local h = Load()
 	h.party.on.party1 = { [870] = true }
-	h.fire("GROUP_ROSTER_UPDATE")
-	h.flush()
+	Everything(h)
 	local quests = h.ns.Party.Quests()
 	check(quests and quests[870] == 1 and quests[845] == nil, "party: the quest Ana has too is shared")
 	equal(h.ns.State.Player().party, quests, "party: the planner reads the same answer")
-	equal(#h.sent, 1, "party: one message on joining")
 	check(table.concat(h.ns.ReportLines(), "\n"):find("Party quests shared: 1", 1, true), "party: /agf report says so")
-	local message = h.sent[1]
-	equal(message.prefix, "AGFParty", "party: under the addon's prefix")
-	equal(message.channel, "PARTY", "party: to the party only")
-	equal(message.target, nil, "party: whispering nobody")
-	local page = h.ns.Party.Decode(message.text)
-	check(
-		page and page.page == 1 and page.log[845] and page.log[870] and page.asks,
-		"party: the log's quest IDs, asking for theirs"
-	)
+	equal(#h.sent, 0, "party: no message is sent")
+	equal(#h.prefixes, 0, "party: no addon message prefix is registered")
 
-	-- A second change straight after waits for the gap: never more often than once every 15 seconds.
-	local before = #h.delays
-	h.fire("QUEST_REMOVED", 845)
-	local waited = 0
-	for index = before + 1, #h.delays do
-		waited = math.max(waited, h.delays[index])
-	end
-	check(waited >= 15, "throttle: the next message waits the full gap, waited " .. waited)
-	-- Nothing changed in the log, so nothing more is said.
-	h.flush()
-	equal(#h.sent, 1, "throttle: a message saying the same is not sent again")
-
-	-- Ana's message: a quest the player hasn't taken counts too; her asking gets a reply even with nothing new.
-	h.time = h.time + 30
-	local pages = h.ns.Party.Encode({ 845, 870, 2031 }, {}, true, 1)
-	for _, text in ipairs(pages) do
-		h.fire("CHAT_MSG_ADDON", "AGFParty", text, "PARTY", "Ana-Realm")
-	end
-	h.flush()
-	quests = h.ns.Party.Quests()
-	check(quests and quests[2031] == 1 and quests[870] == 1, "heard: Ana's own log counts, without counting her twice")
-	equal(#h.sent, 2, "heard: asking for ours gets one reply")
-	page = h.ns.Party.Decode(h.sent[2].text)
-	check(page and page.log[845] and page.log[870] and not page.asks, "heard: the reply does not ask again")
-
-	-- Ignored: our own echo, another prefix, a raid's channel, a secret sender, a malformed message, an older version.
-	h.time = h.time + 30
-	local ask = h.ns.Party.Encode({ 1 }, {}, true, 2)[1]
-	h.fire("CHAT_MSG_ADDON", "AGFParty", ask, "PARTY", "Me-Realm")
-	h.fire("CHAT_MSG_ADDON", "Other", ask, "PARTY", "Ana-Realm")
-	h.fire("CHAT_MSG_ADDON", "AGFParty", ask, "RAID", "Ana-Realm")
-	h.fire("CHAT_MSG_ADDON", "AGFParty", ask, "PARTY", h.Secret())
-	h.fire("CHAT_MSG_ADDON", "AGFParty", "2abc:01/01:!|1", "PARTY", "Ana-Realm")
-	h.fire("CHAT_MSG_ADDON", "AGFParty", "1?:1", "PARTY", "Ana-Realm")
-	h.flush()
-	equal(#h.sent, 2, "ignored: none of those asks for a reply")
-	check(h.ns.Party.Quests()[1] == nil, "ignored: none of those adds a quest")
-
-	-- Combat: the message waits for the fight's end.
-	h.time = h.time + 30
+	-- Combat: the read waits for the fight's end.
+	h.party.on.party1 = { [870] = true, [845] = true }
 	h.SetCombat(true)
-	h.fire("CHAT_MSG_ADDON", "AGFParty", ask, "PARTY", "Ana-Realm")
+	h.fire("UNIT_QUEST_LOG_CHANGED", "party1")
 	h.flush()
-	equal(#h.sent, 2, "combat: nothing is sent in a fight")
+	equal(h.ns.Party.Quests()[845], nil, "combat: the party is not read in a fight")
 	h.SetCombat(false)
 	h.flush()
-	equal(#h.sent, 3, "combat: the reply goes once the fight ends")
+	equal(h.ns.Party.Quests()[845], 1, "combat: it is read once the fight ends")
 
-	-- A throttled page is tried a few times, then left for the next change.
-	h.time = h.time + 30
-	h.party.result = 3
-	h.fire("CHAT_MSG_ADDON", "AGFParty", ask, "PARTY", "Ana-Realm")
-	h.flush()
-	equal(#h.sent, 6, "throttled: three tries")
-	h.flush()
-	equal(#h.sent, 6, "throttled: and then left")
-	h.party.result = nil
-
-	-- Ana leaves: her message is forgotten with her.
-	h.time = h.time + 30
+	-- Ana leaves: her quests go with her.
 	h.party.members.party1 = nil
 	h.party.grouped = false
 	h.fire("GROUP_ROSTER_UPDATE")
 	h.flush()
 	equal(h.ns.Party.Quests(), nil, "left: no party quests once the party is gone")
+	equal(#h.sent, 0, "left: still nothing sent")
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 
--- An instance group of strangers is not a party: nothing is read or sent.
+-- An instance group of strangers is not a party: nothing is read.
 do
 	local h = Load({ grouped = false })
 	h.party.instance = true
 	h.party.on.party1 = { [870] = true }
-	h.fire("GROUP_ROSTER_UPDATE")
-	h.flush()
-	equal(#h.sent, 0, "instance group: no message is sent")
+	Everything(h)
 	equal(h.ns.Party.Quests(), nil, "instance group: nothing is favoured")
+	equal(#h.sent, 0, "instance group: no message is sent")
 end
 
--- Two members of one name from different realms stay apart; a failed send is not taken as said.
+-- Two members on one quest count as two.
 do
 	local h = Load()
-	h.party.members.party2 = "Ana"
-	h.party.realms = { party2 = "Other Realm" }
-	h.party.result = 5 -- NotInGroup
+	h.party.members.party2 = "Bo"
+	h.party.on = { party1 = { [870] = true }, party2 = { [870] = true } }
 	h.fire("GROUP_ROSTER_UPDATE")
 	h.flush()
-	local tried = #h.sent
-	check(tried >= 1, "failed: the asking message was tried")
-	h.party.result = nil
-	h.time = h.time + 30
-	local plain = h.ns.Party.Encode({ 2031 }, {}, false, 3)[1]
-	h.fire("CHAT_MSG_ADDON", "AGFParty", plain, "PARTY", "Ana-Realm")
-	h.fire("CHAT_MSG_ADDON", "AGFParty", plain, "PARTY", "Ana-OtherRealm")
-	h.flush()
-	equal(h.ns.Party.Quests()[2031], 2, "realms: two Anas count as two members")
-	equal(#h.sent, tried, "heard: a plain message asks for no reply")
-	h.time = h.time + 30
-	h.fire("QUEST_ACCEPTED", 870)
-	h.flush()
-	equal(#h.sent, tried + 1, "failed: a send the client refused goes again on the next log event")
-	-- A message that lands before the client knows its sender's name still counts once it does.
-	h.time = h.time + 30
-	h.party.members.party3 = "Unknown"
-	h.G.UNKNOWNOBJECT = "Unknown"
-	local late = h.ns.Party.Encode({ 3021 }, {}, false, 4)[1]
-	h.fire("CHAT_MSG_ADDON", "AGFParty", late, "PARTY", "Bo-Realm")
-	h.fire("GROUP_ROSTER_UPDATE")
-	h.flush()
-	equal(h.ns.Party.Quests()[3021], nil, "late name: not counted while unknown")
-	h.party.members.party3 = "Bo"
-	h.fire("GROUP_ROSTER_UPDATE")
-	h.flush()
-	equal(h.ns.Party.Quests()[3021], 1, "late name: counted once the name is known")
+	equal(h.ns.Party.Quests()[870], 2, "two members: counted twice")
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 
--- The setting off: nothing is read, sent or heard; turning it on starts at once.
+-- A turn-in on its own reads the party again.
+do
+	local h = Load()
+	h.fire("GROUP_ROSTER_UPDATE")
+	h.flush()
+	equal(h.ns.Party.Quests(), nil, "turn-in: nothing shared before")
+	h.party.on.party1 = { [845] = true }
+	h.fire("QUEST_TURNED_IN", 869)
+	h.flush()
+	check(h.ns.Party.Quests() and h.ns.Party.Quests()[845] == 1, "turn-in: the party is read again")
+	equal(#h.sent, 0, "turn-in: no message is sent")
+	check(#h.errors == 0, table.concat(h.errors, "\n"))
+end
+
+-- The setting off: nothing is read; turning it on reads at once, and off again drops the answer.
 do
 	local h = Load({ db = { partyQuests = false } })
 	h.party.on.party1 = { [870] = true }
-	h.fire("GROUP_ROSTER_UPDATE")
-	h.fire("CHAT_MSG_ADDON", "AGFParty", h.ns.Party.Encode({ 2031 }, {}, true, 5)[1], "PARTY", "Ana-Realm")
-	h.flush()
-	equal(#h.sent, 0, "off: no message is sent")
+	Everything(h)
 	equal(h.ns.Party.Quests(), nil, "off: no party quests")
 	h.ns.SetSetting("partyQuests", true)
 	h.flush()
 	check(h.ns.Party.Quests() and h.ns.Party.Quests()[870] == 1, "on: the party is read at once")
-	equal(#h.sent, 1, "on: and one message asks for theirs")
-	h.time = h.time + 30
 	h.ns.SetSetting("partyQuests", false)
 	h.flush()
 	equal(h.ns.Party.Quests(), nil, "off again: the party's quests are dropped")
+	equal(#h.sent, 0, "toggled: no message is ever sent")
+	equal(#h.prefixes, 0, "toggled: no prefix is ever registered")
+	check(#h.errors == 0, table.concat(h.errors, "\n"))
+end
+
+-- Members once ticked under the old Sync with are cleared from the saved preferences on load.
+do
+	local db = { sync = { ["Ana-Realm"] = true } }
+	local h = Load({ charDB = db })
+	equal(db.sync, nil, "saved: the old sync ticks are gone")
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end
 

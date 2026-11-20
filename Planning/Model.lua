@@ -250,6 +250,7 @@ local function Index(data)
 		hubs = {},
 		sides = { {}, {} },
 		starts = {},
+		folded = {},
 	}
 	for id in pairs(data.quests) do
 		index.ids[#index.ids + 1] = id
@@ -914,11 +915,30 @@ function Model.Search(data, player, query, title, completed, log)
 		return {}
 	end
 	query = table.concat(words, " ")
+	-- The data's titles folded once per data table (the index's `folded`, filled lazily here): a search per
+	-- keystroke must not re-fold every title. A client title that differs from the data's folds on the spot.
+	local foldedTitles = Index(data).folded
 	local found, rank = {}, {}
 	for id, quest in pairs(data.quests) do
 		if quest.side == 3 or quest.side == player.side then
 			local name = (title and title(id)) or quest.title
-			local tier = Text.Rank(Text.Fold(name), query)
+			local folded = name == quest.title and foldedTitles[id] or nil
+			if not folded then
+				folded = Text.Fold(name)
+				if name == quest.title then
+					foldedTitles[id] = folded
+				end
+			end
+			-- Every query word must appear before Rank runs: it re-splits the query and strips punctuation
+			-- per title, which only the few titles holding every word should pay for.
+			local holds = true
+			for _, word in ipairs(words) do
+				if not folded:find(word, 1, true) then
+					holds = false
+					break
+				end
+			end
+			local tier = holds and Text.Rank(folded, query) or nil
 			if tier then
 				local level = (quest.level or 0) > 0 and quest.level or player.level
 				found[#found + 1] = id
@@ -1127,82 +1147,3 @@ ns.Planner.Eligibility = {
 	ReadDropped = ReadDropped,
 	SimpleOpen = SimpleOpen,
 }
-
--- A journey shared with party members (docs/design.md §4.5): a quest the group still needs is one anybody synced
--- still needs, so the group's completed set is what every member's own completed set holds, the player's included.
----@param completed table<integer, boolean>
----@param synced AGFPartyMember[]
----@return table<integer, boolean>
-function Model.GroupCompleted(completed, synced)
-	local group = {}
-	for id in pairs(completed) do
-		local done = true
-		for _, member in ipairs(synced) do
-			if not member.completed[id] then
-				done = false
-				break
-			end
-		end
-		group[id] = done or nil
-	end
-	return group
-end
-
--- `names` joined the way a line of people reads: "Ana", "Ana and Bo", "Ana, Bo and Cy".
----@param names string[]
----@return string
-function Model.NameList(names)
-	local count = #names
-	if count == 0 then
-		return ""
-	elseif count == 1 then
-		return names[1]
-	end
-	local head = {}
-	for index = 1, count - 1 do
-		head[index] = names[index]
-	end
-	return table.concat(head, ns.L.LIST_SEPARATOR) .. " " .. ns.L.SYNC_AND .. " " .. names[count]
-end
-
--- Who a stop is for, while synced (docs/design.md §4.5): "Everyone" when the player and every synced member still
--- need one of its quests, else "For you", "For <name>", or a list. Nil when the player is not synced, the step holds
--- no quests, or the group has nothing left there.
----@param completed table<integer, boolean> the player's own completed quests
----@param synced AGFPartyMember[]
----@param ids? integer[]
----@return string?
-function Model.SyncLabel(completed, synced, ids)
-	if #synced == 0 or not ids or #ids == 0 then
-		return nil
-	end
-	local you = false
-	for _, id in ipairs(ids) do
-		you = you or not completed[id]
-	end
-	local names, everyone = {}, you
-	for _, member in ipairs(synced) do
-		local needs = false
-		for _, id in ipairs(ids) do
-			if not member.completed[id] then
-				needs = true
-				break
-			end
-		end
-		everyone = everyone and needs
-		if needs then
-			names[#names + 1] = member.name
-		end
-	end
-	local L = ns.L
-	if everyone then
-		return L.SYNC_EVERYONE
-	elseif you and #names == 0 then
-		return L.SYNC_FOR_YOU
-	elseif you then
-		return L.SYNC_FOR_YOU_AND:format(Model.NameList(names))
-	elseif #names > 0 then
-		return L.SYNC_FOR:format(Model.NameList(names))
-	end
-	return nil
-end

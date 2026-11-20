@@ -160,10 +160,6 @@ L["JOURNEY_PROGRESS_EMPTY"] = "완료한 이야기가 여기에 표시됩니다.
 L["JOURNEY_QUESTS"] = "이 여정의 퀘스트"
 L["JOURNEY_STORY"] = "%s 이야기"
 L["LATER_LAPS"] = "그중 %d개는 나중 바퀴"
-L["LEADERBOARD_SHARING_OFF"] =
-	"공유가 꺼져 있습니다. 아무것도 보내거나 표시하지 않습니다. /agf share on으로 켤 수 있습니다."
-L["LEADERBOARD_SHARING_ON"] =
-	"공유가 켜져 있습니다. /agf share off 또는 설정 > 애드온 > Adventure Guide에서 끌 수 있습니다."
 L["LEGACY_PROGRESS_LINK"] = "지도에서 유산 진행 상황 열기"
 L["LEGACY_PROGRESS_NOTE"] = "수집품, 탐험, 지역 완료는 Legacy Forever가 추적합니다."
 L["LEVELS"] = "%d-%d"
@@ -349,7 +345,7 @@ L["SETTING_MAP_PINS_TOOLTIP"] =
 	"해당 지역이 표시되는 동안 세계 지도에 경로의 번호 붙은 단계를 표시하며, 퀘스트 NPC 표시가 켜져 있으면 퀘스트 NPC도 표시합니다. 열린 안내서는 어느 경우든 경로를 미리 보여 줍니다."
 L["SETTING_PARTY_QUESTS"] = "파티의 퀘스트 우선"
 L["SETTING_PARTY_QUESTS_TOOLTIP"] =
-	"파티 중에는 파티원도 가지고 있는 퀘스트의 단계를 조금 더 가까운 것으로 계산해 함께 하기 쉽게 합니다. Adventure Guide를 쓰는 파티원끼리는 숨겨진 애드온 메시지로 서로 가진 퀘스트를 알려 줍니다."
+	"파티 중에는 파티원도 가지고 있는 퀘스트의 단계를 조금 더 가까운 것으로 계산해 함께 하기 쉽게 합니다."
 L["SETTING_POLESTAR_ASIDE"] = "Polestar가 안내하는 동안 물러나기"
 L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 	"Polestar가 가이드를 진행하는 동안에는 안내서가 자체 경로를 시작하지 않고 지도 표시도 그리지 않습니다. 추적기에 Polestar가 안내 중이라고 표시되며, 클릭하면 다시 안내를 맡습니다."
@@ -366,9 +362,6 @@ L["SETTING_OUTGROWN_TOOLTIP"] = "퀘스트가 회색인 지역과 던전을 선�
 L["SETTING_RXP"] = "RestedXP 가이드 사용"
 L["SETTING_RXP_TOOLTIP"] =
 	"현재 RestedXP 가이드를 여정 카드, 지도, 추적기에 추가합니다. RestedXP는 가이드 단계를 진행하고, Shortest Path Forever는 이동을 맡습니다. RestedXP는 설치된 채로 가이드 진행을 관리합니다."
-L["SETTING_STATS_SHARE"] = "길드 및 파티와 활동 공유"
-L["SETTING_STATS_SHARE_TOOLTIP"] =
-	"기본으로 켜져 있습니다. 길드, 파티, 공격대 또는 인스턴스의 애드온 사용자와 누적 활동 기록을 공유합니다. 끄면 이 캐릭터에만 기록을 보관합니다. 공유 기록은 플레이어가 보고한 내용이며 검증되지 않습니다."
 L["SETTING_STEP_SOUND"] = "단계 완료 시 소리"
 L["SETTING_STEP_SOUND_TOOLTIP"] = "경로 단계를 마치면 짧은 소리를 한 번 재생합니다."
 L["SETTING_TITLE_ROUTE"] = "여정으로 경로 시작"
@@ -479,7 +472,7 @@ L["TWEAKS_OUTDATED"] = "던전 입구를 찾으려면 Tweaks Forever를 업데�
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"
-L["WHATS_NEW"] = "여정을 선택해도 추적 중인 퀘스트가 해제되지 않습니다." -- mt
+L["WHATS_NEW"] = "Shortest Path에서 시작한 여정이 /reload 후에도 유지됩니다." -- mt
 L["WHY_ALLIANCE"] = "얼라이언스 전용"
 L["WHY_BREADCRUMB"] = "%s 수락 전까지만"
 L["WHY_CHOSE"] = "대신 선택함: %s"
@@ -520,18 +513,6 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 L["NPC_HIGHLIGHT_HINT"] =
 	"우호적 이름표가 꺼져 있습니다. 인터페이스 설정에서 켜면 어디로 가야 하는지 볼 수 있습니다."
 
-L["SYNC_WITH"] = "동기화" -- mt
-L["SYNC_MEMBERS"] = "가이드를 사용하는 파티원" -- mt
-L["SYNC_NONE"] = "파티원 중 가이드를 사용하는 사람이 없습니다" -- mt
-L["SYNC_SUBTITLE"] = "%s와(과) 동기화됨" -- mt
-L["SYNC_EVERYONE"] = "모두" -- mt
-L["SYNC_FOR_YOU"] = "당신을 위해" -- mt
-L["SYNC_FOR"] = "%s을(를) 위해" -- mt
-L["SYNC_FOR_YOU_AND"] = "당신과 %s을(를) 위해" -- mt
-L["SYNC_AND"] = "및" -- mt
-
-L.LEADERBOARD_METRIC = "완료한 퀘스트" -- mt
-L.LEADERBOARD_TOTAL = "총" -- mt
 -- mt: Information only (#715).
 L["SETTING_INFORMATION_ONLY"] = "정보만 표시: 경로 없음" -- mt
 L["SETTING_INFORMATION_ONLY_TOOLTIP"] =

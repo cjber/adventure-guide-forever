@@ -59,8 +59,6 @@ IMAGES = {
     "panel_four.png": ("journeys_four", "panel.map"),
     "panel_overflow.png": ("journeys_overflow", "panel.map"),
     "search.png": ("search", "panel.map", "panel.pins"),
-    "sync_picker.png": ("sync", "sync_menu", "sync_submenu"),
-    "sync_stops.png": ("sync_stops",),
     "restedxp.png": ("restedxp", "panel.map"),
     "rxp_chosen.png": ("restedxp", "panel.map"),
     "rxp_compact.png": ("rxp_compact", "panel.map"),

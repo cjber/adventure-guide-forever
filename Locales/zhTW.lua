@@ -152,9 +152,6 @@ L["JOURNEY_PROGRESS_EMPTY"] = "你完成的故事將顯示在這裡。" -- mt
 L["JOURNEY_QUESTS"] = "這段旅程的任務" -- mt
 L["JOURNEY_STORY"] = "%s的故事" -- mt
 L["LATER_LAPS"] = "其中%d個在之後的輪次" -- mt
-L["LEADERBOARD_SHARING_OFF"] = "分享已關閉：不會傳送或顯示任何內容。可用 /agf share on 開啟。" -- mt
-L["LEADERBOARD_SHARING_ON"] =
-	"分享已開啟。可用 /agf share off 或在 設定 > 插件 > Adventure Guide 中關閉。" -- mt
 L["LEGACY_PROGRESS_LINK"] = "開啟地圖查看傳承進度" -- mt
 L["LEGACY_PROGRESS_NOTE"] = "收藏、探索與地區完成度由Legacy Forever追蹤。" -- mt
 L["LEVELS"] = "%d-%d" -- mt
@@ -339,7 +336,7 @@ L["SETTING_MAP_PINS_TOOLTIP"] =
 	"顯示其所在地區時，在世界地圖上顯示路線的編號步驟；若任務給予者也已開啟，則一併顯示。開啟的指南總會預覽其路線。" -- mt
 L["SETTING_PARTY_QUESTS"] = "優先隊伍的任務" -- mt
 L["SETTING_PARTY_QUESTS_TOOLTIP"] =
-	"組隊時，隊伍中也有人接了的任務，其步驟會被算得稍近一些，便於你們一起完成。使用Adventure Guide的隊友會透過隱藏的插件訊息互相告知各自的任務。" -- mt
+	"組隊時，隊伍中也有人接了的任務，其步驟會被算得稍近一些，便於你們一起完成。" -- mt
 L["SETTING_POLESTAR_ASIDE"] = "Polestar導航時讓路" -- mt
 L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 	"Polestar執行指南期間，本指南不會開始自己的路線，也不會在地圖上繪製標記。追蹤器會顯示Polestar正在為你導航；點擊它即可重新接管。" -- mt
@@ -356,9 +353,6 @@ L["SETTING_OUTGROWN_TOOLTIP"] = "在選項中保留任務為灰色的區域與�
 L["SETTING_RXP"] = "使用RestedXP指南" -- mt
 L["SETTING_RXP_TOOLTIP"] =
 	"將目前的RestedXP指南加入你的旅程卡片、地圖與追蹤器。RestedXP推進指南步驟；Shortest Path Forever負責移動。RestedXP保持安裝並控制指南進度。" -- mt
-L["SETTING_STATS_SHARE"] = "與公會和隊伍分享活動" -- mt
-L["SETTING_STATS_SHARE_TOOLTIP"] =
-	"預設開啟。與公會、隊伍、團隊或副本中的插件使用者分享累計活動紀錄。關閉後，紀錄只會保留在此角色上。分享的紀錄由玩家回報，未經驗證。" -- mt
 L["SETTING_STEP_SOUND"] = "完成步驟時播放音效" -- mt
 L["SETTING_STEP_SOUND_TOOLTIP"] = "完成一個路線步驟時播放一次短促的音效。" -- mt
 L["SETTING_TITLE_ROUTE"] = "旅程開始路線" -- mt
@@ -464,7 +458,7 @@ L["TURN_IN"] = "繳交：%s" -- mt
 L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以尋找地城入口。" -- mt
 L["UNLISTED"] = "這片土地有指南尚不知道的故事；請留意任務給予者頭上的「!」。" -- mt
 L["UPDATED_TO"] = "已更新到%s。%s" -- mt
-L["WHATS_NEW"] = "選擇旅程不會再取消追蹤你的任務。" -- mt
+L["WHATS_NEW"] = "在 Shortest Path 中開始的旅程在 /reload 後依然保留。" -- mt
 L["WHY_ALLIANCE"] = "僅限聯盟" -- mt
 L["WHY_BREADCRUMB"] = "僅在你接受%s之前" -- mt
 L["WHY_CHOSE"] = "你改選了%s" -- mt
@@ -504,18 +498,6 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 	"當步驟需要與發放或交付任務的 NPC 交談時，一個小箭頭會在其姓名板上方跳動，追蹤器下方會出現目標按鈕。關閉後可隱藏兩者。指南從不會變更你的姓名板設定。" -- mt
 L["NPC_HIGHLIGHT_HINT"] = "友方姓名板已關閉：請在介面選項中開啟，以查看該往哪走。" -- mt
 
-L["SYNC_WITH"] = "同步" -- mt
-L["SYNC_MEMBERS"] = "使用指南的隊伍成員" -- mt
-L["SYNC_NONE"] = "你的隊伍中沒有人使用指南" -- mt
-L["SYNC_SUBTITLE"] = "已與%s同步" -- mt
-L["SYNC_EVERYONE"] = "所有人" -- mt
-L["SYNC_FOR_YOU"] = "為你" -- mt
-L["SYNC_FOR"] = "為%s" -- mt
-L["SYNC_FOR_YOU_AND"] = "為你和%s" -- mt
-L["SYNC_AND"] = "和" -- mt
-
-L.LEADERBOARD_METRIC = "已繳交任務" -- mt
-L.LEADERBOARD_TOTAL = "總計" -- mt
 -- mt: Information only (#715).
 L["SETTING_INFORMATION_ONLY"] = "僅資訊：不規劃路線" -- mt
 L["SETTING_INFORMATION_ONLY_TOOLTIP"] =

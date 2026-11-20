@@ -36,7 +36,7 @@ end
 -- the header's right inset. Returns a line per header line that is not anchored on both horizontal edges in that
 -- span, or that starts over the header's leading art (the back arrow and the compass). The dump is compared from the
 -- anchors alone, so it holds for every view: a line anchored by a bare centre or one edge can grow back over the
--- arrow and the icon, which is how the synced line once did (#617).
+-- arrow and the icon (#617).
 function diff.HeaderLines(layout, title)
 	local byPath, problems = {}, {}
 	for _, entry in ipairs(layout) do

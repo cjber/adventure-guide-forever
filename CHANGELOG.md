@@ -10,6 +10,20 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago. O
 verbatim rather than rewritten as the addon moves. API changes other addons' authors need go under an
 optional `### For addon authors` subsection after a version's player bullets.
 
+## [1.12.1] - 2026-11-20
+
+<!-- discord-image: docs/screenshots/tracker.png -->
+
+### Fixed
+
+- **A journey you start in Shortest Path survives a /reload.** When you start a Shortest Path journey over the guide's route, the guide's route now stays paused after a /reload, so Shortest Path brings your journey back. Click the guide's card or tracker title to resume its route (#878).
+- **Searching the guide is faster.** Search reuses folded quest titles and ranks only the titles that hold every word you type, so the results keep up with typing (#843).
+- **The first login's quest catalogue builds with less waste.** A quest that hands over nothing which runs out no longer builds and sorts an empty list of expiring items, so the one-off catalogue build at a first login does less work per quest.
+
+### Removed
+
+- **Sync Together is gone, and the guide sends nothing to other players.** The cog menu's *Sync with* checklist and the "For you" and "Everyone" lines on each stop are removed, along with the hidden party messages behind them. *Favour quests your party has* stays: it now reads only what your own client shows about your party's quests (#834).
+
 ## [1.12.0] - 2026-11-19
 
 <!-- discord-image: docs/screenshots/tracker.png -->
