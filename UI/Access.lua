@@ -1,4 +1,6 @@
+---@type string, AGFNamespace
 local _, ns = ...
+
 -- Retire only keys assigned to the removed window action.
 local bindingCleanup = CreateFrame("Frame")
 local function ClearWindowBinding()
