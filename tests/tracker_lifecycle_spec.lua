@@ -93,7 +93,14 @@ for _, readyAtLoad in ipairs({ false, true }) do
 		},
 	}
 	-- The real section API, as ForeverCore loads it: the spec asserts the addon through the calls core publishes.
-	local core = { TrackerHost = env.ForeverCore.TrackerHost, SafeCall = ns.core.SafeCall }
+	-- Core 1.15.4's sections wait through TrackerHost.lua's AfterWorldEvents; with no loader it waits for both events.
+	local core = {
+		TrackerHost = env.ForeverCore.TrackerHost,
+		SafeCall = ns.core.SafeCall,
+		AfterWorldEvents = function(callback)
+			env.EventUtil.ContinueAfterAllEvents(callback, "PLAYER_ENTERING_WORLD", "VARIABLES_LOADED")
+		end,
+	}
 	local chunk = assert(loadfile(ForeverCore.directory() .. "/UI/TrackerSection.lua"))
 	setfenv(chunk, env)
 	chunk("ForeverCore", core)
