@@ -10,6 +10,12 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago. O
 verbatim rather than rewritten as the addon moves. API changes other addons' authors need go under an
 optional `### For addon authors` subsection after a version's player bullets.
 
+## [1.12.6] - 2026-11-20
+
+### Fixed
+
+- **RestedXP's next two steps say what they are.** The two grey "Next:" lines under the step you are on read only "Step 2" and "Step 3" for most RestedXP guides, because RestedXP gives few of its steps a title. Each line now shows what that step asks, the way RestedXP's own window lists it. Thanks to the player on CurseForge who reported it (#903).
+
 ## [1.12.5] - 2026-11-20
 
 <!-- forever-core-sync -->
