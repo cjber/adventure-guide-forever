@@ -4193,6 +4193,7 @@ function harness.model(ns)
 			end,
 		}, { __index = _G })
 	)
+	ns.OnFilesLoaded = function() end
 	core(ADDON, ns)
 	harness.planner(ns)
 	return ns.Model

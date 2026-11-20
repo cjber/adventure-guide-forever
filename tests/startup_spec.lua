@@ -13,22 +13,18 @@ local core = assert(loadfile("Core/Core.lua"))
 setfenv(
 	core,
 	setmetatable({
-		EventUtil = {
-			ContinueOnAddOnLoaded = function(name, callback)
-				if name == ADDON then
-					startup = callback
-				end
-			end,
-			ContinueAfterAllEvents = function() end,
-		},
+		EventUtil = { ContinueAfterAllEvents = function() end },
 		SlashCmdList = {},
 		CreateFrame = function()
 			return { SetScript = function() end, RegisterEvent = function() end }
 		end,
 	}, { __index = _G })
 )
+ns.OnFilesLoaded = function(callback)
+	startup = callback
+end
 core(ADDON, ns)
-assert(type(startup) == "function", "Core/Core.lua starts at its own ADDON_LOADED")
+assert(type(startup) == "function", "Core/Core.lua starts once every file has run")
 
 local registered = false
 ns.RegisterSettings = function()
