@@ -469,7 +469,7 @@ L["TWEAKS_OUTDATED"] = "Mettez à jour Tweaks Forever pour trouver les entrées 
 L["UNLISTED"] =
 	"Cette terre a des histoires que le guide ne connaît pas encore ; cherchez le « ! » au-dessus des donneurs de quêtes."
 L["UPDATED_TO"] = "mis à jour en %s. %s"
-L["WHATS_NEW"] = "Choisir un voyage ne retire plus jamais vos quêtes du suivi." -- mt
+L["WHATS_NEW"] = "Un voyage lancé dans Shortest Path survit à un /reload." -- mt
 L["WHY_ALLIANCE"] = "Alliance uniquement"
 L["WHY_BREADCRUMB"] = "Seulement jusqu’à ce que vous preniez %s"
 L["WHY_CHOSE"] = "Vous avez choisi %s à la place"
