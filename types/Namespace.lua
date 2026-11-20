@@ -1728,6 +1728,7 @@
 ---@field dungeonsByLevel table<integer, integer[]> dungeon IDs that are open by level
 ---@field choicesByLevel table<integer, table<string, integer[]>> non-grey quest IDs by side, level, race and class
 ---@field starts table<integer, integer[]> quest IDs by pickup map
+---@field folded table<integer, string> each quest title folded for search (Text.Fold), filled lazily by Model.Search
 ---@field hubs table<string, integer[]> quest IDs by pickup town ("map:area")
 ---@field groups table<integer, integer[]>
 ---@field sides table<integer, integer[]> by side, the IDs a player of it could ever take: its own side's or both
