@@ -497,6 +497,15 @@ local function Snapshot(engine)
 				}
 			end
 		end
+		-- What the step is, in one line: its own title, else its first line, as RestedXP's window lists a later step
+		-- by its lines; most RestedXP steps have no title, and "Step 96" says nothing of what comes next (#903).
+		for _, line in ipairs(row.titled and {} or row.lines) do
+			if not line.hint then
+				row.summary = line.text
+				break
+			end
+		end
+		row.summary = row.summary or row.title
 		result.steps[#result.steps + 1] = row
 	end
 	for _, step in ipairs(engine.RXPFrame.activeSteps or {}) do
@@ -990,6 +999,7 @@ function Guide.Journey()
 					x = row.x,
 					y = row.y,
 					rxpIndex = row.index,
+					rxpSummary = row.summary,
 					rxpSticky = row.sticky,
 					rxpGuide = name,
 					checklist = checklist,

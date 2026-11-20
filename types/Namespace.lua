@@ -276,6 +276,7 @@
 ---@class AGFStep
 ---@field chosenTrainer? boolean explicitly chosen destination, independent of automatic training suggestions
 ---@field rxpIndex? integer
+---@field rxpSummary? string a RestedXP step in one line: its title, else its first line (#903)
 ---@field rxpSticky? boolean an ongoing RestedXP objective
 ---@field rxpGuide? string
 ---@field preview? boolean a read-only future RestedXP step shown for context

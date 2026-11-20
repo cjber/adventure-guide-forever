@@ -68,6 +68,14 @@ for index = 1, 30 do
 	steps[index] = steps[index] or { index = index, title = "Step " .. index, elements = {} }
 end
 steps[6] = { index = 6, title = "Follow the road", elements = { { text = "Go on" } } }
+-- RestedXP authors most steps without a title: the tracker names one by its first line, never "Step 7" (#903).
+steps[7] = {
+	index = 7,
+	elements = {
+		{ text = "Tip: rest at the inn first", textOnly = true, hideTooltip = true },
+		{ text = "Accept |cFFFF5722The Damned|r", tag = "accept", questId = 376 },
+	},
+}
 local frame = h.G.CreateFrame("Frame", nil, h.G.UIParent)
 frame.activeSteps = active
 h.G.RXP = {
@@ -125,7 +133,9 @@ check(main.styles[1] == h.G.OBJECTIVE_TRACKER_COLOR.NormalHighlight, "the first 
 check(main.styles[2] == h.G.OBJECTIVE_TRACKER_COLOR.Normal, "the other open lines are the tracker's own")
 check(main.styles[4] == h.G.OBJECTIVE_TRACKER_COLOR.Complete, "a done line is greyed")
 check(main.lines[main.order[#main.order - 1]]:find("Follow the road", 1, true), "the next step follows the lines")
-check(main.lines[main.order[#main.order]]:find("Step 7", 1, true), "the one after it closes the block (#870)")
+local after = main.lines[main.order[#main.order]]
+check(after:find("Accept The Damned", 1, true), "the one after it closes the block, by its first line (#870, #903)")
+check(not after:find("Step 7", 1, true) and not after:find("Tip:", 1, true), "named by what it asks")
 
 -- Ongoing steps, one line each, without repeats (#353).
 local ongoing = h.tracker.liveBlocks["rxp-ongoing"]

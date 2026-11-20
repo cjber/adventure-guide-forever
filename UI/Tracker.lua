@@ -413,7 +413,7 @@ local function GuideSection(module, block, step)
 	for index, other in ipairs(upcoming) do
 		block:AddObjective(
 			line + index,
-			GRAY_FONT_COLOR:WrapTextInColorCode(L.NEXT:format(other.title)),
+			GRAY_FONT_COLOR:WrapTextInColorCode(L.NEXT:format(Plain(other.rxpSummary or other.title))),
 			nil,
 			nil,
 			OBJECTIVE_DASH_STYLE_HIDE_AND_COLLAPSE
