@@ -14,6 +14,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 <!-- forever-core-sync -->
 
+- After an update, the tracker shows your route as soon as you log in instead of sitting on "Loading quest data..." for up to a minute or more. The guide plans from the quest data it kept from last time while the new data loads in the background.
 - Ships with the same shared code as your other Forever addons, so they keep working together.
 
 ## [1.12.4] - 2026-11-20
