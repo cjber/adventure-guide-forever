@@ -15,6 +15,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 ### Fixed
 
 - The tracker no longer stays on "Loading quest data..." with no route. After the latest ForeverCore update, Adventure Guide started after the game's login signal it was waiting for, so with Questie installed it never read the quest data and never planned a route. It now starts whenever its files load. The same fix restores taking over a RestedXP or Polestar guide and the What's new note at login. Thanks to the players on Discord who reported it (#892).
+- Ships with ForeverCore 1.15.6, the same shared code as your other Forever addons, so they keep working together.
 
 ## [1.12.3] - 2026-11-20
 
