@@ -1,5 +1,5 @@
 ## Interface: 16001
-## X-Forever-Core: v1.15.3
+## X-Forever-Core: v1.15.4
 ## Title: Adventure Guide Forever
 ## Notes: Zone stories as chapters, journeys you pick on the map, and a route walked to each hand-in.
 ## Author: cjber
@@ -12,6 +12,7 @@
 ## IconTexture: Interface\AddOns\AdventureGuideForever\media\Icon
 ## X-Forever-Icon: Interface\Icons\INV_Misc_Map_01
 ## SavedVariables: AdventureGuideForeverDB
+## X-Forever-Core-Embed: 1
 ## SavedVariablesPerCharacter: AdventureGuideForeverCharDB
 ## AddonCompartmentFunc: AdventureGuideForever_OnAddonCompartmentClick
 ## OptionalDeps: AtlasLootClassic, ShortestPathForever, Questie, QuestieDB, SkillUpForever, LegacyForever, TweaksForever, RXPGuides, Polestar, ForeverCore

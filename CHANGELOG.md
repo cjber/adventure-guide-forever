@@ -17,8 +17,16 @@ optional `### For addon authors` subsection after a version's player bullets.
 ### Fixed
 
 - **A journey you start in Shortest Path survives a /reload.** When you start a Shortest Path journey over the guide's route, the guide's route now stays paused after a /reload, so Shortest Path brings your journey back. Click the guide's card or tracker title to resume its route (#878).
+- **Attach to quest tracker is in the Tracker settings.** On, the shared Forever tracker sits under the quest tracker; off, it moves to the left of it. The row reads the same in every Forever addon (cjber/forever-core#910).
+- **/agf says why Adventure Guide Forever stopped.** While Adventure Guide Forever cannot start, typing /agf repeats the line naming the fix instead of reading "Unknown command".
+- **The settings page survives a startup error.** If part of Adventure Guide Forever fails to start, its settings page still appears (cjber/forever-core#922).
 - **Searching the guide is faster.** Search reuses folded quest titles and ranks only the titles that hold every word you type, so the results keep up with typing (#843).
 - **The first login's quest catalogue builds with less waste.** A quest that hands over nothing which runs out no longer builds and sorts an empty list of expiring items, so the one-off catalogue build at a first login does less work per quest.
+- **ForeverCore 1.15.4 comes with the guide.** With Questie's tracker on, the Forever column sits under Questie's list and follows it, instead of covering it (cjber/forever-core#866).
+
+### Changed
+
+- **Adventure Guide Forever carries ForeverCore inside itself.** It now works with ForeverCore turned off or uninstalled, and your ForeverCore settings carry over. You no longer need to install ForeverCore separately. If you have it installed, you can keep it or remove it (cjber/forever-core#801).
 
 ### Removed
 

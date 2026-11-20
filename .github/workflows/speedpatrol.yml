@@ -42,7 +42,7 @@ jobs:
       - uses: cjber/forever-core/.github/actions/toolchain@2596f68e68f9a727496a19f3f801c8a7039357d2 # main
         with:
           tools: lua
-      - uses: agent-labs-dev/speedpatrol@d8c515794af1d551863ecd2cbbd768619a9f3ad0 # v0
+      - uses: agent-labs-dev/speedpatrol@a3208bcc3eb969b964163e360c061efaffb38aff # v0
         with:
           benchmarks: planner.plan
           fail-on-regression: true
