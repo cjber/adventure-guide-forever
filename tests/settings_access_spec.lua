@@ -28,12 +28,10 @@ for _, options in ipairs({
 	check(cog ~= nil, "cog created")
 	check(cog:IsVisible(), "cog visible with panel")
 	h.OpenMenu(cog)
-	local sync, settings
+	local settings
 	for _, entry in ipairs(h.menu.entries) do
-		sync = sync or entry.text == h.ns.L.SYNC_WITH
 		settings = settings or entry.text == h.ns.L.MENU_MORE_SETTINGS
 	end
-	check(sync, "sync menu accessible")
 	check(settings, "AddOns settings fallback accessible")
 	check(#h.errors == 0, table.concat(h.errors, "\n"))
 end

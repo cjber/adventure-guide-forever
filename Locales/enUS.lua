@@ -6,14 +6,6 @@ local _, ns = ...
 -- has, so a line nobody has translated yet stays in English. Format strings keep their specifiers.
 ---@type AGFStrings
 ns.L = {
-	SETTING_STATS_SHARE = "Share activity with guild and groups",
-	SETTING_STATS_SHARE_TOOLTIP = "On unless you turn it off. Shares cumulative quest turn-ins with addon users in "
-		.. "your guild, party, raid or instance and puts you on Forever Leaderboards. Turn it off to keep records "
-		.. "on this character only. Shared records are player-reported, not verified.",
-	LEADERBOARD_SHARING_ON = "Sharing is on. Turn it off with /agf share off or in Settings > AddOns > Adventure Guide.",
-	LEADERBOARD_SHARING_OFF = "Sharing is off: nothing is sent or shown. Turn it on with /agf share on.",
-	LEADERBOARD_METRIC = "Quests turned in",
-	LEADERBOARD_TOTAL = "total",
 	SETTING_RXP = "Use RestedXP guides",
 	SETTING_RXP_TOOLTIP = "Add the current RestedXP guide to your journey cards, map and tracker. "
 		.. "RestedXP advances guide steps; Shortest Path Forever handles travel. "
@@ -397,16 +389,6 @@ ns.L = {
 	MENU_HIDE_QUEST_MARKERS = "Hide game quest markers",
 	MENU_GIVERS = "Show quest givers",
 	MENU_TRACKER = "Show in objective tracker",
-	-- Sync Together (#617): the cog menu's checklist of party members running the guide, and the stops it labels.
-	SYNC_WITH = "Sync with",
-	SYNC_MEMBERS = "Party members with the guide",
-	SYNC_NONE = "No one in your party is running the guide",
-	SYNC_SUBTITLE = "Synced with %s",
-	SYNC_EVERYONE = "Everyone",
-	SYNC_FOR_YOU = "For you",
-	SYNC_FOR = "For %s",
-	SYNC_FOR_YOU_AND = "For you and %s",
-	SYNC_AND = "and",
 	MENU_MORE_SETTINGS = "More settings",
 	-- The settings page's index groups, and the index button that opens each one.
 	SETTINGS_GROUP_ROUTE = "Route",
@@ -504,8 +486,7 @@ ns.L = {
 		.. "that quest so the map shows its area. It never changes a quest you selected yourself.",
 	SETTING_PARTY_QUESTS = "Favour quests your party has",
 	SETTING_PARTY_QUESTS_TOOLTIP = "In a party, steps for quests someone in your party also has count as a little "
-		.. "nearer, so you tend to do them together. Party members with Adventure Guide tell each other which quests "
-		.. "they have, as hidden addon messages.",
+		.. "nearer, so you tend to do them together.",
 	SETTING_ROUTE_ORDER = "Optimised route (beta)",
 	SETTING_OUTGROWN = "Show outgrown zones and dungeons",
 	SETTING_OUTGROWN_TOOLTIP = "Keep zones and dungeons whose quests are grey in the journey choices.",

@@ -139,16 +139,9 @@
 ---@field x number world x, yards
 ---@field y number world y, yards
 
--- One party member ticked under Sync with and heard from (Core/Party.lua, issue #617).
----@class AGFPartyMember
----@field key string "Name-Realm"
----@field name string the name without its realm
----@field completed table<integer, true> the quests they have completed
-
 -- What the live state tells the planner. Built by State.lua, consumed by the planner.
 ---@class AGFPlayer
----@field party? table<integer, integer> in a party with the setting on (Party.lua): quest ID -> how many party members have it; nil when nothing is shared
----@field synced? AGFPartyMember[] the ticked party members with a completed set heard (Party.lua), by name then key; nil when not synced
+---@field party? table<integer, integer> in a party with the setting on (Party.lua): quest ID -> how many party members the client shows on it; nil when nothing is shared
 ---@field notOffered? table<integer, integer> quests marked not offered: quest ID -> the level marked at; one marked at the player's level is unproven, with its own Why line
 ---@field questAvailable? fun(id: integer): boolean
 ---@field ownedBooks? table<integer, boolean> library books whose collected item the player carries, by book quest ID (bags or bank)
@@ -206,7 +199,6 @@
 ---@field camps? table<string, table<string, true>> the spots "Next spot" passed over this session, by area step key and Model.SpotKey
 ---@field notOffered table<integer, integer> route pickups their giver's window left out: quest ID -> the player's level then (Offers.lua)
 ---@field guideSkips table<string, table<integer, true>> RestedXP guide steps skipped while RestedXP had not reached them, by guide key (RestedXP.lua)
----@field sync table<string, true> party members ticked under Sync with, by "Name-Realm" (Party.lua)
 ---@field plannedDungeons table<integer, boolean>
 ---@field quests boolean
 ---@field dungeons boolean
@@ -308,7 +300,6 @@
 ---@field place? string the town's name, else its busiest giver; a turn-in's NPC only where its waypoint agrees; a trainer's NPC
 ---@field zone? string the client's name for `map`, else the data's
 ---@field optional? boolean elite/group or outside the player's level band
----@field sync? string who the stop is for while synced (#617): "Everyone", "For you", "For <name>" or a list
 ---@field r? number an area's radius in yards, wide enough for all its objectives; 0 for a point
 ---@field planned? table<integer, true> the quests on it the route picks up first, not in the log yet (Laps.lua)
 ---@field returns? table<integer, true> a town's hand-ins the route comes back for once their objectives are done
@@ -448,9 +439,6 @@
 ---@field Hub fun(data: AGFData, place: {map: integer, x: number, y: number}): string? the town `place` stands in, as "map:area"
 ---@field ChainStart fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): integer? a locked quest's earliest prerequisite open now and not orange or red
 ---@field Hard fun(quest: AGFQuest, player: AGFPlayer): boolean above the chosen quest level ceiling
----@field GroupCompleted fun(completed: table<integer, boolean>, synced: AGFPartyMember[]): table<integer, boolean> the quests every synced player has done
----@field SyncLabel fun(completed: table<integer, boolean>, synced: AGFPartyMember[], ids?: integer[]): string? who a stop is for while synced (#617)
----@field NameList fun(names: string[]): string the names as a line of people reads
 ---@field AboveCeiling fun(level: integer, player: AGFPlayer): boolean `level` is past the player's quest level ceiling (maxQuestLevelOffset)
 ---@field OwnedShape fun(owned: table<integer, boolean>?): string the carried library books as one comparable string
 ---@field Eligible fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, questID: integer): boolean
@@ -775,15 +763,6 @@
 ---@field MENU_GIVERS string
 ---@field MENU_TRACKER string
 ---@field MENU_MORE_SETTINGS string
----@field SYNC_WITH string the cog menu's Sync Together checklist
----@field SYNC_MEMBERS string the checklist's title
----@field SYNC_NONE string the checklist's line when no party member runs the guide
----@field SYNC_SUBTITLE string format: the names synced with, under the guide title
----@field SYNC_EVERYONE string a stop every synced player needs
----@field SYNC_FOR_YOU string a stop only the player needs
----@field SYNC_FOR string format: the members a stop is for
----@field SYNC_FOR_YOU_AND string format: the player and the members a stop is for
----@field SYNC_AND string joins two names in a list
 ---@field SETTINGS_GROUP_ROUTE string
 ---@field SETTINGS_GROUP_MAP string
 ---@field SETTINGS_GROUP_TRACKER string
@@ -1632,8 +1611,6 @@
 ---@field TODAY_MORE string
 ---@field STOP_VISIT string
 ---@field SET_HEARTH string
----@field SETTING_STATS_SHARE string
----@field SETTING_STATS_SHARE_TOOLTIP string
 ---@field SETTING_STEP_SOUND string
 ---@field SETTING_STEP_SOUND_TOOLTIP string
 ---@field STEP_PICKUP string

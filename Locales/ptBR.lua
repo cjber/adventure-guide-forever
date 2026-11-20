@@ -155,10 +155,6 @@ L["JOURNEY_PROGRESS_EMPTY"] = "As suas histórias concluídas vão aparecer aqui
 L["JOURNEY_QUESTS"] = "Missões desta jornada"
 L["JOURNEY_STORY"] = "História: %s"
 L["LATER_LAPS"] = "%d delas em voltas posteriores"
-L["LEADERBOARD_SHARING_OFF"] =
-	"O compartilhamento está desligado: nada é enviado nem exibido. Ligue com /agf share on."
-L["LEADERBOARD_SHARING_ON"] =
-	"O compartilhamento está ligado. Desligue com /agf share off ou em Opções > AddOns > Adventure Guide."
 L["LEGACY_PROGRESS_LINK"] = "Abrir o mapa para o progresso de Legado"
 L["LEGACY_PROGRESS_NOTE"] = "Coleções, exploração e conclusão de zonas são acompanhadas pelo Legacy Forever."
 L["LEVELS"] = "%d-%d"
@@ -343,7 +339,7 @@ L["SETTING_MAP_PINS_TOOLTIP"] =
 	"Os passos numerados da rota no mapa-múndi enquanto a zona deles é mostrada, e os recrutadores de missões quando também estiverem ativados. O guia aberto mostra a rota de qualquer forma."
 L["SETTING_PARTY_QUESTS"] = "Preferir missões do seu grupo"
 L["SETTING_PARTY_QUESTS_TOOLTIP"] =
-	"Em grupo, os passos de missões que alguém do seu grupo também tem contam como um pouco mais perto, para que vocês tendam a fazê-las juntos. Membros do grupo com o Adventure Guide informam uns aos outros quais missões têm, por mensagens de addon ocultas."
+	"Em grupo, os passos de missões que alguém do seu grupo também tem contam como um pouco mais perto, para que vocês tendam a fazê-las juntos."
 L["SETTING_POLESTAR_ASIDE"] = "Sair do caminho enquanto o Polestar guia"
 L["SETTING_POLESTAR_ASIDE_TOOLTIP"] =
 	"Enquanto o Polestar tiver um guia em andamento, o guia não inicia nenhuma rota própria nem desenha marcas no mapa. O rastreador mostra que o Polestar está guiando você; clique nele para assumir de novo."
@@ -360,9 +356,6 @@ L["SETTING_OUTGROWN_TOOLTIP"] = "Manter nas opções as zonas e masmorras cujas 
 L["SETTING_RXP"] = "Usar guias do RestedXP"
 L["SETTING_RXP_TOOLTIP"] =
 	"Adiciona o guia atual do RestedXP aos seus cartões de jornada, ao mapa e ao rastreador. O RestedXP avança os passos do guia; o Shortest Path Forever cuida da viagem. O RestedXP continua instalado e controla o progresso do guia."
-L["SETTING_STATS_SHARE"] = "Compartilhar atividade com guilda e grupos"
-L["SETTING_STATS_SHARE_TOOLTIP"] =
-	"Ativado por padrão. Compartilha registros de atividade acumulados com usuários do addon na sua guilda, grupo, raide ou instância. Desative para manter os registros apenas neste personagem. Os registros compartilhados são informados pelos jogadores e não são verificados."
 L["SETTING_STEP_SOUND"] = "Som ao concluir um passo"
 L["SETTING_STEP_SOUND_TOOLTIP"] = "Toca um som curto uma vez quando você conclui um passo da rota."
 L["SETTING_TITLE_ROUTE"] = "Jornadas iniciam a rota"
@@ -511,18 +504,6 @@ L["SETTING_NPC_HIGHLIGHT_TOOLTIP"] =
 L["NPC_HIGHLIGHT_HINT"] =
 	"As placas de nome amistosas estão desligadas: ative-as nas opções de interface para ver onde ir."
 
-L["SYNC_WITH"] = "Sincronizar com" -- mt
-L["SYNC_MEMBERS"] = "Membros do grupo com o guia" -- mt
-L["SYNC_NONE"] = "Ninguém no seu grupo usa o guia" -- mt
-L["SYNC_SUBTITLE"] = "Sincronizado com %s" -- mt
-L["SYNC_EVERYONE"] = "Todos" -- mt
-L["SYNC_FOR_YOU"] = "Para você" -- mt
-L["SYNC_FOR"] = "Para %s" -- mt
-L["SYNC_FOR_YOU_AND"] = "Para você e %s" -- mt
-L["SYNC_AND"] = "e" -- mt
-
-L.LEADERBOARD_METRIC = "Missões entregues" -- mt
-L.LEADERBOARD_TOTAL = "total" -- mt
 -- mt: Information only (#715).
 L["SETTING_INFORMATION_ONLY"] = "Somente informações: sem rotas" -- mt
 L["SETTING_INFORMATION_ONLY_TOOLTIP"] =

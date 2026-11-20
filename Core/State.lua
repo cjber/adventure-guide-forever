@@ -343,7 +343,6 @@ function State.Player()
 		tracked = State.Tracked(),
 		notOffered = ns.Prefs().notOffered,
 		party = ns.Party.Quests(),
-		synced = ns.Party.Synced(),
 	}
 end
 
