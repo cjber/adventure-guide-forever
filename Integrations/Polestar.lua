@@ -88,7 +88,7 @@ function Aside.TakeOver()
 	Aside.Check()
 end
 
-EventUtil.ContinueAfterAllEvents(function()
+ns.AfterEvents(function()
 	local addon = Polestar
 	if type(addon) ~= "table" then
 		return

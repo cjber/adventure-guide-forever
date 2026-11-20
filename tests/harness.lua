@@ -1870,9 +1870,8 @@ function harness.load(options)
 		error("C_Timer.After keeps queueing itself")
 	end
 
-	local loaded, onLoaded, afterAll, fired = {}, {}, {}, {}
+	local loaded, onLoaded, afterAll = {}, {}, {}
 	function h.fire(event, ...)
-		fired[event] = true
 		if event == "ADDON_LOADED" then
 			local name = ...
 			loaded[name] = true
@@ -1886,11 +1885,13 @@ function harness.load(options)
 				h.call(frame.scripts.OnEvent, frame, event, ...)
 			end
 		end
+		-- As the client's wait does: only an event fired after the wait was asked counts toward it.
 		for index = #afterAll, 1, -1 do
 			local waiting = afterAll[index]
+			waiting.seen[event] = true
 			local ready = true
 			for _, name in ipairs(waiting.events) do
-				ready = ready and fired[name] == true
+				ready = ready and waiting.seen[name] == true
 			end
 			if ready then
 				table.remove(afterAll, index)
@@ -1908,7 +1909,7 @@ function harness.load(options)
 			end
 		end,
 		ContinueAfterAllEvents = function(callback, ...)
-			afterAll[#afterAll + 1] = { callback = callback, events = { ... } }
+			afterAll[#afterAll + 1] = { callback = callback, events = { ... }, seen = {} }
 		end,
 	}
 	local registry = {}
@@ -3953,6 +3954,15 @@ function harness.load(options)
 	--[[ Load the addon: the TOC's files in order, each given (addonName, ns) ]]
 
 	G.AdventureGuideForeverDB, G.AdventureGuideForeverCharDB = options.db, options.charDB
+	-- options.deferred: the files run as the package's runner runs them when the bundled ForeverCore activates, at
+	-- PLAYER_LOGIN: the addon's own load and the login have fired already, a startup callback waits in the runner's
+	-- queue, and the runner hands the two missed events to the frames the files registered.
+	local before = #h.frames
+	if options.deferred then
+		h.fire("ADDON_LOADED", ADDON)
+		h.fire("PLAYER_LOGIN")
+		h.ns.ForeverCoreHostAfter, h.ns.ForeverCoreHostDeferred = {}, true
+	end
 	for line in io.lines(ADDON .. ".toc") do
 		line = line:gsub("\r", "")
 		if line ~= "" and not line:match("^#") then
@@ -4021,9 +4031,27 @@ function harness.load(options)
 		options.setup(h)
 	end
 	h.trackerHostSettings = G.ForeverCoreDB.trackerHost
-	h.fire("ADDON_LOADED", ADDON)
+	if options.deferred then
+		local after = h.ns.ForeverCoreHostAfter
+		h.ns.ForeverCoreHostAfter = nil
+		for _, callback in ipairs(after) do
+			h.call(callback)
+		end
+		for _, missed in ipairs({ { "ADDON_LOADED", ADDON }, { "PLAYER_LOGIN" } }) do
+			for index = before + 1, #h.frames do
+				local frame = h.frames[index]
+				if frame.events and frame.events[missed[1]] and frame.scripts.OnEvent then
+					h.call(frame.scripts.OnEvent, frame, unpack(missed))
+				end
+			end
+		end
+	else
+		h.fire("ADDON_LOADED", ADDON)
+	end
 	h.fire("ADDON_LOADED", "Blizzard_WorldMap")
-	h.fire("PLAYER_LOGIN")
+	if not options.deferred then
+		h.fire("PLAYER_LOGIN")
+	end
 	h.fire("PLAYER_ENTERING_WORLD", options.initialLogin ~= false, options.initialLogin == false)
 	h.fire("VARIABLES_LOADED")
 	h.flush()

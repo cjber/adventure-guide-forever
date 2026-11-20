@@ -1,3 +1,4 @@
+local _, ns = ...
 -- Retire only keys assigned to the removed window action.
 local bindingCleanup = CreateFrame("Frame")
 local function ClearWindowBinding()
@@ -15,4 +16,4 @@ local function ClearWindowBinding()
 	end
 end
 bindingCleanup:SetScript("OnEvent", ClearWindowBinding)
-EventUtil.ContinueAfterAllEvents(ClearWindowBinding, "VARIABLES_LOADED", "PLAYER_LOGIN")
+ns.AfterEvents(ClearWindowBinding, "VARIABLES_LOADED", "PLAYER_LOGIN")

@@ -1303,7 +1303,9 @@ local function Start()
 	C_Timer.After(0, Step)
 end
 
-EventUtil.ContinueAfterAllEvents(function()
+-- ns.AfterEvents, never the client's own wait: with the bundled ForeverCore the files run after PLAYER_LOGIN, the
+-- client would never call back, and the tracker would stay on the loading line (#892).
+ns.AfterEvents(function()
 	-- The earliest safe point: the saved variables have loaded, and the class and faction the key depends on are
 	-- readable. Adoption here means the route is planned from the saved records at login, and Questie's ready
 	-- callback only joins its live policy.
