@@ -5,13 +5,12 @@ if ns.broken then
 	return
 end
 
---[[ One owner for the tracked quests while something leads the player: a RestedXP guide (#362) or one of Adventure
-     Guide's own journeys (#682). The quests the leader names in the log are tracked, and every other tracked quest
-     leaves. The player's own tracked quests are kept on the character when a leader takes over, and come back when it
-     stops leading: another choice, no journey, or the setting turned off. Every change goes through the client's
-     quest watches, which Questie mirrors into its own tracker on Forever, so its list follows. Only what this file or
-     the client's auto quest watch tracked is taken away again: a quest the player tracks or untracks by hand while a
-     leader leads stays as they left it. ]]
+--[[ One owner for the watches a leader adds: a RestedXP guide (#362) or one of Adventure Guide's own journeys (#682).
+     The quests the leader names in the log are tracked, and come off the tracker again once it stops naming them. A
+     quest the player tracked is never untracked (#865): only a watch this file or the client's auto quest watch added
+     for the leader is taken away, and a quest the player tracks or untracks by hand stays as they left it. Every change
+     goes through the client's quest watches, which Questie mirrors into its own tracker on Forever, so its list
+     follows. ]]
 ---@class AGFQuestWatch
 local Watch = {}
 ns.QuestWatch = Watch
@@ -22,11 +21,6 @@ ns.QuestWatch = Watch
 local AUTO_WINDOW = 5
 ---@type table<integer, number>
 local auto = {}
-
--- The leader the last Sync settled, and how many of the player's own quests it currently hides for the tracker.
----@type "rxp"|"journey"|nil
-local source
-local hidden = 0
 
 -- Watch events raised by our own changes must not rewrite the player's saved choices.
 local changing = false
@@ -40,20 +34,6 @@ local function RemoveWatch(questID)
 	changing = true
 	C_QuestLog.RemoveQuestWatch(questID)
 	changing = false
-end
-
----@type fun()[]
-local listeners = {}
-
----@param fn fun() called when the hidden count changes
-function Watch.OnChange(fn)
-	listeners[#listeners + 1] = fn
-end
-
-local function Notify()
-	for _, fn in ipairs(listeners) do
-		ns.core.SafeCall("quest watch listener", fn)
-	end
 end
 
 ---@param questID integer
@@ -138,53 +118,6 @@ local function Leader()
 	return JourneyLeader(route)
 end
 
--- The log the last build planned from, so counting what is hidden does not walk the quest log a second time.
----@return table<integer, AGFLogQuest>
-local function Log()
-	if ns.RouteSettled() then
-		return ns.Snapshot().log
-	end
-	return ns.State.Log()
-end
-
--- The player's own tracked quests the leader is withholding and the tracker does not list now.
----@param state AGFGuideWatchState
----@return integer
-local function CountHidden(state)
-	local count, log = 0, nil
-	for questID in pairs(state.hidden) do
-		log = log or Log()
-		if log[questID] and not Watched(questID) then
-			count = count + 1
-		end
-	end
-	return count
-end
-
--- Reads the hidden count for the notice, never in combat, and tells the tracker only when it moved.
-local function UpdateHidden()
-	if InCombatLockdown() then
-		return
-	end
-	local count = 0
-	if source == "journey" then
-		local state = ns.Prefs().guideWatch
-		if state then
-			count = CountHidden(state)
-		end
-	end
-	if count ~= hidden then
-		hidden = count
-		Notify()
-	end
-end
-
--- The number of the player's own quests currently hidden from the tracker while an Adventure Guide journey leads.
----@return integer
-function Watch.Hidden()
-	return hidden
-end
-
 -- Which leader is settling the watches: "rxp", "journey" or nil. Asked by a title click before it adds anything.
 ---@return "rxp"|"journey"|nil
 function Watch.Source()
@@ -192,7 +125,7 @@ function Watch.Source()
 	return kind
 end
 
--- The player's own tracked quests come back, and what this file or the client tracked for the leader goes.
+-- What this file or the client tracked for the leader goes; the player's own watches stay.
 ---@param state AGFGuideWatchState
 local function GiveBack(state)
 	for questID in pairs(state.added) do
@@ -200,12 +133,23 @@ local function GiveBack(state)
 			RemoveWatch(questID)
 		end
 	end
-	local log = ns.State.Log()
-	for _, questID in ipairs(state.saved) do
-		if log[questID] and not Watched(questID) then
-			AddWatch(questID)
+end
+
+-- Earlier versions untracked the player's own quests while a leader led, keeping them in `saved` (#865). A quest still
+-- in the log that the leader took off the tracker goes back on once. `saved` and `hidden` stay, empty: v1.11.0 and
+-- earlier read both with ipairs and pairs, so a player who rolls back keeps a working state, and with nothing saved
+-- the old reader takes none of their quests.
+---@param state AGFGuideWatchState
+local function Restore(state)
+	if state.saved and #state.saved > 0 then
+		local log = ns.State.Log()
+		for _, questID in ipairs(state.saved) do
+			if log[questID] and not Watched(questID) then
+				AddWatch(questID)
+			end
 		end
 	end
+	state.saved, state.hidden = {}, {}
 end
 
 -- Settles the tracked quests on the leader as it is now. Never in combat, and never while the route is provisional
@@ -220,64 +164,24 @@ function Watch.Sync()
 		return
 	end
 	local kind, named, order = Leader()
-	local switched = kind ~= source
-	source = kind
 	local state = prefs.guideWatch
+	if state then
+		Restore(state)
+	end
 	if not kind then
 		if state then
 			prefs.guideWatch = nil
 			GiveBack(state)
 		end
-		UpdateHidden()
 		return
 	end
 	---@cast named table<integer, true>
 	---@cast order integer[]
-	local now = GetTime()
 	if not state then
-		state = { saved = {}, added = {}, named = {}, hidden = {} }
-		for index = 1, C_QuestLog.GetNumQuestWatches() do
-			local questID = C_QuestLog.GetQuestIDForQuestWatchIndex(index)
-			if questID then
-				state.saved[#state.saved + 1] = questID
-			end
-		end
+		state = { added = {}, named = {}, saved = {}, hidden = {} }
 		prefs.guideWatch = state
-		for _, questID in ipairs(state.saved) do
-			if not named[questID] then
-				if Watched(questID) then
-					RemoveWatch(questID)
-				end
-				state.hidden[questID] = true
-			end
-		end
-	else
-		-- A state saved before hidden counts existed: rebuild what the leader withholds from what is off the tracker.
-		if not state.hidden then
-			state.hidden = {}
-			for _, questID in ipairs(state.saved) do
-				if not named[questID] and not Watched(questID) then
-					state.hidden[questID] = true
-				end
-			end
-		end
-		-- The leader changed (a RestedXP guide began, or another journey took over): a saved quest it does not name
-		-- is hidden now too, unless the player already took it back by hand.
-		if switched then
-			for _, questID in ipairs(state.saved) do
-				if not named[questID] and not state.hidden[questID] then
-					if Watched(questID) then
-						RemoveWatch(questID)
-					end
-					state.hidden[questID] = true
-				end
-			end
-		end
 	end
-	local saved = {}
-	for _, questID in ipairs(state.saved) do
-		saved[questID] = true
-	end
+	local now = GetTime()
 	for questID, at in pairs(auto) do
 		if now - at > AUTO_WINDOW then
 			auto[questID] = nil
@@ -291,14 +195,7 @@ function Watch.Sync()
 			if Watched(questID) then
 				RemoveWatch(questID)
 			end
-			if saved[questID] then
-				state.hidden[questID] = true
-			end
 		end
-	end
-	-- A quest the leader now names is given back to the tracker, even one it withheld before.
-	for questID in pairs(named) do
-		state.hidden[questID] = nil
 	end
 	-- A quest the leader names anew is tracked once; one the player untracks while it stays named stays untracked.
 	for _, questID in ipairs(order) do
@@ -307,12 +204,6 @@ function Watch.Sync()
 		end
 	end
 	state.named = named
-	UpdateHidden()
-end
-
--- A watch changed by the player while no route change is due: the hidden count may have moved, and nothing else.
-function Watch.Refresh()
-	UpdateHidden()
 end
 
 local function Later()
@@ -337,28 +228,16 @@ events:SetScript("OnEvent", function(_, event, first, second)
 	if event == "QUEST_ACCEPTED" or (event == "QUEST_WATCH_UPDATE" and not Watched(questID)) then
 		auto[questID] = GetTime()
 	end
-	-- Keep explicit edits in the saved player set too, so ending or switching a journey cannot undo them.
+	-- A quest the player tracks or untracks by hand is theirs from then on: no later sync takes it away.
 	local automatic = auto[questID] and GetTime() - auto[questID] <= AUTO_WINDOW
 	if event == "QUEST_WATCH_LIST_CHANGED" and not changing and not automatic then
 		local state = ns.Prefs().guideWatch
 		if state then
-			for index = #state.saved, 1, -1 do
-				if state.saved[index] == questID then
-					table.remove(state.saved, index)
-				end
-			end
-			if second == true then
-				state.saved[#state.saved + 1] = questID
-			end
 			state.added[questID] = nil
-			if state.hidden then
-				state.hidden[questID] = nil
-			end
 		end
 	end
 	-- A watch change needs a look only for a quest the client may have tracked: the rest are ours or the player's.
 	if event ~= "QUEST_WATCH_UPDATE" and (event ~= "QUEST_WATCH_LIST_CHANGED" or auto[questID]) then
 		Later()
 	end
-	Watch.Refresh()
 end)

@@ -182,9 +182,7 @@ local function Tracker(h)
 		end
 		blocks[index] = { header = block.header, lines = lines }
 	end
-	local notice = module.hiddenText
-	local hidden = notice and notice:IsShown() and notice:GetText() or nil
-	return { header = module.Header.Text:GetText(), hidden = hidden, blocks = blocks }
+	return { header = module.Header.Text:GetText(), blocks = blocks }
 end
 
 local out = {}
@@ -383,7 +381,7 @@ out.steps = {
 	player = { map = h.player.map, x = h.player.x, y = h.player.y },
 }
 
--- The tracker on a journey that hides two of the player's own tracked quests: the grey count beside the header.
+-- The tracker on a journey while the player tracks two quests of their own, which stay tracked (#865).
 -- Only tracker.png draws this one; the menu and the minimap button keep the tracker scene above. The two quests are
 -- not in the catalogue, so they change nothing else the tracker shows.
 h = Load("v1", true, false, STORY, {

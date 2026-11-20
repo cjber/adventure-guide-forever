@@ -1,67 +1,34 @@
 {
-  "input_digest": "8e8653c5ce9392181db72e5a99597d981e87ca9f6f33519dcc9f9e17a1987e85",
-  "runtime_sha256": "8e8653c5ce9392181db72e5a99597d981e87ca9f6f33519dcc9f9e17a1987e85",
-  "candidate": "adad7470eb7942eb1a17cd94530705efc12db92a5ad97407a54c4046ba8dbbd8",
+  "input_digest": "6f0c31c9c670b041f16990b5be3e540685a24ae348bf1ce93d24001ad636fe2e",
+  "runtime_sha256": "6f0c31c9c670b041f16990b5be3e540685a24ae348bf1ce93d24001ad636fe2e",
+  "candidate": "db45b6a8ecfb37d615f0d1f3ed9f15d7cf78336d6d956ae91984e2c6734ffb3d",
   "client_build": "1.60.1.70959 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "8284a0bd6984517b6e5b2d52a1ba749fa99231f3",
+  "source_commit": "d3740b7feb8686ee0c9f81b3ce977de7dad671f4",
   "flows": [
     {
-      "name": "cap2",
+      "name": "panel",
       "steps": [
-        "sha256:aa4f064cdd29ccc5be46ee0ab1be9647e0cbd05179e42011a479fc3f270c8690 set2.lua"
+        "sha256:02a9190acbe50f259ff5abf6ec5934f93db24138ca084ae3cce983b04b24f147 agf-panel.lua"
       ],
       "result": "pass"
     },
     {
-      "name": "guide2",
+      "name": "tracker",
       "steps": [
-        "sha256:3b31076c16c11700485a5506db43520617aecfe6a749828313d5f3c7c8cfb7a5 guide.lua"
-      ],
-      "result": "pass"
-    },
-    {
-      "name": "cap0",
-      "steps": [
-        "sha256:0fea267ad27351ab759e0da9395c7d6ba5fa758782dbfb8d827e0441ecf3b6d7 set0.lua"
-      ],
-      "result": "pass"
-    },
-    {
-      "name": "guide0",
-      "steps": [
-        "sha256:3b31076c16c11700485a5506db43520617aecfe6a749828313d5f3c7c8cfb7a5 guide.lua"
-      ],
-      "result": "pass"
-    },
-    {
-      "name": "restore",
-      "steps": [
-        "sha256:aa4f064cdd29ccc5be46ee0ab1be9647e0cbd05179e42011a479fc3f270c8690 restore.lua"
+        "/agf"
       ],
       "result": "pass"
     }
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/7287a3da5215e9fd744d7e98fe55b6c0/raw/0eb727e208d15d136919e1c7bbf6ea18abbe14a2/1-cap2.png",
-      "sha256": "d07c691fcc7fb8d955c2d89fce069721ec049a1d24c785963423b788bcc7595e"
+      "url": "https://gist.githubusercontent.com/cjber/5ffeb63217f5681da4d36e6bfa88b389/raw/fa25714613ffb8076c64286862c48090a6bbd8dd/1-panel.png",
+      "sha256": "37ae7e609ae961a97db7cfdd1cec9fd6143bb8ae6c6291fc705bda05165e52a6"
     },
     {
-      "url": "https://gist.githubusercontent.com/cjber/7287a3da5215e9fd744d7e98fe55b6c0/raw/0eb727e208d15d136919e1c7bbf6ea18abbe14a2/2-guide2.png",
-      "sha256": "957e279ce3e2f9bab66d4283bc868ead84efdf3a451f275d5bba738fbb02f6df"
-    },
-    {
-      "url": "https://gist.githubusercontent.com/cjber/7287a3da5215e9fd744d7e98fe55b6c0/raw/0eb727e208d15d136919e1c7bbf6ea18abbe14a2/3-cap0.png",
-      "sha256": "31ed013bc6c9afcbba83a840c99e9bcbb5400424d5282338efbed86f7548adfe"
-    },
-    {
-      "url": "https://gist.githubusercontent.com/cjber/7287a3da5215e9fd744d7e98fe55b6c0/raw/0eb727e208d15d136919e1c7bbf6ea18abbe14a2/4-guide0.png",
-      "sha256": "0f7d9ae9d6be2fac8c43abd801d6255883afbba3df3b5a4182da0fb017a6f8cc"
-    },
-    {
-      "url": "https://gist.githubusercontent.com/cjber/7287a3da5215e9fd744d7e98fe55b6c0/raw/0eb727e208d15d136919e1c7bbf6ea18abbe14a2/5-restore.png",
-      "sha256": "bfd27ecb0f43c902443115abdb2388f53f601dc323462abfcdef6669d5985869"
+      "url": "https://gist.githubusercontent.com/cjber/5ffeb63217f5681da4d36e6bfa88b389/raw/fa25714613ffb8076c64286862c48090a6bbd8dd/2-tracker.png",
+      "sha256": "131e23fd870048a86fa9971fb9da05b6fc07ab0fa17f3e82916acc3f6e541c53"
     }
   ]
 }

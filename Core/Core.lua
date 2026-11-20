@@ -55,11 +55,9 @@ local DEFAULTS = {
 	npcHighlight = true,
 	-- Opt-in: a title click adds the route's own quests to the tracker. A saved true stays true.
 	trackRouteQuests = false,
-	-- While a journey leads, the tracker lists only its quests; the player's own list comes back when it stops
-	-- (QuestWatch.lua).
+	-- While a journey leads, the tracker also lists its quests in the log; the player's own stay (QuestWatch.lua).
 	journeyWatch = true,
-	-- While a RestedXP guide leads, the tracker lists only the quests its steps name; the player's own list comes back
-	-- when it stops (also QuestWatch.lua).
+	-- While a RestedXP guide leads, the tracker also lists the quests its steps name (also QuestWatch.lua).
 	guideTracksQuests = true,
 	-- Hint strength, Guide (false) or Wanderer (true), which gates every waypoint, route and map mark.
 	wanderer = false,
@@ -78,8 +76,9 @@ local DEFAULTS = {
 	warnClosing = true,
 	-- The green arrow on a quest reward choice that beats what you wear in its slot (Upgrades.lua).
 	markUpgrades = true,
-	-- Questie's own tracker is off while this one shows, so quests are not listed twice (QuestieOptions.lua).
-	hideQuestieTracker = true,
+	-- Questie's own tracker is off while this one shows, so quests are not listed twice (QuestieOptions.lua). Off unless
+	-- the player ticks it: Questie's tracker is Questie's, and its own option wins.
+	hideQuestieTracker = false,
 	-- A record, not a setting: the player hid the note that the game's quest areas are off (Tracker.lua).
 	questAreasNoteHidden = false,
 }
@@ -155,13 +154,18 @@ local function LoadDB()
 	loaded.microButton, loaded.microButtonPlacement, loaded.replaceMicroButton = nil, nil, nil
 	loaded.minimapButtonHidden, loaded.minimapButtonAngle = nil, nil
 	loaded.suggestCompanions, loaded.suggestFamily, loaded.familyDismissed = nil, nil, nil
-	-- "Stop tracking other quests" became "Track only the journey's quests", on unless the player turns it off. A
+	-- "Stop tracking other quests" became "Track the journey's quests", on unless the player turns it off. A
 	-- saved true carries over; a saved false leaves the new default on.
 	if loaded.untrackOthers ~= nil then
 		if loaded.untrackOthers == true and loaded.journeyWatch == nil then
 			loaded.journeyWatch = true
 		end
 		loaded.untrackOthers = nil
+	end
+	-- "Turn off Questie's tracker" was on by default and overrode the tracker the player turned on in Questie (#858).
+	-- Every default is saved, so a saved true the player never ticked is the old default: it goes.
+	if loaded.questieTrackerChoiceMade ~= true then
+		loaded.hideQuestieTracker = false
 	end
 	for key, value in pairs(DEFAULTS) do
 		if type(loaded[key]) ~= type(value) then
@@ -383,6 +387,9 @@ function ns.SetSetting(key, value)
 	end
 	if key == "polestarAside" then
 		ns.Polestar.Check()
+	end
+	if key == "hideQuestieTracker" then
+		db.questieTrackerChoiceMade = true
 	end
 	if key == "hideQuestieTracker" or key == "showTracker" then
 		ns.QuestieOptions.ApplyTracker()

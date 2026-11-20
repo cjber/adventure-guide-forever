@@ -1642,13 +1642,15 @@ function Model.Journeys(
 	table.sort(storyPool)
 	-- Admission can come from a later chapter; membership below still comes from the first occurrence.
 	local admitted = {}
-	local inStoryZone = InZone(chosenZone or zone)
+	-- Continue lists zones (docs/design.md §2.3): a chain is offered only once chosen, or as the stranded character's
+	-- dungeon preparation, where no zone card is left to follow.
+	local function Available(way, head)
+		return chosenHead == head or (stranded and way and Into(data, way) ~= nil)
+	end
 	for _, id in ipairs(storyPool) do
-		local quest = data.quests[id]
 		local way = Model.Story(data, id)
 		local head = way and way.members[1]
-		local available = inStoryZone(quest) or chosenHead == head or (stranded and way and Into(data, way) ~= nil)
-		if way and head and available then
+		if way and head and Available(way, head) then
 			admitted[head] = true
 		end
 	end
@@ -1684,13 +1686,9 @@ function Model.Journeys(
 	end
 	local heads = {}
 	for _, id in ipairs(storyPool) do
-		local quest = data.quests[id]
 		local way = Model.Story(data, id)
 		local head = way and way.members[1]
-		-- Other destinations already have zone cards. Expand stories for the destination being viewed, plus
-		-- a selected chain wherever the player travels and the stranded character's dungeon preparation.
-		local available = inStoryZone(quest) or chosenHead == head or (stranded and way and Into(data, way) ~= nil)
-		if way and head and available and not heads[head] then
+		if way and head and Available(way, head) and not heads[head] then
 			heads[head] = true
 			local chainPool = chainPools[head]
 			local key, members = "chain:" .. head, chainPool.members

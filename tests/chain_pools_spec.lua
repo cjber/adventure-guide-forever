@@ -13,7 +13,7 @@ local function same(a, b, path)
 		assert(b[k] ~= nil, path .. " extra " .. tostring(k))
 	end
 end
-local function run(extra, variant)
+local function run(extra, variant, journey)
 	local ns = {}
 	dofile("tests/harness.lua").model(ns)
 	local world = {
@@ -63,7 +63,7 @@ local function run(extra, variant)
 		dungeons = false,
 		skipped = {},
 		optimisedRoute = true,
-		journey = "chain:4",
+		journey = journey or "chain:4",
 		notInterested = {},
 	}
 	local completed, log = {}, {}
@@ -73,7 +73,7 @@ local function run(extra, variant)
 	end
 	if variant == 3 then
 		prefs.notInterested["chain:7"] = true
-		prefs.journey = "chain:8"
+		prefs.journey = journey or "chain:8"
 	end
 	if variant == 4 then
 		prefs.quests = false
@@ -111,19 +111,23 @@ local function pickups(value)
 	return found
 end
 for variant = 1, 7 do
-	local a, b = run(0, variant), run(12, variant)
 	for _, key in ipairs({ "chain:4", "chain:7", "chain:8" }) do
+		local a, b = run(0, variant, key), run(12, variant, key)
 		same(card(a, key), card(b, key), key)
 	end
 end
-local cards = run(0, 1)
-same(pickups(assert(card(cards, "chain:7"))), { 7, 9 }, "first converging chain")
-same(pickups(assert(card(cards, "chain:8"))), { 8, 9 }, "second converging chain")
+-- Only the chosen chain is a card: Continue lists zones (design 2.3).
+same(pickups(assert(card(run(0, 1, "chain:7"), "chain:7"))), { 7, 9 }, "first converging chain")
+same(pickups(assert(card(run(0, 1, "chain:8"), "chain:8"))), { 8, 9 }, "second converging chain")
+local unchosen = run(0, 1)
+assert(card(unchosen, "chain:7") == nil and card(unchosen, "chain:8") == nil, "an unchosen chain is not offered")
+assert(card(unchosen, "chain:4") ~= nil, "the chosen chain is offered")
 local accepted = assert(card(run(0, 2), "chain:4"))
 assert(accepted.story.chapter == 2, "accepted chapter remains the lead")
 same(pickups(accepted), {}, "accepted quest is never offered as a pickup")
 assert(accepted.steps[1].quests[1] == 5, "accepted chapter retains objective work")
-assert(card(run(0, 3), "chain:7") == nil, "dismissed chain stays hidden")
+assert(card(run(0, 3, "chain:7"), "chain:7") == nil, "dismissed chain stays hidden even when chosen")
+assert(card(run(0, 3), "chain:8") ~= nil, "the other chain stays")
 assert(card(run(0, 4), "chain:4") == nil, "quests off removes pickup story")
 assert(card(run(0, 5), "chain:4").instance == 36, "stranded preparation retains its dungeon")
 local exclusive = assert(card(run(0, 6), "chain:4"))

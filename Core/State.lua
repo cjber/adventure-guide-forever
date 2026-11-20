@@ -296,26 +296,16 @@ function State.OwnedBooks()
 	return ownedBooks
 end
 
--- The quests the player tracks, by ID: the client's own watch list, without what a leading journey added to it.
--- QuestWatch keeps the player's set on the character while a journey leads, so the tracked journey card routes the
--- player's list rather than a copy of the journey already showing (#772).
+-- The quests the player tracks, by ID: the client's own watch list, without what a leading journey added to it, so the
+-- tracked journey card routes the player's list rather than a copy of the journey already showing (#772).
 ---@return table<integer, boolean>
 function State.Tracked()
-	local tracked, own = {}, {}
+	local tracked = {}
 	local state = ns.Prefs().guideWatch
-	if state then
-		for _, questID in ipairs(state.saved or {}) do
-			own[questID] = true
-			-- Hidden watches still belong to the player; a visible quest they untracked does not.
-			if (state.hidden and state.hidden[questID]) or C_QuestLog.GetQuestWatchType(questID) ~= nil then
-				tracked[questID] = true
-			end
-		end
-	end
 	local added = state and state.added
 	for index = 1, C_QuestLog.GetNumQuestWatches() do
 		local questID = C_QuestLog.GetQuestIDForQuestWatchIndex(index)
-		if questID and not (added and added[questID] and not own[questID]) then
+		if questID and not (added and added[questID]) then
 			tracked[questID] = true
 		end
 	end

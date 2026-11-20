@@ -179,9 +179,11 @@ do
 	local entries = h.menu.entries
 	equal(entries[1].kind, "title", "order: title first")
 	equal(entries[2].text, ns.L.GO, "order: primary second")
-	equal(entries[#entries - 3].text, ns.L.CHOOSE_JOURNEY, "order: open after actions")
-	equal(entries[#entries - 2].text, ns.L.END_JOURNEY, "order: end last addon action")
-	equal(entries[#entries - 1].kind, "divider", "order: core divider")
+	-- Core 1.15.3 closes the menu with a divider, its Lock the tracker checkbox and the Tracker submenu.
+	equal(entries[#entries - 4].text, ns.L.CHOOSE_JOURNEY, "order: open after actions")
+	equal(entries[#entries - 3].text, ns.L.END_JOURNEY, "order: end last addon action")
+	equal(entries[#entries - 2].kind, "divider", "order: core divider")
+	equal(entries[#entries - 1].text, "Lock the tracker", "order: core lock after the divider")
 	equal(entries[#entries].text, "Tracker", "order: core settings last")
 	local step = ns.Guidance.CurrentStep()
 	local block = tracker.liveBlocks[step.key]

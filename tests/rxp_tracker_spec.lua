@@ -124,7 +124,8 @@ end
 check(main.styles[1] == h.G.OBJECTIVE_TRACKER_COLOR.NormalHighlight, "the first open line is lit")
 check(main.styles[2] == h.G.OBJECTIVE_TRACKER_COLOR.Normal, "the other open lines are the tracker's own")
 check(main.styles[4] == h.G.OBJECTIVE_TRACKER_COLOR.Complete, "a done line is greyed")
-check(main.lines[main.order[#main.order]]:find("Follow the road", 1, true), "the next step closes the block")
+check(main.lines[main.order[#main.order - 1]]:find("Follow the road", 1, true), "the next step follows the lines")
+check(main.lines[main.order[#main.order]]:find("Step 7", 1, true), "the one after it closes the block (#870)")
 
 -- Ongoing steps, one line each, without repeats (#353).
 local ongoing = h.tracker.liveBlocks["rxp-ongoing"]
@@ -140,15 +141,37 @@ for _, line in pairs(ongoing.lines) do
 end
 
 -- Little room: what does not fit is counted, never cut (#353).
--- The step under way takes 139 (a header, the guide's progress line and bar, five lines, a gap); 211 leaves the
+-- The step under way takes 155 (a header, the guide's progress line and bar, six lines, a gap); 227 leaves the
 -- ongoing block its header, two lines and the count, which is no room for a third line with the count still under it.
-h.trackerRoom = 211
+h.trackerRoom = 227
 h.tracker:MarkDirty()
 ongoing = h.tracker.liveBlocks["rxp-ongoing"]
 check(ongoing.used, "the ongoing block still shows")
 check(#ongoing.order == 3, "two lines and the count fit: got " .. #ongoing.order)
 check(ongoing.lines[3] == h.ns.L.RXP_MORE_STEPS:format(5), "the rest is counted: " .. tostring(ongoing.lines[3]))
 h.trackerRoom = nil
+
+-- RestedXP's tips (#870): a "*" guide line is hideTooltip and textOnly. RestedXP's step window draws it, so the step
+-- under way shows it too, greyed and never lit; a later step's tip stays out, as in RestedXP's own step list.
+local tip = { text = "Tip: the shrine to the east heals you", textOnly = true, hideTooltip = true, step = current }
+table.insert(current.elements, 1, tip)
+local laterTip = { text = "Tip: a later step's advice", textOnly = true, hideTooltip = true, step = steps[6] }
+table.insert(steps[6].elements, laterTip)
+h.ns.RestedXP.Refresh()
+h.flush()
+h.tracker:MarkDirty()
+local tipRow, laterRow
+for _, row in ipairs(h.ns.RestedXP.Snapshot().steps) do
+	tipRow = row.index == 5 and row or tipRow
+	laterRow = row.index == 6 and row or laterRow
+end
+check(tipRow.lines[1].hint and tipRow.lines[1].text:find("shrine", 1, true), "the step under way keeps its tip")
+check(tipRow.lines[1].elementIndex == nil, "a tip is never a line to skip")
+check(laterRow and #laterRow.lines == 1, "a later step's tip stays out of its preview")
+main = h.tracker.liveBlocks[h.ns.Route().steps[1].key]
+check(main.lines[1]:find("shrine", 1, true), "the tracker shows the tip")
+check(main.styles[1] == h.G.OBJECTIVE_TRACKER_COLOR.Complete, "the tip is greyed")
+check(main.styles[2] == h.G.OBJECTIVE_TRACKER_COLOR.NormalHighlight, "the first open line after it is the one lit")
 
 check(#h.errors == 0, table.concat(h.errors, "\n"))
 print(("rxp_tracker_spec: %d checks passed"):format(checks))
