@@ -347,8 +347,8 @@
     },
     {
       "source": "UI/Settings.lua",
-      "sha256": "e35f15f06abec132b81668eebc2b81437bd9e112dd19e96e973af923857313fb",
-      "review": "Read RegisterSettings, all groups, Checkbox and IndexButton. Localized labels and descriptions delegate to secure Blizzard settings initializers, without an explicit local FontObject. Excluded these consumer-owned fonts and tooltip descriptions rather than assuming a settings font. The Tracker group's Attach to quest tracker row is ForeverCore.SettingsSections.RegisterTrackerAttach, a core-owned initializer; excluded with the other settings fonts.",
+      "sha256": "c51c494bc3531a215a37b3a25bff32740f8aa9a1b0ea2be31b8c06eb6794f614",
+      "review": "Read RegisterSettings, all groups, Checkbox and IndexButton. Localized labels and descriptions delegate to secure Blizzard settings initializers, without an explicit local FontObject. Excluded these consumer-owned fonts and tooltip descriptions rather than assuming a settings font. The Tracker group's Attach to quest tracker row is ForeverCore.SettingsSections.RegisterTrackerAttach, a core-owned initializer, registered only when the running core has it (an older adopted standalone does not); excluded with the other settings fonts.",
       "bindings": []
     },
     {
