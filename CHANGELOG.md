@@ -10,6 +10,12 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago. O
 verbatim rather than rewritten as the addon moves. API changes other addons' authors need go under an
 optional `### For addon authors` subsection after a version's player bullets.
 
+## [1.12.3] - 2026-11-20
+
+### Fixed
+
+- No error at login without a separate ForeverCore. 1.12.2 carries its own ForeverCore, and with no separate one installed it raised `Core.lua:1306: attempt to index field 'QuestieOptions'` at login and skipped part of its startup. Adventure Guide now finishes loading every file before it starts. Thanks to the player on Discord who reported it (#886).
+
 ## [1.12.2] - 2026-11-20
 
 <!-- forever-core-sync -->
