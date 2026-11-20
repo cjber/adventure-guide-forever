@@ -8,7 +8,8 @@
 -- Additive: merges with the fields already declared on AGFNamespace in types/Namespace.lua.
 ---@class AGFNamespace
 ---@field OpenPanel? fun() set once the world map tab exists (Panel.lua); opens the guide tab.
----@field RegisterSettings fun() defined by Settings.lua, called once after ADDON_LOADED.
+---@field RegisterSettings fun() defined by Settings.lua, called once after every file has run.
+---@field OnFilesLoaded fun(callback: fun()) calls back once every file of the addon has run (Core/ForeverRequire.lua)
 ---@field OpenSettings? fun() set by RegisterSettings; opens our page under Settings > AddOns through ForeverCore.OpenSettingsPanel.
 ---@field Pins AGFPinsModule
 ---@field DEFAULTS table<string, boolean|number|string> account-wide setting defaults (Core.lua)

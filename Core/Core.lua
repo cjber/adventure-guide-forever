@@ -1293,9 +1293,10 @@ function AdventureGuideForever_OnAddonCompartmentClick()
 	end
 end
 
--- Deferred to ADDON_LOADED: every TOC file (including State.lua and Settings.lua, which load
--- after this one) has run by then, so forward references to ns.State/ns.RegisterSettings resolve.
-EventUtil.ContinueOnAddOnLoaded(addonName, function()
+-- Deferred until every TOC file (including State.lua and Settings.lua, which load after this one) has run, so
+-- forward references to ns.State/ns.RegisterSettings resolve. ns.OnFilesLoaded, never the client's own wait: with
+-- the bundled ForeverCore the files run at login, when the client would call back inside this file (#886).
+ns.OnFilesLoaded(function()
 	LoadDB()
 	LoadCharDB()
 	-- The settings page goes in first, in its own protected call, so a later startup error still leaves it working.
