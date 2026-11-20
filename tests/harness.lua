@@ -3962,16 +3962,25 @@ function harness.load(options)
 			else
 				-- UI/model specs use the bundled data as a deterministic fixture. Source integration specs
 				-- explicitly supply questiedb (false tests absence) and exercise the production adapter.
+				-- The stand-in takes the file's place in a package too: there each file joins the bundled runner's
+				-- list, and the runner counts that list before it lets the addon start.
+				local function Unavailable(_, ns)
+					ns.QuestieStatus = { state = "unavailable", settled = true, timing = { work = 0, frames = 0 } }
+					ns.ReadDungeonDetails = function()
+						return nil
+					end
+					ns.DungeonEntrance = function()
+						return nil
+					end
+				end
 				local chunk = path == "Integrations/QuestieSource.lua"
 						and options.questiedb == nil
-						and function(_, ns)
-							ns.QuestieStatus =
-								{ state = "unavailable", settled = true, timing = { work = 0, frames = 0 } }
-							ns.ReadDungeonDetails = function()
-								return nil
-							end
-							ns.DungeonEntrance = function()
-								return nil
+						and function(addon, ns)
+							local chunks = ns.ForeverCoreHostChunks
+							if type(chunks) == "table" then
+								chunks[#chunks + 1] = Unavailable
+							else
+								Unavailable(addon, ns)
 							end
 						end
 					or assert(loadfile(path))
