@@ -16,6 +16,7 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ### Fixed
 
+- **A journey you start in Shortest Path survives a /reload.** When you start a Shortest Path journey over the guide's route, the guide's route now stays paused after a /reload, so Shortest Path brings your journey back. Click the guide's card or tracker title to resume its route (#878).
 - **Choosing a journey never untracks your quests.** A journey or a RestedXP guide now only adds the quests it works on to the objective tracker and takes those off again once it moves on; every quest you tracked yourself stays tracked. Quests an earlier version took off the tracker come back after you update. The settings read *Track the journey's quests* and *Track the RestedXP guide's quests*, and the tracker's hidden count and *Show all quests* are gone, since nothing is hidden any more (#865).
 - **Accepting a quest no longer makes the Forever column jump.** While a journey leads, a quest you accept no longer pushes the column down for a moment and back (#860).
 - **Questie's tracker stays on.** When you turn Questie's tracker on in Questie, it stays on. "Turn off Questie's tracker" is now off unless you tick it (#858).
@@ -23,14 +24,24 @@ optional `### For addon authors` subsection after a version's player bullets.
 - **The guide's list reaches the bottom of the window.** With no Stop button or paused line below it, the last card is no longer cut off by an empty footer (#863).
 - **Less work while you walk.** The tracker's guide section no longer redraws on every quest log or watch-list update. It redraws only when the step or route it shows changes (#836).
 - **No work on other addons' item loads.** The upgrade arrow on quest rewards no longer re-reads the rewards each time any addon loads an item. It waits only for the reward and worn items it still needs (#844).
+- **Searching the guide is faster.** Search reuses folded quest titles and ranks only the titles that hold every word you type, so the results keep up with typing (#843).
+- **The first login's quest catalogue builds with less waste.** A quest that hands over nothing which runs out no longer builds and sorts an empty list of expiring items, so the one-off catalogue build at a first login does less work per quest.
 - **Town pickups keep their order.** Rebuilding the planned route with nothing changed no longer swaps a town's pickups when the route runs past ten steps (#852).
+- **Attach to quest tracker is in the Tracker settings.** On, the shared Forever tracker sits under the quest tracker; off, it moves to the left of it. The row reads the same in every Forever addon (cjber/forever-core#910).
+- **/agf says why Adventure Guide Forever stopped.** While Adventure Guide Forever cannot start, typing /agf repeats the line naming the fix instead of reading "Unknown command".
+- **The settings page survives a startup error.** If part of Adventure Guide Forever fails to start, its settings page still appears (cjber/forever-core#922).
 - **ForeverCore 1.15.3 comes with the guide.** The tracker's right-click menus open at the cursor and look like the game's own, Lock the tracker is on every tracker menu, right-clicking a tracker line opens its entry's menu, and the tracker column follows the quest tracker as it collapses, expands or empties (#850).
 
 ### Changed
 
+- **Adventure Guide Forever carries ForeverCore inside itself.** It now works with ForeverCore turned off or uninstalled, and your ForeverCore settings carry over. You no longer need to install ForeverCore separately. If you have it installed, you can keep it or remove it (cjber/forever-core#801).
 - **RestedXP tips and the next two steps in the tracker.** With a RestedXP guide followed, the tracker now shows the tips RestedXP's own step window shows for the step under way, in grey, and names the next two steps instead of one (#870).
 - **Continue lists zones only.** Expanding Continue no longer mixes single quest chains in among the zones. A story you chose still shows as its own card, and a character with no zone left still sees its dungeon preparation chains (#864).
 - **Quest data for client build 70959.** With QuestieDB 1.1.3, The Restless Dead now starts in Chill Breeze Valley, State Secrets shows its level, and new quests in Azshara, Silverpine Forest and Eastern Plaguelands appear on the route (#868).
+
+### Removed
+
+- **Sync Together is gone, and the guide sends nothing to other players.** The cog menu's *Sync with* checklist and the "For you" and "Everyone" lines on each stop are removed, along with the hidden party messages behind them. *Favour quests your party has* stays: it now reads only what your own client shows about your party's quests (#834).
 
 ## [1.11.0] - 2026-11-18
 
