@@ -21,6 +21,9 @@ ns.QuestWatch = Watch
 local AUTO_WINDOW = 5
 ---@type table<integer, number>
 local auto = {}
+-- When combat began. Nothing is settled in combat, so a watch the client added then is still the client's afterwards.
+---@type number?
+local combatAt
 
 -- Watch events raised by our own changes must not rewrite the player's saved choices.
 local changing = false
@@ -210,17 +213,46 @@ local function Later()
 	C_Timer.After(0, Watch.Sync)
 end
 
+-- A quest the client or Questie tracked on its own, which the leader did not name at the last settle, goes in the
+-- same event (#860). The quest tracker draws a new watch on its next frame, so Sync's untracking a frame later would
+-- grow the tracker for one frame and shrink it again, and the column under it would jump down and back. A quest the
+-- rebuilt route names is tracked by Sync once, after the rebuild.
+---@param questID integer
+local function DropAutomatic(questID)
+	if InCombatLockdown() or not Watched(questID) then
+		return
+	end
+	local state = ns.Prefs().guideWatch
+	if state and not state.named[questID] then
+		RemoveWatch(questID)
+	end
+end
+
 ns.OnRouteChange(Watch.Sync)
 local events = CreateFrame("Frame")
 events:RegisterEvent("QUEST_ACCEPTED")
 events:RegisterEvent("QUEST_WATCH_UPDATE")
 events:RegisterEvent("QUEST_WATCH_LIST_CHANGED")
+events:RegisterEvent("PLAYER_REGEN_DISABLED")
 events:RegisterEvent("PLAYER_REGEN_ENABLED")
 events:SetScript("OnEvent", function(_, event, first, second)
+	if event == "PLAYER_REGEN_DISABLED" then
+		combatAt = GetTime()
+		return
+	end
 	-- QUEST_ACCEPTED gives the quest ID alone, or the log index first on clients that keep the older signature.
 	local questID = event == "QUEST_ACCEPTED" and type(second) == "number" and second or first
 	if type(questID) ~= "number" then
 		if event == "PLAYER_REGEN_ENABLED" then
+			-- The window of a watch still the client's when combat began, or added during it, starts again now: a fight
+			-- longer than the window must not turn the client's watch into the player's.
+			local now = GetTime()
+			for id, at in pairs(auto) do
+				if combatAt and at >= combatAt - AUTO_WINDOW then
+					auto[id] = now
+				end
+			end
+			combatAt = nil
 			Later()
 		end
 		return
@@ -235,6 +267,9 @@ events:SetScript("OnEvent", function(_, event, first, second)
 		if state then
 			state.added[questID] = nil
 		end
+	end
+	if event == "QUEST_ACCEPTED" or (event == "QUEST_WATCH_LIST_CHANGED" and second == true and automatic) then
+		DropAutomatic(questID)
 	end
 	-- A watch change needs a look only for a quest the client may have tracked: the rest are ours or the player's.
 	if event ~= "QUEST_WATCH_UPDATE" and (event ~= "QUEST_WATCH_LIST_CHANGED" or auto[questID]) then

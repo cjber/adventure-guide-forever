@@ -1,10 +1,10 @@
 {
-  "input_digest": "6f0c31c9c670b041f16990b5be3e540685a24ae348bf1ce93d24001ad636fe2e",
-  "runtime_sha256": "6f0c31c9c670b041f16990b5be3e540685a24ae348bf1ce93d24001ad636fe2e",
-  "candidate": "db45b6a8ecfb37d615f0d1f3ed9f15d7cf78336d6d956ae91984e2c6734ffb3d",
+  "input_digest": "0e07e7f9239af05d10bda11b1cd78a2369dea8d2a29ff941f4a7975a3730663c",
+  "runtime_sha256": "0e07e7f9239af05d10bda11b1cd78a2369dea8d2a29ff941f4a7975a3730663c",
+  "candidate": "267a43a4f673fe20d52c8533ea6f2074cac6a971b3d2c2c789089d1535047a54",
   "client_build": "1.60.1.70959 (Interface 16001)",
   "tested_artifact": "source-tree",
-  "source_commit": "d3740b7feb8686ee0c9f81b3ce977de7dad671f4",
+  "source_commit": "c115656947367446056f56204a3047a35dfe8912",
   "flows": [
     {
       "name": "panel",
@@ -23,12 +23,12 @@
   ],
   "images": [
     {
-      "url": "https://gist.githubusercontent.com/cjber/5ffeb63217f5681da4d36e6bfa88b389/raw/fa25714613ffb8076c64286862c48090a6bbd8dd/1-panel.png",
-      "sha256": "37ae7e609ae961a97db7cfdd1cec9fd6143bb8ae6c6291fc705bda05165e52a6"
+      "url": "https://gist.githubusercontent.com/cjber/a3561ad80818303d1ee1dd8c4e4a31c6/raw/90901b9efab510ef02e7a4cae12d658fd98f852a/1-panel.png",
+      "sha256": "4f7ef97c82359ae2b26757e9e2f711f425abda57d495eabcba5abfbbe2631f03"
     },
     {
-      "url": "https://gist.githubusercontent.com/cjber/5ffeb63217f5681da4d36e6bfa88b389/raw/fa25714613ffb8076c64286862c48090a6bbd8dd/2-tracker.png",
-      "sha256": "131e23fd870048a86fa9971fb9da05b6fc07ab0fa17f3e82916acc3f6e541c53"
+      "url": "https://gist.githubusercontent.com/cjber/a3561ad80818303d1ee1dd8c4e4a31c6/raw/90901b9efab510ef02e7a4cae12d658fd98f852a/2-tracker.png",
+      "sha256": "3d10546377c250aaedf0d741bd3bc706d67d759f86a4c6a34fdce42674bbfe9d"
     }
   ]
 }

@@ -10,6 +10,28 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago. O
 verbatim rather than rewritten as the addon moves. API changes other addons' authors need go under an
 optional `### For addon authors` subsection after a version's player bullets.
 
+## [1.12.0] - 2026-11-19
+
+<!-- discord-image: docs/screenshots/tracker.png -->
+
+### Fixed
+
+- **Choosing a journey never untracks your quests.** A journey or a RestedXP guide now only adds the quests it works on to the objective tracker and takes those off again once it moves on; every quest you tracked yourself stays tracked. Quests an earlier version took off the tracker come back after you update. The settings read *Track the journey's quests* and *Track the RestedXP guide's quests*, and the tracker's hidden count and *Show all quests* are gone, since nothing is hidden any more (#865).
+- **Accepting a quest no longer makes the Forever column jump.** While a journey leads, a quest you accept no longer pushes the column down for a moment and back (#860).
+- **Questie's tracker stays on.** When you turn Questie's tracker on in Questie, it stays on. "Turn off Questie's tracker" is now off unless you tick it (#858).
+- **The route keeps to your quest level setting.** A quest in your log above *Maximum quest level above yours* no longer leads the route or any card, so a level 20 character at +2 is never sent to a level 25 quest's objectives. Its hand-in still shows once it is done, and the quest comes back as you level up into range (#846).
+- **The guide's list reaches the bottom of the window.** With no Stop button or paused line below it, the last card is no longer cut off by an empty footer (#863).
+- **Less work while you walk.** The tracker's guide section no longer redraws on every quest log or watch-list update. It redraws only when the step or route it shows changes (#836).
+- **No work on other addons' item loads.** The upgrade arrow on quest rewards no longer re-reads the rewards each time any addon loads an item. It waits only for the reward and worn items it still needs (#844).
+- **Town pickups keep their order.** Rebuilding the planned route with nothing changed no longer swaps a town's pickups when the route runs past ten steps (#852).
+- **ForeverCore 1.15.3 comes with the guide.** The tracker's right-click menus open at the cursor and look like the game's own, Lock the tracker is on every tracker menu, right-clicking a tracker line opens its entry's menu, and the tracker column follows the quest tracker as it collapses, expands or empties (#850).
+
+### Changed
+
+- **RestedXP tips and the next two steps in the tracker.** With a RestedXP guide followed, the tracker now shows the tips RestedXP's own step window shows for the step under way, in grey, and names the next two steps instead of one (#870).
+- **Continue lists zones only.** Expanding Continue no longer mixes single quest chains in among the zones. A story you chose still shows as its own card, and a character with no zone left still sees its dungeon preparation chains (#864).
+- **Quest data for client build 70959.** With QuestieDB 1.1.3, The Restless Dead now starts in Chill Breeze Valley, State Secrets shows its level, and new quests in Azshara, Silverpine Forest and Eastern Plaguelands appear on the route (#868).
+
 ## [1.11.0] - 2026-11-18
 
 <!-- discord-image: docs/screenshots/panel.png -->
