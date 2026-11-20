@@ -462,10 +462,12 @@ local function Snapshot(engine)
 				end
 			end
 		end
+		local title = (Text(engine, step.title or ns.L.RXP_STEP:format(step.index)))
 		---@type AGFRXPDisplayStep
 		local row = {
 			index = step.index,
-			title = (Text(engine, step.title or ns.L.RXP_STEP:format(step.index))),
+			title = title,
+			summary = title,
 			titled = type(step.title) == "string",
 			sticky = not preview and not not step.sticky,
 			preview = not not preview,
@@ -505,7 +507,6 @@ local function Snapshot(engine)
 				break
 			end
 		end
-		row.summary = row.summary or row.title
 		result.steps[#result.steps + 1] = row
 	end
 	for _, step in ipairs(engine.RXPFrame.activeSteps or {}) do
