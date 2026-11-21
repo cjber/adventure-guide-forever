@@ -608,8 +608,8 @@ do
 	Moved(h, 1413, 0.626, 0.499)
 	equal(h.counts.SetSuperTrackedQuestID, selected, "focus: once, on the first build")
 	Moved(h, 1413, 0.5223, 0.3101)
-	equal(h.superTrackedQuest, 0, "focus: walking out clears it")
-	equal(h.ns.Prefs().focus, nil, "focus: forgotten")
+	equal(h.superTrackedQuest, 895, "focus: walking out keeps the current step's quest selected")
+	equal(h.ns.Prefs().focus, 895, "focus: still AGF's")
 	h.superTrackedQuest = 843
 	Moved(h, 1413, 0.626, 0.498)
 	equal(h.superTrackedQuest, 843, "focus: the player's own selection stays")
