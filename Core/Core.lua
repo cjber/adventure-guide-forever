@@ -17,7 +17,7 @@ ns.core = ForeverCore.Register(addonName, {
 	open = function()
 		local openPanel = ns.OpenPanel
 		if not openPanel then
-			return false
+			return ForeverCore.OpenMap()
 		end
 		openPanel()
 		return true

@@ -469,6 +469,7 @@ L["TRAVEL_WALK"] = "%s까지 걷기"
 L["TRAVEL_ZEPPELIN"] = "%s행 비행선"
 L["TURN_IN"] = "제출: %s"
 L["TWEAKS_OUTDATED"] = "던전 입구를 찾으려면 Tweaks Forever를 업데이트하십시오."
+L["UNAVAILABLE_IN_COMBAT"] = "전투 중에는 사용할 수 없음"
 L["UNLISTED"] =
 	'이 땅에는 안내서가 아직 모르는 이야기가 있습니다. 퀘스트 NPC 머리 위의 "!"를 찾아보십시오.'
 L["UPDATED_TO"] = "%s(으)로 업데이트됨. %s"

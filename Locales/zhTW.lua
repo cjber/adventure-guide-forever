@@ -456,6 +456,7 @@ L["TRAVEL_WALK"] = "步行前往%s" -- mt
 L["TRAVEL_ZEPPELIN"] = "前往%s的飛艇" -- mt
 L["TURN_IN"] = "繳交：%s" -- mt
 L["TWEAKS_OUTDATED"] = "更新Tweaks Forever以尋找地城入口。" -- mt
+L["UNAVAILABLE_IN_COMBAT"] = "戰鬥中無法使用" -- mt
 L["UNLISTED"] = "這片土地有指南尚不知道的故事；請留意任務給予者頭上的「!」。" -- mt
 L["UPDATED_TO"] = "已更新到%s。%s" -- mt
 L["WHATS_NEW"] = "RestedXP 的接下來兩步會說明它們是什麼。" -- mt

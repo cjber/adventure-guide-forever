@@ -460,6 +460,7 @@ L["TRAVEL_WALK"] = "Caminhar até %s"
 L["TRAVEL_ZEPPELIN"] = "Zepelim para %s"
 L["TURN_IN"] = "Entregar: %s"
 L["TWEAKS_OUTDATED"] = "Atualize o Tweaks Forever para encontrar entradas de masmorras."
+L["UNAVAILABLE_IN_COMBAT"] = "Indisponível em combate"
 L["UNLISTED"] =
 	'Esta terra tem histórias que o guia ainda não conhece; procure o "!" sobre os recrutadores de missões.'
 L["UPDATED_TO"] = "atualizado para %s. %s"
