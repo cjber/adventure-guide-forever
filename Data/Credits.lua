@@ -39,6 +39,7 @@ ns.Credits = {
 		{ name = "InfamousMunky", what = "Timed quests lead the automatic journey order" },
 		{ name = "lanprite", what = "RestedXP guide cards marked as RestedXP's" },
 		{ name = "cotijelucie", what = "Information mode and showing a stop's quests on the map" },
+		{ name = "Enel3008", what = "A journey resolves when you already stand at its destination" },
 	},
 	inspired = {
 		{ name = "Polestar by Fitz", what = "Ideas for many features" },
