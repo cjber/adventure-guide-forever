@@ -18,7 +18,7 @@ defaults:
   iterations: 7
   warmup: 1
 benchmarks:
-  # The planner's own bench, run headless: it times a plan against the test corpus. Wall time is
+  # The planner's own bench, run offline: it times a plan against the test corpus. Wall time is
   # what is recorded, so luajit startup is in the number and the threshold is loose on purpose.
   - id: planner.plan
     kind: command

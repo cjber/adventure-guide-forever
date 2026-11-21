@@ -118,14 +118,6 @@ function Art.Markup(atlas, height)
 	return ("|A:%s:%d:%d|a"):format(atlas, height, math.floor(height * Aspect(atlas) + 0.5))
 end
 
--- File icons use their whole square image, like Art.Icon.
----@param file string
----@param size number
----@return string
-function Art.FileMarkup(file, size)
-	return ("|T%s:%d:%d|t"):format(file, size, size)
-end
-
 -- The Who list's row atlases are 169x69 (WhoList.xml:8, 9 and 59) with 14-pixel horizontal slice margins and none
 -- top or bottom: the client draws them at that height on its 69-high rows.
 local ROW_ART = 69

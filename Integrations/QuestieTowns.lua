@@ -11,7 +11,7 @@ local Model = ns.Model
 -- of its map whose overlay rectangle holds it (Model.Hub), the areas the world map reveals as you explore
 -- (Data/Geometry `towns`). A place in no area (a city map, an instance, a gap) belongs to its map itself, so a whole
 -- city is one town. The client names an area (C_Map.GetAreaInfo) and a map (C_Map.GetMapInfo); the bundled English
--- AreaTable names stand in when it cannot, as in the headless harness.
+-- AreaTable names stand in when it cannot, as in the offline spec harness.
 ---@class AGFQuestieTownsModule : AGFQuestieTowns
 local Towns = {}
 ns.QuestieTowns = Towns

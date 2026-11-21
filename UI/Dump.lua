@@ -70,7 +70,7 @@ local function Path(region, paths)
 end
 
 -- Depth-first over `root` and every shown descendant: path, anchors, explicitly set size, atlas, font and text,
--- and whether a frame runs an OnUpdate. `describe` lets the headless harness add what only it knows.
+-- and whether a frame runs an OnUpdate. `describe` lets the offline spec harness add what only it knows.
 ---@param root Frame
 ---@param describe? fun(region: Region, entry: AGFDumpEntry)
 ---@return AGFDumpEntry[]

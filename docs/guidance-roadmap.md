@@ -37,4 +37,4 @@ Each step needs source-backed eligibility, a visible reason, reversible player c
 - Walk between city districts, enter and leave combat, and check trainer destinations and profession hints.
 - Check Journey with no suggestions, a text-only hint, Wanderer mode and a missing Questie source.
 
-The repository's headless checks and generated previews cover the logic and layout. These client checks remain necessary before merging a player-visible change.
+The repository's offline specs and generated previews cover the logic and layout. These client checks remain necessary before merging a player-visible change.
