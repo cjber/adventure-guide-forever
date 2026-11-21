@@ -5,7 +5,7 @@ Classic routes balance fighting, recovery and travel. Quest colour alone is not 
 Research checked on 2026-09-27:
 
 - [Icy Veins: Classic leveling](https://www.icy-veins.com/wow-classic/leveling-guide), sections 5 and 5.3: balance combat, recovery and travel; finish efficient chains and favour lower-level content when higher-level work slows you down. Its broad Alliance route stays in secondary zones through 21.
-- [Wowhead: Alliance zones](https://www.wowhead.com/classic/guide/alliance-leveling-classic-wow): Loch Modan remains a 10–20 option; Redridge becomes useful near 20. These are overlapping choices, not a requirement to finish one entire zone before leaving.
+- [Wowhead: Alliance zones](https://www.wowhead.com/classic/guide/alliance-leveling-classic-wow): Loch Modan remains a 10-20 option; Redridge becomes useful near 20. These are overlapping choices, not a requirement to finish one entire zone before leaving.
 
 The guide uses those principles with the character's actual quests, including Forever additions, instead of copying a fixed Classic quest sequence:
 

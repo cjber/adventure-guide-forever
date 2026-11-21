@@ -45,15 +45,6 @@ function Dungeons.Chain(data, id, yield)
 	return chain
 end
 
-local requestedItems = {}
----@param id integer
-function Dungeons.RequestItem(id)
-	if not requestedItems[id] then
-		requestedItems[id] = true
-		C_Item.RequestLoadItemDataByID(id)
-	end
-end
-
 -- A dungeon's way in: QuestieDB's point, else Tweaks Forever's, else why neither has one. One answer for every view,
 -- from the first draw.
 ---@param instance integer
