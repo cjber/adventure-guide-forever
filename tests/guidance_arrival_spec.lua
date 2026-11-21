@@ -1,6 +1,6 @@
 local harness = dofile("tests/harness.lua")
 
-local function journey(x, reach)
+local function journey(x, reach, blocked)
 	local h = harness.load({
 		spf = "subscribe",
 		player = { level = 18, faction = "Horde", raceID = 2, classID = 64, map = 1413, x = x, y = 0.5 },
@@ -18,7 +18,7 @@ local function journey(x, reach)
 	end
 	if reach then
 		h.G.ShortestPathForever.API.JourneyState = function()
-			return { reach = reach }
+			return { reach = reach, blocked = blocked }
 		end
 	end
 	return h, route
@@ -76,4 +76,25 @@ do
 	assert(h.spf.NavigateRoute == searches + 1, "without JourneyState the provider receives the route once")
 end
 
-print("guidance_arrival_spec: a reached destination closes without searching")
+local exclusions = {
+	{ label = "held quest turn-in", stop = { kind = "turnin", quests = { 844 }, handins = { 844 } } },
+	{ label = "floor-aware stop", stop = { z = 12 } },
+	{ label = "instance entrance", stop = { kind = "area", entrance = 389 } },
+	{ label = "dungeon stop", stop = { kind = "dungeon" } },
+	{ label = "player on a taxi", onTaxi = true },
+	{ label = "provider blocked by combat", blocked = "combat" },
+}
+for _, case in ipairs(exclusions) do
+	local h, route = journey(0.5, 15, case.blocked)
+	for key, value in pairs(case.stop or {}) do
+		route.steps[1][key] = value
+	end
+	h.onTaxi = case.onTaxi
+	local searches = h.spf.NavigateRoute
+	assert(h.ns.StartRoute(), case.label .. ": starting within reach succeeds")
+	h.flush()
+	assert(h.spf.NavigateRoute == searches + 1 and h.spfRoute, case.label .. ": provider receives the route once")
+	assert(#h.errors == 0, table.concat(h.errors, "\n"))
+end
+
+print("guidance_arrival_spec: arrival closes eligible stops and hands excluded stops to Shortest Path")
