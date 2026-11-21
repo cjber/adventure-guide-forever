@@ -10,6 +10,17 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago. O
 verbatim rather than rewritten as the addon moves. API changes other addons' authors need go under an
 optional `### For addon authors` subsection after a version's player bullets.
 
+## [1.12.9] - 2026-11-21
+
+### Changed
+
+- The game's blue quest area now shows for the story step you are on. "Follow your current quest" selects that step's quest in your log as soon as the step starts, not only once you walk into its area, so the map and minimap draw its area. It does not add the quest to your tracker, and it never replaces a quest you selected yourself (#920).
+
+### Fixed
+
+- Stop searching for a route when you reach its destination (thanks Enel3008).
+- Handing in a quest no longer unselects your zone story or drops its route. The next quest of a chain was briefly missing while Questie caught up with the hand-in, which ended the story until a /reload (#918).
+
 ## [1.12.8] - 2026-11-21
 
 <!-- forever-core-sync -->
