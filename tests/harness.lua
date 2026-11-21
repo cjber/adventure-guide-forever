@@ -2845,6 +2845,10 @@ function harness.load(options)
 	}
 	G.GameTooltip.SetText = noop
 	G.GameTooltip.AddLine = noop
+	-- SharedTooltipTemplates.lua: the tooltip a frame's OnEnter should use; outside a menu or the world map, GameTooltip.
+	G.GetAppropriateTooltip = function()
+		return G.GameTooltip
+	end
 	G.NORMAL_FONT_COLOR.GetRGB = function()
 		return 1, 0.82, 0
 	end
@@ -4197,6 +4201,7 @@ local function EnsureCore()
 	end
 	ForeverCore.load(_G, {
 		"Core/SafeCall.lua",
+		"Core/Open.lua",
 		"Core/Log.lua",
 		"Core/Text.lua",
 		"UI/Report.lua",

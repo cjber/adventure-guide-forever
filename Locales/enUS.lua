@@ -231,6 +231,7 @@ ns.L = {
 	NOT_INTERESTED = "Not interested",
 	RIGHT_CLICK_NOT_INTERESTED = "Right-click if you're not interested",
 	CHOOSE_JOURNEY = "Choose another journey",
+	UNAVAILABLE_IN_COMBAT = "Unavailable in combat",
 	-- The map's quest sidebar is collapsed, or the map is maximized and has none, so the guide cannot be shown.
 	SIDEBAR_COLLAPSED = "The guide opens in the quest log beside the world map. "
 		.. "Click the arrow at the bottom right of the map to show the quest log.",

@@ -84,6 +84,7 @@ Credit for the reports and requests behind the addon.
 | InfamousMunky | Timed quests lead the automatic journey order | GitHub; #709 |
 | lanprite | RestedXP guide cards marked as RestedXP's | CurseForge; #713 |
 | cotijelucie | Information mode and showing a stop's quests on the map | Discord; #715 |
+| Enel3008 | A journey resolves when you already stand at its destination | CurseForge; #906; thread 8750470 |
 
 ## Inspired by
 

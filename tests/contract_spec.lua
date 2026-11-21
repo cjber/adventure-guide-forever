@@ -1,7 +1,7 @@
 -- Run from the repository root: luajit tests/contract_spec.lua
 -- AGF's mirror of the Shortest Path API (types/Namespace.lua, AGFSPF*) against SPF's own types/API.lua at a pinned sha,
 -- read from the vendored tests/fixtures/spf_types_API.lua so it runs offline. CI diffs that copy against upstream.
-local SPF_SHA = "9c2d86bad8418ee07c74b54e2757568b9d5aff3f"
+local SPF_SHA = "4d289aaeda5905d0a9003eed856317e9591e7752"
 local checks = 0
 
 local function equal(actual, expected, label)
@@ -27,14 +27,42 @@ local ALIASES = {
 	AGFSPFDetail = "SPFAPIDetail",
 	AGFSPFMode = "SPFAPIMode",
 	AGFSPFNoRoute = "SPFAPINoRoute",
+	AGFSPFNotReady = "SPFAPINotReady",
 	AGFSPFEnded = "SPFAPIEnded",
 	AGFSPFStopKind = "SPFAPIStopKind",
 	AGFSPFChanges = "SPFAPIChanges",
 }
 -- AGF reads ShortestPathForever.API through a checked accessor (Integrations.lua SPF()), not a mirror.
-local EXCLUDED = { SPFPublicAddon = true }
+local EXCLUDED = {
+	SPFPublicAddon = true,
+	SPFAPIGuidance = true,
+	SPFAPIGuidanceReason = true,
+	SPFAPIJourney = true,
+	SPFAPIJourneyGoal = true,
+	SPFAPIJourneyLeg = true,
+	SPFAPIPlace = true,
+	SPFAPIStat = true,
+	SPFAPIWalkOptions = true,
+	SPFAPIWalkReason = true,
+	SPFAPIWalkRefusal = true,
+	["SPFPublicAPI.EstimateWalks"] = true,
+	["SPFPublicAPI.Guidance"] = true,
+	["SPFPublicAPI.Journey"] = true,
+	["SPFPublicAPI.NavVersion"] = true,
+	["SPFPublicAPI.Pause"] = true,
+	["SPFPublicAPI.RenameStop"] = true,
+	["SPFPublicAPI.Resume"] = true,
+	["SPFPublicAPI.ResumeRestedXP"] = true,
+	["SPFPublicAPI.SkipLeg"] = true,
+	["SPFPublicAPI.Stats"] = true,
+	["SPFAPIChanges.guidance?"] = true,
+	["SPFAPIChanges.leg?"] = true,
+	["SPFAPIChanges.replan?"] = true,
+	["SPFAPIStop.npc?"] = true,
+}
 
 local function IsAtom(word)
+	word = word:match("^%((.+)%)%??$") or word
 	for part in (word .. "|"):gmatch("(.-)|") do
 		if
 			not (part:match("^[%a_][%w_%.]*%??$") or part:match("^[%a_][%w_%.]*%[%]%??$") or part:match('^"[^"]*"%??$'))
@@ -124,9 +152,8 @@ end
 -- field optional that SPF always has (`EstimateDetail?`): AGF also runs on a Shortest Path from before it and checks
 -- the member where it uses it. Never the reverse.
 local AHEAD = {
-	-- A stop's world height, which SPF adds in cjber/shortest-path-forever#648. Every SPF ignores an unknown stop
-	-- field, so sending it early still starts the route; remove this entry when the pin moves to a release with it.
-	["AGFSPFStop.z?"] = true,
+	-- JourneyState was added in SPF API 2.6 (43d5747), after the 4d289aa pin. AGF checks whether it exists.
+	["AGFSPFAPI.JourneyState?"] = true,
 }
 local function Compare(agfText, spfText, required)
 	local agf, spf, problems = Parse(agfText), Parse(spfText), {}
@@ -151,7 +178,7 @@ local function Compare(agfText, spfText, required)
 				end
 			end
 			for _, name in ipairs(Sorted(theirs)) do
-				if ours[name] == nil and ours[name .. "?"] == nil then
+				if ours[name] == nil and ours[name .. "?"] == nil and not EXCLUDED[spfClass .. "." .. name] then
 					problems[#problems + 1] = ("%s.%s: not mirrored in %s"):format(spfClass, name, agfClass)
 				end
 			end
@@ -196,6 +223,12 @@ equal(
 	TypeToken("fun(a: integer): seconds: number?, reason: SPFAPINoRoute? -- travel seconds"),
 	"fun(a: integer): number?, SPFAPINoRoute?",
 	"token: named returns"
+)
+
+equal(
+	TypeToken("fun(): reason: (SPFAPIEnded|SPFAPINotReady)?, at: (number|SPFAPINotReady)? -- ending"),
+	"fun(): (SPFAPIEnded|SPFAPINotReady)?, (number|SPFAPINotReady)?",
+	"token: optional union returns"
 )
 
 local vendored = Read("tests/fixtures/spf_types_API.lua")

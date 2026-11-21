@@ -487,16 +487,17 @@
 ---@field RaceName fun(raceID: integer): string?
 ---@field ClassName fun(classID: integer): string?
 
--- Shortest Path Forever's public API, mirrored field for field from its types/API.lua (SPFAPIStop, SPFPublicAPI) at
+-- The Shortest Path Forever API members AGF uses, mirrored from its types/API.lua (SPFAPIStop, SPFPublicAPI) at
 -- the sha tests/contract_spec.lua pins; that spec fails on any drift. Integrations.lua's REQUIRED lists exactly
 -- the non-optional functions. Descriptions go after `--` so the type is the whole first token. The members a
 -- Shortest Path before 1.2 lacks are optional here, and checked where they are used.
 ---@alias AGFSPFMode "walk"|"flight"|"boat"|"zeppelin"|"lift"|"tram"|"portal"|"passage"|"teleport"
----@alias AGFSPFNoRoute "combat"|"invalid"|"unreachable" -- why an estimate has no answer
+---@alias AGFSPFNoRoute "combat"|"invalid"|"unreachable"|"loading" -- why an estimate has no answer
+---@alias AGFSPFNotReady "loading"|"none"
 ---@alias AGFSPFEnded "arrived"|"cleared"|"replaced"|"cancelled" -- reached the last stop; the player cleared it; another journey took over; the owner's own Cancel
 
 -- What stands at a stop; Shortest Path draws the game's own mark for it on the stop's pin.
----@alias AGFSPFStopKind "pickup"|"turnin"|"objective"|"trainer"|"innkeeper"|"flightmaster"|"battlemaster"|"dungeon"|"boat"|"zeppelin"|"lift"|"tram"|"portal"
+---@alias AGFSPFStopKind "pickup"|"turnin"|"objective"|"trainer"|"innkeeper"|"flightmaster"|"battlemaster"|"dungeon"|"boat"|"zeppelin"|"lift"|"tram"|"portal"|"vendor"
 
 --- An objective area a held stop stands for: its outline is drawn, and the stop and its line step aside, while the
 -- player stands inside.
@@ -518,6 +519,7 @@
 ---@field radius? number yards around a held stop where travel cues pause
 ---@field questID? number the one quest this area stands for, so Shortest Path can use the client's own inside-area state
 ---@field questIDs? number[] every quest this area covers, for the game's own quest area on the map; a Shortest Path before it ignores it
+---@field handins? number[] quests whose hand-in pins Shortest Path hides while this stop is drawn
 ---@field shapes? AGFSPFShape[] the objective areas a held stop stands for
 
 ---@class AGFSPFLeg
@@ -531,17 +533,22 @@
 ---@field seconds number -- equal to Estimate's answer
 ---@field legs AGFSPFLeg[] -- fresh copies on every call
 
+---@class AGFSPFJourneyState
+---@field reach number -- the player's arrival distance in yards
+---@field blocked? "combat"|"corpse"
+
 ---@class AGFSPFAPI
 ---@field version integer -- AGF accepts 1 and 2 for the shared navigation contract
 ---@field minor? integer -- 1 from Subscribe; absent before
 ---@field Estimate fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): number?, AGFSPFNoRoute? -- travel seconds; nil comes with the reason
 ---@field Navigate fun(owner: string, map: integer, x: number, y: number, title?: string, kind?: AGFSPFStopKind): boolean -- starts or replaces guidance
 ---@field NavigateRoute fun(owner: string, stops: AGFSPFStop[]): boolean -- 1-64 stops in order
----@field CurrentStop fun(owner: string): integer? -- nil unless owner owns the active journey
+---@field CurrentStop fun(owner: string): integer?, AGFSPFNotReady? -- nil unless owner owns the active journey
 ---@field Cancel fun(owner: string): boolean -- true only when this owner's journey was cancelled
 ---@field EstimateDetail? fun(fromMap: integer, fromX: number, fromY: number, toMap: integer, toX: number, toY: number): AGFSPFDetail?, AGFSPFNoRoute? -- Estimate leg by leg, sharing its cache
+---@field JourneyState? fun(): AGFSPFJourneyState?, AGFSPFNotReady? -- current provider state, including the configured arrival reach
 ---@field Active? fun(): boolean -- true while any journey is guiding, whoever started it
----@field Ended? fun(owner: string): AGFSPFEnded?, number? -- why owner's last journey ended and its GetTime(); nil while it runs, before any, or after a reload
+---@field Ended? fun(owner: string): (AGFSPFEnded|AGFSPFNotReady)?, (number|AGFSPFNotReady)? -- why owner's last journey ended and its GetTime(); nil while it runs, before any, or after a reload
 ---@field Subscribe? fun(callback: fun(changes: AGFSPFChanges)): fun() -- calls back at most once per burst of journey changes, the next frame; returns the unsubscribe
 
 -- Shortest Path's Subscribe changes: each field true or absent, several at once from one burst.
@@ -593,6 +600,7 @@
 ---@field ReplacesJourney fun(): boolean Go would replace a Shortest Path journey someone else started (needs Active)
 ---@field Guiding fun(): boolean Shortest Path is walking our multi-stop route and draws its own numbered stops; held (its "Guide me" off) is not guiding
 ---@field Provider fun(): string? name of the addon navigating, for copy ("Shortest Path")
+---@field AtDestination fun(step: AGFStep|AGFGiver, hold?: boolean): boolean a travel-only stop within Shortest Path's configured reach
 ---@field Hand fun(steps: (AGFStep|AGFGiver)[], hold?: boolean): boolean hands Shortest Path the steps as one journey of ours; false when it is absent or refuses
 ---@field Drop fun(): boolean ends Shortest Path's journey by our name; true when it ended one
 ---@field CurrentStop fun(): integer? the stop of our journey Shortest Path heads for, guiding it or not; nil when it holds none of ours
@@ -661,6 +669,7 @@
 ---@field SKIPPED string format: how many steps are skipped this session
 ---@field SHOW_AGAIN string format: a skipped step's title
 ---@field CHOOSE_JOURNEY string opens the guide
+---@field UNAVAILABLE_IN_COMBAT string the guide opener's combat tooltip
 ---@field SIDEBAR_COLLAPSED string says how to show the quest log when the player collapsed it
 ---@field SIDEBAR_MAXIMIZED string says how to shrink the map and show the quest log when the map is maximized
 ---@field ALL_SUGGESTIONS string the header's back arrow tooltip: it chooses none, so the guide shows the overview again

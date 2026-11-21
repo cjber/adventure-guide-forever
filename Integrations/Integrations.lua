@@ -375,6 +375,41 @@ local function Shapes(step)
 	return #shapes > 0 and shapes or nil, radius, #quests == 1 and quests[1] or nil, questIDs
 end
 
+---@param step AGFStep|AGFGiver
+---@param hold? boolean
+---@return boolean
+local function HoldsStop(step, hold)
+	return hold == true
+		and step.kind ~= "trainer"
+		and step.kind ~= "battlemaster"
+		and (step.rxpIndex ~= nil or #(step.quests or {}) > 0 or #(step.handins or {}) > 0)
+end
+
+-- Use Shortest Path's configured reach when it exposes it. Older providers decide arrival themselves.
+-- Floor-aware stops and instance entrances need the provider's own arrival check.
+---@param step AGFStep|AGFGiver
+---@param hold? boolean
+---@return boolean
+function Integrations.AtDestination(step, hold)
+	if
+		HoldsStop(step, hold)
+		or step.z
+		or (step --[[@as AGFStep]]).entrance
+		or step.kind == "dungeon"
+	then
+		return false
+	end
+	local map, x, y = ns.State.Where()
+	if map ~= step.map or not (map and x and y) then
+		return false
+	end
+	local api = SPF()
+	local state = api and type(api.JourneyState) == "function" and api.JourneyState() or nil
+	return state ~= nil
+		and not state.blocked
+		and (ns.Model.Yards(ns.Data, { map = map, x = x, y = y }, step) or math.huge) <= state.reach
+end
+
 ---@param steps (AGFStep|AGFGiver)[]
 ---@return AGFSPFStop[]
 local function Stops(steps, hold)
@@ -401,10 +436,7 @@ local function Stops(steps, hold)
 			questIDs = questIDs,
 			handins = handins,
 			shapes = shapes,
-			hold = hold == true
-				and step.kind ~= "trainer"
-				and step.kind ~= "battlemaster"
-				and (step.rxpIndex ~= nil or #(step.quests or {}) > 0 or #(step.handins or {}) > 0),
+			hold = HoldsStop(step, hold),
 		}
 	end
 	return stops
@@ -449,7 +481,7 @@ end
 function Integrations.CurrentStop()
 	local api = SPF()
 	if api then
-		return api.CurrentStop(OWNER)
+		return (api.CurrentStop(OWNER))
 	end
 end
 

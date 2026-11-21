@@ -1,5 +1,5 @@
 ---@type string, AGFNamespace
-local _, ns = ...
+local addonName, ns = ...
 
 if ns.broken then
 	return
@@ -182,7 +182,15 @@ local function TrackerMenu(target, menu)
 			end)
 		end
 		if ns.OpenPanel then
-			menu:Open(L.CHOOSE_JOURNEY, ns.OpenPanel)
+			local entry = menu:Open(L.CHOOSE_JOURNEY, addonName)
+			-- The named opener lacks the combat presentation from the function form (forever-core#1025).
+			entry:SetEnabled(not InCombatLockdown())
+			entry:SetTooltip(function(tooltip)
+				tooltip:SetText(L.CHOOSE_JOURNEY, 1, 1, 1)
+				if InCombatLockdown() then
+					tooltip:AddLine(L.UNAVAILABLE_IN_COMBAT, nil, nil, nil, true)
+				end
+			end)
 		end
 		if ns.Prefs().journey then
 			menu:End(L.END_JOURNEY, ns.Stop)
