@@ -5,12 +5,16 @@ if ns.broken then
 	return
 end
 
--- Following the quest the player is working on (docs/design.md §4.2): walking into the chosen route's step 1 area
--- ("you're here") selects its quest, the stock way (C_SuperTrack.SetSuperTrackedQuestID), so the map draws the game's
--- own blue objective area where the player stands. Only on walking in, and never over a quest the player selected: a
--- selection that is neither none nor the one AGF made is theirs. Leaving the area, finishing its objectives, turning
--- the setting off or entering information mode (which follows nothing) clears AGF's selection while it is still AGF's,
--- back to none, the only selection AGF ever replaces.
+-- Following the quest the player is working on (docs/design.md §4.2): the chosen route's step 1 selects its quest in
+-- the log, the stock way (C_SuperTrack.SetSuperTrackedQuestID), so the map and minimap draw the game's own blue
+-- objective area (#920). Selecting is enough, with no quest watch: the world map pin draws the super-tracked quest
+-- whether or not it is watched (Blizzard_SharedMapDataProviders/QuestBlobDataProvider.lua QuestBlobPinMixin:Refresh,
+-- TryDrawQuest on 1.60.1), so the quest tracker is left alone. Only when the step changes, and never over a quest the
+-- player selected: a selection that is neither none nor the one AGF made is theirs. A quest the player untracks is
+-- unselected by the client (Blizzard_QuestSuperTracking.lua OnQuestWatchChanged), which reads as the player's
+-- choice and is not selected again for that step. The step moving on, finishing its objectives, turning the setting
+-- off or entering information mode (which follows nothing) clears AGF's selection while it is still AGF's, back to
+-- none, the only selection AGF ever replaces.
 -- Selecting the quest must not take native navigation from whoever is using it: a super-tracked user waypoint is
 -- super-tracked again afterwards, whether AGF, Shortest Path or the player placed it, so the marker keeps leading and
 -- the quest only highlights its objective area.
@@ -20,7 +24,7 @@ end
 local Focus = {}
 ns.Focus = Focus
 
--- The next selection, from the area step 1 is when the player stands in it (`here`), the quest the client has selected
+-- The next selection, from the area step 1 is (`here`), the quest the client has selected
 -- (`current`, nil or 0 for none) and the setting. `state` keeps the area last seen and the quest AGF selected, which
 -- this updates. Returns the quest ID to select, 0 to clear, or nil to leave the selection alone.
 ---@param state AGFFocusState
@@ -55,14 +59,14 @@ function Focus.Next(state, here, current, enabled)
 	return nil
 end
 
--- The area the chosen route's step 1 is while the player stands in it, and its quests with objectives open there.
+-- The chosen route's step 1 and its quests with objectives open there.
 -- Only quests the log actually carries count: a merged area can also hold a pickup the route has yet to make, and
 -- selecting one of those would point the map at a quest the player does not have.
 ---@param route AGFRoute
 ---@return {key: string, quests: integer[]}?
-local function Here(route)
+local function Current(route)
 	local first = route.chosen and route.steps[1]
-	if not (first and first.here and first.objectives) then
+	if not (first and first.objectives) then
 		return nil
 	end
 	local log = ns.Snapshot().log
@@ -76,7 +80,7 @@ local function Here(route)
 	return #quests > 0 and { key = first.key, quests = quests } or nil
 end
 
--- The area step 1 was at the last look; the quest AGF selected is kept per character (AGFPrefs.focus), so a /reload
+-- The step 1 key at the last look; the quest AGF selected is kept per character (AGFPrefs.focus), so a /reload
 -- still knows it as AGF's.
 ---@type string?
 local area
@@ -88,7 +92,7 @@ function Focus.Sync()
 	local state = { area = area, quest = prefs.focus }
 	local set = Focus.Next(
 		state,
-		Here(ns.Route()),
+		Current(ns.Route()),
 		C_SuperTrack.GetSuperTrackedQuestID(),
 		ns.Setting("followQuest") and not ns.Setting("informationOnly")
 	)
