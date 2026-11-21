@@ -1,7 +1,7 @@
 # About the app
 
 Adventure Guide Forever is a World of Warcraft: Forever addon written in Lua 5.1. The game cannot run
-here, so what is measured is the planner under its own headless bench, which stubs the client API and
+here, so what is measured is the planner under its own offline bench, which stubs the client API and
 loads the addon files the TOC lists, in order.
 
 One benchmark, `kind: command`, runs `luajit -joff tests/plan_bench.lua`. The script fails when a frame
@@ -24,6 +24,6 @@ which fails a rebuild or travel frame over its 3 ms budget.
 
 ## Never do these things
 
-- Never start the game, Battle.net, Lutris or Wine. The headless client (forever-core's `wow-forever-addon/in-game.md`) tests the build linked into the game, not this checkout, so in-game checks belong to the agent that ships a change.
+- Never start the game, Battle.net, Lutris or Wine.
 - Never commit a speed-up that only the benchmark likes: it has to pass the full gate.
 - Never leave scratch files in the commit.

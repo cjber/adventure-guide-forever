@@ -64,8 +64,8 @@ image is only a warning (`SCREENSHOTS_STALE_WARN`), so re-render straight after 
   frame. Never touch Blizzard's Lua state (WFA-38). Test event ordering and reuse, not just method existence.
 - Player-facing notes go in `changes/<issue>.md`; only the release commit edits `CHANGELOG.md`
   (`python3 tools/changelog.py release X.Y.Z`). Read `.sloppatrol/instructions.md` before dead-code or refactoring work.
-- Checks that need the client run in the headless client (forever-core's `wow-forever-addon/in-game.md`); the PR lists
-  what was checked and what waits as a `/reload` test for the user.
+- The PR lists what was checked (offline specs, the simulated game API, a manual check in game) and what waits as a
+  `/reload` test.
 
 ## Standards
 
