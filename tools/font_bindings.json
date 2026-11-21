@@ -300,7 +300,7 @@
     },
     {
       "source": "UI/Tracker.lua",
-      "sha256": "5981b899e590ec163ebf754ce2eb9c2532ecb4ee3881297961cc578c7983ad47",
+      "sha256": "5d66c593f63f9a1209be208452de64188f6b7bee113e513961d51fb6f4361820",
       "review": "Read module construction, LayoutContentsBase, GuideSection, Preview, TravelLines, StoryBeat and Refresh. The hidden-count notice and its HiddenString widget are removed (#865), so no addon-created font string remains to bind. Reviewed ForeverCore UI/TrackerSection.lua Create and pinned Blizzard_ObjectiveTrackerModule.xml, Block.xml, Shared.xml and AnimTemplates.xml: module header uses ObjectiveTrackerHeaderFont; anim block HeaderText and anim line Text inherit ObjectiveTrackerLineFont. Excluded those template text paths because Blizzard_ObjectiveTrackerManager.lua SetTextSize later calls SetFontObject on both FontObjects, so their final font is outside this review. Also excluded tooltips, menus, chat, dynamic data, helper output and companion fonts.",
       "bindings": []
     },
