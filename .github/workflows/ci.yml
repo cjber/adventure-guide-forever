@@ -5,6 +5,7 @@ on:
   push:
     branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
@@ -15,6 +16,7 @@ concurrency:
 
 jobs:
   visual-proof:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -28,6 +30,7 @@ jobs:
         run: python3 -m tools.forever_tools.visual_proof --base "$VISUAL_BASE"
 
   deadcode:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -37,6 +40,7 @@ jobs:
       - run: python3 tools/deadcode.py --check
 
   check:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -112,6 +116,7 @@ jobs:
       - run: stylua --check .
 
   typecheck:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
@@ -148,6 +153,7 @@ jobs:
       - run: tools/typecheck.sh
 
   generated-data:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -165,6 +171,7 @@ jobs:
       - run: python3 tools/forever_tools/credits.py --check
 
   project-rules:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -185,6 +192,7 @@ jobs:
       - run: python3 tools/repo_rules.py
 
   workflows:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -196,6 +204,7 @@ jobs:
       - run: uv run --project tools --frozen --group dev zizmor --offline .github
 
   secrets:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -212,6 +221,7 @@ jobs:
   # What a tag would ship, checked before it ships: the release workflow's packager without uploading or zipping,
   # then tools/check_package.py on .release/ (every loaded file present, no development folders, the smoke spec passes on it).
   package:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
