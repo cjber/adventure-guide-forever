@@ -370,6 +370,19 @@ function Guidance.Pause()
 	return true
 end
 
+-- A plan without the chosen journey, right after a turn-in Questie has yet to report, is no verdict: the plan may lack
+-- the chain's next quest only because Questie's policy is a step behind the client. Ended and StopUnchosen both wait
+-- for the plan Questie's update brings; a plan that has the chosen journey settles the wait.
+---@param route AGFRoute
+---@return boolean
+local function Undecided(route)
+	if route.chosen then
+		ns.State.ProviderSettled()
+		return false
+	end
+	return ns.State.ProviderPending()
+end
+
 -- Our journey ended since the last look (docs/design.md §2.10): arriving keeps the choice's guidance, so new steps
 -- extend it; the player clearing it or another journey replacing it forgets it, so nothing sends it again. Our own
 -- Cancel already forgot it.
@@ -539,6 +552,9 @@ end
 ---@param route AGFRoute
 function Guidance.Ended(route)
 	local prefs, completed = ns.Prefs(), turnedIn
+	if Undecided(route) then
+		return
+	end
 	turnedIn = false
 	-- QuestieSource starts after the first login events. Until it has settled, the empty/log-only route is
 	-- provisional; clearing a saved story here would make a reload lose the player's choice before Questie loads.
@@ -765,7 +781,11 @@ local function StopUnchosen()
 		return
 	end
 	-- A RestedXP guide between two loads is still chosen (#368).
-	local chosen = ns.Route().chosen or ns.RestedXP.Awaits(ns.Prefs().journey)
+	local route = ns.Route()
+	if Undecided(route) then
+		return
+	end
+	local chosen = route.chosen or ns.RestedXP.Awaits(ns.Prefs().journey)
 	if wasChosen and not chosen and Guidance.Owns() then
 		Guidance.Cancel()
 	end

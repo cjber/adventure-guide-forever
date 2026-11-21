@@ -1358,9 +1358,12 @@ ns.AfterEvents(function()
 			end
 		end)
 		if Questie.API.RegisterForQuestUpdates then
+			ns.State.WatchProvider()
 			Questie.API.RegisterForQuestUpdates(function(questId)
-				-- An update that leaves the quest's availability where the last plan found it cannot move the route.
-				if type(questId) == "number" and not ns.State.QuestUpdateChanged(questId) then
+				-- An update that leaves the quest's availability where the last plan found it cannot move the route,
+				-- unless it is the one a turn-in waits on: that plan must be judged again with Questie caught up.
+				local waited = type(questId) == "number" and ns.State.ProviderHeard(questId)
+				if type(questId) == "number" and not waited and not ns.State.QuestUpdateChanged(questId) then
 					return
 				end
 				ns.State.QuestChanged()
