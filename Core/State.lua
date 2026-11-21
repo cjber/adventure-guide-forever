@@ -186,6 +186,38 @@ local policyModule
 ---@type table?
 local policySource
 
+-- Turned-in quests Questie has yet to report. The client tells this addon of a turn-in before it tells Questie, so
+-- for a build the next quest of a chain is not doable to Questie, and a story that stands on it has no step. Each
+-- stays until Questie's own update for that quest arrives (ProviderHeard), which says its policy has caught up.
+---@type table<integer, boolean>
+local awaitedTurnIns = {}
+local providerNotifies = false
+
+-- Questie reports quest updates (QuestieSource registered for them), so a turn-in is awaited until it does.
+function State.WatchProvider()
+	providerNotifies = true
+end
+
+-- Questie reported `id`: true when a turn-in was waiting on it, which no plan has yet seen settled.
+---@param id integer
+---@return boolean
+function State.ProviderHeard(id)
+	local waited = awaitedTurnIns[id] == true
+	awaitedTurnIns[id] = nil
+	return waited
+end
+
+-- Whether a turn-in's policy has not caught up, so the plan may lack what Questie is about to open.
+---@return boolean
+function State.ProviderPending()
+	return next(awaitedTurnIns) ~= nil
+end
+
+-- A plan that has the chosen journey judged nothing wrong: nothing is awaited any more.
+function State.ProviderSettled()
+	awaitedTurnIns = {}
+end
+
 -- QuestieDB's live policy module, or nil while Questie is not ready. Resolved once per QuestieLoader: the module
 -- it hands out is stable, but a reloaded Questie is a new loader whose answers all moved.
 ---@return table?
@@ -899,6 +931,7 @@ local function OnEvent(_, event, arg)
 	elseif event == "QUEST_TURNED_IN" and arg then
 		completed[arg] = true
 		resyncDue = true
+		awaitedTurnIns[arg] = providerNotifies or nil
 		ns.TurnedIn(arg)
 	end
 	Coalesce(COUNTS_EVENTS[event])

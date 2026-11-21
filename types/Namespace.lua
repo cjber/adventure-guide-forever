@@ -478,6 +478,10 @@
 ---@field OnChange fun(callback: fun(countsOnly: boolean)) countsOnly: a burst of quest-log events only, which may have moved only counts
 ---@field QuestChanged fun() a quest changed outside the client's own events (Questie's live updates), coalesced with them
 ---@field QuestUpdateChanged fun(id: integer): boolean whether a Questie update moved the quest's live availability since the last plan
+---@field WatchProvider fun() Questie reports quest updates, so a turn-in is awaited until it does
+---@field ProviderHeard fun(id: integer): boolean Questie reported `id`: true when a turn-in was waiting on it
+---@field ProviderPending fun(): boolean a turn-in's policy has not caught up, so the plan may lack what Questie is about to open
+---@field ProviderSettled fun() a plan judged nothing wrong: nothing is awaited any more
 ---@field OnInitialLogin fun(callback: fun()) called on a login's PLAYER_ENTERING_WORLD, never on a /reload
 ---@field Ready fun(): boolean completion data has loaded
 ---@field MapName fun(map: integer): string? the client's localised map name, nil when it has none
