@@ -658,6 +658,9 @@ function harness.load(options)
 		self.events = self.events or {}
 		self.events[event] = true
 	end
+	function Methods:RegisterUnitEvent(event)
+		self:RegisterEvent(event)
+	end
 	function Methods:UnregisterEvent(event)
 		if self.events then
 			self.events[event] = nil
