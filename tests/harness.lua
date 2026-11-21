@@ -4197,6 +4197,7 @@ local function EnsureCore()
 	end
 	ForeverCore.load(_G, {
 		"Core/SafeCall.lua",
+		"Core/Open.lua",
 		"Core/Log.lua",
 		"Core/Text.lua",
 		"UI/Report.lua",
