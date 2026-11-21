@@ -83,6 +83,16 @@ function ns.TurnedIn(questID)
 	end
 end
 
+-- Keep the reached stops as the arrival record so the next look only extends guidance to new steps.
+---@param steps (AGFStep|AGFGiver)[]
+local function FinishAtDestination(steps)
+	guided, ours, arrived = steps, false, true
+	ns.Prefs().paused = nil
+	Integrations.Drop()
+	ns.Pins.Refresh()
+	Notify()
+end
+
 ---@param steps (AGFStep|AGFGiver)[]
 ---@param hold? boolean
 ---@return boolean
@@ -95,6 +105,10 @@ local function Send(steps, hold)
 	end
 	if steps[1] and steps[1].rxpIndex then
 		steps = { steps[1] }
+	end
+	if #steps == 1 and not UnitOnTaxi("player") and Integrations.AtDestination(steps[1], hold) then
+		FinishAtDestination(steps)
+		return true
 	end
 	if not Integrations.Hand(steps, hold) then
 		return false
@@ -442,8 +456,19 @@ local function Follow()
 		local function FarHeaded(a, b)
 			return not (ordered and a.kind == "town" and b.kind == "town") and Far(a, b)
 		end
+		if not Integrations.Guiding() then
+			return
+		end
+		local final = route.steps[#route.steps]
 		if
-			Integrations.Guiding() and Guidance.Stale(guided --[[@as AGFStep[] ]], index, route.steps, FarHeaded)
+			index == #guided
+			and final
+			and final.key == guided[index].key
+			and Integrations.AtDestination(final, true)
+		then
+			FinishAtDestination(guided)
+		elseif
+			Guidance.Stale(guided --[[@as AGFStep[] ]], index, route.steps, FarHeaded)
 		then
 			Send(route.steps, true)
 		end
