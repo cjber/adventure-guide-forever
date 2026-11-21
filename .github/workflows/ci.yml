@@ -82,7 +82,7 @@ jobs:
       - run: python3 tools/forever_sim/sync.py check
       - run: python3 tools/forever_sim/fetch.py
       - run: luajit tools/forever_sim/run.lua
-      # A screenshot older than the headless scene it is drawn from (docs/screenshots/scenes.sha256). On this
+      # A screenshot older than the headless scene it is drawn from (docs/screenshots/scenes/<image>.sha256). On this
       # repository's own data/refresh PR (and a manual run on that branch) a scene moved by new data only warns,
       # since the bot can't render; the images are rendered again after it merges.
       - run: python3 tools/check_screenshots.py
