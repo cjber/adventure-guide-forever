@@ -383,7 +383,7 @@ for _, exclusive in ipairs({ true, false }) do
 	assert(native.ns.Guidance.Owns(), "own quest focus does not discard the route's waypoint")
 	step.here = false
 	native.ns.Focus.Sync()
-	assert(prefs.focus == nil, "leaving the objective clears the guide's quest highlight")
+	assert(prefs.focus == 845, "leaving the objective keeps the guide's quest highlighted while its step is current")
 	assert(native.G.C_SuperTrack.IsSuperTrackingUserWaypoint(), "clearing own quest focus preserves navigation")
 	assert(native.ns.Guidance.Owns(), "waypoint ownership survives leaving an objective")
 	local point = native.G.C_Map.GetUserWaypoint()

@@ -217,7 +217,7 @@
 ---@field guided? string the key of the chosen journey whose route AGF started, while that guidance should run
 ---@field paused? string the chosen journey whose route was cleared in Shortest Path, replaced or paused, until something is handed again; kept across a /reload so nothing starts it over the player's own journey
 ---@field autoStartBlocked? boolean the player pressed Stop, so no journey starts itself until they choose one again
----@field focus? integer the quest AGF selected on walking into its area (Focus.lua), while that selection is still AGF's
+---@field focus? integer the quest AGF selected for the current step (Focus.lua), while that selection is still AGF's
 ---@field guideWatch? AGFGuideWatchState the watches a leading RestedXP guide or AGF journey added (QuestWatch.lua)
 
 -- What QuestWatch.lua keeps on the character while a RestedXP guide or an AGF journey leads.
@@ -1429,7 +1429,7 @@
 ---@field REST_HERE string the route's last stop, when rest is low and an innkeeper of the player's side stands there
 ---@field SETTING_WANDERER string hint strength: Wanderer names places and sets no waypoint, route or map mark
 ---@field SETTING_WANDERER_TOOLTIP string
----@field SETTING_FOLLOW_QUEST string walking into the route's quest area selects the quest (Focus.lua)
+---@field SETTING_FOLLOW_QUEST string the current step's quest is selected for its area (Focus.lua)
 ---@field SETTING_FOLLOW_QUEST_TOOLTIP string
 ---@field SETTING_PARTY_QUESTS string in a party, steps for the party's quests count as nearer (Party.lua)
 ---@field SETTING_PARTY_QUESTS_TOOLTIP string

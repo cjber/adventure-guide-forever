@@ -483,8 +483,8 @@ ns.L = {
 	SETTING_WANDERER_TOOLTIP = "The guide names where to go next and leaves the way to you: no waypoint, no route "
 		.. "with Shortest Path Forever and no marks on the map.",
 	SETTING_FOLLOW_QUEST = "Follow your current quest",
-	SETTING_FOLLOW_QUEST_TOOLTIP = "When you walk into the area of the quest the route leads to, the guide selects "
-		.. "that quest so the map shows its area. It never changes a quest you selected yourself.",
+	SETTING_FOLLOW_QUEST_TOOLTIP = "The guide selects the quest of your current step so the map and minimap show its "
+		.. "area, without adding it to your tracker. It never changes a quest you selected yourself.",
 	SETTING_PARTY_QUESTS = "Favour quests your party has",
 	SETTING_PARTY_QUESTS_TOOLTIP = "In a party, steps for quests someone in your party also has count as a little "
 		.. "nearer, so you tend to do them together.",

@@ -70,7 +70,7 @@ local DEFAULTS = {
 	guideTracksQuests = true,
 	-- Hint strength, Guide (false) or Wanderer (true), which gates every waypoint, route and map mark.
 	wanderer = false,
-	-- Walking into the quest area the route leads to selects its quest, so the map draws its blue area (Focus.lua).
+	-- The current step's quest is selected, so the map and minimap draw its blue area (Focus.lua).
 	followQuest = true,
 	-- One chat line after an update (WhatsNew).
 	whatsNew = true,

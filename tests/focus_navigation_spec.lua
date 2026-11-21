@@ -147,6 +147,48 @@ equal(tracked, true, "the waypoint stays super-tracked")
 equal(kind, "waypoint", "and still leads")
 informationOnly = false
 
+-- The current step's quest is selected wherever the player is (#920): the step is not "here", yet the map and minimap
+-- still draw its area. The step moving on swaps the selection, the player's untracking the quest (the client then
+-- clears the selection) is respected, and the setting off does nothing.
+local function Step(key, id)
+	route = { chosen = true, steps = { { key = key, here = false, objectives = { { id = id } } } } }
+	ns.Focus.Sync()
+end
+local enabled = true
+local baseSetting = ns.Setting
+ns.Setting = function(key)
+	if key == "followQuest" then
+		return enabled
+	end
+	return baseSetting(key)
+end
+waypointAt = false
+prefs.focus = nil
+tracked, quest, kind, selections = false, 0, nil, 0
+Step("area:226:0", 226)
+equal(quest, 226, "a step away from its area still selects its quest")
+equal(prefs.focus, 226, "and records it as AGF's")
+Step("area:226:0", 226)
+equal(selections, 1, "the same step selects once")
+Step("area:245:0", 245)
+equal(quest, 245, "the step moving on selects the next quest")
+quest = 0 -- the player untracked it: the client cleared the selection
+selections = 0
+Step("area:245:0", 245)
+equal(selections, 0, "a quest the player untracked is not selected again for that step")
+equal(prefs.focus, nil, "and AGF forgets it")
+Step("area:300:0", 300)
+equal(quest, 300, "the next step selects again")
+quest = 99 -- the player selected another quest
+selections = 0
+Step("area:226:0", 226)
+equal(selections, 0, "a quest the player selected is never replaced")
+enabled = false
+quest, prefs.focus, selections = 0, nil, 0
+Step("area:400:0", 400)
+equal(selections, 0, "with the setting off nothing is selected")
+enabled = true
+
 for _, failure in ipairs(failures) do
 	print("  " .. failure)
 end

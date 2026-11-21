@@ -79,12 +79,12 @@ equal(handed ~= nil, true, "Shortest Path holds the guide's stop")
 equal(handed.questID, 3902, "Shortest Path is told the area's quest")
 equal(handed.shapes ~= nil and #handed.shapes > 0, true, "and its shapes")
 
--- Walking out of the area clears AGF's selection again.
+-- Walking out of the area keeps the step's quest selected: the map still draws its area (#920).
 h.MovePlayer(1420, 0.60, 0.20)
 h.ns.Invalidate()
 h.flush()
 equal(h.ns.Route().steps[1].here, nil, "out of the area: not here")
-equal(h.ns.Prefs().focus, nil, "out of the area: AGF's selection goes")
+equal(h.ns.Prefs().focus, 3902, "out of the area: the step's quest stays selected")
 
 equal(#h.errors, 0, table.concat(h.errors, "\n"))
 print(("rxp_focus_spec: %d checks passed"):format(checks))
