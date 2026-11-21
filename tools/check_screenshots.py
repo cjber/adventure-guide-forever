@@ -2,8 +2,9 @@
 """Fail when a screenshot is older than what it shows (WFA-9, forever_tools.screens).
 
 Each image's dump is the part of tests/scenes.lua's headless run (no input, so no Pillow and no wago.tools) that
-tools/screenshots.py draws it from, plus the screenshot code and generated inputs. docs/screenshots/scenes.sha256
-holds each image's hash beside its dump's; tools/screenshots.py rewrites it after a render.
+tools/screenshots.py draws it from, plus the screenshot code and generated inputs.
+docs/screenshots/scenes/<image>.sha256 holds each image's hash beside its dump's; tools/screenshots.py rewrites it
+after a render.
 
     python3 tools/check_screenshots.py           # CI: fail on a stale image (see below for the data PR)
     python3 tools/check_screenshots.py --record  # after a render, if tools/screenshots.py did not

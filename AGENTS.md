@@ -25,7 +25,7 @@ explains the change. `tools/forever_tools/` and `tools/forever_sim/` are copied 
 edit them. Release: `.agents/skills/release/SKILL.md`.
 
 After a UI change run `python3 tools/screenshots.py` (WFA-9; local only, needs Pillow and wago.tools, and
-`FOREVER_CORE` at the shared renderer) and commit the PNGs and `scenes.sha256`. On the bot's `data/refresh` PR a stale
+`FOREVER_CORE` at the shared renderer) and commit the PNGs and `docs/screenshots/scenes/`. On the bot's `data/refresh` PR a stale
 image is only a warning (`SCREENSHOTS_STALE_WARN`), so re-render straight after it merges.
 
 ## Data
