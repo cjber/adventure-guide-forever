@@ -1753,7 +1753,8 @@ for id, q in pairs(ns.Data.quests) do
 end
 equal(count > 3000, true, "full dataset loaded")
 -- F15: quests filed under a dungeon or raid carry its instance Map.ID, and every such instance is named. QuestieDB
--- v1.1.0 adds 11, across eight instances from Blackfathom Deeps to The Hall of Thanes; no raid.
+-- v1.1.0 adds 11, across eight instances from Blackfathom Deeps to The Hall of Thanes, and v1.1.4 five more, from
+-- Gnomeregan to Razorfen Downs; no raid.
 do
 	local flagged, raids = 0, 0
 	for _, q in pairs(ns.Data.quests) do
@@ -1762,7 +1763,7 @@ do
 			assert(ns.Data.instances[q.dungeon].name ~= "", q.title)
 		end
 	end
-	equal(flagged, 607, "dungeon and raid quests flagged")
+	equal(flagged, 612, "dungeon and raid quests flagged")
 	equal(raids, 283, "raid quests flagged")
 end
 -- Raid quests filed outdoors (typed Raid) are on no card, nor is a raid's quest given outdoors under its instance:
@@ -1853,6 +1854,7 @@ local function Chain(id, members, seen)
 	end
 	return Chain(q.next, members, seen)
 end
+-- QuestieDB v1.1.4 revises next links and prerequisites, leaving 21 fewer heads and 10 more provable totals.
 -- Pinned: the design's three rules applied exactly.
 do
 	local totals, textOnly = 0, 0
@@ -1881,9 +1883,9 @@ do
 			end
 		end
 	end
-	equal(#heads, 1069, "walk: chain heads in the data")
-	equal(totals, 837, "walk: heads whose total the data proves")
-	equal(textOnly, 232, "walk: heads shown as a chapter only")
+	equal(#heads, 1048, "walk: chain heads in the data")
+	equal(totals, 847, "walk: heads whose total the data proves")
+	equal(textOnly, 201, "walk: heads shown as a chapter only")
 	equal(#heads - totals - textOnly, 0, "walk: heads whose next dangles at once")
 end
 

@@ -1269,9 +1269,9 @@ for _, spf in ipairs({ false, "v1" }) do
 	equal(ring.levelType, "PIN_FRAME_LEVEL_WAYPOINT_LOCATION", label .. ": rings at the user waypoint's level")
 	h.Hover(ring)
 	-- With Shortest Path, step 1 adds its travel line; the stub answers 360 s. Step 1 is the Crossroads, where The
-	-- Zhevra opens its next chapter, handed in before the town's pickups. QuestieDB v1.1.1 moves the Consumed by
-	-- Hatred camps, leaving room for Lost in Battle in the bounded route and five pickups at this visit.
-	local expected = { "title: 1. Visit The Crossroads: Pick up 5, turn in 1" }
+	-- Zhevra opens its next chapter before the town's pickups. QuestieDB v1.1.4 moves Vrang's Game's objectives,
+	-- leaving room for Harpy Raiders among the six pickups.
+	local expected = { "title: 1. Visit The Crossroads: Pick up 6, turn in 1" }
 	expected[#expected + 1] = spf and "highlight: About 6 min away" or nil
 	expected[#expected + 1] = "highlight: Opens the next chapter here"
 	expected[#expected + 1] = "normal: |cff009919Sergra Darkthorn|r"
@@ -2422,8 +2422,8 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	-- The refreshed Consumed by Hatred camps leave room for Lost in Battle: five pickups with the one hand-in.
-	local expected = { "1 to hand in, 5 to pick up", "Opens the next chapter here" }
+	-- QuestieDB v1.1.4 moves Vrang's Game's objectives, making Harpy Raiders the sixth pickup.
+	local expected = { "1 to hand in, 6 to pick up", "Opens the next chapter here" }
 	for _, giver in ipairs(steps[1].checklist) do
 		expected[#expected + 1] = h.ns.StepStyle.Checklist(steps[1], giver)
 	end
@@ -2583,6 +2583,7 @@ end
 -- A town is titled by its name, so step 1 of the story (Crossroads) shows its counts, then its reason in
 -- place of the NPC line, since the story begins there. With a reason that is only the counts, the line
 -- names its NPCs: two, then how many more. One quest's stop reads "NPC, zone".
+-- QuestieDB v1.1.4 moves Vrang's Game's objectives, making Harpy Raiders the sixth pickup.
 do
 	local h = Load(false)
 	local ns = h.ns
@@ -2591,8 +2592,8 @@ do
 	h.flush()
 	local steps = ns.Route().steps
 	local step = steps[1]
-	equal(step.title, "Visit The Crossroads: Pick up 5, turn in 1", "tracker, town: town and actions")
-	equal(step.detail, "1 to hand in, 5 to pick up", "tracker, town: the hand-in joins the pickups")
+	equal(step.title, "Visit The Crossroads: Pick up 6, turn in 1", "tracker, town: town and actions")
+	equal(step.detail, "1 to hand in, 6 to pick up", "tracker, town: the hand-in joins the pickups")
 	local expected = { step.detail, "Opens the next chapter here" }
 	for _, giver in ipairs(step.checklist) do
 		expected[#expected + 1] = ns.StepStyle.Checklist(step, giver)
