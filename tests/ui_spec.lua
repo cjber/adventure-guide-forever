@@ -2422,7 +2422,7 @@ for _, spf in ipairs({ false, "v1" }) do
 	local label = "tracker: " .. (spf or "no Shortest Path")
 	local h = Load(spf)
 	local steps = h.ns.Route().steps
-	-- QuestieDB v1.1.4 moves Vrang's Game's objectives, making Harpy Raiders the sixth pickup.
+	-- QuestieDB v1.1.4 moves Vrang's Game's objectives, adding Harpy Raiders as a sixth pickup.
 	local expected = { "1 to hand in, 6 to pick up", "Opens the next chapter here" }
 	for _, giver in ipairs(steps[1].checklist) do
 		expected[#expected + 1] = h.ns.StepStyle.Checklist(steps[1], giver)
@@ -2583,7 +2583,7 @@ end
 -- A town is titled by its name, so step 1 of the story (Crossroads) shows its counts, then its reason in
 -- place of the NPC line, since the story begins there. With a reason that is only the counts, the line
 -- names its NPCs: two, then how many more. One quest's stop reads "NPC, zone".
--- QuestieDB v1.1.4 moves Vrang's Game's objectives, making Harpy Raiders the sixth pickup.
+-- QuestieDB v1.1.4 moves Vrang's Game's objectives, adding Harpy Raiders as a sixth pickup.
 do
 	local h = Load(false)
 	local ns = h.ns

@@ -101,7 +101,7 @@ end
 
 -- The Crossroads, where the route plans Fungal Spores (848) beside Lost in Battle (4921) and four more. Taking
 -- Fungal Spores in the log was enough to raise the town's mean past Lost in Battle and drop it from the route.
--- QuestieDB v1.1.4 moves Vrang's Game's objectives, making Harpy Raiders the sixth pickup.
+-- QuestieDB v1.1.4 moves Vrang's Game's objectives, adding Harpy Raiders as a sixth pickup.
 local CROSSROADS, TAKEN = "town:1413:380", 848
 local barrens = Setup("orc18_barrens", "zone:1413")
 local before = Pickups(barrens.Build(barrens.baseLog), CROSSROADS)
