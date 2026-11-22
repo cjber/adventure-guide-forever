@@ -87,7 +87,8 @@ local function Timer(quest, total, elapsed)
 	return quest
 end
 
--- #709's Loch Modan route keeps the accepted timed quest ahead of optional work in both order modes.
+-- #709's actual Loch Modan quest: optional work for Twisting the Knife overlaps the boar area. Its pickup must
+-- not hold the accepted timed quest behind unrelated stops, in either order mode.
 -- QuestieDB v1.1.4 moves Crocolisk Hunting's objectives into the same stop as Twisting the Knife.
 for _, planned in ipairs({ false, true }) do
 	local label = planned and "hunter planned" or "hunter nearest"
