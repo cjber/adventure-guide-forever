@@ -32,9 +32,9 @@ BOOK_FIXTURE = CORPUS / "books.lua"
 # QuestieDB's Forever release, pinned to the tag, the asset name and the asset's sha256. QuestieDB renamed its
 # assets at v1.0.11 to QuestieDB-<version>-<flavour>.zip, so the asset name is pinned beside the tag and moved by
 # tools/refresh_pins.py. The refresh workflow moves all three.
-QUESTIEDB_TAG = "v1.1.3"
-QUESTIEDB_ASSET = "QuestieDB-1.1.3-Forever.zip"
-QUESTIEDB_SHA256 = "98201b11bf9854895f2c966d3924b9fb10d18d10dcad7540465e7d761c1f624d"
+QUESTIEDB_TAG = "v1.1.4"
+QUESTIEDB_ASSET = "QuestieDB-1.1.4-Forever.zip"
+QUESTIEDB_SHA256 = "77560ed5a425de989b45bbaddb3fd0eb2173df25f43c4d5c3ef8b4622985486c"
 QUESTIEDB_URL = f"https://github.com/Questie/QuestieDB/releases/download/{QUESTIEDB_TAG}/{QUESTIEDB_ASSET}"
 
 

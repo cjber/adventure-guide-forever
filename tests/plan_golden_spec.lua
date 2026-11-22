@@ -163,8 +163,7 @@ for _, fixture in ipairs(characters.list) do
 	-- The user's report: with Redridge's quests taken on (the live client gives no waypoint for one under way), the
 	-- story is Redridge's and leads, its quests under way are steps at the data's objective areas, and the two log
 	-- cards count every carried quest between them, placed or not. Never Carry and a Darkshore story alone.
-	-- QuestieDB v1.1.0 gives Blackrock Blockade the next link to Tharil'zun that Blackrock Menace already had, so the
-	-- zone card now leads as a chain and tells its chapter in place of its count.
+	-- QuestieDB v1.1.4 removes Blackrock Blockade's next link to Tharil'zun, so the zone card shows its counts.
 	if fixture.name == "human19_redridge_full" then
 		local story, areas = route.journeys[1], 0
 		equal(story.key, "zone:1433", "human19_redridge_full: Redridge is card 1")
@@ -175,7 +174,11 @@ for _, fixture in ipairs(characters.list) do
 			end
 		end
 		equal(carriedHere, true, "human19_redridge_full: accepted quests include Redridge")
-		equal(story.subline, "Chapter 1", "human19_redridge_full: the chain's chapter in place of its count")
+		equal(
+			story.subline,
+			"1 ready to hand in, 7 in progress, 1 of them on later laps, 2 quests near your level",
+			"human19_redridge_full: the zone story shows its quest counts"
+		)
 		for _, step in ipairs(story.steps) do
 			if step.kind == "area" or step.kind == "dungeon" then
 				areas = areas + 1

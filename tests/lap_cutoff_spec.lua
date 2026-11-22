@@ -99,12 +99,13 @@ local function Without(ids, id)
 	return rest
 end
 
--- The Crossroads, where the route plans Fungal Spores (848) beside Lost in Battle (4921) and three more. Taking
+-- The Crossroads, where the route plans Fungal Spores (848) beside Lost in Battle (4921) and four more. Taking
 -- Fungal Spores in the log was enough to raise the town's mean past Lost in Battle and drop it from the route.
+-- QuestieDB v1.1.4 moves Vrang's Game's objectives, adding Harpy Raiders as a sixth pickup.
 local CROSSROADS, TAKEN = "town:1413:380", 848
 local barrens = Setup("orc18_barrens", "zone:1413")
 local before = Pickups(barrens.Build(barrens.baseLog), CROSSROADS)
-eq(Joined(before), "848 869 899 4921 6541", "the town offers its planned pickups")
+eq(Joined(before), "848 867 869 899 4921 6541", "the town offers its planned pickups")
 local after = Pickups(barrens.Build(barrens.Take(barrens.baseLog, TAKEN)), CROSSROADS)
 eq(Joined(after), Joined(Without(before, TAKEN)), "taking a planned pickup leaves the town's other pickups")
 
