@@ -560,13 +560,43 @@ local function Beside(step, log)
 	return false
 end
 
+-- How far `from` is from the word `step` is: a town's nearest giver with a pickup or a ready hand-in (its `spots`),
+-- since the town's own point is its first giver, which can be another one across the town; any other step's point.
+---@param step AGFStep
+---@param log table<integer, AGFLogQuest>
+---@param at fun(place: AGFStep|AGFPlace): AGFPosition?
+local function WordCost(from, step, log, at)
+	if step.kind ~= "town" then
+		return Cost(from, at(step))
+	end
+	local best
+	local function Try(id)
+		local spot = step.spots[id]
+		local cost = spot and Cost(from, at(spot))
+		if cost and (not best or cost < best) then
+			best = cost
+		end
+	end
+	for _, id in ipairs(step.pickups or NONE) do
+		Try(id)
+	end
+	for _, id in ipairs(step.handins or NONE) do
+		local entry = log[id]
+		if entry and entry.complete then
+			Try(id)
+		end
+	end
+	return best or Cost(from, at(step))
+end
+
 -- The step of `steps` beside `from` that goes first (docs/design.md §4.1), or nil: the nearest ready hand-in or
--- pickup within NEAR_ACTION yards, while the head's own target point is farther away. A step already at the head is
--- not chosen, so a rebuild with nothing changed keeps the route and the choice never thrashes.
+-- pickup within NEAR_ACTION yards, measured to the giver who has it (WordCost), while the head's own target point is
+-- farther away. A step already at the head is not chosen, so a rebuild with nothing changed keeps the route and the
+-- choice never thrashes.
 ---@param from? AGFPosition
 ---@param log table<integer, AGFLogQuest>
 ---@param steps AGFStep[]
----@param at fun(step: AGFStep): AGFPosition?
+---@param at fun(place: AGFStep|AGFPlace): AGFPosition?
 ---@return AGFStep?
 function Model.NearAction(from, log, steps, at)
 	local head = steps[1]
@@ -577,7 +607,7 @@ function Model.NearAction(from, log, steps, at)
 	local best, bestCost
 	for _, step in ipairs(steps) do
 		if step ~= head and Beside(step, log) then
-			local cost = Cost(from, at(step))
+			local cost = WordCost(from, step, log, at)
 			if cost <= NEAR_ACTION and cost < headCost and (not best or cost < bestCost) then
 				best, bestCost = step, cost
 			end

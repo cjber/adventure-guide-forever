@@ -79,7 +79,6 @@ IMAGES = {
     "menu.png": ("menu", "tracker"),
     "loot.png": ("loot_menu",),
     "story_complete.png": ("story_complete",),
-    "minimap-adventure-guide.png": ("menu", "tracker"),
     "demo.gif": ("journeys", "panel", "map"),
 }
 

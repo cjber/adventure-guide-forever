@@ -11,7 +11,7 @@ card (chosen) | zone:1437 | Wetlands story | Chapter 1 of 8 | A chain begins wit
   step 9 | area:294:0 | Complete objectives · Ormer's Revenge | 1437 0.2420,0.4830 | after you pick it up | 87 yd | 294/0
   step 10 | area:294:1 | Complete objectives · Ormer's Revenge | 1437 0.2300,0.5560 | after you pick it up | 97 yd | 294/1
 card | zone:1442 | Head to Stonetalon Mountains | 3 quests near your level | - | map 1442
-  step 1 | town:1442:464 | Pick up: Stonetalon Supply Run | 1442 0.4869,0.3986 | near your level
+  step 1 | town:1442:464 | Pick up: Stonetalon Supply Run | 1442 0.4869,0.3985 | near your level
   step 2 | town:1442:1076 | Pick up: Super Reaper 6000 | 1442 0.5899,0.6260 | near your level
   step 3 | town:1442:461 | Pick up: Gerenzo's Orders | 1442 0.7187,0.6000 | near your level
 card | zone:1440 | Head to Ashenvale | 14 quests near your level | - | map 1439

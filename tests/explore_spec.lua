@@ -123,7 +123,7 @@ do
 	local h = Load({ level = 38 }, { [1413] = {} })
 	Settle(h)
 	local aside = h.ns.Asides.Current()
-	equal(aside.text, "Map 2548 · For levels 36-44", "the client's name for the land, and its levels")
+	equal(aside.text, "Riverglades · For levels 36-44", "the land's name, and its levels")
 	equal(aside.key, "land:2548", "one key per land")
 	equal(aside.icon, "flightmaster", "the flight master mark")
 	equal(aside.place.name, "Rog'mar, Riverglades", "the Horde's flight master")
@@ -143,7 +143,7 @@ do
 	h.combat = true
 	h.explored[2548] = { ["Rog'mar"] = true }
 	h.fire("MAP_EXPLORATION_UPDATED")
-	equal(Text(h), "Map 2548 · For levels 36-44", "combat: unchanged")
+	equal(Text(h), "Riverglades · For levels 36-44", "combat: unchanged")
 	h.combat = false
 	Settle(h)
 	equal(Text(h), nil, "after combat: asked again")

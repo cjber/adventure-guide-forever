@@ -78,6 +78,9 @@ PUBLISHED = {
     1450: (55, 60),
     1451: (55, 60),
     1452: (53, 60),
+    # Riverglades: WoW: Forever's own zone map, so it has no warcraft.wiki range; the bundled taxi and
+    # quest data carry 36-44 (Data/Forever.lua).
+    2548: (36, 44),
 }
 TABLES = {
     "game_event_creature",

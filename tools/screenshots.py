@@ -31,7 +31,6 @@ import io
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -884,7 +883,6 @@ def pin_tooltip(ui, art, scene):
 def main():
     for path in render():
         print(path.relative_to(ROOT))
-    render_minimap_button_scenes()
     # What each image was drawn from, for CI's stale-screenshot check (tools/check_screenshots.py). Every image was
     # just drawn, so one whose pixels came out the same is recorded too, but only with the pinned Pillow: another
     # version's bytes are not the ones to keep.
@@ -892,14 +890,6 @@ def main():
     from forever_tools import screens
 
     screens.record(OUT, check_screenshots.SCENES, force=importlib.metadata.version("pillow") == PILLOW)
-
-
-def render_minimap_button_scenes():
-    """The Adventure Guide button on the minimap rim, drawn by forever-core's shared renderer."""
-    renderer = FOREVER_CORE / "docs/handoff/minimap-buttons/render.py"
-    with tempfile.TemporaryDirectory(prefix="adventure-guide-minimap-") as directory:
-        subprocess.run([sys.executable, str(renderer)], cwd=directory, check=True)
-        shutil.copy2(Path(directory) / "minimap-adventure-guide.png", OUT / "minimap-adventure-guide.png")
 
 
 if __name__ == "__main__":

@@ -168,13 +168,24 @@ end
 local function Standing(player, route, log)
 	local head = route.steps[1]
 	if head and head.kind ~= "area" and not head.returns then
-		-- A giver can be beside the player across a town overlay boundary.
-		local distance = Model.Yards(data, player, head)
-		local ready = #(head.pickups or {}) > 0
-		for _, id in ipairs(Model.Handins(head)) do
-			ready = ready or (log[id] and log[id].complete) or false
+		-- A giver can be beside the player across a town overlay boundary. The town is beside them when a giver with a
+		-- pickup or a ready hand-in is: its point is the giver the arrow keeps (Model.TownArrow), which can be another.
+		local distance
+		local function Near(place)
+			local yards = place and Model.Yards(data, player, place)
+			if yards and (not distance or yards < distance) then
+				distance = yards
+			end
 		end
-		if ready and distance and distance <= 60 then
+		for _, id in ipairs(head.pickups or {}) do
+			Near(head.spots and head.spots[id] or head)
+		end
+		for _, id in ipairs(Model.Handins(head)) do
+			if log[id] and log[id].complete then
+				Near(head.spots and head.spots[id] or head)
+			end
+		end
+		if distance and distance <= 60 then
 			return true
 		end
 	end
