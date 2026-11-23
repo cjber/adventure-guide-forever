@@ -74,6 +74,7 @@ ns.Data = {
 		[1450] = { name = "Moonglade", min = 55, max = 60 },
 		[1451] = { name = "Silithus", min = 55, max = 60 },
 		[1452] = { name = "Winterspring", min = 53, max = 60 },
+		[2548] = { name = "Riverglades", min = 36, max = 44 },
 	},
 	-- Entrance gates: alternate items, completed quest and unsupported conditions; never outdoor waypoints.
 	instances = {
@@ -161,6 +162,7 @@ ns.Data = {
 		[1456] = { name = "Thunder Bluff", continent = 1, cx = -1197.9, cy = -5.2, sx = 1043.7, sy = 695.8 },
 		[1457] = { name = "Darnassus", continent = 1, cx = 9885.5, cy = 2409.2, sx = 1058.3, sy = 705.7 },
 		[1458] = { name = "Undercity", continent = 0, cx = 1557.9, cy = 393.5, sx = 959.4, sy = 640.1 },
+		[2548] = { name = "Riverglades", continent = 0, cx = -8083.3, cy = -4316.7, sx = 4850.0, sy = 3233.3 },
 	},
 	continents = {
 		[0] = { x = 32601.0, y = 9894.9 },
@@ -780,6 +782,21 @@ ns.Data = {
 			{ area = 2243, x0 = 0.2285, y0 = 0.3638, x1 = 0.484, y1 = 0.5554, cx = 0.4017, cy = 0.4341 },
 			{ area = 2244, x0 = 0.6158, y0 = 0.2365, x1 = 0.8713, y1 = 0.4281, cx = 0.6836, cy = 0.3668 },
 		},
+		[2548] = {
+			{ area = 16726, x0 = 0.492, y0 = 0.0, x1 = 0.7685, y1 = 0.4356, cx = 0.6567, cy = 0.1639 },
+			{ area = 16737, x0 = 0.025, y0 = 0.479, x1 = 0.4062, y1 = 0.9311, cx = 0.273, cy = 0.6257 },
+			{ area = 16724, x0 = 0.5429, y0 = 0.6392, x1 = 0.7834, y1 = 1.0, cx = 0.6477, cy = 0.8293 },
+			{ area = 17780, x0 = 0.3084, y0 = 0.0, x1 = 0.6417, y1 = 0.4686, cx = 0.4441, cy = 0.265 },
+			{ area = 16735, x0 = 0.2914, y0 = 0.6093, x1 = 0.6287, y1 = 1.0, cx = 0.4481, cy = 0.8099 },
+			{ area = 16727, x0 = 0.6238, y0 = 0.3982, x1 = 0.8842, y1 = 0.8623, cx = 0.7655, cy = 0.518 },
+			{ area = 16743, x0 = 0.503, y0 = 0.3219, x1 = 0.7156, y1 = 0.6213, cx = 0.5873, cy = 0.4603 },
+			{ area = 16723, x0 = 0.3703, y0 = 0.3219, x1 = 0.5998, y1 = 0.732, cx = 0.4606, cy = 0.5127 },
+			{ area = 16729, x0 = 0.498, y0 = 0.494, x1 = 0.7176, y1 = 0.7725, cx = 0.6003, cy = 0.643 },
+			{ area = 16736, x0 = 0.2914, y0 = 0.4356, x1 = 0.4731, y1 = 0.75, cx = 0.3807, cy = 0.61 },
+			{ area = 16685, x0 = 0.1248, y0 = 0.1467, x1 = 0.4671, y1 = 0.6168, cx = 0.2754, cy = 0.4394 },
+			{ area = 16725, x0 = 0.4431, y0 = 0.6183, x1 = 0.6707, y1 = 0.9102, cx = 0.5424, cy = 0.7762 },
+			{ area = 16731, x0 = 0.6317, y0 = 0.0778, x1 = 0.9541, y1 = 0.5539, cx = 0.762, cy = 0.3421 },
+		},
 	},
 	areaNames = {
 		[9] = "Northshire Valley",
@@ -1307,7 +1324,20 @@ ns.Data = {
 		[2744] = "Hive'Regal",
 		[16335] = "New Avalon",
 		[16616] = "Whispering Forest",
+		[16685] = "Twilight's Shroud",
+		[16723] = "Sunnyglade",
+		[16724] = "Farholde Keep",
+		[16725] = "Wheeler's Grange",
+		[16726] = "Bolder'ok",
+		[16727] = "Powderfuse Port",
+		[16729] = "Terral's Watch",
+		[16731] = "Windstead",
+		[16735] = "Meadowsbrook",
+		[16736] = "Turner's Logging Camp",
+		[16737] = "Bristle Hills",
+		[16743] = "Rog'mar",
 		[17045] = "Skywatcher Plateau",
+		[17780] = "Krol'dok Stronghold",
 	},
 	heights = {
 		npc = {
