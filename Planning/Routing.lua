@@ -564,7 +564,7 @@ end
 -- since the town's own point is its first giver, which can be another one across the town; any other step's point.
 ---@param step AGFStep
 ---@param log table<integer, AGFLogQuest>
----@param at fun(step: AGFStep): AGFPosition?
+---@param at fun(place: AGFStep|AGFPlace): AGFPosition?
 local function WordCost(from, step, log, at)
 	if step.kind ~= "town" then
 		return Cost(from, at(step))
@@ -596,7 +596,7 @@ end
 ---@param from? AGFPosition
 ---@param log table<integer, AGFLogQuest>
 ---@param steps AGFStep[]
----@param at fun(step: AGFStep): AGFPosition?
+---@param at fun(place: AGFStep|AGFPlace): AGFPosition?
 ---@return AGFStep?
 function Model.NearAction(from, log, steps, at)
 	local head = steps[1]
