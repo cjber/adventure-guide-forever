@@ -466,7 +466,7 @@ L["UNAVAILABLE_IN_COMBAT"] = "No disponible en combate"
 L["UNLISTED"] =
 	"Esta tierra tiene historias que la guía aún no conoce; busca el «!» sobre los asignadores de misiones."
 L["UPDATED_TO"] = "actualizado a %s. %s"
-L["WHATS_NEW"] = "Los dos siguientes pasos de RestedXP dicen lo que son." -- mt
+L["WHATS_NEW"] = "Las misiones de Riverglades aparecen." -- mt
 L["WHY_ALLIANCE"] = "Solo Alianza"
 L["WHY_BREADCRUMB"] = "Solo hasta que aceptes %s"
 L["WHY_CHOSE"] = "Elegiste %s en su lugar"
