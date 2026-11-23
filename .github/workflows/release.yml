@@ -187,6 +187,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 -m tools.forever_tools.core_pin --latest
+      # While any published addon still ships the shared top-level ForeverCore folder, removing that addon would take
+      # core away from this one (cjber/forever-core#448), so an embedded release waits until every addon embeds.
+      - name: Hold until every Forever addon embeds ForeverCore
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 -m tools.forever_tools.fleet
       # The TOC sets X-Forever-Core-Embed, so the zip carries the pinned core inside the addon at Libs/ForeverCore/
       # and runs without the standalone addon. The embed step plans that copy from a core checkout at the pin.
       - name: Read the ForeverCore ref
