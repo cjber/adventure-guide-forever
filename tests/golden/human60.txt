@@ -2,12 +2,12 @@
 card (chosen) | zone:1423 | Eastern Plaguelands story | Chapter 1 of 3 | A chain begins with Fallen Skyborne | map 1423
   step 1 | town:1423:2268 | Visit Light's Hope Chapel: Pick up 5 | 1423 0.7169,0.5072 | 5 to pick up
   step 2 | town:1423:2271 | Visit Eastwall Tower: Pick up 2 | 1423 0.6993,0.5372 | 2 to pick up
-  step 3 | town:1423:2623 | Pick up: Oh No Ye Don't! | 1423 0.5338,0.5856 | near your level
+  step 3 | town:1423:2623 | Pick up: Oh No Ye Don't! | 1423 0.5343,0.5853 | near your level
   step 4 | area:5211:0 | Complete objectives · Defenders of Darrowshire | 1423 0.5730,0.3070 | after you pick it up | 92 yd | 5211/0
   step 5 | area:84319:4 | Complete objectives · Oh No Ye Don't! | 1423 0.2750,0.2310 | after you pick it up | 100 yd | 84319/4
   step 6 | town:1423:2627 | Visit Terrordale: Pick up 4 | 1423 0.1136,0.2637 | 4 to pick up
   step 7 | area:6164:4 | Complete objectives · Augustus' Receipt Book | 1423 0.1400,0.2420 | after you pick it up | 0 yd | 6164/4
-  step 8 | town:1423:2619 | Pick up: River Ends | 1423 0.0800,0.5546 | Begins a new story
+  step 8 | town:1423:2619 | Pick up: River Ends | 1423 0.0800,0.5545 | Begins a new story
   step 9 | area:9085:0 | Complete 2 objectives · Eastern Plaguelands | 1423 0.1210,0.6400 | 2 quests here | 0 yd | 9085/0 9153/4
   step 10 | area:5542:0 | Complete objectives · Demon Dogs | 1423 0.1540,0.6750 | after you pick it up | 96 yd | 5542/0
 card | zone:1451 | Head to Silithus | 13 quests near your level | Twilight Base Camp needs hands | map 1451
@@ -38,29 +38,29 @@ card | zone:1428 | Head to Burning Steppes | 10 quests near your level | - | map
   step 5 | town:1428:252 | Pick up: Poacher's Den | 1428 0.5300,0.2422 | near your level
 card | zone:1448 | Head to Felwood | 15 quests near your level | - | map 1448
   step 1 | town:1448:1763 | Pick up: Nightwind the Elder | 1448 0.3764,0.5300 | near your level
-  step 2 | town:1448:1765 | Pick up: Stag Lord's Bauble | 1448 0.4205,0.4732 | near your level
+  step 2 | town:1448:1765 | Pick up: Stag Lord's Bauble | 1448 0.4206,0.4731 | near your level
   step 3 | town:1448:2479 | Visit Emerald Sanctuary: Pick up 9 | 1448 0.5093,0.8501 | 9 to pick up
   step 4 | town:1448:2478 | Pick up: Cleansing Felwood | 1448 0.5415,0.8683 | near your level
   step 5 | town:1448:1762 | Visit Felpaw Village: Pick up 2 | 1448 0.6477,0.0813 | 2 to pick up
   step 6 | town:1452:2246 | Pick up: Winterfall Activity | 1452 0.2773,0.3450 | near your level
-card | zone:1447 | Head to Azshara | 30 quests near your level | - | map 1448
-  step 1 | town:1448:1762 | Pick up: Blackmaw Counter-Offensive | 1448 0.6518,0.0268 | near your level
-  step 2 | town:1447:1225 | Visit Ursolan: Pick up 4 | 1447 0.4228,0.2013 | 4 to pick up
-  step 3 | town:1447:1219 | Visit Legashi Encampment: Pick up 4 | 1447 0.5345,0.2182 | 4 to pick up
-  step 4 | town:1447:1220 | Visit Thalassian Base Camp: Pick up 3 | 1447 0.6301,0.2143 | 3 to pick up
-  step 5 | town:1447:1230 | Pick up: Later, Satyr | 1447 0.6658,0.1456 | near your level
-  step 6 | town:1447:1769 | Visit Timbermaw Hold: Pick up 9 | 1447 0.2925,0.4021 | 9 to pick up
-  step 7 | town:1447:1228 | Pick up: Claws That Rend, Tusks that Gore | 1447 0.4240,0.4262 | near your level
-  step 8 | town:1447:1231 | Pick up: Demon Hunter's Hunter | 1447 0.6082,0.6635 | near your level
-  step 9 | town:1447:1232 | Pick up: Skygleam the Elder | 1447 0.7255,0.8524 | near your level
-  step 10 | town:1447:0 | Visit Azshara: Pick up 2 | 1447 0.7928,0.7370 | 2 to pick up
-card | zone:1449 | Head to Un'Goro Crater | 19 quests near your level | - | map 1455
+card | zone:1449 | Head to Un'Goro Crater | 20 quests near your level | - | map 1455
   step 1 | town:1455:0 | Visit Ironforge: Pick up 2 | 1455 0.7150,0.1574 | 2 to pick up
   step 2 | town:1413:392 | Pick up: Volcanic Activity | 1413 0.6245,0.3873 | near your level
   step 3 | town:1449:538 | Visit Lakkari Tar Pits: Pick up 10 | 1449 0.4362,0.0850 | 10 to pick up
   step 4 | town:1449:543 | Pick up: Finding the Source | 1449 0.3093,0.5044 | near your level
   step 5 | town:1449:540 | Pick up: Thunderhorn the Elder | 1449 0.5035,0.7607 | near your level
-  step 6 | town:1449:1942 | Visit The Marshlands: Pick up 4 | 1449 0.7164,0.7596 | 4 to pick up
+  step 6 | town:1449:1942 | Visit The Marshlands: Pick up 5 | 1449 0.7164,0.7596 | 5 to pick up
+card | zone:1447 | Head to Azshara | 29 quests near your level | - | map 1448
+  step 1 | town:1448:1762 | Pick up: Blackmaw Counter-Offensive | 1448 0.6518,0.0268 | near your level
+  step 2 | town:1447:1225 | Visit Ursolan: Pick up 4 | 1447 0.4228,0.2013 | 4 to pick up
+  step 3 | town:1447:1219 | Visit Legashi Encampment: Pick up 4 | 1447 0.5345,0.2182 | 4 to pick up
+  step 4 | town:1447:1220 | Visit Thalassian Base Camp: Pick up 3 | 1447 0.6301,0.2143 | 3 to pick up
+  step 5 | town:1447:1230 | Pick up: Later, Satyr | 1447 0.6658,0.1456 | near your level
+  step 6 | town:1447:1769 | Visit Timbermaw Hold: Pick up 8 | 1447 0.2925,0.4021 | 8 to pick up
+  step 7 | town:1447:1228 | Pick up: Claws That Rend, Tusks that Gore | 1447 0.4240,0.4262 | near your level
+  step 8 | town:1447:1231 | Pick up: Demon Hunter's Hunter | 1447 0.6082,0.6635 | near your level
+  step 9 | town:1447:1232 | Pick up: Skygleam the Elder | 1447 0.7255,0.8524 | near your level
+  step 10 | town:1447:0 | Visit Azshara: Pick up 2 | 1447 0.7928,0.7370 | 2 to pick up
 card | zone:1419 | Head to Blasted Lands | 13 quests near your level | - | map 1416
   step 1 | town:1416:278 | Pick up: The Orphan | 1416 0.2162,0.7318 | near your level
   step 2 | town:1419:1457 | Visit Garrison Armory: Pick up 5 | 1419 0.5055,0.1420 | 5 to pick up
@@ -116,7 +116,7 @@ card | zone:1413 | Head to The Barrens | 8 quests near your level | - | map 1413
   step 3 | town:1413:380 | Visit The Crossroads: Pick up 2 | 1413 0.5142,0.3071 | 2 to pick up
   step 4 | town:1413:378 | Pick up: High Mountain the Elder | 1413 0.4509,0.5792 | near your level
 card | zone:1433 | Head to Redridge Mountains | 1 quest near your level | - | map 1433
-  step 1 | town:1433:68 | Pick up: Praise | 1433 0.3046,0.5698 | near your level
+  step 1 | town:1433:68 | Pick up: Praise | 1433 0.3046,0.5699 | near your level
 card | zone:1421 | Head to Silverpine Forest | 1 quest near your level | - | map 1421
   step 1 | town:1421:228 | Pick up: Obsidian the Elder | 1421 0.4498,0.4114 | near your level
 card | zone:1432 | Head to Loch Modan | 1 quest near your level | - | map 1432

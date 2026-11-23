@@ -89,7 +89,8 @@ end
 
 -- #709's actual Loch Modan quest: optional work for Twisting the Knife overlaps the boar area. Its pickup must
 -- not hold the accepted timed quest behind unrelated stops, in either order mode.
--- QuestieDB v1.1.4 moves Crocolisk Hunting's objectives into the same stop as Twisting the Knife.
+-- QuestieDB v1.1.5 moves Crocolisk Hunting's spawns beside the boars, so its objectives share the timed stop and
+-- Twisting the Knife's optional work keeps an area of its own.
 for _, planned in ipairs({ false, true }) do
 	local label = planned and "hunter planned" or "hunter nearest"
 	local h = harness.load({
@@ -122,8 +123,9 @@ for _, planned in ipairs({ false, true }) do
 	equal(first.key, "area:258:0", label .. ": the accepted timed objective leads")
 	equal(first.hurry, true, label .. ": it stays urgent")
 	equal(first.planned and first.planned[86758], nil, label .. ": unaccepted work has its own area")
-	local optional = assert(ByKey(h.ns.Route(), "area:385:4"), label .. ": the later crocolisk stop is present")
-	equal(table.concat(optional.quests, " "), "385 86758", label .. ": optional work shares the crocolisk stop")
+	equal(table.concat(first.quests, " "), "258 385", label .. ": the crocolisk objectives share the timed stop")
+	local optional = assert(ByKey(h.ns.Route(), "area:86758:4"), label .. ": the optional work has a later stop")
+	equal(table.concat(optional.quests, " "), "86758", label .. ": the optional stop holds only its own work")
 	equal(h.ns.Order.Valid(h.ns.Route().steps, h.player.logMax, h.ns.State.Log()), true, label .. ": legal order")
 	h.ns.Invalidate()
 	h.flush()
