@@ -10,6 +10,12 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago. O
 verbatim rather than rewritten as the addon moves. API changes other addons' authors need go under an
 optional `### For addon authors` subsection after a version's player bullets.
 
+## [1.12.14] - 2026-11-23
+
+- **Riverglades quests show up.** Quests in Riverglades now appear under Quest destinations and can be recommended, as a level 36 to 44 zone (#946).
+- **A quest giver beside you in town comes first.** The guide measured a town stop from the town's own point rather than from its quest givers, so a pickup or ready hand-in a few steps away could be passed over for something farther off (#944).
+- Quest data is refreshed to QuestieDB 1.1.5.
+
 ## [1.12.13] - 2026-11-22
 
 <!-- forever-core-sync -->
