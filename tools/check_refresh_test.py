@@ -106,10 +106,6 @@ class CompareTest(unittest.TestCase):
         self.assertIn("gained a finish", reports[0])
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class FetchFdbTest(unittest.TestCase):
     def test_a_relative_cache_path_resolves_against_the_checkout_root(self):
         """The workflow passes tools/.cache/fdb-<sha>.zip relative; a missing file there is a fetch, not a
@@ -121,3 +117,7 @@ class FetchFdbTest(unittest.TestCase):
             with self.assertRaises(SystemExit) as caught:
                 check_refresh.fetch_fdb(Path("tools/.cache") / "fdb-not-the-pins-sha.zip")
             self.assertIn(str((ROOT / "tools/.cache" / "fdb-not-the-pins-sha.zip").resolve()), str(caught.exception))
+
+
+if __name__ == "__main__":
+    unittest.main()
