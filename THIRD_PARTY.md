@@ -13,6 +13,7 @@ it, so a data refresh that moves the pin never leaves this file behind. The addo
 | Classic Era client tables, via wago.tools | What Forever added over Classic Era, in `Data/Forever.lua` | `ERA` in `tools/diff_forever.py` | Blizzard Entertainment's game data |
 | [CMaNGOS classic-db](https://github.com/cmangos/classic-db) | Trainer roles, profession ranks, dungeon entrance requirements and boat routes in `Data/Geometry.lua` (the WFA-28 waivers in `AGENTS.md`) | `CLASSICDB_COMMIT` in `tools/gen_quests.py` | GPL-3.0 |
 | [Warcraft Wiki: Zones by level (original)](https://warcraft.wiki.gg/wiki/Zones_by_level_(original)) | The original zones' level ranges, typed into `PUBLISHED` in `tools/gen_quests.py` | `ZONE_SOURCE` there; the table is the pin | Facts cited from the wiki; no text copied |
+| [forever-db](https://github.com/fitzforge/polestar), the Polestar project's published quest database | Quest XP the provider has no value for, in `Data/XPFills.lua` (the runtime applies it only where QuestieDB gives none) | `FDB_TAG` and `FDB_SHA256` in `tools/fdb_pin.py` | The database is GPL-3.0 (facts) and Polestar's own layer is CC BY 4.0; nothing but the XP numbers is copied, and the file's header names the source |
 No embedded libraries ship. `media/` is this addon's own: the icon is drawn in `media/icon.svg`. The route's numbered markers and its rings are ForeverCore's shared art, pinned with the core in `tools/forever-core.txt`, so every Forever addon draws the same step.
 
 ## Read in game, never bundled

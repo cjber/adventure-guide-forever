@@ -33,6 +33,7 @@ Data\Geometry.lua
 Data\Forever.lua
 Data\ZoneArt.lua
 Data\Territory.lua
+Data\XPFills.lua
 Data\Credits.lua
 Core\Secret.lua
 UI\StepStyle.lua

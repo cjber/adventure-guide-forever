@@ -103,6 +103,7 @@
 ---@field expiring? table<integer, integer> item ID -> the seconds it lasts in the bags, a day or less (ItemSparse)
 ---@field itemIDs? table<string, integer> a collect item's lower-cased name -> its ID, for the quality colour of its name
 ---@field territory? table<integer, integer> uiMapID -> AreaTable.FactionGroupMask (2 Alliance, 4 Horde, 0 contested, 6 both); Data/Territory.lua
+---@field xpfills? table<integer, integer> quest ID -> the XP the Forever server answers (Data/XPFills.lua, from forever-db); QuestieSource applies one only where the provider has no XP
 ---@field books? AGFBook[] the library books QuestieDB holds, by quest ID ascending (QuestieSource.lua); nil before its build
 -- One library book (Planning/Books.lua): the quest, where its world object spawns, and the librarian who takes it.
 -- QuestieDB supplies every field at runtime; nothing is bundled.
