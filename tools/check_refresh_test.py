@@ -9,6 +9,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import check_refresh
+import fdb_pin
+
+ROOT = check_refresh.ROOT
 
 
 def quest(**fields):
@@ -101,6 +104,19 @@ class CompareTest(unittest.TestCase):
         self.assertEqual(regressions, [])
         self.assertEqual(len(reports), 1)
         self.assertIn("gained a finish", reports[0])
+
+
+class FetchFdbTest(unittest.TestCase):
+    def test_a_relative_cache_path_resolves_against_the_checkout_root(self):
+        """The workflow passes tools/.cache/fdb-<sha>.zip relative; a missing file there is a fetch, not a
+        missing-file exit."""
+        relative = Path("tools/.cache") / f"fdb-{fdb_pin.FDB_SHA256}.zip"
+        if (ROOT / relative).is_file():
+            self.assertEqual(check_refresh.fetch_fdb(relative), (ROOT / relative).read_bytes())
+        else:
+            with self.assertRaises(SystemExit) as caught:
+                check_refresh.fetch_fdb(Path("tools/.cache") / "fdb-not-the-pins-sha.zip")
+            self.assertIn(str((ROOT / "tools/.cache" / "fdb-not-the-pins-sha.zip").resolve()), str(caught.exception))
 
 
 if __name__ == "__main__":
