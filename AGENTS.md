@@ -38,8 +38,11 @@ image is only a warning (`SCREENSHOTS_STALE_WARN`), so re-render straight after 
   committed or shipped (QuestieDB 1.0.16 is GPLv3 only from 2026-10-21 and earlier content is all rights reserved), so
   nothing is copied and the runtime-only waiver stands (WFA-28). `tests/fixtures/client.lua` holds the hand-written
   client-only facts.
-- `refresh-data.yml` runs daily, moves the pins (`BUILD`, `ERA`, `QUESTIEDB_*`), regenerates `Data/` and the corpus and
-  opens the `data/refresh` PR; `retry-refresh.yml` re-runs a failed run once. A check that rejects new client data is
+- `refresh-data.yml` runs daily, moves the pins (`BUILD`, `ERA`, `QUESTIEDB_*`, `FDB_*`), regenerates `Data/` and the
+  corpus and opens the `data/refresh` PR; `retry-refresh.yml` re-runs a failed run once. It snapshots the corpus the
+  current pins build and `tools/check_refresh.py` diffs the two, failing the run on a regression (a quest or book
+  that lost places, prereqs, a breadcrumb, its group or XP) and printing forever-db's evidence for each from the
+  release pinned in `tools/fdb_pin.py`; gains and moves are only reported. A check that rejects new client data is
   corrected from that data and kept exact, never loosened.
 - Pins moved by hand: `UI_ART_BUILD` in `tools/screenshots.py`, `LEGACY_MAP_BUILD`, `CLASSICDB_COMMIT` (waivers below;
   not bumped), `SPF_SHA` in `tests/contract_spec.lua` and `tools/screenshots_spf.py` (review a new Shortest Path API's

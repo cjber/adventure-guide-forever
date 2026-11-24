@@ -1,7 +1,7 @@
 name: Refresh game data
 
-# Opens a PR with regenerated data when wago.tools lists a newer Forever or Classic Era build, or QuestieDB a
-# newer release.
+# Opens a PR with regenerated data when wago.tools lists a newer Forever or Classic Era build, or QuestieDB or
+# forever-db a newer release.
 # The specs run here first; GitHub holds the CI of a PR that GITHUB_TOKEN opened, so the ci job approves it.
 # Daily: beta builds have shipped several times a week. A failed run on main reports itself as an issue.
 on:
@@ -39,23 +39,32 @@ jobs:
           ref: ${{ steps.forever-core-ref.outputs.ref }}
           path: forever-core
           persist-credentials: false
-      # Pinned inputs CI already downloaded, such as frozen dumps; each file is keyed by its pin.
+      # Pinned inputs CI already downloaded, such as frozen dumps and the forever-db zip; each file is keyed by
+      # its pin.
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: tools/.cache
-          key: regeneration-${{ runner.os }}-${{ hashFiles('tools/gen_*.py', 'tools/diff_forever.py') }}
+          key: >-
+            regeneration-${{ runner.os }}-${{ hashFiles('tools/gen_*.py', 'tools/diff_forever.py',
+            'tools/fdb_pin.py') }}
           restore-keys: regeneration-${{ runner.os }}-
-      - name: Pin the newest Forever, Classic Era and QuestieDB releases
+      # Every tool version lives in this checkout's tools/toolchain.json, which the action reads, installs and
+      # verifies; LuaJIT, luac5.1 and luacheck plus StyLua. The corpus snapshot below builds before the pins move,
+      # so the toolchain is installed on every run, not only when the pins moved.
+      - uses: cjber/forever-core/.github/actions/toolchain@2596f68e68f9a727496a19f3f801c8a7039357d2 # main
+        with:
+          tools: lua stylua
+      # The regression guard below diffs the corpus the current pins build against the regenerated one, so build
+      # and set the current one aside before the pins move. A cold cache downloads as usual.
+      - name: Snapshot the current corpus
+        run: |
+          python3 tools/gen_corpus.py --offline || python3 tools/gen_corpus.py
+          cp -r tests/.corpus "$RUNNER_TEMP/corpus-prev"
+      - name: Pin the newest Forever, Classic Era, QuestieDB and forever-db releases
         id: pins
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 tools/refresh_pins.py
-      # Every tool version lives in this checkout's tools/toolchain.json, which the action reads, installs and
-      # verifies; LuaJIT, luac5.1 and luacheck plus StyLua, only when the pins moved.
-      - uses: cjber/forever-core/.github/actions/toolchain@2596f68e68f9a727496a19f3f801c8a7039357d2 # main
-        if: steps.pins.outputs.changed == 'true'
-        with:
-          tools: lua stylua
       - name: Regenerate
         if: steps.pins.outputs.changed == 'true'
         run: |
@@ -63,10 +72,19 @@ jobs:
           python3 tools/diff_forever.py
           python3 tools/gen_zoneart.py
           python3 tools/gen_territory.py
+          python3 tools/gen_xpfills.py
           python3 tools/gen_corpus.py
           python3 tools/catalogue_revision.py --write
       - if: steps.pins.outputs.changed == 'true'
         run: python3 tools/check_generated.py --offline
+      # Fails the run on a quest or book that lost places, prereqs, a breadcrumb, its group or XP, printing
+      # forever-db's evidence for each; gains and moves are only reported. The zip is the one gen_xpfills above
+      # fetched into tools/.cache under its sha256.
+      - name: Check the refresh for regressions
+        if: steps.pins.outputs.changed == 'true'
+        run: |
+          fdb="tools/.cache/fdb-$(PYTHONPATH=tools python3 -c 'import fdb_pin; print(fdb_pin.FDB_SHA256)').zip"
+          python3 tools/check_refresh.py --old "$RUNNER_TEMP/corpus-prev" --new tests/.corpus --fdb "$fdb"
       - name: Generator tests
         if: steps.pins.outputs.changed == 'true'
         run: |
@@ -97,7 +115,7 @@ jobs:
           title: "data: refresh game data"
           commit-message: "data: refresh game data (${{ steps.pins.outputs.summary }})"
           body: |
-            Regenerated `Data/Geometry.lua`, `Data/Forever.lua`, `Data/ZoneArt.lua` and `Data/Territory.lua`, and ran the specs on the test corpus built from the new QuestieDB pin (never committed), after moving the pins: ${{ steps.pins.outputs.summary }}.
+            Regenerated `Data/Geometry.lua`, `Data/Forever.lua`, `Data/ZoneArt.lua`, `Data/Territory.lua` and `Data/XPFills.lua`, and ran the specs on the test corpus built from the new QuestieDB pin (never committed), after moving the pins: ${{ steps.pins.outputs.summary }}. The refresh guard diffed the previous corpus against this one; its report, with forever-db's evidence for anything the corpus lost, is in the run log.
 
             Before merging, read the diff of `Data/Geometry.lua` for maps, flight masters, crossings or trainer roles that appeared, moved or dropped out, `Data/Forever.lua` for lands and quests Forever added or lost, and `Data/Territory.lua` for a map whose faction territory moved. The specs and the golden routes passed on this data, so a changed route would have failed the run. Add a `changes/<pr>.md` fragment saying what a player would notice.
 

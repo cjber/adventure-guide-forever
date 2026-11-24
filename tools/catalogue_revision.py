@@ -19,6 +19,7 @@ INPUTS = (
     "Integrations/QuestieObjectives.lua",
     "Data/Geometry.lua",
     "Data/Forever.lua",
+    "Data/XPFills.lua",
 )
 
 

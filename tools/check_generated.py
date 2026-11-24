@@ -8,6 +8,7 @@ from pathlib import Path
 import diff_forever
 import gen_quests
 import gen_territory
+import gen_xpfills
 import gen_zoneart
 import phrases
 from forever_tools import generated
@@ -20,6 +21,7 @@ DATA = tuple(
         diff_forever.OUTPUT,
         gen_zoneart.OUTPUT,
         gen_territory.OUTPUT,
+        gen_xpfills.OUTPUT,
         phrases.PHRASES,
     )
 )
@@ -44,6 +46,7 @@ def regenerate(root, offline):
     run(root, sys.executable, "tools/diff_forever.py", *mode)
     run(root, sys.executable, "tools/gen_zoneart.py", *mode)
     run(root, sys.executable, "tools/gen_territory.py", *mode)
+    run(root, sys.executable, "tools/gen_xpfills.py", *mode)
     with (root / DATA[-1]).open("wb") as stream:
         subprocess.run([sys.executable, "tools/phrases.py"], cwd=root, stdout=stream, check=True)
 

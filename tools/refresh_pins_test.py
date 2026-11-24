@@ -53,6 +53,49 @@ RELEASES = [
     },
 ]
 
+FDB_RELEASES = [
+    {"tag_name": "data-v2026.11.5", "draft": False, "prerelease": False, "assets": []},
+    {
+        "tag_name": "data-v2026.11.2",
+        "draft": False,
+        "prerelease": False,
+        "assets": [
+            {
+                "name": "forever-db-2026.11.2.zip",
+                "browser_download_url": "https://example.test/forever-db-2026.11.2.zip",
+            },
+            {"name": "SHA256SUMS", "browser_download_url": "https://example.test/SHA256SUMS"},
+        ],
+    },
+    {
+        "tag_name": "data-v2026.11.3",
+        "draft": False,
+        "prerelease": True,
+        "assets": [
+            {
+                "name": "forever-db-2026.11.3.zip",
+                "browser_download_url": "https://example.test/forever-db-2026.11.3.zip",
+            }
+        ],
+    },
+    {
+        "tag_name": "addon-v2026.11.9",
+        "draft": False,
+        "prerelease": False,
+        "assets": [
+            {
+                "name": "forever-db-2026.11.9.zip",
+                "browser_download_url": "https://example.test/forever-db-2026.11.9.zip",
+            }
+        ],
+    },
+]
+
+SUMS = (
+    "0000000000000000000000000000000000000000000000000000000000000000  forever-db-2026.11.1.zip\n"
+    "43157067315537a8b95e5c517e30a1b6d55e117022f89094f039e9e6eb6438ad  forever-db-2026.11.2.zip\n"
+)
+
 
 class Response:
     """The part of an `urlopen` response `json.load` and the digest loop use."""
@@ -68,6 +111,22 @@ class Response:
 
     def read(self):
         return json.dumps(self.payload).encode()
+
+
+class TextResponse:
+    """The part of an `urlopen` response `fdb_digest` reads: a checksum file's text, not JSON."""
+
+    def __init__(self, text):
+        self.text = text
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exception):
+        return False
+
+    def read(self):
+        return self.text.encode()
 
 
 def sent_requests(call, token):
@@ -158,6 +217,43 @@ class RefreshPins(unittest.TestCase):
         ]
         with self.assertRaises(SystemExit):
             refresh_pins.newest_questiedb_release(releases)
+
+    def test_fdb_release_is_the_newest_data_v_release_with_a_zip(self):
+        self.assertEqual(refresh_pins.newest_fdb_release(FDB_RELEASES)["tag_name"], "data-v2026.11.2")
+        self.assertEqual(refresh_pins.newest_fdb_tag("data-v2026.11.2", "data-v2026.11.5"), "data-v2026.11.5")
+        self.assertEqual(refresh_pins.newest_fdb_tag("data-v2026.11.2", "data-v2026.11.1"), "data-v2026.11.2")
+        self.assertEqual(refresh_pins.newest_fdb_tag("data-v2026.11.2", "data-v2026.11.2"), "data-v2026.11.2")
+        with self.assertRaises(SystemExit):
+            refresh_pins.newest_fdb_tag("data-v2026.11.2", "2026.11.5")
+        with self.assertRaises(SystemExit):
+            refresh_pins.newest_fdb_release([FDB_RELEASES[0], FDB_RELEASES[2], FDB_RELEASES[3]])
+
+    def test_fdb_asset_picks_the_forever_db_zip(self):
+        release = {"tag_name": "data-v2026.11.2", "assets": FDB_RELEASES[1]["assets"]}
+        self.assertEqual(
+            refresh_pins.fdb_zip_asset(release),
+            ("forever-db-2026.11.2.zip", "https://example.test/forever-db-2026.11.2.zip"),
+        )
+        with self.assertRaises(SystemExit):
+            refresh_pins.fdb_zip_asset({"tag_name": "data-v2026.11.2", "assets": [{"name": "SHA256SUMS"}]})
+
+    def test_fdb_digest_reads_the_sums_asset(self):
+        release = {"tag_name": "data-v2026.11.2", "assets": FDB_RELEASES[1]["assets"]}
+        sent = []
+
+        def urlopen(request, timeout=None):
+            sent.append(request)
+            return TextResponse(SUMS)
+
+        with mock.patch.object(refresh_pins.urllib.request, "urlopen", urlopen):
+            self.assertEqual(
+                refresh_pins.fdb_digest(release, "forever-db-2026.11.2.zip"),
+                "43157067315537a8b95e5c517e30a1b6d55e117022f89094f039e9e6eb6438ad",
+            )
+        self.assertEqual(sent[0].full_url, "https://example.test/SHA256SUMS")
+        with mock.patch.object(refresh_pins.urllib.request, "urlopen", urlopen):
+            with self.assertRaises(SystemExit):
+                refresh_pins.fdb_digest(release, "forever-db-2026.11.9.zip")
 
 
 class GitHubToken(unittest.TestCase):

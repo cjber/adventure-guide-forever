@@ -5,8 +5,9 @@
 
 BUILD (gen_quests.py) follows the newest WoW: Forever client build on wago.tools, and ERA (diff_forever.py) the
 newest Classic Era build there. QUESTIEDB_TAG, QUESTIEDB_ASSET and QUESTIEDB_SHA256 (gen_corpus.py) follow the
-newest QuestieDB release on GitHub that carries a Forever asset. A pin never moves backwards. Under GitHub Actions
-the step outputs `changed` and `summary` say what moved.
+newest QuestieDB release on GitHub that carries a Forever asset, and FDB_TAG, FDB_ASSET and FDB_SHA256 (fdb_pin.py)
+the newest `data-v*` release of fitzforge/polestar, whose SHA256SUMS asset states the zip's checksum. A pin never
+moves backwards. Under GitHub Actions the step outputs `changed` and `summary` say what moved.
 """
 
 import hashlib
@@ -17,6 +18,7 @@ import urllib.request
 from pathlib import Path
 
 import diff_forever
+import fdb_pin
 import gen_corpus
 import gen_quests
 
@@ -120,6 +122,72 @@ def questiedb_digest(url):
     return digest.hexdigest()
 
 
+def fetch_fdb_releases():
+    request = github_request("https://api.github.com/repos/fitzforge/polestar/releases?per_page=30")
+    with urllib.request.urlopen(request, timeout=60) as response:
+        return json.load(response)
+
+
+def _fdb_zip_asset(release):
+    """The (name, download URL) of `release`'s forever-db zip asset, or None when it carries none."""
+    for asset in release.get("assets", ()):
+        name = asset.get("name", "")
+        if name.startswith("forever-db-") and name.endswith(".zip"):
+            return name, asset.get("browser_download_url", "")
+    return None
+
+
+def newest_fdb_release(releases):
+    """The newest non-draft, non-prerelease `data-v*` release that actually carries a forever-db zip."""
+    candidates = [
+        release
+        for release in releases
+        if not release.get("draft")
+        and not release.get("prerelease")
+        and re.fullmatch(r"data-v\d+(?:\.\d+)*", release.get("tag_name", ""))
+        and _fdb_zip_asset(release) is not None
+    ]
+    if not candidates:
+        raise SystemExit("no forever-db `data-v*` release on the polestar page carries a forever-db zip")
+    return max(candidates, key=lambda release: version_key(release["tag_name"][len("data-v") :]))
+
+
+def newest_fdb_tag(pinned, tag):
+    """The newer of the pinned forever-db `data-vX.Y.Z` tag and `tag`, or `pinned` when `tag` is not newer."""
+    if not re.fullmatch(r"data-v\d+(?:\.\d+)*", tag):
+        raise SystemExit(f"forever-db release tag {tag!r} is not data-vX.Y.Z")
+    return max([pinned, tag], key=lambda value: version_key(value[len("data-v") :]))
+
+
+def fdb_zip_asset(release):
+    """The (name, download URL) of `release`'s forever-db zip asset, matched by its `forever-db-` prefix."""
+    found = _fdb_zip_asset(release)
+    if found is None:
+        raise SystemExit(f"forever-db release {release.get('tag_name', '?')} carries no forever-db zip asset")
+    return found
+
+
+def fdb_digest(release, asset):
+    """The sha256 of `asset` as the release's SHA256SUMS asset states it, so the pin never reads a moved file."""
+    assets = release.get("assets", ())
+    url = next(
+        (entry.get("browser_download_url", "") for entry in assets if entry.get("name") == "SHA256SUMS"),
+        None,
+    )
+    if url is None:
+        raise SystemExit(f"forever-db release {release.get('tag_name', '?')} carries no SHA256SUMS asset")
+    request = urllib.request.Request(url, headers={"User-Agent": "AdventureGuideForever/1.0"})
+    with urllib.request.urlopen(request, timeout=120) as response:
+        sums = response.read().decode("utf-8")
+    for line in sums.splitlines():
+        digest, _, stated = line.strip().partition(" ")
+        if stated.lstrip() == asset:
+            if not re.fullmatch(r"[0-9a-f]{64}", digest):
+                raise SystemExit(f"forever-db {asset}: SHA256SUMS states {digest!r}, not a sha256")
+            return digest
+    raise SystemExit(f"forever-db {asset}: the release's SHA256SUMS names no {asset}")
+
+
 def pin(text, name, value):
     """`text` with its one `NAME = "..."` assignment set to `value`."""
     replaced, count = re.subn(rf'^{name} = "[^"\n]*"$', f'{name} = "{value}"', text, flags=re.MULTILINE)
@@ -152,10 +220,25 @@ def main():
         if asset != gen_corpus.QUESTIEDB_ASSET:
             change += f", QUESTIEDB_ASSET {gen_corpus.QUESTIEDB_ASSET} -> {asset}"
         moved.append(change)
+    release = newest_fdb_release(fetch_fdb_releases())
+    tag = newest_fdb_tag(fdb_pin.FDB_TAG, release["tag_name"])
+    if tag != fdb_pin.FDB_TAG:
+        asset, _ = fdb_zip_asset(release)
+        path = TOOLS / "fdb_pin.py"
+        text = pin(path.read_text(encoding="utf-8"), "FDB_TAG", tag)
+        text = pin(text, "FDB_ASSET", asset)
+        path.write_text(pin(text, "FDB_SHA256", fdb_digest(release, asset)), encoding="utf-8")
+        change = f"FDB_TAG {fdb_pin.FDB_TAG} -> {tag}"
+        if asset != fdb_pin.FDB_ASSET:
+            change += f", FDB_ASSET {fdb_pin.FDB_ASSET} -> {asset}"
+        moved.append(change)
     summary = ", ".join(moved)
     print(
         summary
-        or f"already on {gen_quests.BUILD}, Classic Era {diff_forever.ERA}, QuestieDB {gen_corpus.QUESTIEDB_TAG}"
+        or (
+            f"already on {gen_quests.BUILD}, Classic Era {diff_forever.ERA}, "
+            f"QuestieDB {gen_corpus.QUESTIEDB_TAG}, forever-db {fdb_pin.FDB_TAG}"
+        )
     )
     if "GITHUB_OUTPUT" in os.environ:
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
