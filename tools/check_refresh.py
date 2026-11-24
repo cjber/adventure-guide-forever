@@ -3,9 +3,9 @@
 
     python3 tools/check_refresh.py --old <corpus-dir> --new <corpus-dir> --fdb <forever-db.zip>
 
-Dumps both corpora through tools/corpus_dump.lua (LuaJIT) and fails on a regression: a quest that lost the places it
-had (its start and finish both gone), a prereq link, its breadcrumb, its exclusive group or its XP, or a book that
-lost its spots or whose finish NPC or map changed. A refresh's other effects are only reported: gained places, links
+Dumps both corpora through tools/corpus_dump.lua (LuaJIT) and fails on a regression: a quest that lost a place (its
+start or its finish), a prereq link, its breadcrumb, its exclusive group or its XP, or a book that lost spots or
+whose finish NPC or map changed. A refresh's other effects are only reported: gained places, links
 and XP, a changed level, title, side or breadcrumb, a place that moved map, quests and books added or dropped, and
 how many of the new corpus's no-XP quests forever-db could fill. Every regression prints what forever-db -- the zip
 at --fdb, or the release pinned in tools/fdb_pin.py fetched into tools/.cache when --fdb is omitted -- says about
@@ -169,7 +169,7 @@ def compare(old_quests, old_books, new_quests, new_books):
         else:
             for place in ("start", "finish"):
                 if place in was and place not in now:
-                    report(label, f"dropped its {place}")
+                    regression(quest_id, label, f"dropped its {place}")
                 elif place in now and place not in was:
                     report(label, f"gained a {place}")
                 elif place in was and place in now and was[place]["map"] != now[place]["map"]:
@@ -208,30 +208,26 @@ def compare(old_quests, old_books, new_quests, new_books):
         was, now = old_books[book_id], new_books[book_id]
         label = f"book {book_id}"
         had_spots, has_spots = was.get("spots") or (), now.get("spots") or ()
-        if had_spots and not has_spots:
-            regression(book_id, label, f"lost its spots ({len(had_spots)} -> none)")
+        if len(had_spots) > len(has_spots):
+            regression(book_id, label, f"lost spots ({len(had_spots)} -> {len(has_spots)})")
         elif [spot["map"] for spot in had_spots] != [spot["map"] for spot in has_spots]:
             had_maps = ",".join(str(spot["map"]) for spot in had_spots)
             has_maps = ",".join(str(spot["map"]) for spot in has_spots)
             report(label, f"moved its spots (maps {had_maps} -> {has_maps})")
         had_finish, has_finish = was.get("finish"), now.get("finish")
-        moved_finish = (
+        if has_finish and not had_finish:
+            report(label, "gained a finish")
+        elif had_finish and (
             not has_finish
             or has_finish.get("npc") != had_finish.get("npc")
             or has_finish.get("map") != had_finish.get("map")
-        )
-        if had_finish and moved_finish:
-            if has_finish:
-                moved = f"npc {has_finish.get('npc')} on map {has_finish.get('map')}"
-            else:
-                moved = "nowhere"
+        ):
+            moved = f"npc {has_finish.get('npc')} on map {has_finish.get('map')}" if has_finish else "nowhere"
             regression(
                 book_id,
                 label,
                 f"moved its finish from npc {had_finish.get('npc')} on map {had_finish.get('map')} to {moved}",
             )
-        elif has_finish and not had_finish:
-            report(label, "gained a finish")
     for book_id in sorted(set(new_books) - set(old_books)):
         report(f"book {book_id}", "is new")
     for book_id in sorted(set(old_books) - set(new_books)):

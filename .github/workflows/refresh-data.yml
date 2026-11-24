@@ -72,8 +72,8 @@ jobs:
           python3 tools/diff_forever.py
           python3 tools/gen_zoneart.py
           python3 tools/gen_territory.py
-          python3 tools/gen_corpus.py
           python3 tools/gen_xpfills.py
+          python3 tools/gen_corpus.py
           python3 tools/catalogue_revision.py --write
       - if: steps.pins.outputs.changed == 'true'
         run: python3 tools/check_generated.py --offline
