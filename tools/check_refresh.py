@@ -7,7 +7,8 @@ Dumps both corpora through tools/corpus_dump.lua (LuaJIT) and fails on a regress
 start or its finish), a prereq link, its breadcrumb, its exclusive group or its XP, or a book that lost spots or
 whose finish NPC or map changed. A refresh's other effects are only reported: gained places, links
 and XP, a changed level, title, side or breadcrumb, a place that moved map, quests and books added or dropped, and
-how many of the new corpus's no-XP quests forever-db could fill. Every regression prints what forever-db -- the zip
+and how many quests the composed corpus still leaves without an XP (the fills are already in it). Every
+regression prints what forever-db -- the zip
 at --fdb, or the release pinned in tools/fdb_pin.py fetched into tools/.cache when --fdb is omitted -- says about
 that quest, so the reader can tell which source the refresh should follow. The zip is checked against the pin's
 FDB_SHA256 before it is read, whatever fetched it.
@@ -143,11 +144,17 @@ def evidence(fdb, quest_id):
     return "; ".join(parts) or "no forever-db record"
 
 
-def coverage(fdb, quests):
-    """How many of the new corpus's no-XP quests forever-db carries XP for."""
-    missing = [quest_id for quest_id, quest in sorted(quests.items()) if not quest.get("xp")]
-    fillable = [quest_id for quest_id in missing if (fdb["quests"].get(quest_id) or {}).get("xp")]
-    return f"forever-db carries XP for {len(fillable)} of the {len(missing)} quests the new corpus leaves without XP"
+def coverage(quests):
+    """What the composed corpus still leaves without an XP. The corpus composes Data/XPFills.lua, so a quest
+    forever-db answers and the provider does not is already filled; what remains is the quests with no XP at
+    all and the ones whose provider row gives 0, which the fill contract never overrides."""
+    missing = [quest_id for quest_id, quest in sorted(quests.items()) if quest.get("xp") is None]
+    zero = [quest_id for quest_id, quest in sorted(quests.items()) if quest.get("xp") == 0]
+    zero_line = ""
+    if zero:
+        ids = ", ".join(str(value) for value in zero)
+        zero_line = f"; the provider gives 0 for {len(zero)} ({ids}), which a fill never overrides"
+    return f"the composed corpus leaves {len(missing)} quests without an XP{zero_line}"
 
 
 def compare(old_quests, old_books, new_quests, new_books):
@@ -190,7 +197,7 @@ def compare(old_quests, old_books, new_quests, new_books):
                 report(label, f"changed its {field} from {had} to {has}")
         had_xp, has_xp = was.get("xp") or 0, now.get("xp") or 0
         if had_xp > 0 and has_xp == 0:
-            regression(quest_id, label, f"dropped its XP ({had_xp} -> none)")
+            regression(quest_id, label, f"dropped its XP ({had_xp} -> {has_xp})")
         elif has_xp > 0 and had_xp == 0:
             report(label, f"gained XP ({has_xp})")
         elif had_xp != has_xp:
@@ -250,7 +257,7 @@ def main():
     old_quests, old_books = dump(options.old.resolve())
     new_quests, new_books = dump(options.new.resolve())
     regressions, reports = compare(old_quests, old_books, new_quests, new_books)
-    fills = coverage(fdb, new_quests)
+    fills = coverage(new_quests)
     if not regressions and not reports:
         print(f"no catalogue changes ({len(new_quests)} quests, {len(new_books)} books)")
         print(fills)

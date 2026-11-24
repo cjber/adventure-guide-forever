@@ -55,7 +55,9 @@ local built = harness.load({
 equal(#built.errors, 0, "mirror build errors\n" .. table.concat(built.errors, "\n"))
 local quests = built.ns.Data.quests
 
--- A provider value is kept exactly, never the fill.
+-- A provider value is kept exactly, never the fill. The 4606 fill is pinned beside the provider row: if a
+-- forever-db refresh drops it, this spec must fail and the list be re-based from the new data.
+equal(fills[4606] ~= nil, true, "the fill 4606 exists beside the provider row")
 equal(quests[4606] ~= nil, true, "4606 composed")
 equal(quests[4606].xp, 2524, "the provider's XP wins where it has one")
 equal(quests[4606].xp ~= fills[4606], true, "the provider's XP is not the fill's")
