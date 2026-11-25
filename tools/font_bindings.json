@@ -3,7 +3,7 @@
   "producers": [
     {
       "source": "UI/Panel.lua",
-      "sha256": "3d87b2e8bde5dc8680b392b05d6e075b4d3f5f6a13971f1fe2cb5bccb2bcb219",
+      "sha256": "9ca55e08c2c055ca484dae372c7b40001b81daa2bc538e0c9ccce451b73d9edf",
       "review": "Read the full panel builders, refresh paths and callers in Overview, Widgets and GuideOutline. Explicit CreateFontString templates fix Tag, order tag, emptyText, unlistedText, queuedText, subtitle and fold-row fonts, with no later font override. Journey-card Travel inherits GameFontHighlightSmall from Panel.xml. SearchBoxTemplate inherits InputBoxInstructionsTemplate in pinned client Blizzard_SharedXML/Shared/InputBox/InputBoxTemplates.xml; Instructions uses GameFontDisableSmall, and its scripts change visibility/color/text, not fonts. SharedButtonSmallTemplate in Shared/Button/ThreeSliceButtonTemplate.xml supplies all three Stop button font states. Reset and Skipped buttons explicitly set normal and highlight fonts and have no disabling caller. Bound each confirmed button state. Excluded tooltips, menus, chat, search input, dynamic journey/step/provider titles and data/helper output not separately reviewed. Formatted bindings cover the locale format only, not substituted game data.",
       "bindings": [
         {
