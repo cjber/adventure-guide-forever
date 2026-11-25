@@ -1273,8 +1273,19 @@ local function Attach()
 	local background = panel:CreateTexture(nil, "BACKGROUND")
 	background:SetPoint("TOPLEFT", 0, -TOP_BAR)
 	background:SetPoint("BOTTOMRIGHT")
-	-- Above the quest details view, which is not one of the content frames the shared tabs hide.
-	panel:SetFrameLevel(map:GetFrameLevel() + 20)
+	-- Above the quest details view, which is not one of the content frames the shared tabs hide, and above any skin
+	-- add-on's own page drawn into the same slot. A skin may load after us, so Sync reads the slot again on each show.
+	local function RaiseAboveSlot()
+		local level = map:GetFrameLevel() + 20
+		for _, child in ipairs({ map:GetChildren() }) do -- multi-value: every child of the quest log
+			local childLevel = child:GetFrameLevel()
+			if child ~= panel and child:IsShown() and childLevel and childLevel >= level then
+				level = childLevel + 1
+			end
+		end
+		panel:SetFrameLevel(level)
+	end
+	RaiseAboveSlot()
 	panel:EnableMouse(true)
 	panel:Hide()
 	-- The cards' minutes, while the guide is open: on opening it and on each new route. A card its header hides is
@@ -1303,6 +1314,7 @@ local function Attach()
 		reported = visible
 		ns.Pins.Refresh()
 		if visible then
+			RaiseAboveSlot()
 			QueueCards()
 			-- Something new: seen once the guide shows; its cards' marks go when it closes.
 			ns.Moments.Opened()
