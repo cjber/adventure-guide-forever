@@ -10,6 +10,20 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago. O
 verbatim rather than rewritten as the addon moves. API changes other addons' authors need go under an
 optional `### For addon authors` subsection after a version's player bullets.
 
+## [1.12.15] - 2026-11-25
+
+### Changed
+
+- Ships with the same shared code as your other Forever addons, so they keep working together.
+
+### Fixed
+
+- Riverglades counts as a quest destination like every other zone. It was missing from the bundled map and zone data, so quests there never appeared under Quest destinations and could not be recommended, even though the client files the zone under its own map at levels 36-44 (#946).
+- More quests are paced. QuestieDB's Forever records leave some quests without an XP value, and the guide could not plan around a quest it could not value; those now read the XP the Forever server answers, from the Polestar project's published forever-db (#950).
+- A QuestieDB update can no longer quietly drop a quest's place, prerequisite, breadcrumb, exclusivity or XP, or a library book's locations: the daily data refresh now compares the quest data before and after the update and fails on a loss, showing the published database's answer for each (#950).
+- The Guide tab now opens above a UI skin's journal page. With DaylightUI enabled, its journal frame covered the guide in the shared quest-log slot, so clicking the tab showed nothing. The guide now raises itself above whatever the slot holds each time it opens (#956).
+- Pressing Stop now hides the adventure section in the quest tracker until you choose another journey (#959).
+
 ## [1.12.14] - 2026-11-23
 
 - **Riverglades quests show up.** Quests in Riverglades now appear under Quest destinations and can be recommended, as a level 36 to 44 zone (#946).
