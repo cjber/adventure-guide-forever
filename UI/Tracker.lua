@@ -485,7 +485,7 @@ local function StoryBeat()
 end
 
 -- One quiet line (LayoutLine), something new (Moments.Line) under it, then one block for the current step of the
--- chosen journey, else of the first card, which the guide draws on its own (docs/design.md §2.5):
+-- chosen journey, else of the first card until the player stops (docs/design.md §2.5):
 -- its place (a town's counts), why it is next (a town's NPCs) and the travel line as objective lines, then what
 -- follows it, undashed. Nothing is laid out (an empty,
 -- self-hiding module) when the setting is off, or there's nothing to say.
@@ -498,6 +498,9 @@ function ModuleMixin:LayoutContentsBase()
 		block:SetHeader(L.POLESTAR_GUIDING)
 		block:AddObjective(1, L.POLESTAR_TAKE_OVER)
 		self:LayoutBlock(block)
+		return
+	end
+	if ns.Prefs().autoStartBlocked and not ns.Route().chosen then
 		return
 	end
 	if not LayoutLine(self) then

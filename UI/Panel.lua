@@ -110,6 +110,7 @@ local content
 local searchBox
 -- Defined below the builders; the search box's handler needs it.
 local Refresh
+local RaiseAboveSlot
 ---@type FontString?
 local emptyText
 -- One line per aside the player still wants (Asides.All), from the top of the list.
@@ -1237,6 +1238,7 @@ function Refresh()
 	if not (panel and panel:IsShown()) then
 		return
 	end
+	RaiseAboveSlot()
 	-- BuildContent() always sets every upvalue below before Attach() registers this listener.
 	---@cast emptyText -?
 	---@cast queuedText -?
@@ -1273,8 +1275,33 @@ local function Attach()
 	local background = panel:CreateTexture(nil, "BACKGROUND")
 	background:SetPoint("TOPLEFT", 0, -TOP_BAR)
 	background:SetPoint("BOTTOMRIGHT")
-	-- Above the quest details view, which is not one of the content frames the shared tabs hide.
-	panel:SetFrameLevel(map:GetFrameLevel() + 20)
+	-- Check direct quest log children only, including skin pages parented to the quest log itself.
+	RaiseAboveSlot = function()
+		local level = map:GetFrameLevel() + 20
+		local left, bottom, width, height = panel:GetRect()
+		if left then
+			local panelScale = panel:GetEffectiveScale()
+			for _, child in ipairs({ map:GetChildren() }) do -- multi-value: every child of the quest log
+				local childLevel = child:GetFrameLevel()
+				if child ~= panel and child:IsShown() and childLevel >= level then
+					local x, y, w, h = child:GetRect()
+					if x then
+						local scale = child:GetEffectiveScale() / panelScale
+						if
+							x * scale < left + width
+							and (x + w) * scale > left
+							and y * scale < bottom + height
+							and (y + h) * scale > bottom
+						then
+							level = childLevel + 1
+						end
+					end
+				end
+			end
+		end
+		panel:SetFrameLevel(level)
+	end
+	RaiseAboveSlot()
 	panel:EnableMouse(true)
 	panel:Hide()
 	-- The cards' minutes, while the guide is open: on opening it and on each new route. A card its header hides is
