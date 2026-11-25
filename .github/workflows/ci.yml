@@ -51,7 +51,7 @@ jobs:
           persist-credentials: false
       # Every tool version lives in this checkout's tools/toolchain.json, which the action reads, installs and
       # verifies; the Python tools are tools/pyproject.toml's dev group, resolved in tools/uv.lock.
-      - uses: cjber/forever-core/.github/actions/toolchain@2596f68e68f9a727496a19f3f801c8a7039357d2 # main
+      - uses: cjber/forever-core/.github/actions/toolchain@bf018c8b0703221fb9d65773c4fb0b3b4b98b5db # main
         with:
           tools: lua stylua
       - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
@@ -136,7 +136,7 @@ jobs:
           path: forever-core
           persist-credentials: false
       # tools/gen_corpus_test.py, among the unit tests typecheck.sh runs, reads the built corpus.
-      - uses: cjber/forever-core/.github/actions/toolchain@2596f68e68f9a727496a19f3f801c8a7039357d2 # main
+      - uses: cjber/forever-core/.github/actions/toolchain@bf018c8b0703221fb9d65773c4fb0b3b4b98b5db # main
         with:
           tools: lua luals
       # The test corpus is never committed (QuestieDB carries no licence): it is built from the sha-pinned release,
@@ -220,7 +220,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: cjber/forever-core/.github/actions/toolchain@2596f68e68f9a727496a19f3f801c8a7039357d2 # main
+      - uses: cjber/forever-core/.github/actions/toolchain@bf018c8b0703221fb9d65773c4fb0b3b4b98b5db # main
         with:
           tools: gitleaks
       - name: Gitleaks over the full history
@@ -255,7 +255,7 @@ jobs:
           path: forever-core
           persist-credentials: false
       # LuaJIT and luac5.1 at tools/toolchain.json's pins, which the packager's smoke spec runs on.
-      - uses: cjber/forever-core/.github/actions/toolchain@2596f68e68f9a727496a19f3f801c8a7039357d2 # main
+      - uses: cjber/forever-core/.github/actions/toolchain@bf018c8b0703221fb9d65773c4fb0b3b4b98b5db # main
         with:
           tools: lua
       # The smoke spec runs on the packaged files with tests/ laid over them, the built corpus with it.
