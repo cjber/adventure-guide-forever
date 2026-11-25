@@ -606,6 +606,11 @@ function harness.load(options)
 	function Methods:GetRight()
 		return self.rect and self.rect[1] + self.rect[3]
 	end
+	function Methods:GetRect()
+		if self.rect then
+			return unpack(self.rect) -- multi-value: left, bottom, width, height
+		end
+	end
 	-- The client answers nil for a frame with no resolved rect, as GetLeft and the others here do.
 	function Methods:GetCenter()
 		if self.rect then

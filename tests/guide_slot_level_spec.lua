@@ -7,16 +7,24 @@ local h = harness.load()
 h.flush()
 local map = h.G.QuestMapFrame
 local skin = h.G.CreateFrame("Frame", nil, map)
+skin.rect = { 90, 90, 40, 40 }
 skin:SetFrameLevel(500)
 skin:Show()
+local outside = h.G.CreateFrame("Frame", nil, map)
+outside.rect = { 200, 0, 40, 40 }
+outside:SetFrameLevel(600)
+outside:Show()
+local unplaced = h.G.CreateFrame("Frame", nil, map)
+unplaced:SetFrameLevel(700)
+unplaced:Show()
+local panel = h.G.AdventureGuideForeverPanel
+panel.rect = { 0, 0, 100, 100 }
 h.ns.OpenPanel()
 h.flush()
-local panel = h.G.AdventureGuideForeverPanel
-assert(panel:GetFrameLevel() > 500, "the guide rises above a skin's page in the quest log slot")
+assert(panel:GetFrameLevel() == 501, "the guide rises only above the overlapping skin's page")
 skin:Hide()
-h.G.WorldMapFrame:SetQuestLogPanelShown(false)
-h.G.WorldMapFrame:SetQuestLogPanelShown(true)
-h.flush()
+h.fire("UPDATE_BINDINGS")
+assert(panel:IsVisible(), "the guide stays visible during the refresh")
 assert(panel:GetFrameLevel() == map:GetFrameLevel() + 20, "with the skin gone the guide returns to its usual level")
 assert(#h.errors == 0, table.concat(h.errors, "\n"))
 print("guide_slot_level_spec: the guide rises above a skin's page")

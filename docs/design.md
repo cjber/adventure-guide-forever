@@ -53,6 +53,8 @@ abandons quests.
   names its earliest prerequisite open now and not orange or red ("Starts with …", `Model.ChainStart`), and a
   shift-click adds that quest; the locked quest itself never becomes a target.
 - **2.5 Tracker.** Use the chosen journey as the section heading, with Adventure Guide as the fallback.
+  Show the first card's current action before a journey is chosen unless the player has pressed Stop.
+  After Stop, hide the adventure section until the player chooses a journey again.
   Show the current action and up to two upcoming actions with native action icons beside quests.
   Upcoming actions are muted and follow the resolved current stop. Leave the stock quest order alone.
   Quest tracking is opt-in; a step's quest opens on the map only outside combat.
