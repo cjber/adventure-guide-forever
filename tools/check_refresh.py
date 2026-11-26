@@ -7,7 +7,7 @@ Dumps both corpora through tools/corpus_dump.lua (LuaJIT) and fails if a quest l
 its breadcrumb, its exclusive group or its XP, or if a book lost spots or changed its finish NPC or map.
 Prerequisites are compared for the corpus character: one available alternative is a required quest, and an any-of
 with no available alternatives still prevents eligibility. On a quest that character can take, changes to Horde-only
-alternatives are reported without failing. A Horde-only quest keeps every alternative.
+alternatives are reported without failing. A quest Horde-only in both corpora keeps every alternative.
 
 Reports include gains, moved places, changed quest fields, added or removed quests and books, and how many quests
 still lack XP after fills. Every regression prints the quest's forever-db evidence. The zip supplied by --fdb or
@@ -169,12 +169,13 @@ def coverage(quests):
     return f"the composed corpus leaves {len(missing)} quests without an XP{zero_line}"
 
 
-def prerequisites(quest, quests):
-    """Required quests, alternatives, and Horde-only alternatives for the Alliance corpus."""
+def prerequisites(quest, quests, horde_quest):
+    """Required quests, alternatives, and Horde-only alternatives for the Alliance corpus. A `horde_quest`'s own
+    players complete every alternative."""
     required = set(quest.get("pre") or ())
     links = set(quest.get("preAny") or ())
     horde_only = set()
-    if quest.get("side") != HORDE_ONLY:
+    if not horde_quest:
         horde_only = {link for link in links if quests.get(link, {}).get("side") == HORDE_ONLY}
     # None means there is no any-of requirement. An empty set means there is one, but it cannot be met.
     alternatives = links - horde_only if links else None
@@ -208,9 +209,12 @@ def compare(old_quests, old_books, new_quests, new_books):
                     report(label, f"gained a {place}")
                 elif place in was and place in now and was[place]["map"] != now[place]["map"]:
                     report(label, f"moved its {place} from map {was[place]['map']} to map {now[place]['map']}")
-        had_pre, had_any, had_horde = prerequisites(was, old_quests)
-        has_pre, has_any, has_horde = prerequisites(now, new_quests)
-        if had_any == set() and has_any != set():
+        # One rule for both sides of the comparison, so a quest changing its own faction loses nothing by it.
+        horde_quest = was.get("side") == now.get("side") == HORDE_ONLY
+        had_pre, had_any, had_horde = prerequisites(was, old_quests, horde_quest)
+        has_pre, has_any, has_horde = prerequisites(now, new_quests, horde_quest)
+        # An any-of nobody could meet may give way to a new required quest, never to nothing.
+        if had_any == set() and has_any is None and not has_pre - had_pre:
             regression(quest_id, label, "dropped its unsatisfiable preAny requirement")
         for field, had, has in (("pre", had_pre, has_pre), ("preAny", had_any or set(), has_any or set())):
             for link in sorted(had - has):

@@ -128,13 +128,31 @@ class CompareTest(unittest.TestCase):
 
     def test_dropping_one_alternative_can_leave_the_requirement_unsatisfiable(self):
         quests = {18: {"side": 2}, 19: {"side": 2}}
+        # The corpus writes a single alternative as a required quest.
         regressions, reports = self.compare(
             {6: {"preAny": [18, 19]}, **quests},
-            {6: {"preAny": [18]}, **quests},
+            {6: {"pre": [18]}, **quests},
         )
         self.assertEqual(regressions, [])
-        self.assertEqual(len(reports), 1)
-        self.assertIn("dropped preAny 19 (Horde-only for the Alliance corpus)", reports[0])
+        self.assertTrue(any("dropped preAny 19 (Horde-only for the Alliance corpus)" in line for line in reports))
+
+    def test_an_available_quest_replacing_an_unsatisfiable_any_of_is_a_gain(self):
+        regressions, reports = self.compare(
+            {6: {"preAny": [18, 19]}, 18: {"side": 2}, 19: {"side": 2}},
+            {6: {"preAny": [18, 19]}, 18: {"side": 1}, 19: {"side": 2}},
+        )
+        self.assertEqual(regressions, [])
+        self.assertTrue(any("gained pre 18" in line for line in reports))
+
+    def test_a_quest_changing_only_its_own_faction_loses_no_prerequisite(self):
+        for alternatives in ({18: {"side": 2}, 19: {"side": 1}}, {18: {"side": 2}, 19: {"side": 2}}):
+            both = {6: {"side": 3, "preAny": [18, 19]}, **alternatives}
+            horde = {6: {"side": 2, "preAny": [18, 19]}, **alternatives}
+            for old, new in ((both, horde), (horde, both)):
+                with self.subTest(old=old[6], new=new[6], alternatives=alternatives):
+                    regressions, reports = self.compare(old, new)
+                    self.assertEqual(regressions, [])
+                    self.assertTrue(any("changed its side" in line for line in reports))
 
     def test_an_alternative_changing_faction_can_leave_the_requirement_unsatisfiable(self):
         regressions, reports = self.compare(
