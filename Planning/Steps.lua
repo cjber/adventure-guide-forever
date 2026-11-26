@@ -356,7 +356,7 @@ local function LiveObjectives(data, log, objectives)
 	for _, old in ipairs(objectives) do
 		local entry, quest = log[old.id], data.quests[old.id]
 		if old.slot < 0 then
-			if not (entry and entry.complete) then
+			if not (entry and (entry.complete or Model.ObjectiveDone(data, entry, old.slot))) then
 				result[#result + 1] = old
 			end
 		elseif entry and quest then
@@ -745,18 +745,19 @@ local function Trim(town, handins, pickups)
 end
 
 -- A new quest's objective nodes, one per placed work slot, each counting the data's need. A missing source item
--- is the next step on a lap. Carry's detour also needs the work that comes after it.
+-- is the next step on a lap. A detour also needs the work after it. Pickup valuation counts the whole quest
+-- regardless of what is already in the bags.
 ---@param quest AGFQuest
 ---@param id integer
 ---@param player AGFPlayer
----@param wholeQuest? boolean include work that follows a missing source item
+---@param mode? "detour"|"value"
 ---@return AGFNode[]
-local function Planned(quest, id, player, wholeQuest)
+local function Planned(quest, id, player, mode)
 	local nodes = {}
-	local missing = MissingSourceItem(quest, player)
-	if missing then
-		nodes[1] = SourceNode(quest, id, missing, player.level)
-		if not wholeQuest then
+	local item = mode == "value" and quest.sourceItem or MissingSourceItem(quest, player)
+	if item then
+		nodes[1] = SourceNode(quest, id, item, player.level)
+		if not mode then
 			return nodes
 		end
 	end

@@ -132,6 +132,10 @@ function Style.StepParts(step, extra)
 			end
 			-- Only an item's name has a role here: its quality. Whether a creature is neutral, friendly or hostile is
 			-- not in the data, and guessing "monster" as enemy painted neutral wildlife red.
+			local source = quest.sourceItem
+			if source then
+				Add(parts, seen, source.name, "item", source.id)
+			end
 			for slot, name in pairs(quest.names or {}) do
 				if quest.kinds and quest.kinds[slot] == "item" then
 					Add(parts, seen, name, "item", data.itemIDs and data.itemIDs[name] or nil)

@@ -2,7 +2,7 @@
 local harness = dofile("tests/harness.lua")
 local QUEST, ITEM, MAP = 6395, 16333, 1420
 
-local function Load(logged, variant, saved)
+local function Load(logged, variant, saved, spf)
 	local other = variant ~= nil
 	local id, item = QUEST, ITEM
 	local title, itemName, target, objectiveText =
@@ -18,10 +18,12 @@ local function Load(logged, variant, saved)
 		objectives[2] = { type = "event", text = trigger[1], done = false }
 	end
 	local h = harness.load({
+		spf = spf,
 		planned = true,
 		charDB = saved or { journey = "zone:1420" },
 		player = { level = 5, raceID = 5, classID = 1, map = MAP, x = 0.32, y = 0.65 },
 		bank = { [item] = 1 },
+		items = { [item] = { name = itemName, quality = 3 } },
 		questiedb = {
 			quests = {
 				[id] = {
@@ -235,6 +237,107 @@ do
 	Check(not Picked(quest), "carry includes the use place in the detour")
 	table.remove(quest.obj, 1)
 	Check(not Picked(quest), "carry excludes the quest when its use place is unknown")
+
+	local slow, quick = Quest(), Quest()
+	slow.xp, quick.xp = 100, 100
+	slow.sourceItem = { id = ITEM, slot = 0 }
+	slow.obj = { { -1, 480, 500, 0, 1 }, { 0, 900, 500, 0, 1 } }
+	quick.obj[1][2] = 480
+	local lapData = {}
+	for field, value in pairs(data) do
+		lapData[field] = value
+	end
+	lapData.quests = { [QUEST] = slow, [700001] = quick }
+	local function OptimisedPickups(held)
+		player.sourceItems = held and { [ITEM] = true } or nil
+		local candidates, ids = {}, {}
+		ns.Planner.Steps.PickupSteps(lapData, { QUEST, 700001 }, function()
+			return true
+		end, candidates)
+		local steps = ns.Planner.Laps.Laps(
+			lapData,
+			player,
+			{},
+			{},
+			candidates,
+			{ areas = {}, anchors = {} },
+			{ optimisedRoute = true, skipped = {} }
+		)
+		for _, visit in ipairs(steps) do
+			for _, questID in ipairs(visit.pickups or {}) do
+				ids[#ids + 1] = questID
+			end
+		end
+		table.sort(ids)
+		return table.concat(ids, ",")
+	end
+	local missing, held = OptimisedPickups(false), OptimisedPickups(true)
+	Check(
+		held == "700001" and missing == held,
+		("optimised pickups with the item missing (%s) or held (%s) should match"):format(missing, held)
+	)
+end
+
+do
+	local combat = Load(true, nil, nil, "v1")
+	local journey = combat.ns.Route().journey
+	local sourceStep = Place(combat, QUEST, 0.36, "the chosen zone starts at the source")
+	assert(combat.ns.Route().chosen and journey == "zone:1420" and #combat.ns.Route().steps == 1)
+	combat.ns.StartRoute()
+	combat.flush()
+	local prefs, shortestPath = combat.ns.Prefs(), combat.spfRoute
+	local cancels = combat.spf.Cancel
+	assert(prefs.journey == journey and prefs.guided == journey and combat.ns.Guidance.Owns())
+	assert(shortestPath and shortestPath.stops[1].map == MAP and shortestPath.stops[1].x == 0.36)
+
+	local function GuidancePersists()
+		Check(prefs.journey == journey, "combat keeps the saved journey choice")
+		Check(prefs.guided == journey, "combat keeps the saved guidance")
+		Check(
+			combat.spf.Cancel == cancels and combat.spfRoute == shortestPath,
+			"combat leaves AGF's Shortest Path route running"
+		)
+	end
+	combat.combat = true
+	combat.fire("PLAYER_REGEN_DISABLED")
+	combat.bags[ITEM] = 1
+	combat.fire("BAG_UPDATE_DELAYED")
+	combat.flush()
+	for _, card in ipairs(combat.ns.Route().journeys) do
+		for _, visit in ipairs(card.steps) do
+			Check(visit.key ~= sourceStep.key, "combat removes the source stop from " .. card.key)
+			for _, objective in ipairs(visit.objectives or {}) do
+				Check(
+					objective.id ~= QUEST or objective.slot >= 0,
+					"combat removes the source objective from " .. card.key
+				)
+			end
+		end
+	end
+	GuidancePersists()
+	combat.ns.Invalidate()
+	combat.flush()
+	GuidancePersists()
+	combat.combat = false
+	combat.fire("PLAYER_REGEN_ENABLED")
+	combat.flush()
+	Check(combat.ns.Route().chosen and combat.ns.Route().journey == journey, "the same zone stays chosen after combat")
+	local usePlace = Place(combat, QUEST, 0.30, "the full plan after combat leads to the use place")
+	Check(prefs.guided == journey and combat.ns.Guidance.Owns(), "the same zone is still guided after combat")
+	local stop = combat.spfRoute and combat.spfRoute.stops[1]
+	Check(
+		stop and stop.map == usePlace.map and stop.x == usePlace.x and stop.y == usePlace.y,
+		"the last route handed to Shortest Path leads to the use place"
+	)
+	assert(#combat.errors == 0, table.concat(combat.errors, "\n"))
+end
+
+do
+	local itemStep = Place(h, QUEST, 0.36, "the missing item has a step line to style")
+	local text = "Collect Samuel's remains"
+	local style = h.ns.StepStyle
+	local expected = "Collect " .. style.Wrap(h.G.ITEM_QUALITY_COLORS[3].color, "Samuel's remains")
+	Check(style.Step(itemStep, text) == expected, "the source item uses its quality colour regardless of case")
 end
 
 do

@@ -300,18 +300,18 @@ do
 		need = { [0] = 0 },
 		obj = { { 0, 420, 500, 20, MAP, 5 }, { 0, 460, 500, 20, MAP, 5 }, { 0, 500, 500, 20, MAP, 9 } },
 	}
-	local node = Steps.Planned(quest, 1, 5)[1]
+	local node = Steps.Planned(quest, 1, { level = 5 })[1]
 	equal(#node.alternates, 1, "alternates: the camp not over the player's level")
 	equal(("%.2f"):format(node.alternates[1].x), "0.46", "alternates: in the data's order")
-	node = Steps.Planned(quest, 1, 9)[1]
+	node = Steps.Planned(quest, 1, { level = 9 })[1]
 	equal(#node.alternates, 2, "alternates: every other camp when none is over")
-	node = Steps.Planned(quest, 1, nil)[1]
+	node = Steps.Planned(quest, 1, {})[1]
 	equal(#node.alternates, 2, "alternates: every other camp with no level known")
 	quest.obj[3][5] = 1436
-	node = Steps.Planned(quest, 1, 9)[1]
+	node = Steps.Planned(quest, 1, { level = 9 })[1]
 	equal(#node.alternates, 1, "alternates: only on the node's map")
 	quest.obj = { { 0, 420, 500, 20, MAP } }
-	equal(Steps.Planned(quest, 1, 9)[1].alternates, nil, "alternates: none for a single camp")
+	equal(Steps.Planned(quest, 1, { level = 9 })[1].alternates, nil, "alternates: none for a single camp")
 	local camps = Area()
 	camps.shapes = {
 		{

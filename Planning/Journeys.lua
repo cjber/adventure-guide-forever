@@ -327,7 +327,7 @@ local function OnTheWay(data, player, log, held, eligible, candidates, added, pr
 		local quest = data.quests[id]
 		if quest and not (quest.dungeon or quest.raid) and not taken[id] and Pickable(quest) then
 			local points, placed = { quest.start }, {}
-			for _, node in ipairs(Planned(quest, id, player, true)) do
+			for _, node in ipairs(Planned(quest, id, player, "detour")) do
 				points[#points + 1], placed[node.slot] = node, true
 			end
 			local complete = true

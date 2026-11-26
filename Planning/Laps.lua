@@ -242,9 +242,8 @@ local function PickLapQuests(lap)
 		end
 	end
 	-- Every pooled quest is valued by the work its planned nodes hold, whether the log carries it or not: one node list
-	-- per quest, chosen from the quest and never from the log. A pickup's own nodes are that work, kept as they are so
-	-- the joins below know whose node it is; an outdoor elite's pickup schedules none (it waits for a group), so its
-	-- offer is valued by the work its planned nodes would hold, and taking the elite up does not move the town's mean.
+	-- per quest, independent of the log and bags. Reuse the scheduled nodes so the joins know whose nodes they are.
+	-- An outdoor elite's pickup schedules none, but its work still counts toward the town's mean.
 	---@type table<integer, AGFNode[]>
 	local valueNodes = {}
 	---@param id integer
@@ -252,7 +251,18 @@ local function PickLapQuests(lap)
 	local function NodesOf(id)
 		local list = valueNodes[id]
 		if not list then
-			list = (not data.quests[id].elite and nodes[id]) or Planned(data.quests[id], id, player)
+			local quest = data.quests[id]
+			local scheduled = not quest.elite and nodes[id] or nil
+			if scheduled and not quest.sourceItem then
+				list = scheduled
+			else
+				list = Planned(quest, id, player, "value")
+				local node = scheduled and scheduled[1]
+				-- A source-item quest has one work slot. Its full list starts with the source, then the use place.
+				if node then
+					list[node.slot < 0 and 1 or 2] = node
+				end
+			end
 			valueNodes[id] = list
 		end
 		return list

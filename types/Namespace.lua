@@ -1902,7 +1902,7 @@
 ---@field Opens fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep)
 ---@field Optional fun(quest: AGFQuest?, level: integer, player: AGFPlayer): boolean?
 ---@field PickupSteps fun(data: AGFData, eligible: integer[], wanted: (fun(quest: AGFQuest, id: integer): boolean), steps: AGFStep[], stops?: table<string, AGFStep>)
----@field Planned fun(quest: AGFQuest, id: integer, player: AGFPlayer, wholeQuest?: boolean): AGFNode[]
+---@field Planned fun(quest: AGFQuest, id: integer, player: AGFPlayer, mode?: "detour"|"value"): AGFNode[]
 ---@field QuestLevel fun(data: AGFData, log: table<integer, AGFLogQuest>, player: AGFPlayer, id: integer): integer
 ---@field Ready fun(data: AGFData, log: table<integer, AGFLogQuest>): table<integer, AGFPlace>
 ---@field Tell fun(area: AGFStep)
