@@ -328,6 +328,24 @@ function State.OwnedBooks()
 	return ownedBooks
 end
 
+local BAG_EVENTS = { ITEM_COUNT_CHANGED = true, BAG_UPDATE_DELAYED = true, PLAYER_ENTERING_WORLD = true }
+---@type AGFData?
+local sourceCatalogue
+local sourceItems, sourceItemsStale, sourceItemsMoved = {}, true, false
+
+-- A quest source item has to be usable from the bags. A bank copy does not open the objective.
+local function ReadSourceItems()
+	if not sourceItemsStale and sourceCatalogue == ns.Data then
+		return
+	end
+	local held = {}
+	for item in pairs(ns.Data and ns.Data.sourceItems or {}) do
+		held[item] = (C_Item.GetItemCount(item) or 0) > 0 or nil
+		sourceItemsMoved = sourceItemsMoved or held[item] ~= sourceItems[item]
+	end
+	sourceItems, sourceCatalogue, sourceItemsStale = held, ns.Data, false
+end
+
 -- The quests the player tracks, by ID: the client's own watch list, without what a leading journey added to it, so the
 -- tracked journey card routes the player's list rather than a copy of the journey already showing (#772).
 ---@return table<integer, boolean>
@@ -346,6 +364,7 @@ end
 
 ---@return AGFPlayer
 function State.Player()
+	ReadSourceItems()
 	local englishFaction = UnitFactionGroup("player")
 	local side = englishFaction == "Horde" and 2 or 1
 	local map, x, y = State.Where()
@@ -354,6 +373,7 @@ function State.Player()
 	return {
 		questAvailable = Available,
 		ownedBooks = State.OwnedBooks(),
+		sourceItems = sourceItems,
 		rested = rested,
 		xpMax = xpMax,
 		resting = resting,
@@ -646,6 +666,7 @@ end
 -- Keyed by quest ID, like Completed(), so the model can look either up in O(1).
 ---@return table<integer, AGFLogQuest>
 function State.Log()
+	ReadSourceItems()
 	local log = {}
 	for index = 1, C_QuestLog.GetNumQuestLogEntries() do
 		local info = C_QuestLog.GetInfo(index)
@@ -695,6 +716,9 @@ function State.Log()
 	end
 	for id, entry in pairs(log) do
 		entry.poi = points[id]
+		local quest = ns.Data and ns.Data.quests[id]
+		local item = quest and quest.sourceItem
+		entry.sourceItemHeld = item and sourceItems[item.id]
 		entry.expiring = Expiring(id)
 		entry.expiringName = entry.expiring and C_Item.GetItemNameByID(entry.expiring) or nil
 	end
@@ -758,8 +782,10 @@ local function Coalesce(countsEvent)
 	-- The player's own state changed: every live policy answer is stale.
 	policyAnswers = {}
 	C_Timer.After(0, function()
-		local countsOnly = not pendingFull
-		pendingNotify, pendingFull = false, false
+		ReadSourceItems()
+		-- A source item moves the next destination even when the client reports identical objectives.
+		local countsOnly = not pendingFull and not sourceItemsMoved
+		pendingNotify, pendingFull, sourceItemsMoved = false, false, false
 		Notify(countsOnly)
 	end)
 end
@@ -879,6 +905,9 @@ local COUNTS_EVENTS = {
 }
 
 local function OnEvent(_, event, arg)
+	if BAG_EVENTS[event] then
+		sourceItemsStale = true
+	end
 	if OWNED_EVENTS[event] then
 		ownedStale = true
 	end

@@ -31,8 +31,8 @@ abandons quests.
   experience-giving quests stays on offer rather than being buried by the zones that reach higher, while a zone the
   player has long outgrown does not ride one near-level quest past a zone that fits.
     Quests in your log also offers a few eligible quests to pick up on its way while the client's log has room: the
-  giver, every objective and the hand-in all stand near a stop the route already makes, the smallest detour first, and
-  no more than the free slots, a card's worth of actions less the log's own quests, or three. The route keeps the
+  giver, any source item still to get (§4.2), every objective and the hand-in all stand near a stop the route already
+  makes, the smallest detour first, and no more than the free slots, a card's worth of actions less the log's own quests, or three. The route keeps the
   pickups it chose while they stay open, so walking or taking one quest up does not shuffle its head.
     My tracked quests routes exactly the quests the player tracks, as the log's own steps in the same planner order,
   ready hand-ins included. A leading journey's own tracked quests do not count, so the card never copies the journey
@@ -270,6 +270,9 @@ follow the shared family voice.
   older heuristics (the story's chapter lead, a town's-own look-ahead and the committed order), which the
   player turns on from the Add-ons page.
 - **4.2 Laps.** A quest's objectives follow its pickup and its hand-in all of them. Respect quest-log capacity.
+  A quest with one required source item (QuestieDB `requiredSourceItems`), one objective slot and a placed source for
+  that item leads to the source while the item is not in the bags (the bank does not count), then to the objective; the
+  hand-in waits with it. With several items or slots the data does not say which item the work needs, so none is added.
   Objective areas merge only on the same map and for the same activity kind; separate maps keep separate visits. A
   quest a lap picks up joins an area only when every quest picked up for it there comes from the same town. Current objective data does not distinguish floors on the same map.
   A new quest worth less than half of its town's mean XP per yard waits for a later lap, and that mean is taken over
@@ -299,7 +302,8 @@ follow the shared family voice.
   objectives are done (a merged visit takes only the objectives the player can work on now).
 - **4.3 Committed order.** Preserve the chosen sequence and visit identities across rebuilds.
 - **4.4 Count ticks.** A burst of quest-log events that leaves the log's shape alone (the same quests, complete and
-  failed flags, live-timer deadlines and objective done flags; `Model.LogShape`) only moved counts: the last route is
+  failed flags, live-timer deadlines and objective done flags; `Model.LogShape`) and moves no source item (§4.2) in or
+  out of the bags only moved counts: the last route is
   repainted with the live counts
   (`Model.Repaint`), every journey, order, `here` hold and choice kept, without a plan. Anything else plans in full.
   An objective whose count reaches its need is done, and a quest whose objectives are all done is complete, even

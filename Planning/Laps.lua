@@ -23,6 +23,7 @@ local Idents = ns.Planner.Routing.Idents
 local Index = ns.Planner.Eligibility.Index
 local Inside = ns.Planner.Steps.Inside
 local Locate = ns.Planner.Steps.Locate
+local MissingSourceItem = ns.Planner.Steps.MissingSourceItem
 local Opens = ns.Planner.Steps.Opens
 local Optional = ns.Planner.Steps.Optional
 local NearAction = ns.Planner.Routing.NearAction
@@ -191,7 +192,7 @@ local function PickLapQuests(lap)
 			if id == leadID or pinned[id] or Pickable(data.quests[id]) then
 				pickups[#pickups + 1], picks[id], ids[#ids + 1] = id, town, id
 				-- An outdoor elite is picked up, optional and with the group badge, but its work waits for a group.
-				nodes[id] = data.quests[id].elite and {} or Planned(data.quests[id], id, player.level)
+				nodes[id] = data.quests[id].elite and {} or Planned(data.quests[id], id, player)
 			end
 		end
 		Trim(town, town.handins, pickups)
@@ -251,7 +252,7 @@ local function PickLapQuests(lap)
 	local function NodesOf(id)
 		local list = valueNodes[id]
 		if not list then
-			list = (not data.quests[id].elite and nodes[id]) or Planned(data.quests[id], id, player.level)
+			list = (not data.quests[id].elite and nodes[id]) or Planned(data.quests[id], id, player)
 			valueNodes[id] = list
 		end
 		return list
@@ -462,7 +463,7 @@ local function BuildLapAnchors(lap)
 		for _ in pairs((quest and quest.need) or NONE) do
 			slots = slots + 1
 		end
-		if pending[id] == slots then
+		if pending[id] == slots and not MissingSourceItem(quest, lap.player) then
 			table.insert(homes[id] and homes[id].hands or {}, id)
 		end
 	end
@@ -473,7 +474,7 @@ local function BuildLapAnchors(lap)
 		-- quest whose work the data places nowhere. A quest the route cannot finish stays with the log; finishing it
 		-- makes it a ready hand-in on the next full build.
 		local quest = data.quests[id]
-		local handin = not quest.elite and Pickable(quest)
+		local handin = not quest.elite and not MissingSourceItem(quest, lap.player) and Pickable(quest)
 		if
 			town
 			and handin
