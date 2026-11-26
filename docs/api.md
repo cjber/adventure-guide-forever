@@ -18,6 +18,7 @@ The minor history, from the git history:
   same change names and the same frame-after behaviour.
 - `minor` 7: `Subscribe`'s `suggestions` change, and `nil, "invalid"` for a `limit` that is not a whole number of zero
   or more on `NextStops` and `Suggestions`.
+- `minor` 8: `SuspendMapPins` and `ResumeMapPins`.
 
 ## Functions
 
@@ -29,6 +30,10 @@ The minor history, from the git history:
 - `Status()` returns where the chosen journey's guidance stands, or `nil, reason`.
 - `Pause()` stops the chosen journey's route without dropping the choice.
 - `Resume()` starts the chosen journey's route again as its card does.
+- `SuspendMapPins(owner)` hides every world-map mark the guide draws for the non-empty string `owner`, and
+  `ResumeMapPins(owner)` releases that owner. Several owners may hold at once and the marks return when the last has
+  resumed. The hold lasts the session and is never saved, so a reload clears it. Both return `true`, or
+  `false, "invalid"` for an owner that is not a non-empty string.
 - `Subscribe(callback)` calls `callback(changes)` the frame after a stop, the cards, the journey or the status
   changes.
 - `Suggestions(limit)` returns the guide's cards in the order its panel draws them, or `nil, reason`, and

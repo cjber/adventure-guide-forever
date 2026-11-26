@@ -17,6 +17,8 @@
 
 ---@class AGFPinsModule
 ---@field Ping fun(key: string) flash the numbered pin for a step, if it's on the shown map.
+---@field Suspend fun(owner: string) hold every world-map mark back for `owner`, for the session
+---@field Resume fun(owner: string) release `owner`; the marks return when no owner holds them
 
 -- Gethe/wow-ui-source FrameXML: the party category that means an instance group.
 ---@type number

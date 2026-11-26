@@ -2,7 +2,8 @@
 -- AdventureGuideForever.API answers from the settled route with fresh tables, and never builds one for its caller.
 -- Minor 5 adds each stop's kind and quest IDs, and Status, Pause and Resume. Minor 6 adds each read's not-ready
 -- reason and builds Subscribe on ForeverCore.APIKit.Hub. Minor 7 adds the suggestions change and nil, "invalid" for a
--- bad limit. The table is also published for ForeverCore.APIKit.Addons(), and an older kit without Publish still
+-- bad limit. Minor 8 adds SuspendMapPins and ResumeMapPins (tests/suspend_pins_spec.lua). The table is also
+-- published for ForeverCore.APIKit.Addons(), and an older kit without Publish still
 -- loads it.
 local harness = dofile("tests/harness.lua")
 
@@ -42,7 +43,7 @@ local h = harness.load({
 })
 local API = h.G.AdventureGuideForever.API
 equal(API.version, 1, "still version 1")
-equal(API.minor, 7, "minor 7 is the suggestions change and the invalid-argument reason")
+equal(API.minor, 8, "minor 8 adds SuspendMapPins and ResumeMapPins")
 
 -- Published once at load, so another addon lists this API by name, with the version and minor the table carries.
 local function Published(addonName)

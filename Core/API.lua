@@ -12,9 +12,9 @@ local APIKit = assert(ForeverCore.APIKit)
 ---@class AGFAPI
 -- `minor` rises with each addition within version 1 (1: Subscribe, 2: Suggestions and StartSuggestion, 3: Stats,
 -- 4: Status, Pause, Resume and each stop's quest IDs, 5: each read's not-ready reason and the shared
--- subscription hub, 7: the `suggestions` change and `nil, "invalid"` for a bad limit); a caller checks a member before
--- using it.
-local API = { version = 1, minor = 7 }
+-- subscription hub, 7: the `suggestions` change and `nil, "invalid"` for a bad limit, 8: SuspendMapPins and
+-- ResumeMapPins); a caller checks a member before using it.
+local API = { version = 1, minor = 8 }
 
 local NEXT_LIMIT = 8
 local SUGGESTION_LIMIT = 5
@@ -199,6 +199,29 @@ function API.Resume()
 		return false
 	end
 	return ns.StartJourney(route.journey) == true
+end
+
+-- Holds every world-map mark Adventure Guide draws back for `owner` until ResumeMapPins(owner); the pins return when
+-- the last owner has resumed. Session-only: nothing is saved, so a reload clears it. False and "invalid" for an owner
+-- that is not a non-empty string.
+---@param owner string
+---@return boolean, AGFAPIReadError?
+function API.SuspendMapPins(owner)
+	if type(owner) ~= "string" or owner == "" then
+		return false, "invalid"
+	end
+	ns.Pins.Suspend(owner)
+	return true
+end
+
+---@param owner string
+---@return boolean, AGFAPIReadError?
+function API.ResumeMapPins(owner)
+	if type(owner) ~= "string" or owner == "" then
+		return false, "invalid"
+	end
+	ns.Pins.Resume(owner)
+	return true
 end
 
 ---@param limit? integer how many, five (the most) unless given

@@ -25,6 +25,9 @@ ns.Pins = Pins
 local minimapOwner = {}
 local minimapIcons = {}
 local RingsShown, MarkerTooltip
+-- Owners that asked for the world map's marks to stay hidden (Pins.Suspend); memory only, so a reload clears them.
+---@type table<string, true>
+local suspended = {}
 
 ---@class AGFMinimapIcon : Frame
 ---@field marker Texture
@@ -211,7 +214,8 @@ local function RefreshMinimap()
 end
 
 -- One switch over every mark AGF draws (design §2.6): nothing unless showMapPins is on, and nothing for a wanderer
--- who is told where and never shown. While Polestar guides (Polestar.lua) the switch draws nothing.
+-- who is told where and never shown. While Polestar guides (Polestar.lua) the switch draws nothing, and while an owner
+-- has suspended the pins (Pins.Suspend) nothing draws, the guide's preview included.
 -- While the guide is open the markers preview the route it shows whatever the switch says: the chosen journey's,
 -- else the first card's, which the guide draws on its own (docs/design.md §2.2). Either way they step aside while
 -- Shortest Path guides, since it numbers its stops itself.
@@ -220,7 +224,8 @@ RingsShown = function()
 	local preview = ns.PanelShown ~= nil and ns.PanelShown()
 	local first = ns.Route().steps[1]
 	local guideActive = first ~= nil and first.rxpIndex ~= nil
-	return (preview or (ns.Setting("showMapPins") and not ns.Polestar.Active()))
+	return next(suspended) == nil
+		and (preview or (ns.Setting("showMapPins") and not ns.Polestar.Active()))
 		and (not ns.Integrations.Guiding() or guideActive)
 		and not ns.Setting("wanderer")
 end
@@ -270,7 +275,8 @@ end
 -- givers stay while Shortest Path guides: it draws no givers of its own.
 ---@return boolean
 local function GiversShown()
-	return not QuestieOwnsGivers()
+	return next(suspended) == nil
+		and not QuestieOwnsGivers()
 		and ns.Setting("showMapPins")
 		and ns.Setting("showQuestGivers")
 		and not ns.Setting("wanderer")
@@ -955,7 +961,8 @@ function Pins.Reveal(point)
 	if InCombatLockdown() or not ns.Model.ValidPlace(point) or ns.Setting("wanderer") then
 		return
 	end
-	reveal = point
+	-- The map still opens for the player's click; the ping is a mark, so it waits out a suspend.
+	reveal = next(suspended) == nil and point or nil
 	-- The client's own opener, run securely (Core/OpenMap.lua): its code turns the map, as from the quest tracker's
 	-- menu.
 	ForeverCore.OpenMap(point.map)
@@ -967,6 +974,31 @@ function Pins.Reveal(point)
 			end
 		end
 	end)
+end
+
+-- Holds every mark off the world map for `owner` until it resumes; the pins return when the last owner has. Several
+-- owners may hold at once, and a repeat call changes nothing.
+---@param owner string
+function Pins.Suspend(owner)
+	if suspended[owner] then
+		return
+	end
+	suspended[owner] = true
+	-- A reveal's ping is a mark too: one showing goes, and one still waiting is dropped.
+	reveal = nil
+	if pingPool then
+		pingPool:ReleaseAll()
+	end
+	Pins.Refresh()
+end
+
+---@param owner string
+function Pins.Resume(owner)
+	if not suspended[owner] then
+		return
+	end
+	suspended[owner] = nil
+	Pins.Refresh()
 end
 
 function Pins.Refresh()
