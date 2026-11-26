@@ -119,5 +119,18 @@ h.flush()
 Restored(main, 12)
 Restored(v2, 24)
 assert(checkbox.isSelected(), "the settings row and menu share the saved value")
+
+ns.SetSetting("informationOnly", true)
+setting:SetValue(false)
+h.flush()
+assert(
+	ns.RestedXP.Active() and not checkbox.isSelected(),
+	"information mode keeps the integration active with the setting off"
+)
+Restored(v2, 24)
+engine.v2.UpdateGuideWindow()
+h.flush()
+Restored(v2, 24)
+
 assert(#h.errors == 0, table.concat(h.errors, "\n"))
 print("restedxp_tracker_setting_spec: passed")
