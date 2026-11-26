@@ -5,7 +5,7 @@ card (chosen) | zone:1433 | Redridge Mountains story | Chapter 1 of 6 | A chain 
   step 3 | area:92:4 | Complete objectives · Redridge Goulash | 1433 0.2390,0.7330 | after you pick it up | 100 yd | 92/4
   step 4 | town:1433:1002 | Pick up: Encroaching Gnolls | 1433 0.1037,0.7126 | near your level
   step 5 | area:125:4 | Complete objectives · The Lost Tools | 1433 0.3640,0.5470 | after you pick it up | 0 yd | 125/4
-  step 6 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4890,0.4220 | after you pick it up | 100 yd | 92/6
+  step 6 | area:92:6 | Complete objectives · Redridge Goulash | 1433 0.4940,0.4170 | after you pick it up | 100 yd | 92/6
   step 7 | area:92:5 | Complete objectives · Redridge Goulash | 1433 0.5470,0.7610 | after you pick it up | 99 yd | 92/5
   step 8 | town:1433:69:2 | Visit Lakeshire: Turn in 3 | 1433 0.2705,0.4864 | Opens the next chapter here
 card | zone:1432 | Head to Loch Modan | 14 quests near your level | - | map 1432

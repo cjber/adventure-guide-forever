@@ -2,12 +2,12 @@
 card (chosen) | zone:1423 | Eastern Plaguelands story | Chapter 1 of 3 | A chain begins with Fallen Skyborne | map 1423
   step 1 | town:1423:2268 | Visit Light's Hope Chapel: Pick up 5 | 1423 0.7169,0.5072 | 5 to pick up
   step 2 | town:1423:2271 | Visit Eastwall Tower: Pick up 2 | 1423 0.6993,0.5372 | 2 to pick up
-  step 3 | town:1423:2623 | Pick up: Oh No Ye Don't! | 1423 0.5343,0.5853 | near your level
+  step 3 | town:1423:2623 | Pick up: Oh No Ye Don't! | 1423 0.5345,0.5853 | near your level
   step 4 | area:5211:0 | Complete objectives · Defenders of Darrowshire | 1423 0.5730,0.3070 | after you pick it up | 92 yd | 5211/0
   step 5 | area:84319:4 | Complete objectives · Oh No Ye Don't! | 1423 0.2750,0.2310 | after you pick it up | 100 yd | 84319/4
   step 6 | town:1423:2627 | Visit Terrordale: Pick up 4 | 1423 0.1136,0.2637 | 4 to pick up
   step 7 | area:6164:4 | Complete objectives · Augustus' Receipt Book | 1423 0.1400,0.2420 | after you pick it up | 0 yd | 6164/4
-  step 8 | town:1423:2619 | Pick up: River Ends | 1423 0.0800,0.5545 | Begins a new story
+  step 8 | town:1423:2619 | Pick up: River Ends | 1423 0.0800,0.5546 | Begins a new story
   step 9 | area:9085:0 | Complete 2 objectives · Eastern Plaguelands | 1423 0.1210,0.6400 | 2 quests here | 0 yd | 9085/0 9153/4
   step 10 | area:5542:0 | Complete objectives · Demon Dogs | 1423 0.1540,0.6750 | after you pick it up | 96 yd | 5542/0
 card | zone:1451 | Head to Silithus | 13 quests near your level | Twilight Base Camp needs hands | map 1451
@@ -61,10 +61,10 @@ card | zone:1447 | Head to Azshara | 29 quests near your level | - | map 1448
   step 8 | town:1447:1231 | Pick up: Demon Hunter's Hunter | 1447 0.6082,0.6635 | near your level
   step 9 | town:1447:1232 | Pick up: Skygleam the Elder | 1447 0.7255,0.8524 | near your level
   step 10 | town:1447:0 | Visit Azshara: Pick up 2 | 1447 0.7928,0.7370 | 2 to pick up
-card | zone:1419 | Head to Blasted Lands | 13 quests near your level | - | map 1416
+card | zone:1419 | Head to Blasted Lands | 14 quests near your level | - | map 1416
   step 1 | town:1416:278 | Pick up: The Orphan | 1416 0.2162,0.7318 | near your level
   step 2 | town:1419:1457 | Visit Garrison Armory: Pick up 5 | 1419 0.5055,0.1420 | 5 to pick up
-  step 3 | town:1419:2517 | Visit Rise of the Defiler: Pick up 3 | 1419 0.5198,0.3565 | 3 to pick up
+  step 3 | town:1419:2517 | Visit Rise of the Defiler: Pick up 4 | 1419 0.5198,0.3565 | 4 to pick up
   step 4 | town:1419:72 | Pick up: Bellowrage the Elder | 1419 0.5875,0.5170 | near your level
   step 5 | town:1419:1438 | Visit Nethergarde Keep: Pick up 3 | 1419 0.6351,0.1701 | 3 to pick up
 card | zone:1446 | Head to Tanaris | 17 quests near your level | Gadgetzan needs hands | map 1446
@@ -103,7 +103,7 @@ card | zone:1434 | Head to Stranglethorn Vale | 8 quests near your level | - | m
 card | zone:1441 | Head to Thousand Needles | 3 quests near your level | - | map 1441
   step 1 | town:1441:439 | Pick up: Morningdew the Elder | 1441 0.7920,0.7705 | near your level
   step 2 | town:1441:484 | Pick up: Skyseer the Elder | 1441 0.4529,0.5000 | near your level
-  step 3 | town:1441:485 | Pick up: Praise | 1441 0.3191,0.2448 | near your level
+  step 3 | town:1441:485 | Pick up: Praise | 1441 0.3191,0.2449 | near your level
 card | zone:1424 | Head to Hillsbrad Foothills | 2 quests near your level | - | map 1424
   step 1 | town:1424:271 | Visit Southshore: Pick up 2 | 1424 0.5000,0.5735 | 2 to pick up
 card | zone:1431 | Head to Duskwood | 2 quests near your level | - | map 1431
@@ -125,17 +125,19 @@ card | zone:1436 | Head to Westfall | 1 quest near your level | - | map 1436
   step 1 | town:1436:108 | Pick up: Skychaser the Elder | 1436 0.5665,0.4711 | near your level
 card | zone:1439 | Head to Darkshore | 1 quest near your level | - | map 1439
   step 1 | town:1439:442 | Pick up: Starweave the Elder | 1439 0.3681,0.4677 | near your level
-card | zone:1426 | Head to Dun Morogh | 2 quests near your level | - | map 1426
+card | zone:1426 | Head to Dun Morogh | 3 quests near your level | - | map 1426
   step 1 | town:1426:1537 | Pick up: Honoring a Hero | 1426 0.5260,0.3603 | near your level
   step 2 | town:1426:136 | Pick up: Goldwell the Elder | 1426 0.4682,0.5161 | near your level
+  step 3 | town:1426:803 | Pick up: An Epic Ride | 1426 0.6347,0.5056 | near your level
+card | zone:1429 | Head to Elwynn Forest | 3 quests near your level | - | map 1429
+  step 1 | town:1429:88 | Visit Eastvale Logging Camp: Pick up 2 | 1429 0.8432,0.6487 | 2 to pick up
+  step 2 | town:1429:87 | Pick up: Stormbrow the Elder | 1429 0.3979,0.6367 | near your level
 card | zone:1411 | Head to Durotar | 1 quest near your level | - | map 1411
   step 1 | town:1411:362 | Pick up: Runetotem the Elder | 1411 0.5320,0.4368 | near your level
 card | zone:1412 | Head to Mulgore | 1 quest near your level | - | map 1412
   step 1 | town:1412:222 | Pick up: Bloodhoof the Elder | 1412 0.4754,0.5781 | near your level
 card | zone:1420 | Head to Tirisfal Glades | 1 quest near your level | - | map 1420
   step 1 | town:1420:159 | Pick up: Graveborn the Elder | 1420 0.6187,0.5384 | near your level
-card | zone:1429 | Head to Elwynn Forest | 1 quest near your level | - | map 1429
-  step 1 | town:1429:87 | Pick up: Stormbrow the Elder | 1429 0.3979,0.6367 | near your level
 card | zone:1438 | Head to Teldrassil | 3 quests near your level | - | map 1438
   step 1 | town:1438:702 | Visit Rut'theran Village: Pick up 2 | 1438 0.5647,0.9223 | 2 to pick up
   step 2 | town:1438:186 | Pick up: Bladeleaf the Elder | 1438 0.5730,0.6077 | near your level
