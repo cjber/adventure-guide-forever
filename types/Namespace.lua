@@ -2126,6 +2126,8 @@ AdventureGuideForever = nil
 
 ---@class AGFStrings
 ---@field SETTING_RXP string
+---@field SETTING_RXP_SHOW_TRACKER string
+---@field SETTING_RXP_SHOW_TRACKER_TOOLTIP string
 ---@field SETTING_RXP_TOOLTIP string
 ---@field RXP_TITLE string
 ---@field RXP_PREVIOUS string

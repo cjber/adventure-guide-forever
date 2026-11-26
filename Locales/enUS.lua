@@ -10,6 +10,8 @@ ns.L = {
 	SETTING_RXP_TOOLTIP = "Add the current RestedXP guide to your journey cards, map and tracker. "
 		.. "RestedXP advances guide steps; Shortest Path Forever handles travel. "
 		.. "RestedXP stays installed and controls guide progress.",
+	SETTING_RXP_SHOW_TRACKER = "Show RestedXP tracker",
+	SETTING_RXP_SHOW_TRACKER_TOOLTIP = "Keep RestedXP's guide window visible while Adventure Guide follows its steps.",
 	RXP_TITLE = "RestedXP guides",
 	RXP_PREVIOUS = "Previous",
 	RXP_NEXT = "Next",

@@ -357,6 +357,9 @@ L["SETTING_ROUTE_ORDER_TOOLTIP"] =
 L["SETTING_OUTGROWN"] = "Ausgewachsene Zonen und Dungeons anzeigen"
 L["SETTING_OUTGROWN_TOOLTIP"] = "Zonen und Dungeons, deren Quests grau sind, in der Auswahl behalten."
 L["SETTING_RXP"] = "RestedXP-Guides nutzen"
+L["SETTING_RXP_SHOW_TRACKER"] = "RestedXP-Tracker anzeigen" -- mt
+L["SETTING_RXP_SHOW_TRACKER_TOOLTIP"] =
+	"Das Guide-Fenster von RestedXP bleibt sichtbar, während Adventure Guide den Schritten folgt." -- mt
 L["SETTING_RXP_TOOLTIP"] =
 	"Fügt den aktuellen RestedXP-Guide Euren Reisekarten, der Karte und der Verfolgung hinzu. RestedXP schaltet die Guide-Schritte weiter; Shortest Path Forever übernimmt das Reisen. RestedXP bleibt installiert und steuert den Guide-Fortschritt."
 L["SETTING_STEP_SOUND"] = "Ton, wenn ein Schritt erledigt ist"

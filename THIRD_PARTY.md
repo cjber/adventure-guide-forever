@@ -87,6 +87,7 @@ Credit for the reports and requests behind the addon.
 | cotijelucie | Information mode and showing a stop's quests on the map | Discord; #715 |
 | Enel3008 | A journey resolves when you already stand at its destination | CurseForge; #906; thread 8750470 |
 | [poisenloaf](https://github.com/poisenloaf) | The guide's map tab shows with DaylightUI's journal | GitHub; #956 |
+| Gnatz_0815 | RestedXP's tracker can show beside the guide | CurseForge; #949; thread 8783545 |
 
 ## Inspired by
 
