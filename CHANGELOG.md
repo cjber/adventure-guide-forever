@@ -10,6 +10,12 @@ Each version's entry is also its release notes on GitHub, CurseForge and Wago. O
 verbatim rather than rewritten as the addon moves. API changes other addons' authors need go under an
 optional `### For addon authors` subsection after a version's player bullets.
 
+## [1.12.17] - 2026-11-26
+
+### For addon authors
+
+- Another addon can hold the guide's world-map pins back while it draws its own: `AdventureGuideForever.API.SuspendMapPins(owner)` hides them and `ResumeMapPins(owner)` brings them back once the last owner has resumed. The hold lasts the session and is never saved (API minor 8, #966).
+
 ## [1.12.16] - 2026-11-25
 
 ### Changed
