@@ -23,7 +23,8 @@ optional `### For addon authors` subsection after a version's player bullets.
 ### Fixed
 
 - The Adventure Guide map tab shows when DaylightUI's quest journal is on, thanks to poisenloaf for the report (#956).
-- The guide points you to required items such as Samuel's Remains before sending you to use them.
+- On a quest with a single objective that needs an item collected first, such as Samuel's Remains, the guide sends you to the item before the place you use it, when it knows where to find the item (#970).
+- With EllesmereUI's Custom Quest Tracker on, the Forever tracker sits under that quest list and moves with it again.
 
 ## [1.12.17] - 2026-11-26
 
