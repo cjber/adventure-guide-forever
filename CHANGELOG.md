@@ -12,8 +12,9 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [1.12.19] - 2026-11-26
 
-<!-- forever-core-sync -->
+### Changed
 
+- Quest data is refreshed to QuestieDB 1.1.6 and client build 1.60.1.71139: the guide now knows where to pick up the level 60 mount quests An Epic Ride and Swift as the Wind, Kum'isha's Endeavors and Call of Fire in Orgrimmar, and two quest chains now show how many chapters they have. (#975)
 - Ships with the same shared code as your other Forever addons, so they keep working together.
 
 ## [1.12.18] - 2026-11-26
