@@ -2016,7 +2016,7 @@
 ---@field RestedXPIntegrated fun(): boolean
 ---@field RestedXPNativeUI fun(): boolean
 ---@field version integer
----@field minor integer 1 from Subscribe, 2 from Suggestions and StartSuggestion, 3 from Stats, 4 from Status, Pause, Resume and each stop's quest IDs, 5 from each read's not-ready reason and the shared subscription hub, 6 from the suggestions change and nil and "invalid" for a bad limit
+---@field minor integer 1 from Subscribe, 2 from Suggestions and StartSuggestion, 3 from Stats, 4 from Status, Pause, Resume and each stop's quest IDs, 5 from each read's not-ready reason and the shared subscription hub, 6 from the suggestions change and nil and "invalid" for a bad limit, 8 from SuspendMapPins and ResumeMapPins
 ---@field Stats fun(): AGFActivityRecord[] read-only per-character rows (minor 3)
 ---@field Suggestions fun(limit?: integer): AGFAPISuggestion[]?, AGFAPIReadError? the panel's cards, at most five; nil and "loading" while the route is being worked out, or "invalid" for a bad limit
 ---@field StartSuggestion fun(id: string): boolean starts a card as the guide's own Start does
@@ -2026,6 +2026,8 @@
 ---@field Status fun(): AGFAPIStatus?, ForeverCoreAPIReason? where the chosen journey's guidance stands; nil and "loading", "disabled" or "none" (minor 5)
 ---@field Pause fun(): boolean stops the chosen journey's route but keeps the choice (minor 5)
 ---@field Resume fun(): boolean starts the chosen journey's route again as its card does (minor 5)
+---@field SuspendMapPins fun(owner: string): boolean, AGFAPIReadError? hides every world-map mark for `owner` until ResumeMapPins, for the session only; false and "invalid" for an owner that is not a non-empty string (minor 8)
+---@field ResumeMapPins fun(owner: string): boolean, AGFAPIReadError? releases `owner`; the marks return when no owner holds them (minor 8)
 
 -- What changed since a Subscribe callback was last called; each field true or absent.
 ---@class AGFAPIChanges
