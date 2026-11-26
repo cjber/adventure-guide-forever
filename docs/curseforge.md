@@ -83,7 +83,7 @@ Installed together, Shortest Path Forever plans the way to every stop. SkillUp F
 
 <!-- forever-credits:start -->
 
-Thanks to InfamousMunky, starkovsky, iPulse, moshoutegong, sampconrad, lanprite, VinzNL, fuguer-ai, rhednak, jechten, Gnatz_0815, CodeHoax, eliasbusato, wfournier, methabolic, kragmars, Naburiel, vladsnz, jixxor, MrOxiMoron, QuincyO, Zerhathos, Kyorri, cotijelucie, Enel3008 and everyone who reported a bug or asked for a feature.
+Thanks to InfamousMunky, starkovsky, iPulse, moshoutegong, Gnatz_0815, sampconrad, lanprite, VinzNL, fuguer-ai, rhednak, jechten, CodeHoax, eliasbusato, wfournier, methabolic, kragmars, Naburiel, vladsnz, jixxor, MrOxiMoron, QuincyO, Zerhathos, Kyorri, cotijelucie, Enel3008, poisenloaf and everyone who reported a bug or asked for a feature.
 
 <!-- forever-credits:end -->
 
