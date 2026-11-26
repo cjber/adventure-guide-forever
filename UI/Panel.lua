@@ -110,7 +110,6 @@ local content
 local searchBox
 -- Defined below the builders; the search box's handler needs it.
 local Refresh
-local RaiseAboveSlot
 ---@type FontString?
 local emptyText
 -- One line per aside the player still wants (Asides.All), from the top of the list.
@@ -1234,11 +1233,64 @@ local function RefreshHeader(route)
 	headerBox:SetHeight(GUIDE_HEADER_HEIGHT + math.max(0, lines - 1) * SUBTITLE_LINE)
 end
 
+---@param parent Frame
+---@param level number
+---@param left number
+---@param bottom number
+---@param right number
+---@param top number
+local function SlotLevel(parent, level, left, bottom, right, top)
+	for _, child in ipairs({ parent:GetChildren() }) do -- multi-value: every child of this frame
+		if child ~= panel and child:IsShown() then
+			local x, y, width, height = child:GetRect()
+			local hasChildren = child:GetNumChildren() > 0
+			local clipLeft, clipBottom, clipRight, clipTop = left, bottom, right, top
+			if x then
+				local scale = child:GetEffectiveScale()
+				local overlapLeft, overlapBottom = math.max(left, x * scale), math.max(bottom, y * scale)
+				local overlapRight, overlapTop =
+					math.min(right, (x + width) * scale), math.min(top, (y + height) * scale)
+				if overlapLeft < overlapRight and overlapBottom < overlapTop then
+					level = math.max(level, child:GetFrameLevel() + 1)
+				end
+				-- Children can extend outside their parent's rectangle unless the parent clips them.
+				if hasChildren and child:DoesClipChildren() then
+					clipLeft, clipBottom, clipRight, clipTop = overlapLeft, overlapBottom, overlapRight, overlapTop
+				end
+			end
+			if hasChildren and clipLeft < clipRight and clipBottom < clipTop then
+				level = SlotLevel(child, level, clipLeft, clipBottom, clipRight, clipTop)
+			end
+		end
+	end
+	return level
+end
+
+---@param frame Frame
+local function RestoreSlotSurface(frame)
+	-- A quest journal skin can set the guide's alpha to zero without hiding it.
+	if frame:GetAlpha() ~= 1 then
+		frame:SetAlpha(1)
+	end
+	local map = QuestMapFrame
+	local level = map:GetFrameLevel() + 20
+	local left, bottom, width, height = frame:GetRect()
+	if left then
+		local scale = frame:GetEffectiveScale()
+		level = SlotLevel(map, level, left * scale, bottom * scale, (left + width) * scale, (bottom + height) * scale)
+	end
+	if frame:GetFrameLevel() ~= level then
+		frame:SetFrameLevel(level)
+	end
+end
+
 function Refresh()
 	if not (panel and panel:IsShown()) then
 		return
 	end
-	RaiseAboveSlot()
+	if panel:IsVisible() then
+		RestoreSlotSurface(panel)
+	end
 	-- BuildContent() always sets every upvalue below before Attach() registers this listener.
 	---@cast emptyText -?
 	---@cast queuedText -?
@@ -1275,33 +1327,7 @@ local function Attach()
 	local background = panel:CreateTexture(nil, "BACKGROUND")
 	background:SetPoint("TOPLEFT", 0, -TOP_BAR)
 	background:SetPoint("BOTTOMRIGHT")
-	-- Check direct quest log children only, including skin pages parented to the quest log itself.
-	RaiseAboveSlot = function()
-		local level = map:GetFrameLevel() + 20
-		local left, bottom, width, height = panel:GetRect()
-		if left then
-			local panelScale = panel:GetEffectiveScale()
-			for _, child in ipairs({ map:GetChildren() }) do -- multi-value: every child of the quest log
-				local childLevel = child:GetFrameLevel()
-				if child ~= panel and child:IsShown() and childLevel >= level then
-					local x, y, w, h = child:GetRect()
-					if x then
-						local scale = child:GetEffectiveScale() / panelScale
-						if
-							x * scale < left + width
-							and (x + w) * scale > left
-							and y * scale < bottom + height
-							and (y + h) * scale > bottom
-						then
-							level = childLevel + 1
-						end
-					end
-				end
-			end
-		end
-		panel:SetFrameLevel(level)
-	end
-	RaiseAboveSlot()
+	panel:SetFrameLevel(map:GetFrameLevel() + 20)
 	panel:EnableMouse(true)
 	panel:Hide()
 	-- The cards' minutes, while the guide is open: on opening it and on each new route. A card its header hides is
@@ -1409,12 +1435,19 @@ local function Attach()
 		end
 	end
 
-	-- The map has shown with its quest sidebar in its final state (WorldMapFrame:OnShow sets the map's display state
-	-- and then fires this): finish an open that was asked for before the map was on screen, and read the guide's
-	-- visibility again after a reopen, where the client shows the sidebar it kept and calls nothing (#664).
+	-- The map's OnShow has set the sidebar's display state. Finish a pending open and read visibility again when
+	-- the client reuses the sidebar it kept (#664).
 	EventRegistry:RegisterCallback("WorldMapOnShow", function()
 		FinishOpen()
 		Sync()
+		if panel:IsVisible() then
+			-- The map fires this inside its own OnShow. A sibling's OnShow can veil the guide after Sync.
+			C_Timer.After(0, function()
+				if panel:IsVisible() then
+					RestoreSlotSurface(panel)
+				end
+			end)
+		end
 	end, panel)
 
 	-- The client has shown or hidden the map: react after it, isolated from its own show or hide (#493).

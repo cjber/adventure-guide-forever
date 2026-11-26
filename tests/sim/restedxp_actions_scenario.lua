@@ -4,10 +4,12 @@
 scenario("RestedXP action windows survive guide suppression", { addon = false, stubs = { Questie = {} } }, function(sim)
 	sim:loadBlizzard("Blizzard_FrameXML/SecureTemplates.lua")
 	sim:loadBlizzard("Blizzard_FrameXML/SecureTemplates.xml")
-	local enabled = true
+	local enabled, showTracker = true, false
 	local ns = {
 		Setting = function(key)
-			return key == "restedxpChoiceMade" or (key == "restedxpGuide" and enabled)
+			return key == "restedxpChoiceMade"
+				or (key == "restedxpGuide" and enabled)
+				or (key == "restedxpShowTracker" and showTracker)
 		end,
 		Invalidate = function() end,
 		Prefs = function()
@@ -74,6 +76,16 @@ scenario("RestedXP action windows survive guide suppression", { addon = false, s
 	ns.RestedXP.Refresh()
 	sim:advance(0.1)
 	assert(not item:IsShown() and not target:IsShown(), "RXP can hide its own controls")
+	showTracker = true
+	ns.RestedXP.Refresh()
+	sim:advance(0.1)
+	assert(ns.RestedXP.Active() and guide:GetAlpha() == 0.8, "the tracker can show with integration active")
+	local point, _, _, x, y = guide:GetPoint()
+	assert(point == "CENTER" and x == 12 and y == 18, "the tracker gets its original anchor back")
+	showTracker = false
+	ns.RestedXP.Refresh()
+	sim:advance(0.1)
+	check()
 	enabled = false
 	ns.RestedXP.Refresh()
 	sim:advance(0.1)

@@ -56,6 +56,11 @@ local function GuideEntries(root)
 	end)
 	submenu:CreateButton(L.RXP_IMPORT, ns.RestedXP.OpenImport)
 	submenu:CreateButton(L.RXP_SETTINGS, ns.RestedXP.OpenSettings)
+	submenu:CreateCheckbox(L.SETTING_RXP_SHOW_TRACKER, function()
+		return ns.Setting("restedxpShowTracker")
+	end, function()
+		ns.SetSetting("restedxpShowTracker", not ns.Setting("restedxpShowTracker"))
+	end)
 	submenu:CreateButton(L.RXP_ORIGINAL, ns.RestedXP.UseOriginal)
 end
 

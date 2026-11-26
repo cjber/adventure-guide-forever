@@ -38,6 +38,7 @@ local DEFAULTS = {
 	showTracker = true,
 	restedxpGuide = true,
 	restedxpChoiceMade = false,
+	restedxpShowTracker = false,
 	stepSound = true,
 	trainingReminders = false,
 	maxQuestLevelOffset = 2,
@@ -384,6 +385,9 @@ function ns.SetSetting(key, value)
 		db.restedxpChoiceMade = true
 		ns.GuideSetup.Hide()
 		ns.RestedXP.Refresh()
+	elseif key == "restedxpShowTracker" then
+		ns.RestedXP.Refresh()
+		return
 	end
 	if key == "guideTracksQuests" or key == "journeyWatch" then
 		ns.QuestWatch.Sync()

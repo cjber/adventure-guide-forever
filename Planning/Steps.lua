@@ -316,6 +316,10 @@ function Model.ObjectiveDone(data, entry, slot)
 	if not quest then
 		return false
 	end
+	if slot < 0 then
+		local item = quest.sourceItem
+		return item ~= nil and slot == -item.slot - 1 and entry.sourceItemHeld == true
+	end
 	local open, aligned = OpenSlots(quest, entry)
 	return aligned and quest.need[slot] ~= nil and open[slot] == nil
 end
@@ -351,7 +355,11 @@ local function LiveObjectives(data, log, objectives)
 	local slots, result = {}, {}
 	for _, old in ipairs(objectives) do
 		local entry, quest = log[old.id], data.quests[old.id]
-		if entry and quest then
+		if old.slot < 0 then
+			if not (entry and (entry.complete or Model.ObjectiveDone(data, entry, old.slot))) then
+				result[#result + 1] = old
+			end
+		elseif entry and quest then
 			local aligned = slots[old.id]
 			if not aligned then
 				local open, ok, indices = OpenSlots(quest, entry)
@@ -424,6 +432,25 @@ local function AreaNode(quest, slot, objective, level)
 	}
 end
 
+---@param quest AGFQuest?
+---@param player AGFPlayer
+---@return AGFQuestSourceItem?
+local function MissingSourceItem(quest, player)
+	local item = quest and quest.sourceItem
+	return item and not (player.sourceItems and player.sourceItems[item.id]) and item or nil
+end
+
+---@param quest AGFQuest
+---@param id integer
+---@param item AGFQuestSourceItem
+---@param level? integer the player's level
+---@return AGFNode
+local function SourceNode(quest, id, item, level)
+	local slot = -item.slot - 1
+	local objective = { id = id, slot = slot, type = "item", text = item.name, need = 1 }
+	return AreaNode(quest, slot, objective, level) --[[@as AGFNode]]
+end
+
 -- Where a quest under way is done next, in slot order: each open objective the data places, at its first area (the
 -- catalogue orders them; AreaNode passes over a harder one for the player's `level`) with its radius. The client's
 -- point for the quest stands in for them all when its objectives don't line up with the data's slots or the data places
@@ -438,6 +465,11 @@ local function Nodes(data, entry, level)
 	local open, aligned, indices, slots, nodes = {}, false, nil, {}, {}
 	if quest then
 		open, aligned, indices = OpenSlots(quest, entry)
+		local item = quest.sourceItem
+		if item and not entry.sourceItemHeld and open[item.slot] then
+			-- A client POI may still name the use place.
+			return { SourceNode(quest, entry.id, item, level) }
+		end
 	end
 	-- Questie keeps its own objectives by the client's 1-based index: carry it only when the log lines up, and never
 	-- guess one, so a misaligned log keeps the nil LiveObjectives would leave.
@@ -712,13 +744,24 @@ local function Trim(town, handins, pickups)
 	end
 end
 
--- A new quest's objective nodes, one for each slot at its first area (AreaNode, as for a quest under way), each
--- counting the data's need.
+-- A new quest's objective nodes, one per placed work slot, each counting the data's need. A missing source item
+-- is the next step on a lap. A detour also needs the work after it. Pickup valuation counts the whole quest
+-- regardless of what is already in the bags.
 ---@param quest AGFQuest
----@param level? integer the player's
+---@param id integer
+---@param player AGFPlayer
+---@param mode? "detour"|"value"
 ---@return AGFNode[]
-local function Planned(quest, id, level)
-	local slots, nodes = {}, {}
+local function Planned(quest, id, player, mode)
+	local nodes = {}
+	local item = mode == "value" and quest.sourceItem or MissingSourceItem(quest, player)
+	if item then
+		nodes[1] = SourceNode(quest, id, item, player.level)
+		if not mode then
+			return nodes
+		end
+	end
+	local slots = {}
 	for slot in pairs(quest.need or NONE) do
 		slots[#slots + 1] = slot
 	end
@@ -726,7 +769,7 @@ local function Planned(quest, id, level)
 	local finish = ValidPlace(quest.finish) and "town:" .. Hub(quest.finish) or nil
 	for _, slot in ipairs(slots) do
 		local objective = { id = id, slot = slot, need = quest.need[slot], finish = finish }
-		nodes[#nodes + 1] = AreaNode(quest, slot, objective, level)
+		nodes[#nodes + 1] = AreaNode(quest, slot, objective, player.level)
 	end
 	return nodes
 end
@@ -742,6 +785,7 @@ ns.Planner.Steps = {
 	Locate = Locate,
 	LogSteps = LogSteps,
 	LiveObjectives = LiveObjectives,
+	MissingSourceItem = MissingSourceItem,
 	Nodes = Nodes,
 	Opens = Opens,
 	Optional = Optional,

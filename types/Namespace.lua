@@ -66,7 +66,8 @@
 ---@field xp? integer the XP it gives a player at most 5 levels above it (Quest::XPValue); only with a start
 ---@field need? table<integer, integer> objective slot -> required count (0 means unknown until logged): 0-3 kill or use, 4-7 collect, 16 explore;
 --- every objective, placed in obj or not; never for a dungeon quest
----@field obj? AGFObjectiveArea[] where the objectives are done, at most 3 each; never for a dungeon quest; with need
+---@field obj? AGFObjectiveArea[] where objectives are done or a source item is obtained, at most 3 areas per slot; never for a dungeon quest
+---@field sourceItem? AGFQuestSourceItem the sole required item with a placed source for a quest with one work slot
 ---@field objectivesUnknown? boolean provider has objectives that cannot be planned
 ---@field flags? AGFQuestFlags
 ---@field expires? integer[] the items it hands over, needs or collects that run out in the bags (AGFData.expiring)
@@ -74,13 +75,18 @@
 --- Where one objective is done: a camp of its spawns (Integrations/QuestieObjectives.lua), the cell of 100-yard
 --- squares with the most spawns in and around it, each camp's cell apart from the others'.
 ---@class AGFObjectiveArea
----@field [1] integer the objective's slot, a key of the quest's need
+---@field [1] integer the objective's slot in need, or -slot-1 for its source item
 ---@field [2] integer map x in thousandths: the camp's medoid, a spawn
 ---@field [3] integer map y in thousandths
 ---@field [4] integer yards from x, y to the camp's farthest spawn within 100 yards
 ---@field [5] integer? the uiMapID x, y are on when it is not the quest's zone
 ---@field [6] integer? the lowest level of the mobs there, when every spawn in it is an NPC QuestieDB gives a level
 ---@field [7] true? every spawn there is an elite's (QuestieDB rank 1 to 3); only with a level
+
+---@class AGFQuestSourceItem
+---@field id integer the item to obtain
+---@field slot integer the objective that needs the item
+---@field name? string the item's localized name
 
 ---@class AGFQuestFlags
 ---@field event? true a script completes it: an escort, a spell cast or a summoned fight
@@ -102,6 +108,7 @@
 ---@field heights? table<string, table<integer, integer>> by kind ("npc" or "object"): entry -> world height in yards, for an NPC or object with one spawn
 ---@field expiring? table<integer, integer> item ID -> the seconds it lasts in the bags, a day or less (ItemSparse)
 ---@field itemIDs? table<string, integer> a collect item's lower-cased name -> its ID, for the quality colour of its name
+---@field sourceItems? table<integer, true> item IDs to watch in the bags for quest objective dependencies
 ---@field territory? table<integer, integer> uiMapID -> AreaTable.FactionGroupMask (2 Alliance, 4 Horde, 0 contested, 6 both); Data/Territory.lua
 ---@field xpfills? table<integer, integer> quest ID -> the XP the Forever server answers (Data/XPFills.lua, from forever-db); QuestieSource applies one only where the provider has no XP
 ---@field books? AGFBook[] the library books QuestieDB holds, by quest ID ascending (QuestieSource.lua); nil before its build
@@ -146,6 +153,7 @@
 ---@field notOffered? table<integer, integer> quests marked not offered: quest ID -> the level marked at; one marked at the player's level is unproven, with its own Why line
 ---@field questAvailable? fun(id: integer): boolean
 ---@field ownedBooks? table<integer, boolean> library books whose collected item the player carries, by book quest ID (bags or bank)
+---@field sourceItems? table<integer, true> quest source items the player holds in the bags, by item ID
 ---@field tracked? table<integer, true> the quests the player tracks, by ID, without what a leading journey added to the watch list
 ---@field level integer
 ---@field maxQuestLevelOffset? integer highest recommended quest level relative to the player; defaults to +2
@@ -175,6 +183,7 @@
 ---@field y? number
 ---@field objectives? AGFLogObjective[] the client's objectives, in its order (C_QuestLog.GetQuestObjectives)
 ---@field poi? {map: integer, x: number, y: number} the client's point for the quest (C_QuestLog.GetQuestsOnMap)
+---@field sourceItemHeld? true the player carries this quest's source item in the bags
 ---@field expiring? integer the first of its items that run out in the bags (AGFQuest.expires) the player carries
 ---@field expiringName? string that item's name, once the client has it
 
@@ -267,7 +276,7 @@
 -- One open objective an area step holds. `finish` is the town the quest is handed in at, which a route visits after.
 ---@class AGFAreaObjective
 ---@field id integer the quest
----@field slot integer the data's need slot
+---@field slot integer the data's need slot, or -slot-1 for its source item
 ---@field index? integer the client's 1-based objective index, when its objectives line up with the data's slots
 ---@field have? integer the client's count, when its objectives line up with the data's slots
 ---@field need? integer the count it needs, the client's else the data's
@@ -1689,7 +1698,7 @@
 ---@field QuestieTowns AGFQuestieTowns
 ---@field QuestieLevel fun(value: any): integer|false an NPC's QuestieDB minLevel as a level, false when it has none
 ---@field QuestieElite fun(value: any): boolean whether an NPC's QuestieDB rank is an elite's (1 to 3)
----@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer, reads: AGFQuestieReads): table?, AGFObjectiveArea[]?, table?, boolean?, table<integer, string>?, table<integer, integer>?
+---@field QuestieObjectives fun(lib: AGFQuestieDB, objectives: table?, trigger: table?, zone: integer?, data: AGFData, mapOf: AGFMapLookup, yield: AGFYield, questID: integer, reads: AGFQuestieReads, required?: table): table?, AGFObjectiveArea[]?, table?, boolean?, table<integer, string>?, table<integer, integer>?, AGFQuestSourceItem?
 
 ---@class AGFStrings
 ---@field WHY_PROVIDER string
@@ -1889,10 +1898,11 @@
 ---@field LogSteps fun(data: AGFData, player: AGFPlayer, log: table<integer, AGFLogQuest>, ready: table<integer, AGFPlace>, belongs: (fun(id: integer, place?: AGFLocation): boolean), stops: table<string, AGFStep>, steps: AGFStep[], plan: AGFPlanAreas, admit?: (fun(id: integer): boolean)): table<integer, AGFStep|false>
 ---@field Nodes fun(data: AGFData, entry: AGFLogQuest, level?: integer): AGFNode[]
 ---@field LiveObjectives fun(data: AGFData, log: table<integer, AGFLogQuest>, objectives: AGFAreaObjective[]): AGFAreaObjective[]
+---@field MissingSourceItem fun(quest: AGFQuest?, player: AGFPlayer): AGFQuestSourceItem?
 ---@field Opens fun(data: AGFData, player: AGFPlayer, completed: table<integer, boolean>, log: table<integer, AGFLogQuest>, step: AGFStep)
 ---@field Optional fun(quest: AGFQuest?, level: integer, player: AGFPlayer): boolean?
 ---@field PickupSteps fun(data: AGFData, eligible: integer[], wanted: (fun(quest: AGFQuest, id: integer): boolean), steps: AGFStep[], stops?: table<string, AGFStep>)
----@field Planned fun(quest: AGFQuest, id: integer, level?: integer): AGFNode[]
+---@field Planned fun(quest: AGFQuest, id: integer, player: AGFPlayer, mode?: "detour"|"value"): AGFNode[]
 ---@field QuestLevel fun(data: AGFData, log: table<integer, AGFLogQuest>, player: AGFPlayer, id: integer): integer
 ---@field Ready fun(data: AGFData, log: table<integer, AGFLogQuest>): table<integer, AGFPlace>
 ---@field Tell fun(area: AGFStep)
@@ -2126,6 +2136,8 @@ AdventureGuideForever = nil
 
 ---@class AGFStrings
 ---@field SETTING_RXP string
+---@field SETTING_RXP_SHOW_TRACKER string
+---@field SETTING_RXP_SHOW_TRACKER_TOOLTIP string
 ---@field SETTING_RXP_TOOLTIP string
 ---@field RXP_TITLE string
 ---@field RXP_PREVIOUS string

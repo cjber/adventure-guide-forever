@@ -23,6 +23,7 @@ local Idents = ns.Planner.Routing.Idents
 local Index = ns.Planner.Eligibility.Index
 local Inside = ns.Planner.Steps.Inside
 local Locate = ns.Planner.Steps.Locate
+local MissingSourceItem = ns.Planner.Steps.MissingSourceItem
 local Opens = ns.Planner.Steps.Opens
 local Optional = ns.Planner.Steps.Optional
 local NearAction = ns.Planner.Routing.NearAction
@@ -191,7 +192,7 @@ local function PickLapQuests(lap)
 			if id == leadID or pinned[id] or Pickable(data.quests[id]) then
 				pickups[#pickups + 1], picks[id], ids[#ids + 1] = id, town, id
 				-- An outdoor elite is picked up, optional and with the group badge, but its work waits for a group.
-				nodes[id] = data.quests[id].elite and {} or Planned(data.quests[id], id, player.level)
+				nodes[id] = data.quests[id].elite and {} or Planned(data.quests[id], id, player)
 			end
 		end
 		Trim(town, town.handins, pickups)
@@ -241,9 +242,8 @@ local function PickLapQuests(lap)
 		end
 	end
 	-- Every pooled quest is valued by the work its planned nodes hold, whether the log carries it or not: one node list
-	-- per quest, chosen from the quest and never from the log. A pickup's own nodes are that work, kept as they are so
-	-- the joins below know whose node it is; an outdoor elite's pickup schedules none (it waits for a group), so its
-	-- offer is valued by the work its planned nodes would hold, and taking the elite up does not move the town's mean.
+	-- per quest, independent of the log and bags. Reuse the scheduled nodes so the joins know whose nodes they are.
+	-- An outdoor elite's pickup schedules none, but its work still counts toward the town's mean.
 	---@type table<integer, AGFNode[]>
 	local valueNodes = {}
 	---@param id integer
@@ -251,7 +251,18 @@ local function PickLapQuests(lap)
 	local function NodesOf(id)
 		local list = valueNodes[id]
 		if not list then
-			list = (not data.quests[id].elite and nodes[id]) or Planned(data.quests[id], id, player.level)
+			local quest = data.quests[id]
+			local scheduled = not quest.elite and nodes[id] or nil
+			if scheduled and not quest.sourceItem then
+				list = scheduled
+			else
+				list = Planned(quest, id, player, "value")
+				local node = scheduled and scheduled[1]
+				-- A source-item quest has one work slot. Its full list starts with the source, then the use place.
+				if node then
+					list[node.slot < 0 and 1 or 2] = node
+				end
+			end
 			valueNodes[id] = list
 		end
 		return list
@@ -462,7 +473,7 @@ local function BuildLapAnchors(lap)
 		for _ in pairs((quest and quest.need) or NONE) do
 			slots = slots + 1
 		end
-		if pending[id] == slots then
+		if pending[id] == slots and not MissingSourceItem(quest, lap.player) then
 			table.insert(homes[id] and homes[id].hands or {}, id)
 		end
 	end
@@ -473,7 +484,7 @@ local function BuildLapAnchors(lap)
 		-- quest whose work the data places nowhere. A quest the route cannot finish stays with the log; finishing it
 		-- makes it a ready hand-in on the next full build.
 		local quest = data.quests[id]
-		local handin = not quest.elite and Pickable(quest)
+		local handin = not quest.elite and not MissingSourceItem(quest, lap.player) and Pickable(quest)
 		if
 			town
 			and handin

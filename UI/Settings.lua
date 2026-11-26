@@ -65,6 +65,12 @@ function ns.RegisterSettings()
 				)
 				for _, initializer in ipairs({
 					Checkbox(subcategory, "restedxpGuide", ns.L.SETTING_RXP, ns.L.SETTING_RXP_TOOLTIP),
+					Checkbox(
+						subcategory,
+						"restedxpShowTracker",
+						ns.L.SETTING_RXP_SHOW_TRACKER,
+						ns.L.SETTING_RXP_SHOW_TRACKER_TOOLTIP
+					),
 					Checkbox(subcategory, "wanderer", ns.L.SETTING_WANDERER, ns.L.SETTING_WANDERER_TOOLTIP),
 					Checkbox(subcategory, "followQuest", ns.L.SETTING_FOLLOW_QUEST, ns.L.SETTING_FOLLOW_QUEST_TOOLTIP),
 					Checkbox(subcategory, "partyQuests", ns.L.SETTING_PARTY_QUESTS, ns.L.SETTING_PARTY_QUESTS_TOOLTIP),

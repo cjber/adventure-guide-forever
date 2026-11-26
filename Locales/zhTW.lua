@@ -351,6 +351,9 @@ L["SETTING_ROUTE_ORDER_TOOLTIP"] =
 L["SETTING_OUTGROWN"] = "顯示已超出等級的區域與地城" -- mt
 L["SETTING_OUTGROWN_TOOLTIP"] = "在選項中保留任務為灰色的區域與地城。" -- mt
 L["SETTING_RXP"] = "使用RestedXP指南" -- mt
+L["SETTING_RXP_SHOW_TRACKER"] = "顯示 RestedXP 追蹤器" -- mt
+L["SETTING_RXP_SHOW_TRACKER_TOOLTIP"] =
+	"在 Adventure Guide 跟隨 RestedXP 指南步驟時，保持 RestedXP 指南視窗可見。" -- mt
 L["SETTING_RXP_TOOLTIP"] =
 	"將目前的RestedXP指南加入你的旅程卡片、地圖與追蹤器。RestedXP推進指南步驟；Shortest Path Forever負責移動。RestedXP保持安裝並控制指南進度。" -- mt
 L["SETTING_STEP_SOUND"] = "完成步驟時播放音效" -- mt

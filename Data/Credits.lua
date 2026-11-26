@@ -40,6 +40,8 @@ ns.Credits = {
 		{ name = "lanprite", what = "RestedXP guide cards marked as RestedXP's" },
 		{ name = "cotijelucie", what = "Information mode and showing a stop's quests on the map" },
 		{ name = "Enel3008", what = "A journey resolves when you already stand at its destination" },
+		{ name = "poisenloaf", what = "The guide's map tab shows with DaylightUI's journal" },
+		{ name = "Gnatz_0815", what = "RestedXP's tracker can show beside the guide" },
 	},
 	inspired = {
 		{ name = "Polestar by Fitz", what = "Ideas for many features" },

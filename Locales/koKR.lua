@@ -360,6 +360,9 @@ L["SETTING_ROUTE_ORDER_TOOLTIP"] =
 L["SETTING_OUTGROWN"] = "지난 지역과 던전 표시"
 L["SETTING_OUTGROWN_TOOLTIP"] = "퀘스트가 회색인 지역과 던전을 선택 항목에 유지합니다."
 L["SETTING_RXP"] = "RestedXP 가이드 사용"
+L["SETTING_RXP_SHOW_TRACKER"] = "RestedXP 추적기 표시" -- mt
+L["SETTING_RXP_SHOW_TRACKER_TOOLTIP"] =
+	"Adventure Guide가 RestedXP 가이드의 단계를 따라가는 동안 RestedXP 가이드 창을 표시합니다." -- mt
 L["SETTING_RXP_TOOLTIP"] =
 	"현재 RestedXP 가이드를 여정 카드, 지도, 추적기에 추가합니다. RestedXP는 가이드 단계를 진행하고, Shortest Path Forever는 이동을 맡습니다. RestedXP는 설치된 채로 가이드 진행을 관리합니다."
 L["SETTING_STEP_SOUND"] = "단계 완료 시 소리"

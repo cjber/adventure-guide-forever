@@ -169,7 +169,7 @@ do
 	local quest = { zone = MAP, need = { [0] = 0 } }
 	local function At(level, obj)
 		quest.obj = obj
-		local node = Steps.Planned(quest, 1, level)[1]
+		local node = Steps.Planned(quest, 1, { level = level })[1]
 		local alternates = {}
 		for _, spot in ipairs(node.alternates or {}) do
 			alternates[#alternates + 1] = ("%.3f"):format(spot.x)

@@ -584,10 +584,12 @@ local function Sync()
 			snapshot = Snapshot(engine)
 		else
 			suppressing = true
-			Window(engine.RXPFrame)
+			local v2 = engine.v2 and engine.v2.state
+			local trackerWindow = ns.Setting("restedxpShowTracker") and Unwindow or Window
+			trackerWindow(engine.RXPFrame)
+			trackerWindow(v2 and v2.guideWindow and v2.guideWindow.frame)
 			Window(LibDBIcon10_RXPGuides)
 			SuppressMap(engine)
-			Window(engine.v2 and engine.v2.state and engine.v2.state.guideWindow and engine.v2.state.guideWindow.frame)
 			-- AGF's tracker draws native-styled item and target buttons in its own section (#334): RestedXP's own windows
 			-- are hidden only while those buttons are actually shown, and come back when the tracker setting, a collapsed
 			-- section or a step without actions leaves them off.
@@ -703,7 +705,12 @@ local function Attach()
 		end
 		if engine.v2 and type(engine.v2.UpdateGuideWindow) == "function" then
 			hooksecurefunc(engine.v2, "UpdateGuideWindow", function() -- taint-ok: RestedXP owns its v2 controller.
-				if active and not InCombatLockdown() then
+				if
+					active
+					and not ns.Setting("informationOnly")
+					and not ns.Setting("restedxpShowTracker")
+					and not InCombatLockdown()
+				then
 					local state = engine.v2 and engine.v2.state
 					Window(state and state.guideWindow and state.guideWindow.frame)
 				end

@@ -195,7 +195,7 @@ local function Added(data, player, completed, log, prefs, elsewhere)
 end
 
 -- A few quests to pick up on the way (docs/design.md §2.2): while the client's log has room, the carry card offers
--- givers whose whole quest -- its start, every objective and its hand-in -- stands within CARRY_YARDS of a stop the
+-- givers whose start, missing source item, objectives and hand-in stand within CARRY_YARDS of a stop the
 -- log's route already makes. The smallest detour comes first, and no more than the free slots, a card's worth of new
 -- actions less the steps the log's route already takes, or CARRY_PICKUPS, so a 40-quest log gains a few quests on its
 -- way rather than a second journey's worth. The route keeps the pickups it chose while they stay open, so walking or
@@ -327,7 +327,7 @@ local function OnTheWay(data, player, log, held, eligible, candidates, added, pr
 		local quest = data.quests[id]
 		if quest and not (quest.dungeon or quest.raid) and not taken[id] and Pickable(quest) then
 			local points, placed = { quest.start }, {}
-			for _, node in ipairs(Planned(quest, id, player.level)) do
+			for _, node in ipairs(Planned(quest, id, player, "detour")) do
 				points[#points + 1], placed[node.slot] = node, true
 			end
 			local complete = true

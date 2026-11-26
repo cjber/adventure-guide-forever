@@ -98,7 +98,7 @@ do
 		obj = { { 4, 284, 703, 97, MAP, 16 }, { 4, 342, 159, 39, MAP, 12 }, { 4, 269, 732, 71, MAP, 16 } },
 	}
 	local function At(level)
-		local node = Steps.Planned(quest, 1, level)[1]
+		local node = Steps.Planned(quest, 1, { level = level })[1]
 		return node and ("%.3f,%.3f"):format(node.x, node.y)
 	end
 	equal(At(12), "0.342,0.159", "level 12: the level-16 spot is passed over for the level-12 one")

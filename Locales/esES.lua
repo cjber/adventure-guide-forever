@@ -356,6 +356,9 @@ L["SETTING_ROUTE_ORDER_TOOLTIP"] =
 L["SETTING_OUTGROWN"] = "Mostrar zonas y mazmorras superadas"
 L["SETTING_OUTGROWN_TOOLTIP"] = "Mantener en las opciones las zonas y mazmorras cuyas misiones sean grises."
 L["SETTING_RXP"] = "Usar guías de RestedXP"
+L["SETTING_RXP_SHOW_TRACKER"] = "Mostrar el seguimiento de RestedXP" -- mt
+L["SETTING_RXP_SHOW_TRACKER_TOOLTIP"] =
+	"Mantiene visible la ventana de la guía de RestedXP mientras Adventure Guide sigue sus pasos." -- mt
 L["SETTING_RXP_TOOLTIP"] =
 	"Añade la guía actual de RestedXP a tus tarjetas de viaje, el mapa y el rastreador. RestedXP avanza los pasos de la guía; Shortest Path Forever se encarga de los desplazamientos. RestedXP sigue instalado y controla el progreso de la guía."
 L["SETTING_STEP_SOUND"] = "Sonido al completar un paso"

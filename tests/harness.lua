@@ -674,6 +674,12 @@ function harness.load(options)
 	function Methods:GetChildren()
 		return unpack(self.childFrames) -- multi-value: every child, as the client returns them
 	end
+	function Methods:GetNumChildren()
+		return #self.childFrames
+	end
+	function Methods:DoesClipChildren()
+		return self.clipsChildren == true
+	end
 	function Methods:GetRegions()
 		return unpack(self.regions) -- multi-value: every region, as the client returns them
 	end

@@ -383,6 +383,9 @@ L["SETTING_OUTGROWN"] = "Показывать пройденные зоны и �
 L["SETTING_OUTGROWN_TOOLTIP"] =
 	"Оставлять в вариантах зоны и подземелья с серыми заданиями."
 L["SETTING_RXP"] = "Использовать руководства RestedXP"
+L["SETTING_RXP_SHOW_TRACKER"] = "Показывать трекер RestedXP" -- mt
+L["SETTING_RXP_SHOW_TRACKER_TOOLTIP"] =
+	"Окно руководства RestedXP остаётся видимым, пока Adventure Guide следует его шагам." -- mt
 L["SETTING_RXP_TOOLTIP"] =
 	"Добавляет текущее руководство RestedXP в карточки путешествий, на карту и в отслеживание. RestedXP переключает шаги руководства; Shortest Path Forever отвечает за перемещение. RestedXP остается установленным и управляет прогрессом руководства."
 L["SETTING_STEP_SOUND"] = "Звук при выполнении шага"

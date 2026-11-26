@@ -3,7 +3,7 @@
   "producers": [
     {
       "source": "UI/Panel.lua",
-      "sha256": "7ac14f3494181a5e98b70dbd59490b099093ac87610ed20f926b7775918e21ac",
+      "sha256": "34a3fc34703dd4ad2aa11ead016497a5ffc5be9038e6475b313282ae1f6e2fa1",
       "review": "Read the full panel builders, refresh paths and callers in Overview, Widgets and GuideOutline. Explicit CreateFontString templates fix Tag, order tag, emptyText, unlistedText, queuedText, subtitle and fold-row fonts, with no later font override. Journey-card Travel inherits GameFontHighlightSmall from Panel.xml. SearchBoxTemplate inherits InputBoxInstructionsTemplate in pinned client Blizzard_SharedXML/Shared/InputBox/InputBoxTemplates.xml; Instructions uses GameFontDisableSmall, and its scripts change visibility/color/text, not fonts. SharedButtonSmallTemplate in Shared/Button/ThreeSliceButtonTemplate.xml supplies all three Stop button font states. Reset and Skipped buttons explicitly set normal and highlight fonts and have no disabling caller. Bound each confirmed button state. Excluded tooltips, menus, chat, search input, dynamic journey/step/provider titles and data/helper output not separately reviewed. Formatted bindings cover the locale format only, not substituted game data.",
       "bindings": [
         {
@@ -347,7 +347,7 @@
     },
     {
       "source": "UI/Settings.lua",
-      "sha256": "c51c494bc3531a215a37b3a25bff32740f8aa9a1b0ea2be31b8c06eb6794f614",
+      "sha256": "2ac6b3732f3474b04e4170ac339f3e2740de8ddbf6a72e5e8c49ec9b8cac2bb4",
       "review": "Read RegisterSettings, all groups, Checkbox and IndexButton. Localized labels and descriptions delegate to secure Blizzard settings initializers, without an explicit local FontObject. Excluded these consumer-owned fonts and tooltip descriptions rather than assuming a settings font. The Tracker group's Attach to quest tracker row is ForeverCore.SettingsSections.RegisterTrackerAttach, a core-owned initializer, registered only when the running core has it (an older adopted standalone does not); excluded with the other settings fonts.",
       "bindings": []
     },

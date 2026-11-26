@@ -164,10 +164,12 @@ end
 ---@param yield fun()
 ---@param questID integer
 ---@param reads AGFQuestieReads one catalogue build's QuestieDB answers, so a creature many quests share is read once
+---@param required table? QuestieDB's requiredSourceItems
 ---@return table?, AGFObjectiveArea[]?, table?, boolean? unsupported
 ---@return table<integer, string>? names
 ---@return table<integer, integer>? items
-function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield, questID, reads)
+---@return AGFQuestSourceItem? sourceItem
+function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield, questID, reads, required)
 	-- Questie stores icon overrides, not required counts, in objective[3] (kill credits: [4]).
 	-- Zero retains the objective slot; the quest log supplies its actual count after pickup.
 	local need, areas, kinds = {}, {}, {}
@@ -323,6 +325,7 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 				camp.elite,
 			}
 		end
+		return #camps > 0
 	end
 	-- An NPC's spawns, lowest level and rank are one read, when the build reads levels (reads.levels).
 	local levels, elites = reads.levels, reads.elite
@@ -437,9 +440,25 @@ function ns.QuestieObjectives(lib, objectives, trigger, zone, data, mapOf, yield
 	if objectives and (next(objectives[4] or {}) or next(objectives[6] or {})) then
 		return nil, nil, nil, true
 	end
+	local sourceItem
+	-- QuestieDB lists required items separately from objectives. One item and one work slot leave no choice of
+	-- item or slot. A placed source gives the guide somewhere to send the player to get it before that work.
+	local sourceSlot = next(need)
+	if sourceSlot and next(need, sourceSlot) == nil and type(required) == "table" and #required == 1 then
+		local item, lists = required[1], {}
+		Item(item, lists, {})
+		if Places(-sourceSlot - 1, lists) then
+			local values = lib.Item.GetAll(item, NAME_FIELDS)
+			local name = values and values[1]
+			sourceItem = { id = item, slot = sourceSlot, name = type(name) == "string" and name or nil }
+		end
+	end
+	local names, items = Names(lib, kinds, sources, reads)
 	return next(need) and need or nil,
 		areas[1] and areas or nil,
 		next(kinds) and kinds or nil,
 		nil,
-		Names(lib, kinds, sources, reads)
+		names,
+		items,
+		sourceItem
 end
