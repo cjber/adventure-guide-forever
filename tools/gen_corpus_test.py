@@ -38,6 +38,18 @@ def slots(body):
     return found
 
 
+def area_slots(line, need):
+    """The work slots and, when present, the source-item slot for one of them."""
+    known = slots(need)
+    source = span(line, "sourceItem")
+    if source is not None:
+        # The corpus writes named fields in sorted order, so slot is last.
+        match = re.search(r"(?:^|, )slot = (\d+)$", source.strip())
+        if match and (work_slot := int(match[1])) in known:
+            known.add(-work_slot - 1)
+    return known
+
+
 class CorpusTest(unittest.TestCase):
     """tests/.corpus/quests.lua and towns.lua, built by tools/gen_corpus.py."""
 
@@ -57,7 +69,7 @@ class CorpusTest(unittest.TestCase):
             self.assertFalse(need and "dungeon = " in line, line)
             if obj is None:
                 continue
-            known = slots(need)
+            known = area_slots(line, need)
             for spot in re.findall(r"\{ ([^}]+) \}", obj):
                 # A spot's elite mark comes last, after its map and level, and only as true.
                 values = spot.split(", ")
