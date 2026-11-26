@@ -12,9 +12,18 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [1.12.18] - 2026-11-26
 
-<!-- forever-core-sync -->
+### Added
+
+- Turn on Show RestedXP tracker to see RestedXP's guide window while Adventure Guide follows its steps, thanks to Gnatz_0815 for the idea (#949).
+
+### Changed
 
 - Ships with the same shared code as your other Forever addons, so they keep working together.
+
+### Fixed
+
+- The Adventure Guide map tab shows when DaylightUI's quest journal is on, thanks to poisenloaf for the report (#956).
+- The guide points you to required items such as Samuel's Remains before sending you to use them.
 
 ## [1.12.17] - 2026-11-26
 
