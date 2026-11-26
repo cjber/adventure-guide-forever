@@ -961,7 +961,8 @@ function Pins.Reveal(point)
 	if InCombatLockdown() or not ns.Model.ValidPlace(point) or ns.Setting("wanderer") then
 		return
 	end
-	reveal = point
+	-- The map still opens for the player's click; the ping is a mark, so it waits out a suspend.
+	reveal = next(suspended) == nil and point or nil
 	-- The client's own opener, run securely (Core/OpenMap.lua): its code turns the map, as from the quest tracker's
 	-- menu.
 	ForeverCore.OpenMap(point.map)
@@ -983,6 +984,11 @@ function Pins.Suspend(owner)
 		return
 	end
 	suspended[owner] = true
+	-- A reveal's ping is a mark too: one showing goes, and one still waiting is dropped.
+	reveal = nil
+	if pingPool then
+		pingPool:ReleaseAll()
+	end
 	Pins.Refresh()
 end
 

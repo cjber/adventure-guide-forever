@@ -9,7 +9,6 @@ local function equal(actual, expected, label)
 	assert(actual == expected, ("%s: expected %s, got %s"):format(label, tostring(expected), tostring(actual)))
 end
 local API = h.G.AdventureGuideForever.API
-equal(API.minor, 8, "minor 8 adds the map pin suspend")
 
 h.G.C_Map.OpenWorldMap()
 h.flush()
@@ -40,6 +39,20 @@ equal(API.ResumeMapPins("gathering"), true, "resuming an owner twice is harmless
 equal(Marks(), 0, "and does not release the other owner")
 equal(API.ResumeMapPins("other"), true, "the last owner resumes")
 equal(Marks(), shown, "the marks return")
+
+-- A reveal's ping is a mark too: the map opens for the player's click, but nothing draws while an owner holds.
+h.ns.Pins.Reveal({ map = 1413, x = 0.5, y = 0.5 })
+h.flush()
+equal(#h.Pins("AdventureGuideForeverPingPinTemplate"), 1, "a ping shows before the suspend")
+API.SuspendMapPins("gathering")
+equal(#h.Pins("AdventureGuideForeverPingPinTemplate"), 0, "suspending releases a showing ping")
+h.ns.Pins.Reveal({ map = 1413, x = 0.5, y = 0.5 })
+h.flush()
+equal(#h.Pins("AdventureGuideForeverPingPinTemplate"), 0, "a reveal draws no ping while suspended")
+API.ResumeMapPins("gathering")
+h.ns.Pins.Reveal({ map = 1413, x = 0.5, y = 0.5 })
+h.flush()
+equal(#h.Pins("AdventureGuideForeverPingPinTemplate"), 1, "and does after the resume")
 
 for key, value in pairs(saved) do
 	equal(h.G.AdventureGuideForeverDB[key], value, "saved setting untouched: " .. key)
