@@ -12,9 +12,19 @@ optional `### For addon authors` subsection after a version's player bullets.
 
 ## [1.12.18] - 2026-11-26
 
-<!-- forever-core-sync -->
+### Added
+
+- Turn on Show RestedXP tracker to see RestedXP's guide window while Adventure Guide follows its steps, thanks to Gnatz_0815 for the idea (#949).
+
+### Changed
 
 - Ships with the same shared code as your other Forever addons, so they keep working together.
+
+### Fixed
+
+- The Adventure Guide map tab shows when DaylightUI's quest journal is on, thanks to poisenloaf for the report (#956).
+- On a quest with a single objective that needs an item collected first, such as Samuel's Remains, the guide sends you to the item before the place you use it, when it knows where to find the item (#970).
+- With EllesmereUI's Custom Quest Tracker on, the Forever tracker sits under that quest list and moves with it again.
 
 ## [1.12.17] - 2026-11-26
 

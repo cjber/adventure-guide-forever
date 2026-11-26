@@ -87,7 +87,7 @@ Install from [CurseForge](https://www.curseforge.com/wow/addons/adventure-guide-
 | `/agf audit` | Compare the quest data with the game and report its source |
 | `/agf dump` | Save the drawn layout; `/reload`, then attach `SavedVariables/AdventureGuideForever.lua` |
 
-Open the guide from its world-map tab, Alt-G, `/agf` or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including tracking route quests. The shared Forever column sits left of the game's quest tracker: drag a section's heading to move it, and right-click a heading for **Lock the tracker** to stop dragging.
+Open the guide from its world-map tab, Alt-G, `/agf` or the addon compartment. The guide's cog holds journey filters, map marks and skipped suggestions. Other options live under Settings > AddOns > Adventure Guide, including tracking route quests. The shared Forever column sits under the game's quest tracker: drag a section's heading to move it, or right-click a heading for **Tracker position** to put it left of the quest tracker, and **Lock the tracker** to stop dragging.
 
 ## Where the quests come from
 
@@ -97,7 +97,7 @@ Forever's new quests are only considered once they are in your log. The guide re
 
 ## Works alongside
 
-QuestieDB and Questie are needed for pickup recommendations. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) is an optional companion for bosses and loot. While Polestar has a guide running, the guide starts no route and draws no map marks until you click its tracker line; *Step aside while Polestar is guiding* turns that off. The guide's tracker section shares one column with the other Forever sections, beside the game's quest tracker. With [Pawn](https://www.curseforge.com/wow/addons/pawn) installed, the guide leaves reward upgrade arrows to Pawn.
+QuestieDB and Questie are needed for pickup recommendations. [AtlasLoot Classic Forever](https://www.curseforge.com/wow/addons/atlasloot-forever) is an optional companion for bosses and loot. While Polestar has a guide running, the guide starts no route and draws no map marks until you click its tracker line; *Step aside while Polestar is guiding* turns that off. The guide's tracker section shares one column with the other Forever sections, under the game's quest tracker by default. With [Pawn](https://www.curseforge.com/wow/addons/pawn) installed, the guide leaves reward upgrade arrows to Pawn.
 
 <!-- forever-family:start -->
 
@@ -134,7 +134,7 @@ No code needed:
 
 ## Development
 
-Run the full gate in [AGENTS.md](AGENTS.md#commands). `python3 tools/doctor.py` lists the tools it needs, with a fix for each problem. Screenshots use Pillow and the [shared renderer in forever-core](https://github.com/cjber/forever-core): set `FOREVER_CORE` to the forever-core checkout and run `python3 tools/screenshots.py` twice; both runs must match. [tests/README.md](tests/README.md) describes the test layers. Contributing and security policies are inherited from [cjber/.github](https://github.com/cjber/.github).
+Run the full gate in [AGENTS.md](AGENTS.md#gate). `python3 tools/doctor.py` lists the tools it needs, with a fix for each problem. Screenshots use Pillow and the [shared renderer in forever-core](https://github.com/cjber/forever-core): set `FOREVER_CORE` to the forever-core checkout and run `python3 tools/screenshots.py` twice; both runs must match. [tests/README.md](tests/README.md) describes the test layers. Contributing and security policies are inherited from [cjber/.github](https://github.com/cjber/.github).
 
 ## Support
 
