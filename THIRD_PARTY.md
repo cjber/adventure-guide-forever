@@ -88,6 +88,14 @@ Credit for the reports and requests behind the addon.
 | Enel3008 | A journey resolves when you already stand at its destination | CurseForge; #906; thread 8750470 |
 | [poisenloaf](https://github.com/poisenloaf) | The guide's map tab shows with DaylightUI's journal | GitHub; #956 |
 | Gnatz_0815 | RestedXP's tracker can show beside the guide | CurseForge; #949; thread 8783545 |
+| PorkBrosnans | Route keeps to your quest level setting | CurseForge; #846; thread 8744074 |
+| Gnatz_0815 | RestedXP tips and next steps in the tracker | CurseForge; #870; thread 8751950 |
+| Gnatz_0815 | RestedXP's next two steps say what they are | CurseForge; #903; thread 8751950 |
+| .roadblock | No login error without a separate ForeverCore | Discord; #886 |
+| successfulgeek | Tracker no longer sticks on loading | Discord; #892 |
+| pimpim0077 | Tracker no longer sticks on loading | Discord; #892 |
+| andrew_2133 | Riverglades quests are destinations | Discord; #946 |
+| xh43k | Stop hides the tracker's adventure section | Discord; #959 |
 
 ## Inspired by
 
